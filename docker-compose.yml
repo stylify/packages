@@ -1,0 +1,18 @@
+version: '3'
+services:
+    server:
+        container_name: stylify
+        build: docker/server
+        working_dir: /usr/share/nginx/html
+        volumes:
+            - ./.:/usr/share/nginx/html:delegated
+        ports:
+            - 80:80
+        tty: true
+
+   # chrome:
+    #    container_name: stylify-chrome
+     #   working_dir: /usr/share/nginx/html
+      #  build: docker/chrome
+       # volumes:
+        #    - ./.:/usr/share/nginx/html:delegated
