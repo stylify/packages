@@ -1,0 +1,5 @@
+# Testing environments
+# Dependencies
+/node_modules/
+# Lerna
+*.lerna_backup
