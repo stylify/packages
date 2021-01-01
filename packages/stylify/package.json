@@ -14,8 +14,8 @@
 	"scripts": {
 		"watch": "yarn build -w src",
 		"build": "yarn gnp && rollup -c rollup.config.js",
-		"lint:check": "eslint './src/**/*.ts'",
-		"lint:fix": "eslint './src/**/*.ts' --fix",
+		"lint:check": "eslint ./{src,tools}/**/*.{js,ts}",
+		"lint:fix": "eslint ./{src,tools}/**/*.{js,ts}",
 		"gnp": "node ./tools/native-properties-generator/generator.js"
 	},
 	"files": [

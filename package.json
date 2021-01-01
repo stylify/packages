@@ -9,14 +9,15 @@
         "repo-init": "yarn install && yarn link && yarn bootstrap",
 		"bootstrap": "lerna bootstrap --force-local",
 		"watch": "node --max-old-space-size=8192 node_modules/.bin/lerna run --parallel watch",
-		"watch:stylify": "yarn watch --scope=@stylify/stylify"
+		"watch:stylify": "yarn watch --scope=@stylify/stylify",
+		"lint:check": "lerna run lint:check"
     },
     "repository": {
         "type": "git",
         "url": "git+https://github.com/stylify/packages.git"
     },
     "keywords": [
-        
+
     ],
     "bugs": {
         "url": "https://github.com/stylify/packages/issues"
