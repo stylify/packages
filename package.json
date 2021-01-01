@@ -1,0 +1,28 @@
+{
+    "name": "@stylify/packages",
+    "version": "0.0.1",
+    "description": "Stylify monorepo",
+    "author": "Vladimír Macháček",
+    "license": "MIT",
+    "main": "index.js",
+    "scripts": {
+        "repo-init": "yarn install && yarn link && yarn bootstrap",
+		"bootstrap": "lerna bootstrap --force-local",
+		"watch": "node --max-old-space-size=8192 node_modules/.bin/lerna run --parallel watch",
+		"watch:stylify": "yarn watch --scope=@stylify/stylify"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/stylify/packages.git"
+    },
+    "keywords": [
+        
+    ],
+    "bugs": {
+        "url": "https://github.com/stylify/packages/issues"
+    },
+    "homepage": "https://github.com/stylify/packages/#readme",
+    "devDependencies": {
+        "lerna": "^3.22.1"
+    }
+}
