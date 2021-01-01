@@ -31,7 +31,7 @@
 		"directory": "packages/js-utils"
 	},
 	"keywords": [],
-	"author": "Apicart Company",
+	"author": "Vladimír Macháček",
 	"license": "MIT",
 	"bugs": {
 		"url": "https://github.com/stylify/packages/issues"
