@@ -1,0 +1,7 @@
+/tests/test-stack.js
+/es5/
+/lib/
+/dist/
+/node_modules/
+# Lerna
+*.lerna_backup
