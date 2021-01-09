@@ -1,29 +1,29 @@
 import { Compiler, Runtime } from ".";
 import MacroMatch from "./Compiler/MacroMatch";
 import SelectorProperties from "./Compiler/SelectorProperties";
-import nativeConfig from './configurations/native';
+import EventsEmitter from "./EventsEmitter";
 
 export default class Stylify {
 
-	private Compiler: Compiler = null;
+	public Compiler: Compiler = null;
 
-	private Runtime: Runtime = null;
+	public Runtime: Runtime = null;
 
 	constructor(config: Record<string, any> = {}) {
-		new CustomEvent('stylify:beforeInit', {
+		EventsEmitter.dispatch('stylify:beforeInit', {
 			config: config
 		});
 
 		this.configure(config);
 
-		new CustomEvent('stylify:init', {
+		EventsEmitter.dispatch('stylify:init', {
 			runtime: this.Runtime,
 		});
 	}
 
-	public configure(config: Record<string, any>) {
-		const compilerConfig = config.compiler || {};
-		const runtimeConfig = config.runtime || {};
+	public configure(config: Record<string, any>): Stylify {
+		const compilerConfig: Record<string, any> = config.compiler || {};
+		const runtimeConfig: Record<string, any> = config.runtime || {};
 
 		if (!this.Compiler) {
 			this.Compiler = new Compiler(compilerConfig);
@@ -41,15 +41,6 @@ export default class Stylify {
 			this.Runtime.configure(runtimeConfig);
 		}
 
-		new CustomEvent('stylify:configure', {
-			Compiler: this.Compiler.getConfig(),
-			Runtime: this.Runtime.getConfig()
-		});
+		return this;
 	}
 }
-
-if (typeof window !== 'undefined') {
-	(<any>window).Stylify = new Stylify();
-}
-
-;(<any>window).Stylify.configure(nativeConfig);

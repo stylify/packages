@@ -5,7 +5,6 @@ export default class CssRecord {
 	private properties: Record<string, any> = [];
 
 	constructor(selector: string = null, properties: Record<string, any> = {}) {
-		this.selectors = [];
 		this.properties = properties;
 
 		if (selector) {
@@ -13,17 +12,13 @@ export default class CssRecord {
 		}
 	}
 
-	getProperties() {
-		return this.properties;
-	}
-
-	addProperty(property, value) {
+	public addProperty(property, value) {
 		if (!this.hasProperty(property)) {
 			this.properties[property] = value;
 		}
 	}
 
-	addSelector(selector, pseudoClass = null) {
+	public addSelector(selector, pseudoClass = null) {
 		selector = selector[0] + selector.substr(1).replace(/([^-_a-zA-Z\d])/g, '\\$1');
 
 		if (pseudoClass) {
@@ -35,38 +30,27 @@ export default class CssRecord {
 		}
 	}
 
-	getProperty(name) {
-		if (this.hasProperty(name)) {
-			return this.getProperties()[name];
-		}
-	}
-
-	getSelector(selector) {
+	public getSelector(selector) {
 		return this.hasSelector(selector) ? this.selectors[this.selectors.indexOf(selector)] : null;
 	}
 
-	hasProperty(name) {
-		return typeof this.getProperties()[name] !== 'undefined';
+	public hasProperty(name) {
+		return typeof this.properties[name] !== 'undefined';
 	}
 
-	hasSelector(selector) {
+	public hasSelector(selector) {
 		return this.selectors.indexOf(selector) > -1;
 	}
 
-	compile() {
-		let css = this.selectors.join(',') + '{';
-		let lastItemIndex = this.properties.length - 1;
+	public compile(config: Record<string, any> = {}) {
+		let minimize: Boolean = config.minimize || false;
+		const newLine = minimize ? '' : '\n';
 
-		Object.keys(this.properties).forEach((property, index) => {
-			css += property + ':' + this.properties[property];
-
-			if (index !== lastItemIndex) {
-				css += ';'
-			}
-		});
-
-		css += '}';
-
-		return css;
+		return this.selectors.map(selector => '.' + selector).join(',' + newLine) + '{' + newLine
+			+ Object.keys(this.properties)
+				.map(property => (minimize ? '' : '\t') + property + ':' + this.properties[property])
+				.join(';' + newLine)
+			+ newLine + '}' + newLine;
 	}
+
 }

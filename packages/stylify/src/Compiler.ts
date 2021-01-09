@@ -1,10 +1,11 @@
 import CssRecord from "./Compiler/CssRecord";
 import SelectorProperties from "./Compiler/SelectorProperties";
 import MacroMatch from "./Compiler/MacroMatch";
+import EventsEmitter from "./EventsEmitter";
 
 export default class Compiler {
 
-	private cache: Record<string, any> = {
+	public cache: Record<string, any> = {
 		processedSelectors: [],
 		processedComponents: [],
 		cssTree: {
@@ -13,14 +14,21 @@ export default class Compiler {
 		componentsSelectorsDependencyTree: {}
 	};
 
-	private config: Record<string, any> = {
-		dev: false,
-		macros: {},
-		helpers: {},
-		variables: {},
-		screens: {},
-		initialCss: ''
-	};
+	public cacheModified = false;
+
+	public dev: Boolean = false;
+
+	public macros: Record<string, any> = {};
+
+	public helpers: Record<string, any> = {};
+
+	public screens: Record<string, any> = {};
+
+	public initialCss: string = '';
+
+	public variables: Record<string, any> = {};
+
+	public components: Record<string, any> = {};
 
 	constructor(config: Record<string, any> = {}) {
 		this.configure(config);
@@ -28,32 +36,38 @@ export default class Compiler {
 
 	public configure(config: Record<string, any> = {}): Compiler {
 		this.cache = config.cache || this.cache;
-		this.config.dev = config.dev || this.config.dev;
-		this.config.macros = Object.assign(this.config.macros, config.macros || {});
-		this.config.helpers = Object.assign(this.config.helpers, config.helpers || {});
-		this.config.variables = Object.assign(this.config.variables, config.variables || {});
-		this.config.screens = Object.assign(this.config.screens, config.screens || {});
-		this.config.initialCss = config.initialCss || '';
+		this.dev = config.dev || this.dev;
+		this.macros = Object.assign(this.macros, config.macros || {});
+		this.helpers = Object.assign(this.helpers, config.helpers || {});
+		this.variables = Object.assign(this.variables, config.variables || {});
+		this.screens = Object.assign(this.screens, config.screens || {});
+		this.initialCss = config.initialCss || '';
+		this.components = Object.assign(this.components, config.components || {});
 
-		const configComponents = config.components || {};
-
-		for (let componentSelector in configComponents) {
-			this.addComponent(componentSelector, configComponents[componentSelector]);
+		for (let componentSelector in this.components) {
+			this.addComponent(componentSelector, this.components[componentSelector]);
 		}
+
+		EventsEmitter.dispatch('stylify:compiler:configured', {
+			compiler: this
+		});
 
 		return this;
 	}
 
-	public getConfig(): Record<string, any> {
-		return this.config;
-	}
+	public addComponent(selector: string, selectorDependencies: string[] | string): Compiler {
+		if (typeof selectorDependencies === 'string') {
+			selectorDependencies = selectorDependencies
+				.replaceAll(/\s/ig, ' ')
+				.split(' ')
+				.filter(selector => selector.trim().length);
+		}
 
-	public addComponent(selector: string, selectorsDependencies: string[]): Compiler {
 		if (this.cache.processedComponents.indexOf(selector) > -1) {
 			return;
 		}
 
-		selectorsDependencies.forEach((selectorDependency) => {
+		selectorDependencies.forEach((selectorDependency) => {
 			if (!(selectorDependency in this.cache.componentsSelectorsDependencyTree)) {
 				this.cache.componentsSelectorsDependencyTree[selectorDependency] = [];
 			}
@@ -69,11 +83,12 @@ export default class Compiler {
 	}
 
 	public addMacro(re: string, callback: CallableFunction): Compiler {
-		this.config.macros[re] = callback;
+		this.macros[re] = callback;
 		return this;
 	}
 
 	public compile(content: string, generateCss: Boolean = true): Record<string, any> {
+		let wasAnyCssGenerated = false;
 		const classAttributeRe = new RegExp('class="([^"]+)"', 'igm');
 
 		if (classAttributeRe.exec(content) !== null) {
@@ -88,7 +103,7 @@ export default class Compiler {
 			content = classAtributesMatchesString;
 		}
 
-		for (let macroKey in this.config.macros) {
+		for (let macroKey in this.macros) {
 			const macroRe = new RegExp('(?:([^\. ]+):)?(?<!-)\\b' + macroKey, 'igm');
 			//const macroRe = new RegExp('(?:([^\. ]+):)?(?<!-)' + macroKey, 'igm');
 			let macroMatches;
@@ -98,15 +113,16 @@ export default class Compiler {
 					continue;
 				}
 
-				const macroMatch = new MacroMatch(macroMatches, Object.keys(this.config.screens));
+				wasAnyCssGenerated = true;
+				const macroMatch = new MacroMatch(macroMatches, Object.keys(this.screens));
 
 				this.addCssRecord(
 					macroMatch,
-					this.config.macros[macroKey].call(
+					this.macros[macroKey].call(
 						{
-							dev: this.config.dev,
-							variables: this.config.variables,
-							helpers: this.config.helpers
+							dev: this.dev,
+							variables: this.variables,
+							helpers: this.helpers
 						},
 						macroMatch,
 						new SelectorProperties()
@@ -121,46 +137,40 @@ export default class Compiler {
 			});
 
 		if (notProcessedComponentsSelectorsDependencies.length) {
-			this.compile(notProcessedComponentsSelectorsDependencies.join(' '), generateCss)
+			this.compile(notProcessedComponentsSelectorsDependencies.join(' '), generateCss);
 		}
 
 		return {
 			css: generateCss ? this.generateCss() : null,
-			cache: this.cache
+			cache: this.cache,
+			wasAnyCssGenerated: wasAnyCssGenerated
 		}
 	}
 
-	public setCache(cache): Compiler {
-		this.cache = cache;
-		return this;
-	}
-
-	public getCache(): Record<string, any> {
-		return this.cache;
-	}
-
 	public generateCss(): string {
-		let css = this.config.initialCss;
+		let css = this.initialCss;
 
 		for (let screenKey in this.cache.cssTree) {
 			let screenCss = '';
-			const screenOpen = screenKey === '_' ? '' : this.config.screens[screenKey] + '{'
+			const screenOpen = screenKey === '_' ? '' : this.screens[screenKey] + '{'
 			const screenClose = '}';
 
 			for (let selector in this.cache.cssTree[screenKey]) {
-				screenCss += this.cache.cssTree[screenKey][selector].compile();
+				screenCss += this.cache.cssTree[screenKey][selector].compile({
+					minimize: this.dev === false
+				});
 			};
 
 			css += screenKey === '_' ? screenCss : screenOpen + screenCss + screenClose;
 		};
 
-		return css;
+		return css.trim();
 	}
 
-	public addCssRecord(macroMatch, selectorProperties): Compiler {
-		const macroResult = selectorProperties.getProperties();
-		const screen = macroMatch.getScreen();
-		const selector = macroMatch.getSelector();
+	public addCssRecord(macroMatch: MacroMatch, selectorProperties): Compiler {
+		const macroResult = selectorProperties.properties;
+		const screen = macroMatch.screen;
+		const selector = macroMatch.selector;
 
 		if (typeof this.cache.cssTree[screen] === 'undefined') {
 			this.cache.cssTree[screen] = {};
@@ -169,8 +179,8 @@ export default class Compiler {
 		if (!(selector in this.cache.cssTree[screen])) {
 			this.cache.cssTree[screen][selector] = new CssRecord();
 
-			if (macroMatch.hasPseudoClasses()) {
-				macroMatch.getPseudoClasses().forEach((pseudoClass) => {
+			if (macroMatch.pseudoClasses.length > 0) {
+				macroMatch.pseudoClasses.forEach((pseudoClass) => {
 					this.cache.cssTree[screen][selector].addSelector(selector, pseudoClass);
 				});
 			} else {
@@ -188,7 +198,7 @@ export default class Compiler {
 			});
 		}
 
-		this.cache.processedSelectors.push(macroMatch.getFullMatch());
+		this.cache.processedSelectors.push(macroMatch.fullMatch);
 		return this;
 	}
 

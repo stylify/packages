@@ -1,4 +1,5 @@
 import { Compiler } from ".";
+import EventsEmitter from "./EventsEmitter";
 
 export default class Runtime {
 
@@ -8,21 +9,29 @@ export default class Runtime {
 
 	private Compiler: Compiler = null;
 
-	private config: Record<string, any> = {};
-
 	private initialPaintCompleted: Boolean = false;
 
+	public initialCss = '';
+
 	constructor(config: Record<string, any> = {}) {
+		if (typeof document === 'undefined') {
+			return;
+		}
+
+		const repaintStartTime = performance.now();
+		EventsEmitter.dispatch('stylify:repaint:start');
 		this.configure(config);
 		this.initialPaintCompleted = false;
 
-		if (typeof document !== 'undefined') {
-			document.addEventListener('DOMContentLoaded', () => {
-				this.injectCss(this.Compiler.compile(document.documentElement.outerHTML).css);
-				this.initialPaintCompleted = true;
-				this.initMutationObserver();
-			});
-		}
+		document.addEventListener('DOMContentLoaded', () => {
+			this.injectCss(this.Compiler.compile(document.documentElement.outerHTML).css);
+			this.initialPaintCompleted = true;
+			this.initMutationObserver();
+		});
+
+		EventsEmitter.dispatch('stylify:repaint:end', {
+			repaintTime: performance.now() - repaintStartTime
+		});
 	}
 
 	public configure(config) {
@@ -36,39 +45,46 @@ export default class Runtime {
 			this.injectCss(this.Compiler.compile(document.documentElement.outerHTML).css);
 		}
 
-		return this;
-	}
+		EventsEmitter.dispatch('stylify:runtime:configured', this);
 
-	public getConfig(): Record<string, any> {
-		return this.config;
+		return this;
 	}
 
 	public initMutationObserver() {
 		const targetNode = document.documentElement;
 		const config = { attributeFilter: ['class'], childList: true, subtree: true };
 		const observer = new MutationObserver((mutationsList) => {
-			let mutation;
-			let cssCompiled = false;
 
-			for (mutation of mutationsList) {
-				if (mutation.target.id === this.STYLIFY_STYLE_EL_ID) {
-					continue
-				}
+			const repaintStartTime = performance.now();
+			EventsEmitter.dispatch('stylify:repaint:start');
+			console.log(mutationsList);
+			let compilerContent = mutationsList
+				.map(mutation => {
+					return mutation.target.id === this.STYLIFY_STYLE_EL_ID
+						? ''
+						: mutation.target[
+							mutation.type === 'attributes' && mutation.attributeName === 'class'
+								? 'className'
+								: 'outerHTML'
+						]
+				})
+				.join('');
 
-				if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
-					this.Compiler.compile(mutation.target.className, false)
-				} else {
-					this.Compiler.compile(mutation.target.outerHTML, false)
-				}
-
-				cssCompiled = true;
-			}
-
-			if (!cssCompiled) {
+			if (!compilerContent.trim().length) {
 				return;
 			}
 
-			this.injectCss(this.Compiler.generateCss());
+			const compilerResult = this.Compiler.compile(compilerContent);
+
+			if (!compilerResult.wasAnyCssGenerated) {
+				return;
+			}
+
+			this.injectCss(compilerResult.css);
+
+			EventsEmitter.dispatch('stylify:repaint:end', {
+				repaintTime: performance.now() - repaintStartTime
+			});
 		});
 
 		observer.observe(targetNode, config);
@@ -86,11 +102,15 @@ export default class Runtime {
 			document.head.appendChild(el);
 		}
 
-		const elements: NodeListOf<Element> = document.querySelectorAll('[' + this.STYLIFY_CLOAK_ATTR_NAME + ']');
+		const elements = document.querySelectorAll('[' + this.STYLIFY_CLOAK_ATTR_NAME + ']');
 		let element: Element;
 
+		EventsEmitter.dispatch('stylify:css:injected', {
+			css: css
+		});
+
 		for (element of elements) {
-			new CustomEvent('stylify:uncloak', {
+			EventsEmitter.dispatch('stylify:uncloak', {
 				id: element.getAttribute(this.STYLIFY_CLOAK_ATTR_NAME) || null,
 				el: element,
 			})
