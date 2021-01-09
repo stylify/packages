@@ -6,15 +6,18 @@
 	<title>Stylify!</title>
 </head>
 <body>
-	<div class="
-		text-align:center
-		margin:100px__auto
-		font-size:42px
-		font-weight:bold
-		font-family:arial
-	">
+	<div class="text-align:center font-size:100px margin-top:100px font-weight:bold ">
 		Stylify!
 	</div>
-	<script src="/packages/stylify/dist/stylify.js"></script>
+
+	<script src="/packages/stylify/dist/profiler.js"></script>
+	<script src="/packages/stylify/dist/stylify.native.js"></script>
+	<script>
+		Stylify.configure({
+			compiler: {
+				dev: true
+			}
+		});
+	</script>
 </body>
 </html>
