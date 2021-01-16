@@ -14,8 +14,6 @@ export default class Compiler {
 		componentsSelectorsDependencyTree: {}
 	};
 
-	public cacheModified = false;
-
 	public dev: Boolean = false;
 
 	public macros: Record<string, any> = {};
@@ -105,7 +103,6 @@ export default class Compiler {
 
 		for (let macroKey in this.macros) {
 			const macroRe = new RegExp('(?:([^\. ]+):)?(?<!-)\\b' + macroKey, 'igm');
-			//const macroRe = new RegExp('(?:([^\. ]+):)?(?<!-)' + macroKey, 'igm');
 			let macroMatches;
 
 			while (macroMatches = macroRe.exec(content)) {
