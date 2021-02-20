@@ -9,9 +9,11 @@ export default class Runtime {
 
 	private Compiler: Compiler = null;
 
+	private CompilerResult = null;
+
 	private initialPaintCompleted: Boolean = false;
 
-	public initialCss = '';
+	public redrawTimeout: number = 10;
 
 	constructor(config: Record<string, any> = {}) {
 		if (typeof document === 'undefined') {
@@ -19,78 +21,110 @@ export default class Runtime {
 		}
 
 		const repaintStartTime = performance.now();
-		EventsEmitter.dispatch('stylify:repaint:start');
 		this.configure(config);
 		this.initialPaintCompleted = false;
+		const content = document.documentElement.outerHTML;
 
 		document.addEventListener('DOMContentLoaded', () => {
-			this.injectCss(this.Compiler.compile(document.documentElement.outerHTML).css);
+			const css = this.updateCss(content);
 			this.initialPaintCompleted = true;
 			this.initMutationObserver();
-		});
 
-		EventsEmitter.dispatch('stylify:repaint:end', {
-			repaintTime: performance.now() - repaintStartTime
+			if (css === null) {
+				return;
+			}
+
+			EventsEmitter.dispatch('stylify:runtime:repainted', {
+				css: css,
+				repaintTime: performance.now() - repaintStartTime,
+				compilerResult: this.CompilerResult,
+				content: content
+			});
 		});
 	}
 
 	public configure(config) {
-		if (!('initialCss' in config.compiler)) {
-			config.compiler.initialCss = '';
-		};
-
 		this.Compiler = config.compiler;
 
 		if (this.initialPaintCompleted) {
-			this.injectCss(this.Compiler.compile(document.documentElement.outerHTML).css);
+			this.updateCss(document.documentElement.outerHTML);
 		}
+
+		this.redrawTimeout = config.redrawTimeout || this.redrawTimeout;
 
 		EventsEmitter.dispatch('stylify:runtime:configured', this);
 
 		return this;
 	}
 
+	private updateCss(content: string): string|null {
+		this.CompilerResult = this.Compiler.compile(content, this.CompilerResult);
+
+		if (!this.CompilerResult.changed) {
+			return null;
+		}
+
+		const css = this.CompilerResult.generateCss();
+		this.injectCss(css);
+		return css;
+	}
+
 	public initMutationObserver() {
 		const targetNode = document.documentElement;
 		const config = { attributeFilter: ['class'], childList: true, subtree: true };
+		let compilerContentQueue = '';
+		let updateTimeout = null;
+		let repaintStartTime = null;
+
 		const observer = new MutationObserver((mutationsList) => {
-
-			const repaintStartTime = performance.now();
-			EventsEmitter.dispatch('stylify:repaint:start');
-			console.log(mutationsList);
-			let compilerContent = mutationsList
-				.map(mutation => {
-					return mutation.target.id === this.STYLIFY_STYLE_EL_ID
-						? ''
-						: mutation.target[
-							mutation.type === 'attributes' && mutation.attributeName === 'class'
-								? 'className'
-								: 'outerHTML'
-						]
-				})
-				.join('');
-
-			if (!compilerContent.trim().length) {
-				return;
+			if (repaintStartTime === null) {
+				repaintStartTime = performance.now();
 			}
 
-			const compilerResult = this.Compiler.compile(compilerContent);
+			mutationsList.forEach(mutation => {
+				if (mutation.target.id === this.STYLIFY_STYLE_EL_ID) {
+					return;
+				}
 
-			if (!compilerResult.wasAnyCssGenerated) {
-				return;
-			}
-
-			this.injectCss(compilerResult.css);
-
-			EventsEmitter.dispatch('stylify:repaint:end', {
-				repaintTime: performance.now() - repaintStartTime
+				compilerContentQueue += mutation.type === 'attributes' && mutation.attributeName === 'class'
+					? 'class="' + mutation.target['className'] + '"'
+					: mutation.target['outerHTML']
 			});
+
+			if (!compilerContentQueue.trim().length) {
+				return;
+			}
+
+			if (updateTimeout) {
+				window.clearTimeout(updateTimeout);
+			}
+
+			updateTimeout = window.setTimeout(() => {
+				const css = this.updateCss(compilerContentQueue);
+				const repaintTime = performance.now() - repaintStartTime;
+				repaintStartTime = null;
+
+				if (css === null) {
+					return;
+				}
+
+				EventsEmitter.dispatch('stylify:runtime:repainted', {
+					css: css,
+					repaintTime: repaintTime,
+					compilerResult: this.CompilerResult,
+					content: compilerContentQueue
+				});
+
+				repaintStartTime = null;
+				compilerContentQueue = '';
+
+			}, this.redrawTimeout);
 		});
 
 		observer.observe(targetNode, config);
 	}
 
-	public injectCss(css) {
+	public injectCss(css: string) {
 		let el = document.querySelector('#' + this.STYLIFY_STYLE_EL_ID)
 
 		if (el) {
@@ -105,16 +139,12 @@ export default class Runtime {
 		const elements = document.querySelectorAll('[' + this.STYLIFY_CLOAK_ATTR_NAME + ']');
 		let element: Element;
 
-		EventsEmitter.dispatch('stylify:css:injected', {
-			css: css
-		});
-
 		for (element of elements) {
-			EventsEmitter.dispatch('stylify:uncloak', {
+			element.removeAttribute(this.STYLIFY_CLOAK_ATTR_NAME)
+			EventsEmitter.dispatch('stylify:runtime:uncloak', {
 				id: element.getAttribute(this.STYLIFY_CLOAK_ATTR_NAME) || null,
 				el: element,
-			})
-			element.removeAttribute(this.STYLIFY_CLOAK_ATTR_NAME)
+			});
 		}
 	}
 

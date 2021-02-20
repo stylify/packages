@@ -10,7 +10,7 @@ import {
 
 const isWindowDefined = typeof window !== 'undefined';
 
-export default class Profiler {
+class Profiler {
 
 	private readonly windowIsDefined = isWindowDefined;
 
@@ -18,7 +18,7 @@ export default class Profiler {
 
 	private readonly htm = htm;
 
-	constructor(config: Record<string, any> = {}) {
+	constructor() {
 		addProfilerExtension(BuildsAnalyzerExtension);
 		addProfilerExtension(ConfigurationsVisualizerExtension);
 		addProfilerExtension(DomNodesCounterExtension);
@@ -27,17 +27,54 @@ export default class Profiler {
 	public initToolbar(): Profiler {
 		(<any>window).Stylify.configure({
 			compiler: {
+				dev: true,
+				pregenerate: `
+					border-top:1px__solid__#444
+					bottom:0
+					color:#fff
+					content-visibility:hidden
+					content-visibility:visible
+					display:block
+					display:none
+					font-family:arial
+					font-size:12px
+					line-height:26px
+					margin-left:8px
+					margin:0__8px
+					max-width:800px
+					overflow-x:auto
+					padding-top:8px
+					position:fixed
+					text-align:left
+					visibility:hidden
+					visibility:visible
+					width:auto
+					word-spacing:24px
+				`,
 				components: {
 					'profiler-extension': `
+						box-sizing:border-box
 						border-left:1px__solid__#555
 						align-items:center
 						display:flex
 						min-height:100%
-						hover:background:#333
 						position:relative
+						hover:background:#333
 					`,
-					'profiler-extension__button': 'padding:8px display:inline-block cursor:pointer user-select:none',
+					'profiler-extension__button': `
+						box-sizing:border-box
+						height:26px
+						padding:0__8px
+						display:flex
+						align-items:center
+						justify-content:center
+						font-size:14px
+						cursor:pointer
+						user-select:none
+					`,
+					'profiler-extension__button--active': 'background-color:#333',
 					'profiler-extension__dropdown': `
+						box-sizing:border-box
 						position:absolute
 						bottom:100%
 						left:0
@@ -48,6 +85,7 @@ export default class Profiler {
 						padding:8px
 					`,
 					'profiler-extension__link': `
+						box-sizing:border-box
 						text-decoration:none
 						color:#00b2e5
 						margin-right:8px
@@ -55,7 +93,9 @@ export default class Profiler {
 						display:inline-block
 						cursor:pointer
 					`,
-					'profiler-extension__button-icon': 'margin-right:8px'
+					'profiler-extension__button-icon': 'margin-right:8px display:inline-block font-weight:bold color:#aaa',
+					'profiler-extension__button-label': 'line-height:1'
+
 				}
 			}
 		});
@@ -68,12 +108,22 @@ export default class Profiler {
 
 const profiler = new Profiler();
 
-if (isWindowDefined) {
-	document.addEventListener('DOMContentLoaded', () => {
-		if ((<any>window).Stylify !== 'undefined') {
-			(<any>window).Stylify.Profiler = profiler;
-			profiler.initToolbar();
-		}
-	})
+const initProfiler = (): boolean => {
+	let inicialized = false;
+
+	if ((<any>window).Stylify !== 'undefined') {
+		//(<any>window).Stylify.Profiler = profiler;
+		profiler.initToolbar();
+		inicialized = true;
+	}
+
+	return inicialized;
 }
 
+if (isWindowDefined) {
+	if (!initProfiler()) {
+		document.addEventListener('DOMContentLoaded', () => {
+			initProfiler();
+		});
+	}
+}

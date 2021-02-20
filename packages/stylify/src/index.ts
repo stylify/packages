@@ -1,12 +1,13 @@
 import Compiler from './Compiler';
 import FilesCssCollector from './FilesCssCollector';
 import Runtime from './Runtime';
-import Stylify from './Stylify';
-
-export default Stylify;
+import SelectorsRewriter from './SelectorsRewriter';
+import EventsEmitter from './EventsEmitter';
 
 export {
+	EventsEmitter,
 	FilesCssCollector,
 	Compiler,
-	Runtime
+	Runtime,
+	SelectorsRewriter,
 };

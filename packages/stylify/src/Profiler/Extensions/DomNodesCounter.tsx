@@ -1,4 +1,4 @@
-import { Component } from 'preact';
+import { h, Component } from 'preact';
 
 export default class DomNodesCounterExtension extends Component {
 
@@ -36,7 +36,8 @@ export default class DomNodesCounterExtension extends Component {
 		return (
 			<div class="profiler-extension">
 				<div role="button" title="Dom nodes counter" class="profiler-extension__button">
-					<span>🔗</span> <strong class={`${this.state.totalDomNodesCount > this.state.recommendedDomNodesCount ? 'color:red' : '' }`}>{this.state.totalDomNodesCount}</strong>
+					<i class="sp-icon sp-icon-link profiler-extension__button-icon"></i>
+					<strong class={`${this.state.totalDomNodesCount > this.state.recommendedDomNodesCount ? 'color:red' : '' } profiler-extension__button-label`}>{this.state.totalDomNodesCount}</strong>
 				</div>
 			</div>
 		);

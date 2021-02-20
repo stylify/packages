@@ -1,92 +1,41 @@
-import { Component } from 'preact';
-import EventsEmitter from '../../EventsEmitter';
-
-const state = {
-	cssInBase64: null,
-	lastRepaintTime: 0,
-	totalRepaintTime: 0,
-	actualSize: 0,
-	builds: [],
-	buildsListVisible: false
-};
-
-const calculateTotalRepaintTime = (repaintTime, totalRepaintTime = 0): Record<string, number> => {
-	totalRepaintTime = totalRepaintTime + repaintTime;
-
-	return {
-		lastRepaintTime: repaintTime,
-		totalRepaintTime: totalRepaintTime
-	}
-}
-
-const processBuildInfo = (actualState: Record<string, any>, eventDetail: Record<string, any>): Record<string, any> => {
-	const builds = actualState.builds;
-	const css = eventDetail.css;
-	const cssSize = css.length;
-	const buildSize = cssSize - actualState.actualSize;
-
-	if (buildSize === 0) {
-		return;
-	}
-
-	builds.push({
-		size: buildSize,
-		repaintTime: actualState.lastRepaintTime
-	});;
-
-	return {
-		builds: builds,
-		cssSize: cssSize
-	};
-}
-
-
-let domContentLoaded = false;
-
-if (typeof window !== 'undefined') {
-	document.addEventListener('DOMContentLoaded', () => domContentLoaded = true);
-
-	EventsEmitter.addListener('stylify:repaint:end', (event) => {
-		if (domContentLoaded) {
-			return;
-		}
-
-		const repaintTimes = calculateTotalRepaintTime(event.detail.repaintTime, state.lastRepaintTime);
-		state.lastRepaintTime = repaintTimes.lastRepaintTime;
-		state.totalRepaintTime = repaintTimes.totalRepaintTime;
-	});
-
-	EventsEmitter.addListener('stylify:css:injected', (event) => {
-		if (domContentLoaded) {
-			return;
-		}
-
-		const updatedBuildsInfo = processBuildInfo(state, event.detail);
-
-		state.builds = updatedBuildsInfo.builds;
-		state.actualSize = updatedBuildsInfo.cssSize;
-	});
-}
+import { Console } from 'console';
+import { h, Component } from 'preact';
 
 export default class BuildsAnalyzerExtension extends Component {
 
-	private state: Record<string, any> = state;
+	private state: Record<string, any> = {
+		cssInBase64: null,
+		totalRepaintTime: 0,
+		actualSize: 0,
+		builds: [],
+		buildsListVisible: false
+	}
 
 	constructor() {
 		super();
 
-		EventsEmitter.addListener('stylify:repaint:end', (event) => {
-			this.setState(calculateTotalRepaintTime(event.detail.repaintTime, this.state.lastRepaintTime));
-		});
+		window.Stylify.EventsEmitter.addListener('stylify:runtime:repainted', (data) => {
+			const builds = this.state.builds;
+			const buildSize = this.state.actualSize === 0 ? data.css.length : data.css.length - this.state.actualSize;
 
- 		EventsEmitter.addListener('stylify:css:injected', (event) => {
-			const updatedBuildsInfo = processBuildInfo(this.state, event.detail);
+			if (buildSize === 0) {
+				return;
+			}
+
+			builds.push({
+				content: data.content,
+				size: buildSize,
+				repaintTime: data.repaintTime,
+				details: data.compilerResult.lastBuildInfo
+			});
 
 			this.setState({
-				builds: updatedBuildsInfo.builds,
-				actualSize: updatedBuildsInfo.cssSize
+				totalRepaintTime: this.state.totalRepaintTime + data.repaintTime,
+				actualSize: this.state.actualSize + buildSize,
+				builds: builds
 			});
 		});
+
 	}
 
 	public getGeneratedCssFromPage(): string {
@@ -94,12 +43,12 @@ export default class BuildsAnalyzerExtension extends Component {
 		return stylifyCssElement ? stylifyCssElement.innerHTML : '';
 	}
 
-	public convertCssSizeToKb(size: number): string {
-		return (size / 1000).toPrecision(2) + ' Kb';
+	public convertSizeToKb(size: number, precision: number = 1): string {
+		return (size / 1000).toFixed(precision) + ' Kb';
 	}
 
-	public convertTimeToSeconds(time: number): string {
-		return time.toPrecision(2) + ' ms';
+	public convertTimeToSeconds(time: number, precision: number = 1): string {
+		return time.toFixed(precision) + ' ms';
 	}
 
 	public toggleBuildsListVisibility = () => {
@@ -108,19 +57,25 @@ export default class BuildsAnalyzerExtension extends Component {
 		})
 	}
 
+	public openProcessedContentInNewWindow(content) {
+		let cssWindow = window.open("");
+		const div = document.createElement('div');
+		div.innerText = decodeURIComponent(content);
+		cssWindow.document.write('<pre>' + div.innerHTML + '</pre>');
+	}
+
 	public openGeneratedCssInNewWindow = () => {
 		let cssWindow = window.open("");
-
 		cssWindow.document.write('<pre><code>' + this.getGeneratedCssFromPage() + '</code></pre>');
 	}
 
 	public render() {
 		return (
 			<div class="profiler-extension">
-				<a role="button" onClick={this.toggleBuildsListVisibility} class="profiler-extension__button">
-					<strong title="Builds count" class="margin-right:8px">🔄 {this.state.builds.length}</strong>
-					|<strong title="Total builds CSS size" class="margin:0__8px">📦 {this.convertCssSizeToKb(this.state.actualSize)}</strong>
-					|<strong title="Total builds repaint time" class="margin-left:8px">⏱️ {this.convertTimeToSeconds(this.state.totalRepaintTime)}</strong>
+				<a role="button" onClick={this.toggleBuildsListVisibility} class={`${this.state.buildsListVisible ? 'profiler-extension__button--active' : ''} profiler-extension__button`}>
+					<strong title="Builds count" class="margin-right:8px"><i class="sp-icon sp-icon-refresh-cw profiler-extension__button-icon"></i><span class="profiler-extension__button-label">{this.state.builds.length}</span></strong>
+					|<strong title="Total builds CSS size" class="margin:0__8px"><i class="sp-icon sp-icon-archive profiler-extension__button-icon"></i><span class="profiler-extension__button-label">{this.convertSizeToKb(this.state.actualSize)}</span></strong>
+					|<strong title="Total builds repaint time" class="margin-left:8px"><i class="sp-icon sp-icon-clock profiler-extension__button-icon"></i><span class="profiler-extension__button-label">{this.convertTimeToSeconds(this.state.totalRepaintTime)}</span></strong>
 				</a>
 				<div class={`display:${this.state.buildsListVisible ? 'block' : 'none'} profiler-extension__dropdown`}>
 					<table class="text-align:left white-space:nowrap" cellspacing="0">
@@ -129,6 +84,9 @@ export default class BuildsAnalyzerExtension extends Component {
 								<th class="padding:8px">Build</th>
 								<th class="padding:8px">Size</th>
 								<th class="padding:8px">Time</th>
+								<th class="padding:8px" title="Processed content">Content</th>
+								<th class="padding:8px" title="Processed selectors">Selectors</th>
+								<th class="padding:8px" title="Processed components">Components</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -136,8 +94,43 @@ export default class BuildsAnalyzerExtension extends Component {
 								return (
 									<tr class="hover:background:#333">
 										<td class="padding:8px">{i}</td>
-										<td class="padding:8px">{this.convertCssSizeToKb(build.size)}</td>
+										<td class="padding:8px">{this.convertSizeToKb(build.size)}</td>
 										<td class="padding:8px">{this.convertTimeToSeconds(build.repaintTime)}</td>
+										<td class="padding:8px">
+											<a
+												role="button"
+												onClick={() => {this.openProcessedContentInNewWindow(encodeURIComponent(build.content))}}
+												class="profiler-extension__link"
+											>
+												Show({this.convertSizeToKb(build.content.length)})
+											</a>
+										</td>
+										<td class="padding:8px">
+											{build.details.processedSelectors.length === 0 ? (
+												'---'
+											) : (
+												<a
+													role="button"
+													onClick={() => {this.openProcessedContentInNewWindow(encodeURIComponent(build.details.processedSelectors.sort().join('\n')))}}
+													class="profiler-extension__link"
+												>
+													Show({build.details.processedSelectors.length})
+												</a>
+											)}
+										</td>
+										<td class="padding:8px">
+											{build.details.processedComponents.length === 0 ? (
+												'---'
+											) : (
+												<a
+													role="button"
+													onClick={() => {this.openProcessedContentInNewWindow(encodeURIComponent(build.details.processedComponents.sort().join('\n')))}}
+													class="profiler-extension__link"
+												>
+													Show({build.details.processedComponents.length})
+												</a>
+											)}
+										</td>
 									</tr>
 								)
 							})}

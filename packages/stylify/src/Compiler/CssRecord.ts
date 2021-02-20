@@ -4,6 +4,8 @@ export default class CssRecord {
 
 	private properties: Record<string, any> = [];
 
+	public pseudoClasses: string[] = [];
+
 	constructor(selector: string = null, properties: Record<string, any> = {}) {
 		this.properties = properties;
 

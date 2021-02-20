@@ -1,22 +1,32 @@
 class EventsEmitter {
 
+	private eventListeners: Record<string, any> = {};
+
 	dispatch(eventName, eventData: Record<string, any> = null): EventsEmitter {
-		let event;
-
-		if (window.CustomEvent && typeof window.CustomEvent === 'function') {
-			event = new CustomEvent(eventName, eventData ? {detail: eventData} : null);
-
-		} else {
-			event = document.createEvent('CustomEvent');
-			event.initCustomEvent(eventName, true, true, eventData || {});
+		if (!(eventName in this.eventListeners)) {
+			return;
 		}
 
-		document.dispatchEvent(event);
+		this.eventListeners[eventName].forEach(element => {
+			element.callback(eventData);
+		});
+
 		return this;
 	};
 
-	addListener(event, callback: CallableFunction): EventsEmitter {
-		document.addEventListener(event, eventData => callback(eventData));
+	addListener = (event: string, callback: CallableFunction, id: string = null): EventsEmitter => {
+		if (!(event in this.eventListeners)) {
+			this.eventListeners[event] = [];
+		}
+
+		const idExists = this.eventListeners[event].findIndex((item) => item.id === id);
+
+		if (idExists > -1) {
+			return;
+		}
+
+		this.eventListeners[event].push({callback: callback, id: id});
+
 		return this;
 	}
 
