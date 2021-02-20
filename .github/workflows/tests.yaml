@@ -18,3 +18,7 @@ jobs:
           run: yarn repo-init
         - name: Eslint
           run: yarn lint:check
+        - name: Build packages
+          run: yarn build
+        - name: Jest tests
+          run: yarn jest:test
