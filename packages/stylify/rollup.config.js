@@ -10,15 +10,16 @@ import { nodeResolve } from '@rollup/plugin-node-resolve';
 import replace from '@rollup/plugin-replace';
 import postcss from 'rollup-plugin-postcss';
 import postcssUrlPlugin from 'postcss-url';
+import typescript from "@rollup/plugin-typescript";
 
 "use strict";
 
 const exportName = 'Stylify';
 
 const typescriptConfig = JSON.parse(fs.readFileSync('tsconfig.es6.json', 'utf8'));
-const devDirectories = ['dist', 'es5', 'lib', 'tmp'];
+const devDirectories = ['dist', 'esm', 'lib', 'tmp'];
 const extensions = ['.js', '.jsx', '.ts', '.tsx'];
-devDirectories.forEach(directory => {
+/* devDirectories.forEach(directory => {
 	try {
 		if (fs.existsSync(directory)) {
 			fs.rmdirSync(directory, { recursive: true });
@@ -30,33 +31,38 @@ devDirectories.forEach(directory => {
 	}
 
 	fs.mkdirSync(directory);
-});
+}); */
 
 const createConfig = (config) => {
 	const esVersion = /* config.esVersion || */ 'es6';
 	const configs = [];
 	const getPlugins = (config) => {
 		const plugins = [
-			nodeResolve({
-				extensions: extensions,
-			}),
 			replace({
 				'process.env.NODE_ENV': JSON.stringify('production'),
+			}),
+			typescript(typescriptConfig),
+			postcss({
+				plugins: [
+					postcssUrlPlugin({
+						url: 'inline'
+					})
+				]
 			}),
 			babel({
 				extensions: extensions,
 				"presets": [
-					"@babel/typescript",
+					/* "@babel/typescript",
 					[
 						"@babel/env",
 						{
 							"bugfixes": true,
-							"modules": false,
+							//"modules": true,
 							"targets": {
 								"chrome": "80",
 							}
 						},
-					],
+					], */
 					["@babel/preset-react", {
 						"pragma": "h"
 					}]
@@ -71,7 +77,10 @@ const createConfig = (config) => {
 						"importSource": "preact",
 					}]
 				]
-			})
+			}),
+			nodeResolve({
+				extensions: extensions,
+			}),
 		];
 
  		if (config.terser) {
@@ -102,6 +111,7 @@ const createConfig = (config) => {
 
 			configs.push({
 				input: config.input,
+				external: config.external || [],
 				output: {
 					name: config.output.name,
 					file: config.output.file + suffix,
@@ -137,6 +147,7 @@ const createFileConfigs = (buildConfigs) => {
 					input: inputFile,
 					esVersion: 'es5',
 					plugins: buildConfig.plugins || [],
+					external: buildConfig.external || [],
 					output: {
 						name: exportName,
 						file: outputPath + '.es5',
@@ -147,6 +158,7 @@ const createFileConfigs = (buildConfigs) => {
 				createConfig({
 					input: inputFile,
 					plugins: buildConfig.plugins || [],
+					external: buildConfig.external || [],
 					output: {
 						name: exportName,
 						file: outputPath,
@@ -163,8 +175,9 @@ const createFileConfigs = (buildConfigs) => {
 					input: inputFile,
 					esVersion: 'es5',
 					plugins: buildConfig.plugins || [],
+					external: buildConfig.external || [],
 					output: {
-						file: path.join('es5', outputFile),
+						file: path.join('esm', outputFile),
 						format: ['esm']
 					}
 				})
@@ -176,9 +189,10 @@ const createFileConfigs = (buildConfigs) => {
 				createConfig({
 					input: inputFile,
 					plugins: buildConfig.plugins || [],
+					external: buildConfig.external,
 					output: {
 						file: path.join('lib', outputFile),
-						format: ['esm']
+						format: ['cjs']
 					}
 				})
 			);
@@ -190,25 +204,43 @@ const createFileConfigs = (buildConfigs) => {
 
 const configs = [].concat(
 	createFileConfigs([
-		// Configs
-		{inputFile: 'Configurations/NativeConfiguration', formats:['esm', 'lib']},
-		// Parts
- 		{inputFile: 'Compiler', formats:['esm', 'lib']},
+		// Indexes
+/*  		{inputFile: 'Compiler/index', formats: ['esm', 'lib'], external: [
+			"./CompilationResult",
+			"./CssRecord",
+			"./MacroMatch",
+			"./SelectorProperties",
+			'./Compiler'
+		]},
+		{inputFile: 'Configurations/index', formats: ['esm', 'lib'], external: [
+			'./NativeConfiguration'
+		]},
+		{inputFile: 'Profiler/index', formats: ['esm', 'lib'], external: [
+			'./Toolbar',
+			'./Extensions',
+			'./Profiler'
+		]},
+		{inputFile: 'index', formats: ['esm', 'lib'], external: [
+			'./Compiler',
+			'./Configurations',
+			'./EventsEmitter',
+			'./Profiler',
+			'./SelectorsRewriter',
+			'./Stylify',
+		]}, */
+
+		// Stylify
+  		{inputFile: 'Stylify', formats:['browser']},
+		{inputFile: 'Stylify', formats:['esm', 'lib'], external: ['.']},
+		{inputFile: 'Compiler/Compiler', formats:['esm', 'lib']},
 		{inputFile: 'SelectorsRewriter', formats:['esm', 'lib']},
-		{inputFile: 'index', formats:['esm', 'lib']},
-		// Stylify for browser
-  		{inputFile: 'Stylify', formats:['browser', 'esm']},
-		{inputFile: 'Stylify.native.browser', outputFile: 'Stylify.native', formats:['browser', 'esm']},
+		{inputFile: 'EventsEmitter', formats:['esm', 'lib']},
+		{inputFile: 'Stylify.native.browser', outputFile: 'Stylify.native', formats:['browser']},
+		{inputFile: 'Configurations/NativeConfiguration', formats:['esm', 'lib']},
+
 		// Profiler
- 		{inputFile: 'Profiler', formats:['browser', 'esm'], plugins: [
-			 postcss({
-				plugins: [
-					postcssUrlPlugin({
-						url: 'inline'
-					})
-				]
-			})
-		 ]},
+ 		{inputFile: 'Profiler/Profiler', formats:['lib', 'esm']},
+		{inputFile: 'Profiler.browser', formats:['browser']},
 	])
 );
 

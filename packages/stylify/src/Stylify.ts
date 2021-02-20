@@ -1,7 +1,7 @@
-import { Compiler, Runtime } from ".";
-import MacroMatch from "./Compiler/MacroMatch";
-import SelectorProperties from "./Compiler/SelectorProperties";
-import EventsEmitter from "./EventsEmitter";
+// @ts-nocheck
+
+import { Compiler, EventsEmitter } from '.';
+import Runtime from './Runtime';
 
 export default class Stylify {
 
@@ -9,7 +9,7 @@ export default class Stylify {
 
 	public Runtime: Runtime = null;
 
-	public EventsEmitter: EventsEmitter = null;
+	public EventsEmitter = null;
 
 	constructor(config: Record<string, any> = {}) {
 		this.EventsEmitter = EventsEmitter;
@@ -21,7 +21,7 @@ export default class Stylify {
 		this.configure(config);
 
 		EventsEmitter.dispatch('stylify:init', {
-			runtime: this.Runtime,
+			runtime: this.Runtime
 		});
 	}
 

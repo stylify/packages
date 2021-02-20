@@ -1,15 +1,19 @@
-import { EventsEmitter } from ".";
-import { CompilationResult, MacroMatch, SelectorProperties } from './Compiler/index';
+// @ts-nocheck
+
+import CompilationResult from './CompilationResult';
+import SelectorProperties from './SelectorProperties';
+import MacroMatch from './MacroMatch';
+import { EventsEmitter } from '../';
 
 export default class Compiler {
 
-	private PREGENERATE_MATCH_REG_EXP: RegExp = new RegExp('stylify-pregenerate:([\\S ]*\\b)', 'igm');
+	private PREGENERATE_MATCH_REG_EXP = new RegExp('stylify-pregenerate:([\\S ]*\\b)', 'igm');
 
 	public classMatchRegExp: RegExp = null;
 
-	public mangleSelectors: Boolean = false;
+	public mangleSelectors = false;
 
-	public dev: Boolean = false;
+	public dev = false;
 
 	public macros: Record<string, any> = {};
 
@@ -23,7 +27,7 @@ export default class Compiler {
 
 	public components: Record<string, any> = {};
 
-	public pregenerate: string = '';
+	public pregenerate = '';
 
 	public componentsSelectorsMap = {};
 
@@ -41,13 +45,16 @@ export default class Compiler {
 		this.screensKeys = Object.keys(this.screens);
 		this.components = Object.assign(this.components, config.components || {});
 		this.mangleSelectors = config.mangleSelectors || this.mangleSelectors;
-		this.pregenerate += Array.isArray(config.pregenerate) ? config.pregenerate.join(' ') : config.pregenerate;
+
+		if (typeof config.pregenerate !== 'undefined') {
+			this.pregenerate += Array.isArray(config.pregenerate) ? config.pregenerate.join(' ') : config.pregenerate;
+		}
 
 		this.classMatchRegExp = new RegExp(
 			'(?:' + ['class', 's-pregenerate'].concat(config.classRegExpClassAttributes || []).join('|') + ')="([^"]+)"', 'igm'
 		);
 
-		for (let componentSelector in config.components) {
+		for (const componentSelector in config.components) {
 			this.addComponent(componentSelector, config.components[componentSelector]);
 		}
 
@@ -112,15 +119,16 @@ export default class Compiler {
  			while (pregenerateMatch = this.PREGENERATE_MATCH_REG_EXP.exec(content)) {
 				classAtributesMatchesString += ' ' + pregenerateMatch[1];
 			}
-			content = classAtributesMatchesString + ' ' + this.pregenerate;
+			content = classAtributesMatchesString;
 		}
 
 		content += ' ' + this.pregenerate;
 		this.pregenerate = '';
 
+		content = content.replaceAll(/<script[\s\S]*?>[\s\S]*?<\/script>|<style[\s\S]*?>[\s\S]*?<\/style>/ig, '');
 		content = content.split(' ').filter((value, index, self) => self.indexOf(value) === index).join(' ');
 
-		for (let macroKey in this.macros) {
+		for (const macroKey in this.macros) {
 
 			const macroRe = new RegExp('(?:([^\. ]+):)?(?<!-)\\b' + macroKey, 'igm');
 			let macroMatches;
@@ -145,11 +153,15 @@ export default class Compiler {
 					)
 				);
 			}
-		};
+		}
 
+		// TODO lazyload components - should be generated only when used
 		if (Object.keys(this.componentsSelectorsMap).length) {
+			const componentsSelectorsMap = Object.assign({}, this.componentsSelectorsMap);
+			this.componentsSelectorsMap = {};
+
 			const notProcessedComponentsSelectorsDependencies =
-				Object.keys(this.componentsSelectorsMap).filter((componentSelectorDependencyKey) => {
+				Object.keys(componentsSelectorsMap).filter((componentSelectorDependencyKey) => {
 					return !(componentSelectorDependencyKey in compilationResult.processedSelectors);
 				});
 
@@ -157,13 +169,33 @@ export default class Compiler {
 				compilationResult = this.compile(
 					notProcessedComponentsSelectorsDependencies.join(' '), compilationResult
 				);
+				compilationResult.bindComponentsSelectors(componentsSelectorsMap);
 			}
-
-			compilationResult.bindComponentsSelectors(this.componentsSelectorsMap);
-			this.componentsSelectorsMap = {};
 		}
 
 		return compilationResult;
+	}
+
+	public hydrate(data: Record<string, any>): void {
+		const newComponentsSelectorsMap = {};
+
+		Object.keys(this.componentsSelectorsMap).forEach(selector => {
+			const componentsSelectors = this.componentsSelectorsMap[selector].filter(componentSelector => {
+				return !(componentSelector in data.processedSelectors);
+			});
+
+			if (!componentsSelectors.length) {
+				return;
+			}
+
+			newComponentsSelectorsMap[selector] = componentsSelectors;
+		});
+
+		this.componentsSelectorsMap = newComponentsSelectorsMap;
+	}
+
+	public createResultFromSerializedData(data: string|Record<string, any>): CompilationResult {
+		return CompilationResult.deserialize(typeof data === 'string' ? JSON.parse(data) : data);
 	}
 
 }

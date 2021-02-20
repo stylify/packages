@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 export default class SelectorProperties {
 
 	public properties: Record<string, any> = {};

@@ -8,6 +8,7 @@ services:
             - ./.:/usr/share/nginx/html:delegated
         ports:
             - 80:80
+            - 81:81 # Stylify nuxt module playground
         tty: true
 
    # chrome:

@@ -9,10 +9,13 @@
     "scripts": {
         "repo-init": "yarn install && yarn link && yarn bootstrap",
 		"bootstrap": "lerna bootstrap --force-local",
-		"watch": "node --max-old-space-size=8192 node_modules/.bin/lerna run --parallel watch",
-		"build": "node --max-old-space-size=8192 node_modules/.bin/lerna run --parallel build",
-		"build:stylify": "yarn build --scope=@stylify/stylify",
-		"watch:stylify": "yarn watch --scope=@stylify/stylify",
+		"watch": "node --max-old-space-size=8192 node_modules/.bin/lerna run --parallel --concurrency=2 watch ",
+		"build": "node --max-old-space-size=8192 node_modules/.bin/lerna run --parallel --concurrency=2 build",
+		"stylify:build": "node --max-old-space-size=8192 node_modules/.bin/yarn build --scope=@stylify/stylify",
+		"stylify:watch": "node --max-old-space-size=8192 node_modules/.bin/yarn watch --scope=@stylify/stylify",
+		"nuxtmodule:build": "node --max-old-space-size=8192 node_modules/.bin/yarn build --scope=@stylify/nuxt-module",
+		"nuxtmodule:watch": "node --max-old-space-size=8192 node_modules/.bin/yarn watch --scope=@stylify/nuxt-module",
+		"nuxtmodule:plg:start": "lerna run playground:start --scope=@stylify/nuxt-module",
 		"lint:check": "lerna run lint:check",
 		"jest:test": "lerna run jest:test"
     },

@@ -1,4 +1,4 @@
-const compilerConfig = {
+const nativeConfig = {
 	screens: {
 		tosm: '@media (max-width: 639px)',
 		sm: '@media (min-width: 640px)',
@@ -10,13 +10,13 @@ const compilerConfig = {
 		xl: '@media (min-width: 1280px)',
 		to2xl: '@media (max-width: 1535px)',
 		'2xl': '@media (min-width: 1536px)',
-		print: '@media print',
+		print: '@media print'
 	},
 	macros: {
-		__MACROS__,
-	},
-}
+		__MACROS__
+	}
+};
 
 export {
-	compilerConfig
-}
+	nativeConfig
+};

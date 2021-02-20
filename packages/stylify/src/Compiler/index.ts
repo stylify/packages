@@ -1,11 +1,3 @@
-import CompilationResult from "./CompilationResult";
-import CssRecord from "./CssRecord";
-import MacroMatch from "./MacroMatch";
-import SelectorProperties from "./SelectorProperties";
+// @ts-nocheck
 
-export {
-	CompilationResult,
-	CssRecord,
-	MacroMatch,
-	SelectorProperties
-}
+export { default as Compiler } from './Compiler';

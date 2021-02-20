@@ -1,17 +1,26 @@
+// @ts-nocheck
+
 export default class CssRecord {
 
 	private selectors: string[] = [];
 
-	private properties: Record<string, any> = [];
+	private properties: Record<string, any> = {};
 
 	public pseudoClasses: string[] = [];
 
-	constructor(selector: string = null, properties: Record<string, any> = {}) {
-		this.properties = properties;
-
+	constructor(selector: string|string[] = null, properties: Record<string, any> = {}, pseudoClases: string[] = []) {
 		if (selector) {
-			this.addSelector(selector);
+			if (typeof selector === 'string') {
+				selector = [selector];
+			}
+
+			selector.forEach((selector) => {
+				this.addSelector(selector);
+			});
 		}
+
+		this.properties = properties;
+		this.pseudoClasses = pseudoClases;
 	}
 
 	public addProperty(property, value) {
@@ -21,7 +30,9 @@ export default class CssRecord {
 	}
 
 	public addSelector(selector, pseudoClass = null) {
-		selector = selector[0] + selector.substr(1).replace(/([^-_a-zA-Z\d])/g, '\\$1');
+		// TODO is this selector[0] and substr necessary?
+		// selector = selector[0] + selector.substr(1).replace(/([^-_a-zA-Z\d])/g, '\\$1');
+		selector = selector.replace(/([^-_a-zA-Z\d])/g, '\\$1');
 
 		if (pseudoClass) {
 			selector += ':' + pseudoClass;
@@ -45,7 +56,7 @@ export default class CssRecord {
 	}
 
 	public compile(config: Record<string, any> = {}) {
-		let minimize: Boolean = config.minimize || false;
+		const minimize: boolean = config.minimize || false;
 		const newLine = minimize ? '' : '\n';
 
 		return this.selectors.map(selector => '.' + selector).join(',' + newLine) + '{' + newLine
@@ -53,6 +64,36 @@ export default class CssRecord {
 				.map(property => (minimize ? '' : '\t') + property + ':' + this.properties[property])
 				.join(';' + newLine)
 			+ newLine + '}' + newLine;
+	}
+
+	public serialize(): Record<string, any> {
+		return {
+			selectors: this.selectors.map(selector => {
+				return selector.replace(/\\([^-_a-zA-Z\d])/g, '$1');
+			}),
+			properties: this.properties,
+			pseudoClasses: this.pseudoClasses
+		};
+	}
+
+	public static deserialize(data: Record<string, any>): CssRecord {
+		const cssRecord = new CssRecord(null, data.properties, data.pseudoClasses);
+		cssRecord.selectors = data.selectors;
+		return cssRecord;
+	}
+
+	public hydrate(data: Record<string, any>): void {
+		data.selectors.forEach(selector => {
+			this.addSelector(selector);
+		});
+
+		this.pseudoClasses = this.pseudoClasses.concat(
+			data.pseudoClasses.filter(pseudoClass => this.pseudoClasses.indexOf(pseudoClass) === -1)
+		);
+
+		Object.keys(data.properties).forEach(property => {
+			this.addProperty(property, data.properties[property]);
+		});
 	}
 
 }

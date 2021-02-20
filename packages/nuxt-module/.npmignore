@@ -1,0 +1,10 @@
+/tests
+/tmp
+/playground
+tsconfig.es6.json
+rollup.config.js
+.prettierrc.yml
+.prettierignore
+index.html
+.eslintrc.yml
+.gitignore

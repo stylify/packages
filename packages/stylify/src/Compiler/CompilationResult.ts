@@ -1,27 +1,32 @@
-import CssRecord from "./CssRecord";
-import MacroMatch from "./MacroMatch";
+// @ts-nocheck
+
+import CssRecord from './CssRecord';
+import MacroMatch from './MacroMatch';
 
 export default class CompilationResult {
 
 	private MATCH_VARIABLE_REG_EXP = /\$([\w-_]+)/g;
 
-	public changed: boolean = false
+	public changed = false
 
 	public mangleSelectors = false;
 
-	public dev: boolean = false
+	public dev = false
 
 	public screens: Record<string, any> = {};
 
 	public processedSelectors: Record<string, any> = {};
 
-	public cssTree: Record<string, any> = {};
+	public cssTree: Record<string, any> = {
+		_: {}
+	};
 
 	public variables: Record<string, any> = {};
 
 	public lastBuildInfo: Record<string, any> = null;
 
 	public constructor(config: Record<string, any> = {}) {
+		this.setBuildInfo(null);
 		this.configure(config);
 	}
 
@@ -32,28 +37,25 @@ export default class CompilationResult {
 		this.mangleSelectors = config.mangleSelectors || this.mangleSelectors;
 		this.variables = config.variables;
 
+		// TODO block keys sorting - keep order given by developer
 		Object.keys(this.screens).forEach(screenKey => {
 			this.cssTree[screenKey] = this.cssTree[screenKey] || {};
 		});
 	}
 
 	private setBuildInfo = (data: Record<string, any> = null) => {
-		if (!this.dev) {
-			return;
-		}
-
 		if (data === null
 			|| this.lastBuildInfo === null
-			|| (this.changed === true && this.lastBuildInfo.completed === true)
+			|| this.changed === true && this.lastBuildInfo.completed === true
 		) {
 			this.lastBuildInfo = {
 				processedSelectors: [],
 				processedComponents: [],
 				completed: false
-			}
+			};
 		}
 
-		if (data === null) {
+		if (data === null || !this.dev) {
 			return;
 		}
 
@@ -68,26 +70,39 @@ export default class CompilationResult {
 	public generateCss(): string {
 		let css = '';
 
-		for (let screenKey in this.cssTree) {
+		// Přenést tuto funkci do generateCssForScreens
+		// Vrátit objekt s csskem
+		// Mergnout, trimnout, vrátit string
+		for (const screenKey in this.cssTree) {
 			if (Object.keys(this.cssTree[screenKey]).length === 0) {
 				continue;
 			}
 			let screenCss = '';
-			const screenOpen = screenKey === '_' ? '' : this.screens[screenKey] + '{'
+			const screenOpen = screenKey === '_' ? '' : this.screens[screenKey] + '{';
 			const screenClose = '}';
 
-			for (let selector in this.cssTree[screenKey]) {
+			for (const selector in this.cssTree[screenKey]) {
 				screenCss += this.cssTree[screenKey][selector].compile({
 					minimize: !this.dev
 				});
-			};
+			}
 
 			css += screenKey === '_' ? screenCss : screenOpen + screenCss + screenClose;
-		};
+		}
 
 		this.changed = false;
 		this.lastBuildInfo.completed = true;
 		return css.trim();
+	}
+
+	// Generate css for each screen
+	// Možné potom použít pro linky, css se načte separátně jako soubor
+	public generateCssForScreens() {
+		this.changed = false;
+		this.lastBuildInfo.completed = true;
+		return {
+			screen: 'css'
+		};
 	}
 
 	public addCssRecord(macroMatch: MacroMatch, selectorProperties): void {
@@ -105,10 +120,10 @@ export default class CompilationResult {
 		}
 
 		const newCssRecord = new CssRecord();
-		newCssRecord.pseudoClasses = macroMatch.pseudoClasses
+		newCssRecord.pseudoClasses = macroMatch.pseudoClasses;
 		const selectorToAdd = this.mangleSelectors ? mangledSelectorId : selector;
 
-		for (let property in macroResult) {
+		for (const property in macroResult) {
 			const propertyValue = macroResult[property].replace(
 				this.MATCH_VARIABLE_REG_EXP,
 				(match, substring) => {
@@ -119,7 +134,7 @@ export default class CompilationResult {
 		}
 
 		this.cssTree[screen][selector] = newCssRecord;
-		this.addSelectorIntoCssTree(screen, selector, selectorToAdd)
+		this.addSelectorIntoCssTree(screen, selector, selectorToAdd);
 
 		this.changed = true;
 
@@ -137,14 +152,12 @@ export default class CompilationResult {
 			Object.keys(this.cssTree[screen]).forEach((selector) => {
 				if (selector in componentsSelectorsMap) {
 					componentsSelectorsMap[selector].forEach(componentSelector => {
-						let selectorToAdd = componentSelector;
-
-						if (this.mangleSelectors) {
-							if (!(componentSelector in this.processedSelectors)) {
-								this.processedSelectors[componentSelector] = this.getUniqueSelectorId();
-							}
-							selectorToAdd = this.processedSelectors[componentSelector];
+						if (!(componentSelector in this.processedSelectors)) {
+							this.processedSelectors[componentSelector] = this.getUniqueSelectorId();
 						}
+						const selectorToAdd = this.mangleSelectors
+							? this.processedSelectors[componentSelector]
+							: componentSelector;
 
 						if (processedComponents.indexOf(componentSelector) === -1) {
 							processedComponents.push(componentSelector);
@@ -173,6 +186,65 @@ export default class CompilationResult {
 		}
 
 		cssRecord.addSelector(selectorToAdd);
+	}
+
+	public serialize(): Record<string, any> {
+		const serializedCompilationResult = {
+			mangleSelectors: this.mangleSelectors,
+			dev: this.dev,
+			screens: this.screens,
+			processedSelectors: this.processedSelectors,
+			cssTree: {},
+			variables: this.variables
+		};
+
+		Object.keys(this.cssTree).forEach(screen => {
+			serializedCompilationResult.cssTree[screen] = {};
+			Object.keys(this.cssTree[screen]).forEach(selector => {
+				serializedCompilationResult.cssTree[screen][selector] = this.cssTree[screen][selector].serialize();
+			});
+		});
+
+		return serializedCompilationResult;
+	}
+
+	public static deserialize(data: Record<string, any>): CompilationResult {
+		const compilationResult = new CompilationResult({
+			dev: data.dev,
+			screens: data.screens,
+			variables: data.variables,
+			mangleSelectors: data.mangleSelectors
+		});
+
+		compilationResult.processedSelectors = data.processedSelectors;
+
+		Object.keys(data.cssTree).forEach(screen => {
+			Object.keys(data.cssTree[screen]).forEach(selector => {
+				const serializedSelectorData = data.cssTree[screen][selector];
+
+				compilationResult.cssTree[screen][selector] = new CssRecord(
+					serializedSelectorData.selectors,
+					serializedSelectorData.properties,
+					serializedSelectorData.pseudoClasses
+				);
+			});
+		});
+
+		return compilationResult;
+	}
+
+	// Co když css bude vygenerované do souborů?
+	// <style> element bude jen pro vygenerované věci z runtime?
+	// Něco jako negeneruj dané selektory, protože jsou v externích souborech
+	public hydrate(data: Record<string, any>) {
+		this.processedSelectors = Object.assign(this.processedSelectors, data.processedSelectors);
+
+		Object.keys(data.cssTree).forEach(screen => {
+			Object.keys(data.cssTree[screen]).forEach(selector => {
+				const serializedSelectorData = data.cssTree[screen][selector];
+				this.cssTree[screen][selector].hydrate(serializedSelectorData);
+			});
+		});
 	}
 
 	private getUniqueSelectorId(): string {

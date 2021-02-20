@@ -1,13 +1,16 @@
+// @ts-nocheck
+
 import './icons/style.css';
 import { render, Component } from 'preact';
-import htm from 'htm';
-import EventsEmitter from '../EventsEmitter';
+//import htm from 'htm';
+//import EventsEmitter from '../EventsEmitter';
 
 const extensions = {};
+let extensionsConfig = {};
 
 const ToolbarExtension = ({ extensionName }) => {
 	const TagName = extensions[extensionName];
-	return <TagName />;
+	return <TagName config={extensionsConfig} />;
 }
 
 class ProfilerToolbar extends Component {
@@ -59,7 +62,7 @@ class ProfilerToolbar extends Component {
 	}
 
 	private componentDidMount = () => {
-		window.Stylify.EventsEmitter.addListener('stylify:runtime:uncloak', (data) => {
+		this.props.config.stylify.EventsEmitter.addListener('stylify:runtime:uncloak', (data) => {
 			const elementId = data.id || null;
 
 			if (elementId !== 'stylify-profiler') {
@@ -93,7 +96,9 @@ class ProfilerToolbar extends Component {
 	}
 }
 
-const initProfilerToolbar = (): void => {
+const initProfilerToolbar = (profilerConfig): void => {
+	extensionsConfig = profilerConfig;
+
 	let profilerToolbarElement = document.querySelector('#stylify-profiler');
 
 	if (!profilerToolbarElement) {
@@ -102,7 +107,7 @@ const initProfilerToolbar = (): void => {
 		document.body.appendChild(profilerToolbarElement);
 	}
 
-	render(<ProfilerToolbar />, profilerToolbarElement, profilerToolbarElement);
+	render(<ProfilerToolbar config={extensionsConfig} />, profilerToolbarElement, profilerToolbarElement);
 };
 
 const addProfilerExtension = (component: Component) => {
