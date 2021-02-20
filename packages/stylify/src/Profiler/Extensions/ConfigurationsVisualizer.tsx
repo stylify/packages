@@ -1,5 +1,7 @@
+// @ts-nocheck
+
 import { h, render, Component } from 'preact';
-import EventsEmitter from '../../EventsEmitter';
+import { EventsEmitter } from '../../';
 
 export default class ConfigurationsVisualizerExtension extends Component {
 
@@ -14,20 +16,14 @@ export default class ConfigurationsVisualizerExtension extends Component {
 		variablesListVisible: false,
 	};
 
-	constructor() {
+	constructor(props) {
 		super();
 
-		this.updateCompilerConfigs(Stylify.Compiler);
+		this.updateCompilerConfigs(props.config.stylify.Compiler);
 
-		window.Stylify.EventsEmitter.addListener('stylify:compiler:configured', (data) => {
+		props.config.stylify.EventsEmitter.addListener('stylify:compiler:configured', (data) => {
 			this.updateCompilerConfigs(data.compiler);
 		});
-
-	/* 	EventsEmitter.addListener('stylify:runtime:configured', (event) => {
-			this.setState({
-				runtimeConfig: event.detail.config
-			})
-		}); */
 	}
 
 	private updateCompilerConfigs = (Compiler) => {
@@ -120,7 +116,7 @@ export default class ConfigurationsVisualizerExtension extends Component {
 									return (
 										<tr class="hover:background:#333">
 											<td class="padding:8px white-space:nowrap">{componentName}</td>
-											<td class="padding:8px white-space:nowrap max-width:800px overflow-x:auto word-spacing:24px">{this.state.components[componentName]}</td>
+											<td class="padding:8px white-space:nowrap max-width:800px overflow-x:auto word-spacing:24px">{this.state.components[componentName].selectors.join(' ')}</td>
 										</tr>
 									)
 								})}

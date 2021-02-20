@@ -1,0 +1,17 @@
+{
+	"target": "es6",
+	"moduleResolution": "node",
+	"lib": [
+		"es5",
+		"esnext",
+		"es6",
+		"dom"
+	],
+	"esModuleInterop": true,
+	"removeComments": true,
+	"experimentalDecorators": true,
+	"resolveJsonModule": true,
+	"noEmit": true,
+	"jsx": "react-jsx",
+	"jsxImportSource": "preact"
+}

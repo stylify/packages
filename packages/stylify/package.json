@@ -1,13 +1,10 @@
 {
 	"name": "@stylify/stylify",
-	"description": "",
+	"description": "Dynamic CSS generator for rapid UI development.",
 	"version": "0.0.1",
-	"module": "./lib/Stylify.js",
-	"main": "./dist/stylify.js",
+	"main": "./esm/index.js",
+	"module": "./esm/index.js",
 	"browser": "./dist/stylify.js",
-	"es2015": "./es5/Utils.js",
-	"esm5": "./es5/Utils.js",
-	"esm2015": "./es5/Utils.js",
 	"unpkg": "./dist/stylify.js",
 	"jsdelivr": "./dist/stylify.js",
 	"types": "./types",
@@ -15,15 +12,14 @@
 		"watch": "yarn gnp && yarn build -w src",
 		"build": "yarn gnp && rollup -c rollup.config.js",
 		"lint:check": "eslint ./{src,tools}/**/*.{js,ts}",
-		"lint:fix": "eslint ./{src,tools}/**/*.{js,ts}",
+		"lint:fix": "eslint ./{src,tools}/**/*.{js,ts} --fix",
 		"jest:test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
-		"gnp": "node --experimental-vm-modules ./tools/native-properties-generator/generator.js",
-		"gnr": "node --experimental-vm-modules ./tests/jest/selectorsRewritter/html.test.js"
+		"gnp": "node --experimental-modules ./tools/native-properties-generator/generator.js",
+		"gnr": "node --experimental-modules ./tests/jest/selectorsRewritter/html.test.js"
 	},
-	"type": "module",
 	"files": [
 		"dist/",
-		"es5/",
+		"esm/",
 		"lib/",
 		"src/",
 		"types/"
@@ -31,7 +27,7 @@
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/stylify/packages.git",
-		"directory": "packages/js-utils"
+		"directory": "packages/stylify"
 	},
 	"keywords": [],
 	"author": "Vladimír Macháček",
@@ -73,5 +69,8 @@
 	},
 	"publishConfig": {
 		"access": "public"
+	},
+	"dependencies": {
+		"caniuse-lite": "^1.0.30001239"
 	}
 }

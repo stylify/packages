@@ -1,7 +1,10 @@
-import { Console } from 'console';
+// @ts-nocheck
+
 import { h, Component } from 'preact';
 
 export default class BuildsAnalyzerExtension extends Component {
+
+	private openCodeInNewWindow = null;
 
 	private state: Record<string, any> = {
 		cssInBase64: null,
@@ -11,10 +14,11 @@ export default class BuildsAnalyzerExtension extends Component {
 		buildsListVisible: false
 	}
 
-	constructor() {
+	constructor(props) {
 		super();
 
-		window.Stylify.EventsEmitter.addListener('stylify:runtime:repainted', (data) => {
+		this.openCodeInNewWindow = props.config.openCodeInNewWindow;
+		props.config.stylify.EventsEmitter.addListener('stylify:runtime:repainted', (data) => {
 			const builds = this.state.builds;
 			const buildSize = this.state.actualSize === 0 ? data.css.length : data.css.length - this.state.actualSize;
 
@@ -58,15 +62,13 @@ export default class BuildsAnalyzerExtension extends Component {
 	}
 
 	public openProcessedContentInNewWindow(content) {
-		let cssWindow = window.open("");
 		const div = document.createElement('div');
-		div.innerText = decodeURIComponent(content);
-		cssWindow.document.write('<pre>' + div.innerHTML + '</pre>');
+		div.innerHTML = decodeURIComponent(content);
+		this.openCodeInNewWindow(div.innerHTML, null, 'processed selectors');
 	}
 
 	public openGeneratedCssInNewWindow = () => {
-		let cssWindow = window.open("");
-		cssWindow.document.write('<pre><code>' + this.getGeneratedCssFromPage() + '</code></pre>');
+		this.openCodeInNewWindow(this.getGeneratedCssFromPage(), 'css', 'generated css')
 	}
 
 	public render() {
