@@ -4,20 +4,19 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Stylify!</title>
+	<style>
+		[s-cloak] {
+			visibility: hidden;
+			content-visibility: hidden;
+		}
+	</style>
 </head>
 <body>
-	<div class="text-align:center font-size:100px margin-top:100px font-weight:bold ">
+	<div class="text-align:center font-size:64px font-family:arial font-weight:bold margin-top:40vh" s-cloak>
 		Stylify!
 	</div>
 
-	<script src="/packages/stylify/dist/profiler.js"></script>
 	<script src="/packages/stylify/dist/stylify.native.js"></script>
-	<script>
-		Stylify.configure({
-			compiler: {
-				dev: true
-			}
-		});
-	</script>
+ 	<script src="/packages/stylify/dist/profiler.js"></script>
 </body>
 </html>
