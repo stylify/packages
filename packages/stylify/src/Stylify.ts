@@ -9,7 +9,11 @@ export default class Stylify {
 
 	public Runtime: Runtime = null;
 
+	public EventsEmitter: EventsEmitter = null;
+
 	constructor(config: Record<string, any> = {}) {
+		this.EventsEmitter = EventsEmitter;
+
 		EventsEmitter.dispatch('stylify:beforeInit', {
 			config: config
 		});

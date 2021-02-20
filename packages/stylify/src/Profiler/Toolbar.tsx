@@ -1,3 +1,4 @@
+import './icons/style.css';
 import { render, Component } from 'preact';
 import htm from 'htm';
 import EventsEmitter from '../EventsEmitter';
@@ -10,21 +11,56 @@ const ToolbarExtension = ({ extensionName }) => {
 }
 
 class ProfilerToolbar extends Component {
+
+	private LOCAL_STORAGE_ID = 'stylify-profiler;'
+
 	private state: Record<string, any> = {
 		profilerVisible: false,
 		extensions: extensions,
 		extensionsVisible: true
 	}
 
+	public constructor() {
+		super();
+
+		const configFromLocalStorage = this.getConfigFromLocalStorage();
+
+		if (configFromLocalStorage) {
+			this.state.extensionsVisible = configFromLocalStorage.extensionsVisible;
+		}
+	}
+
+	private getConfigFromLocalStorage = (): Record<string, any> | null => {
+		const localStorageConfig = localStorage.getItem(this.LOCAL_STORAGE_ID);
+
+		if (!localStorageConfig) {
+			localStorage.setItem(this.LOCAL_STORAGE_ID, JSON.stringify({
+				extensionsVisible: this.state.extensionsVisible
+			}));
+		}
+
+		return localStorageConfig ? JSON.parse(localStorageConfig) : null;
+	}
+
+	private updateConfigInLocalStorage  = (config: Record<string, any> = {}): void => {
+		localStorage.setItem(
+			this.LOCAL_STORAGE_ID, JSON.stringify(Object.assign(this.getConfigFromLocalStorage(), config))
+		);
+	}
+
 	private toggleExtensionsVisibility = () => {
+		const extensionsVisible = !this.state.extensionsVisible;
 		this.setState({
-			extensionsVisible: !this.state.extensionsVisible
+			extensionsVisible: extensionsVisible
 		});
+		this.updateConfigInLocalStorage({
+			extensionsVisible: extensionsVisible
+		})
 	}
 
 	private componentDidMount = () => {
-		EventsEmitter.addListener('stylify:uncloak', (event) => {
-			const elementId = event.detail.id || null;
+		window.Stylify.EventsEmitter.addListener('stylify:runtime:uncloak', (data) => {
+			const elementId = data.id || null;
 
 			if (elementId !== 'stylify-profiler') {
 				return;
@@ -42,13 +78,13 @@ class ProfilerToolbar extends Component {
 				s-cloak="stylify-profiler"
 				hidden={this.state.profilerVisible === false}
 				id="stylify-profiler"
-				class="position:fixed bottom:0 left:0 background:#000 color:#fff width:auto font-family:arial font-size:14px display:flex"
+				class="align-items:center position:fixed bottom:0 left:0 background:#000 color:#fff width:auto font-family:arial font-size:12px display:flex line-height:1"
 			>
-				<a role="button" class="padding:8px align-items:center display:inline-block cursor:pointer user-select:none" onClick={this.toggleExtensionsVisibility}>
+				<a role="button" class="font-size:14px line-height:26px padding:0__8px align-items:center display:inline-block cursor:pointer user-select:none" onClick={this.toggleExtensionsVisibility}>
 					<strong>Stylify</strong>
 				</a>
-				<div class={`align-items:center display:${this.state.extensionsVisible ? 'flex' : 'none'}`}>
-					{Object.keys(this.state.extensions).map((extensionName, i) => {
+				<div class={`align-items:center display:${this.state.extensionsVisible ? 'flex' : 'none'} content-visibility:${this.state.extensionsVisible ? 'visible' : 'hidden'}`}>
+					{Object.keys(this.state.extensions).map((extensionName) => {
 						return <ToolbarExtension extensionName={extensionName} />;
 					})}
 				</div>

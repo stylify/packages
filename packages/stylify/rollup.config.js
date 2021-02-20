@@ -4,87 +4,75 @@ import fs from 'fs';
 // Libraries
 import banner from 'rollup-plugin-banner';
 import { terser } from "rollup-plugin-terser";
-import typescript from "@rollup/plugin-typescript";
 import { babel } from '@rollup/plugin-babel';
-import postcss from 'rollup-plugin-postcss';
 import path from 'path';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 import replace from '@rollup/plugin-replace';
-import cssNano from 'cssnano';
+import postcss from 'rollup-plugin-postcss';
+import postcssUrlPlugin from 'postcss-url';
 
 "use strict";
 
 const exportName = 'Stylify';
-const umdInputFile = path.join('src', 'Stylify.browser.ts');
-const umdOutputFile = path.join('dist', 'stylify');
-const umdEs5OutputFile = path.join('dist', 'stylify.es5');
-const esmInputFile = path.join('src', 'Stylify.ts');
-const esmOutputFile = path.join('lib', 'Stylify');
-const esmEs5OutputFile = path.join('es5', 'Stylify');
-// Native macros
-const nativeMacrosUmdInputFile = path.join('src', 'Stylify.browser.native.ts');
-const nativeMacrosUmdOutputFile = path.join('dist', 'stylify.native');
-const nativeMacrosUmdEs5OutputFile = path.join('dist', 'stylify.native.es5');
-const nativeMacrosEsmInputFile = path.join('src', 'Stylify.native.ts');
-const nativeMacrosEsmOutputFile = path.join('lib', 'Stylify.native');
-const nativeMacrosEsmEs5OutputFile = path.join('es5', 'Stylify.native');
-// Tests
-const testInputFile = path.join('tests', 'test-stack.ts');
-const testOutputFile = path.join('tests', 'test-stack');
-
-const profilerExportName = 'Profiler';
-const profilerUmdInputFile = path.join('src', 'Profiler.ts');
-const profilerUmdOutputFile = path.join('dist', 'profiler');
-const profilerUmdEs5OutputFile = path.join('dist', 'profiler.es5');
-const profilerEsmInputFile = path.join('src', 'Profiler.ts');
-const profilerEsmOutputFile = path.join('lib', 'Profiler');
-const profilerEsmEs5OutputFile = path.join('es5', 'Profiler');
-const profilerTestInputFile = path.join('tests', 'profiler', 'test-stack.ts');
-const profilerTestOutputFile = path.join('tests', 'test-stack');
 
 const typescriptConfig = JSON.parse(fs.readFileSync('tsconfig.es6.json', 'utf8'));
+const devDirectories = ['dist', 'es5', 'lib', 'tmp'];
+const extensions = ['.js', '.jsx', '.ts', '.tsx'];
+devDirectories.forEach(directory => {
+	try {
+		if (fs.existsSync(directory)) {
+			fs.rmdirSync(directory, { recursive: true });
+		}
+		console.log(`${directory} is deleted!`);
 
-
-/* const cssNanoOpts = {
-	preset: 'default',
-};
-let cssLoaded = false;
-let normalizeCss = fs.readFileSync('./node_modules/normalize.css/normalize.css', 'utf8');
-cssNano.process(normalizeCss, {}, cssNanoOpts).then(result => {
-	console.log(result.css);
-	normalizeCss = result.css;
-	cssLoaded = true;
-}); */
-/*
-while(true) {
-	console.log(cssLoaded);
-	if (cssLoaded === true) {
-		break;
+	} catch (err) {
+		console.error(`Error while deleting ${directory}.`);
 	}
-} */
+
+	fs.mkdirSync(directory);
+});
 
 const createConfig = (config) => {
 	const esVersion = /* config.esVersion || */ 'es6';
 	const configs = [];
 	const getPlugins = (config) => {
 		const plugins = [
-			nodeResolve(),
+			nodeResolve({
+				extensions: extensions,
+			}),
 			replace({
 				'process.env.NODE_ENV': JSON.stringify('production'),
 			}),
-			/* replace({
-				__NORMALIZE_CSS__: normalizeCss,
-			}), */
+			babel({
+				extensions: extensions,
+				"presets": [
+					"@babel/typescript",
+					[
+						"@babel/env",
+						{
+							"bugfixes": true,
+							"modules": false,
+							"targets": {
+								"chrome": "80",
+							}
+						},
+					],
+					["@babel/preset-react", {
+						"pragma": "h"
+					}]
+				],
+				include: ['src/**/*'],
+				babelHelpers: 'bundled',
+				"plugins": [
+					"@babel/proposal-class-properties",
+					"@babel/proposal-object-rest-spread",
+					["@babel/plugin-transform-react-jsx", {
+						"runtime": "automatic",
+						"importSource": "preact",
+					}]
+				]
+			})
 		];
-
-		plugins.push(typescript(typescriptConfig));
-
-		plugins.push(postcss());
-
-
- 		babel({
-			babelHelpers: 'bundled'
-		});
 
  		if (config.terser) {
 			plugins.push(
@@ -104,7 +92,7 @@ const createConfig = (config) => {
 	}
 
 	config.output.format.forEach((format) => {
-		['.js', '.min.js'].forEach((suffix) => {
+		['.js'/* , '.min.js' */].forEach((suffix) => {
 			const minify = config.output.minify || false;
 			const plugins = config.plugins || {};
 
@@ -120,8 +108,9 @@ const createConfig = (config) => {
 					format: format
 				},
 				plugins: getPlugins({
-					terser: suffix === '.min.js'
-				})
+					terser: suffix === '.min.js',
+					babel: suffix === 'es5',
+				}).concat(plugins)
 			})
 		})
 	});
@@ -129,57 +118,98 @@ const createConfig = (config) => {
 	return configs;
 };
 
-export default [].concat(
-/*  	createConfig({
-		input: umdInputFile,
-		esVersion: 'es5',
-		output: {
-			name: exportName,
-			file: umdEs5OutputFile,
-			format: ['umd'],
-			minify: true
+const convertCamelCaseIntoDashCase = (content) => {
+	return content.replace(/[A-Z]/g, m => "-" + m.toLowerCase()).replace(/^-{1}/, '');
+};
+
+const createFileConfigs = (buildConfigs) => {
+	let configs = [];
+
+	buildConfigs.forEach((buildConfig) => {
+		const outputFile = buildConfig.outputFile || buildConfig.inputFile;
+		const inputFile = path.join(buildConfig.customPath || 'src', buildConfig.inputFile + '.ts');
+
+		if (buildConfig.formats.includes('browser')) {
+			const outputPath = path.join('dist', convertCamelCaseIntoDashCase(outputFile));
+
+			configs = configs.concat(
+ 				createConfig({
+					input: inputFile,
+					esVersion: 'es5',
+					plugins: buildConfig.plugins || [],
+					output: {
+						name: exportName,
+						file: outputPath + '.es5',
+						format: ['umd'],
+						minify: true
+					}
+				}),
+				createConfig({
+					input: inputFile,
+					plugins: buildConfig.plugins || [],
+					output: {
+						name: exportName,
+						file: outputPath,
+						format: ['umd'],
+						minify: true
+					}
+				}),
+			);
 		}
-	}), */
-/*   	createConfig({
-		input: umdInputFile,
-		output: {
-			name: exportName,
-			file: umdOutputFile,
-			format: ['umd'],
-			minify: true
+
+		if (buildConfig.formats.includes('esm')) {
+			configs = configs.concat(
+				createConfig({
+					input: inputFile,
+					esVersion: 'es5',
+					plugins: buildConfig.plugins || [],
+					output: {
+						file: path.join('es5', outputFile),
+						format: ['esm']
+					}
+				})
+			)
 		}
-	}), */
-	createConfig({
-		input: nativeMacrosUmdInputFile,
-		output: {
-			name: exportName,
-			file: nativeMacrosUmdOutputFile,
-			format: ['umd'],
-			minify: true
+
+		if (buildConfig.formats.includes('lib')) {
+			configs = configs.concat(
+				createConfig({
+					input: inputFile,
+					plugins: buildConfig.plugins || [],
+					output: {
+						file: path.join('lib', outputFile),
+						format: ['esm']
+					}
+				})
+			);
 		}
-	}),
-	createConfig({
-		input: profilerUmdInputFile,
-		output: {
-			name: profilerExportName,
-			file: profilerUmdOutputFile,
-			format: ['umd'],
-			minify: true
-		},
-	}),
-	/*createConfig({
-		input: esmInputFile,
-		esVersion: 'es5',
-		output: {
-			file: esmEs5OutputFile,
-			format: ['esm']
-		}
-	}),
-	createConfig({
-		input: esmInputFile,
-		output: {
-			file: esmOutputFile,
-			format: ['esm']
-		}
-	}) */
+	});
+
+	return configs;
+};
+
+const configs = [].concat(
+	createFileConfigs([
+		// Configs
+		{inputFile: 'Configurations/NativeConfiguration', formats:['esm', 'lib']},
+		// Parts
+ 		{inputFile: 'Compiler', formats:['esm', 'lib']},
+		{inputFile: 'SelectorsRewriter', formats:['esm', 'lib']},
+		{inputFile: 'index', formats:['esm', 'lib']},
+		// Stylify for browser
+  		{inputFile: 'Stylify', formats:['browser', 'esm']},
+		{inputFile: 'Stylify.native.browser', outputFile: 'Stylify.native', formats:['browser', 'esm']},
+		// Profiler
+ 		{inputFile: 'Profiler', formats:['browser', 'esm'], plugins: [
+			 postcss({
+				plugins: [
+					postcssUrlPlugin({
+						url: 'inline'
+					})
+				]
+			})
+		 ]},
+	])
 );
+
+export default configs;

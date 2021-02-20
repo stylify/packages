@@ -1,18 +1,13 @@
-import CssRecord from "./Compiler/CssRecord";
-import SelectorProperties from "./Compiler/SelectorProperties";
-import MacroMatch from "./Compiler/MacroMatch";
-import EventsEmitter from "./EventsEmitter";
+import { EventsEmitter } from ".";
+import { CompilationResult, MacroMatch, SelectorProperties } from './Compiler/index';
 
 export default class Compiler {
 
-	public cache: Record<string, any> = {
-		processedSelectors: [],
-		processedComponents: [],
-		cssTree: {
-			_: {}
-		},
-		componentsSelectorsDependencyTree: {}
-	};
+	private PREGENERATE_MATCH_REG_EXP: RegExp = new RegExp('stylify-pregenerate:([\\S ]*\\b)', 'igm');
+
+	public classMatchRegExp: RegExp = null;
+
+	public mangleSelectors: Boolean = false;
 
 	public dev: Boolean = false;
 
@@ -22,28 +17,38 @@ export default class Compiler {
 
 	public screens: Record<string, any> = {};
 
-	public initialCss: string = '';
+	public screensKeys: string[] = [];
 
 	public variables: Record<string, any> = {};
 
 	public components: Record<string, any> = {};
+
+	public pregenerate: string = '';
+
+	public componentsSelectorsMap = {};
 
 	constructor(config: Record<string, any> = {}) {
 		this.configure(config);
 	}
 
 	public configure(config: Record<string, any> = {}): Compiler {
-		this.cache = config.cache || this.cache;
 		this.dev = config.dev || this.dev;
 		this.macros = Object.assign(this.macros, config.macros || {});
+
 		this.helpers = Object.assign(this.helpers, config.helpers || {});
 		this.variables = Object.assign(this.variables, config.variables || {});
 		this.screens = Object.assign(this.screens, config.screens || {});
-		this.initialCss = config.initialCss || '';
+		this.screensKeys = Object.keys(this.screens);
 		this.components = Object.assign(this.components, config.components || {});
+		this.mangleSelectors = config.mangleSelectors || this.mangleSelectors;
+		this.pregenerate += Array.isArray(config.pregenerate) ? config.pregenerate.join(' ') : config.pregenerate;
 
-		for (let componentSelector in this.components) {
-			this.addComponent(componentSelector, this.components[componentSelector]);
+		this.classMatchRegExp = new RegExp(
+			'(?:' + ['class', 's-pregenerate'].concat(config.classRegExpClassAttributes || []).join('|') + ')="([^"]+)"', 'igm'
+		);
+
+		for (let componentSelector in config.components) {
+			this.addComponent(componentSelector, config.components[componentSelector]);
 		}
 
 		EventsEmitter.dispatch('stylify:compiler:configured', {
@@ -61,21 +66,15 @@ export default class Compiler {
 				.filter(selector => selector.trim().length);
 		}
 
-		if (this.cache.processedComponents.indexOf(selector) > -1) {
-			return;
-		}
-
 		selectorDependencies.forEach((selectorDependency) => {
-			if (!(selectorDependency in this.cache.componentsSelectorsDependencyTree)) {
-				this.cache.componentsSelectorsDependencyTree[selectorDependency] = [];
+			if (!(selectorDependency in this.componentsSelectorsMap)) {
+				this.componentsSelectorsMap[selectorDependency] = [];
 			}
 
-			if (this.cache.componentsSelectorsDependencyTree[selectorDependency].indexOf(selector) === -1) {
-				this.cache.componentsSelectorsDependencyTree[selectorDependency].push(selector);
+			if (this.componentsSelectorsMap[selectorDependency].indexOf(selector) === -1) {
+				this.componentsSelectorsMap[selectorDependency].push(selector);
 			}
 		});
-
-		this.cache.processedComponents.push(selector);
 
 		return this;
 	}
@@ -85,35 +84,55 @@ export default class Compiler {
 		return this;
 	}
 
-	public compile(content: string, generateCss: Boolean = true): Record<string, any> {
-		let wasAnyCssGenerated = false;
-		const classAttributeRe = new RegExp('class="([^"]+)"', 'igm');
+	// TODO cloning into the separate method on the backend
+	// TODO serializing method for cache must be available on the frontend too
+	public compile(content: string, compilationResult: CompilationResult = null): CompilationResult {
+		this.classMatchRegExp.lastIndex = 0;
+		let classAttributeMatch;
+		let classAtributesMatchesString = '';
+		let pregenerateMatch;
 
-		if (classAttributeRe.exec(content) !== null) {
-			classAttributeRe.lastIndex = 0;
-			let classAttributeMatch;
-			let classAtributesMatchesString = '';
-
-			while (classAttributeMatch = classAttributeRe.exec(content)) {
-				classAtributesMatchesString += ' ' + classAttributeMatch[1];
-			}
-
-			content = classAtributesMatchesString;
+		if (!compilationResult) {
+			compilationResult = new CompilationResult();
 		}
 
+		compilationResult.configure({
+			dev: this.dev,
+			screens: this.screens,
+			mangleSelectors: this.mangleSelectors,
+			componentsSelectorsMap: this.componentsSelectorsMap,
+			variables: this.variables
+		});
+
+ 		while (classAttributeMatch = this.classMatchRegExp.exec(content)) {
+			classAtributesMatchesString += ' ' + classAttributeMatch[1];
+		}
+
+		if (classAtributesMatchesString.length) {
+ 			while (pregenerateMatch = this.PREGENERATE_MATCH_REG_EXP.exec(content)) {
+				classAtributesMatchesString += ' ' + pregenerateMatch[1];
+			}
+			content = classAtributesMatchesString + ' ' + this.pregenerate;
+		}
+
+		content += ' ' + this.pregenerate;
+		this.pregenerate = '';
+
+		content = content.split(' ').filter((value, index, self) => self.indexOf(value) === index).join(' ');
+
 		for (let macroKey in this.macros) {
+
 			const macroRe = new RegExp('(?:([^\. ]+):)?(?<!-)\\b' + macroKey, 'igm');
 			let macroMatches;
 
 			while (macroMatches = macroRe.exec(content)) {
-				if (this.cache.processedSelectors.indexOf(macroMatches[0]) > -1) {
+				if (macroMatches[0] in compilationResult.processedSelectors) {
 					continue;
 				}
 
-				wasAnyCssGenerated = true;
-				const macroMatch = new MacroMatch(macroMatches, Object.keys(this.screens));
+				const macroMatch = new MacroMatch(macroMatches, this.screensKeys);
 
-				this.addCssRecord(
+				compilationResult.addCssRecord(
 					macroMatch,
 					this.macros[macroKey].call(
 						{
@@ -128,75 +147,23 @@ export default class Compiler {
 			}
 		};
 
-		const notProcessedComponentsSelectorsDependencies =
-			Object.keys(this.cache.componentsSelectorsDependencyTree).filter((componentSelectorDependencyKey) => {
-				return this.cache.processedSelectors.indexOf(componentSelectorDependencyKey) === -1;
-			});
-
-		if (notProcessedComponentsSelectorsDependencies.length) {
-			this.compile(notProcessedComponentsSelectorsDependencies.join(' '), generateCss);
-		}
-
-		return {
-			css: generateCss ? this.generateCss() : null,
-			cache: this.cache,
-			wasAnyCssGenerated: wasAnyCssGenerated
-		}
-	}
-
-	public generateCss(): string {
-		let css = this.initialCss;
-
-		for (let screenKey in this.cache.cssTree) {
-			let screenCss = '';
-			const screenOpen = screenKey === '_' ? '' : this.screens[screenKey] + '{'
-			const screenClose = '}';
-
-			for (let selector in this.cache.cssTree[screenKey]) {
-				screenCss += this.cache.cssTree[screenKey][selector].compile({
-					minimize: this.dev === false
+		if (Object.keys(this.componentsSelectorsMap).length) {
+			const notProcessedComponentsSelectorsDependencies =
+				Object.keys(this.componentsSelectorsMap).filter((componentSelectorDependencyKey) => {
+					return !(componentSelectorDependencyKey in compilationResult.processedSelectors);
 				});
-			};
 
-			css += screenKey === '_' ? screenCss : screenOpen + screenCss + screenClose;
-		};
-
-		return css.trim();
-	}
-
-	public addCssRecord(macroMatch: MacroMatch, selectorProperties): Compiler {
-		const macroResult = selectorProperties.properties;
-		const screen = macroMatch.screen;
-		const selector = macroMatch.selector;
-
-		if (typeof this.cache.cssTree[screen] === 'undefined') {
-			this.cache.cssTree[screen] = {};
-		}
-
-		if (!(selector in this.cache.cssTree[screen])) {
-			this.cache.cssTree[screen][selector] = new CssRecord();
-
-			if (macroMatch.pseudoClasses.length > 0) {
-				macroMatch.pseudoClasses.forEach((pseudoClass) => {
-					this.cache.cssTree[screen][selector].addSelector(selector, pseudoClass);
-				});
-			} else {
-				this.cache.cssTree[screen][selector].addSelector(selector);
+			if (notProcessedComponentsSelectorsDependencies.length) {
+				compilationResult = this.compile(
+					notProcessedComponentsSelectorsDependencies.join(' '), compilationResult
+				);
 			}
 
-			for (let property in macroResult) {
-				this.cache.cssTree[screen][selector].addProperty(property, macroResult[property]);
-			}
+			compilationResult.bindComponentsSelectors(this.componentsSelectorsMap);
+			this.componentsSelectorsMap = {};
 		}
 
-		if (selector in this.cache.componentsSelectorsDependencyTree) {
-			this.cache.componentsSelectorsDependencyTree[selector].forEach((componentSelector) => {
-				this.cache.cssTree[screen][selector].addSelector(componentSelector);
-			});
-		}
-
-		this.cache.processedSelectors.push(macroMatch.fullMatch);
-		return this;
+		return compilationResult;
 	}
 
 }

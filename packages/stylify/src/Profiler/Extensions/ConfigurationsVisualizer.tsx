@@ -1,4 +1,4 @@
-import { Component } from 'preact';
+import { h, render, Component } from 'preact';
 import EventsEmitter from '../../EventsEmitter';
 
 export default class ConfigurationsVisualizerExtension extends Component {
@@ -19,8 +19,8 @@ export default class ConfigurationsVisualizerExtension extends Component {
 
 		this.updateCompilerConfigs(Stylify.Compiler);
 
-		EventsEmitter.addListener('stylify:compiler:configured', (event) => {
-			this.updateCompilerConfigs(event.detail.compiler);
+		window.Stylify.EventsEmitter.addListener('stylify:compiler:configured', (data) => {
+			this.updateCompilerConfigs(data.compiler);
 		});
 
 	/* 	EventsEmitter.addListener('stylify:runtime:configured', (event) => {
@@ -49,10 +49,11 @@ export default class ConfigurationsVisualizerExtension extends Component {
 		return (
 			<>
 				<div class="profiler-extension">
-					<a role="button" title="Macros" class="profiler-extension__button" onClick={() => this.toggleDetailVisibility('macrosList')}>
-						<span>♻️</span> <strong>{Object.keys(this.state.macros).length}</strong>
+					<a role="button" title="Macros" class={`${this.state.macrosListVisible && Object.keys(this.state.macros).length ? 'profiler-extension__button--active' : ''} profiler-extension__button`} onClick={() => this.toggleDetailVisibility('macrosList')}>
+						<i class="sp-icon sp-icon-aperture profiler-extension__button-icon"></i>
+						<strong class="profiler-extension__button-label">{Object.keys(this.state.macros).length}</strong>
 					</a>
-					<div class={`display:${this.state.macrosListVisible && Object.keys(this.state.macros).length ? 'flex' : 'none'} profiler-extension__dropdown`}>
+					<div class={`visibility:${this.state.macrosListVisible && Object.keys(this.state.macros).length ? 'visible' : 'hidden'} display:flex profiler-extension__dropdown`}>
 						<table>
 							<thead>
 								<tr>
@@ -75,10 +76,11 @@ export default class ConfigurationsVisualizerExtension extends Component {
 				</div>
 
 				<div class="profiler-extension">
-					<a role="button" title="Variables" class="profiler-extension__button" onClick={() => this.toggleDetailVisibility('variablesList')}>
-						<span>💲</span> <strong>{Object.keys(this.state.variables).length}</strong>
+					<a role="button" title="Variables" class={`${this.state.variablesListVisible && Object.keys(this.state.variables).length ? 'profiler-extension__button--active' : ''} profiler-extension__button`} onClick={() => this.toggleDetailVisibility('variablesList')}>
+						<i class="sp-icon sp-icon-dollar-sign profiler-extension__button-icon"></i>
+						<strong class="profiler-extension__button-label">{Object.keys(this.state.variables).length}</strong>
 					</a>
-					<div class={`display:${this.state.variablesListVisible && Object.keys(this.state.variables).length ? 'flex' : 'none'} profiler-extension__dropdown`}>
+					<div class={`visibility:${this.state.variablesListVisible && Object.keys(this.state.variables).length ? 'visible' : 'hidden'} display:flex profiler-extension__dropdown`}>
 						<table>
 							<thead>
 								<tr>
@@ -101,36 +103,11 @@ export default class ConfigurationsVisualizerExtension extends Component {
 				</div>
 
 				<div class="profiler-extension">
-					<a role="button" title="Helpers" class="profiler-extension__button" onClick={() => this.toggleDetailVisibility('helpersList')}>
-						<span>🛠️</span> <strong>{Object.keys(this.state.helpers).length}</strong>
+					<a role="button" title="Components" class={`${this.state.componentsListVisible && Object.keys(this.state.components).length ? 'profiler-extension__button--active' : ''} profiler-extension__button`} onClick={() => this.toggleDetailVisibility('componentsList')}>
+						<i class="sp-icon sp-icon-layout profiler-extension__button-icon"></i>
+						<strong class="profiler-extension__button-label">{Object.keys(this.state.components).length}</strong>
 					</a>
-					<div class={`display:${this.state.helpersListVisible && Object.keys(this.state.helpers).length ? 'flex' : 'none'} profiler-extension__dropdown`}>
-						<table>
-							<thead>
-								<tr>
-									<th class="padding:8px">Helper</th>
-								</tr>
-							</thead>
-							<tbody>
-								{Object.keys(this.state.helpers).map((helperName, i) => {
-									return (
-										<tr class="hover:background:#333">
-											<td class="padding:8px white-space:nowrap max-width:800px overflow-x:auto">
-												<pre><code>{this.state.helpers[helperName].toString().replaceAll(/  |\t\t/ig, ' ')}</code></pre>
-											</td>
-										</tr>
-									)
-								})}
-							</tbody>
-						</table>
-					</div>
-				</div>
-
-				<div class="profiler-extension">
-					<a role="button" title="Components" class="profiler-extension__button" onClick={() => this.toggleDetailVisibility('componentsList')}>
-						<span>⚛️</span> <strong>{Object.keys(this.state.components).length}</strong>
-					</a>
-					<div class={`display:${this.state.componentsListVisible && Object.keys(this.state.components).length ? 'flex' : 'none'} profiler-extension__dropdown`}>
+					<div class={`visibility:${this.state.componentsListVisible && Object.keys(this.state.components).length ? 'visible' : 'hidden'} display:flex profiler-extension__dropdown`}>
 						<table>
 							<thead>
 								<tr>
@@ -144,6 +121,33 @@ export default class ConfigurationsVisualizerExtension extends Component {
 										<tr class="hover:background:#333">
 											<td class="padding:8px white-space:nowrap">{componentName}</td>
 											<td class="padding:8px white-space:nowrap max-width:800px overflow-x:auto word-spacing:24px">{this.state.components[componentName]}</td>
+										</tr>
+									)
+								})}
+							</tbody>
+						</table>
+					</div>
+				</div>
+
+				<div class="profiler-extension">
+					<a role="button" title="Helpers" class={`${this.state.helpersListVisible && Object.keys(this.state.helpers).length ? 'profiler-extension__button--active' : ''} profiler-extension__button`} onClick={() => this.toggleDetailVisibility('helpersList')}>
+						<i class="sp-icon sp-icon-tool profiler-extension__button-icon"></i>
+						<strong class="profiler-extension__button-label">{Object.keys(this.state.helpers).length}</strong>
+					</a>
+					<div class={`visibility:${this.state.helpersListVisible && Object.keys(this.state.helpers).length ? 'visible' : 'hidden'} display:flex profiler-extension__dropdown`}>
+						<table>
+							<thead>
+								<tr>
+									<th class="padding:8px">Helper</th>
+								</tr>
+							</thead>
+							<tbody>
+								{Object.keys(this.state.helpers).map((helperName, i) => {
+									return (
+										<tr class="hover:background:#333">
+											<td class="padding:8px white-space:nowrap max-width:800px overflow-x:auto">
+												<pre><code>{this.state.helpers[helperName].toString().replaceAll(/  |\t\t/ig, ' ')}</code></pre>
+											</td>
 										</tr>
 									)
 								})}

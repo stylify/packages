@@ -1,6 +1,13 @@
-const path = require('path');
-const fs = require('fs');
-const prettier = require("prettier");
+import path from 'path';
+import fs from 'fs';
+import prettier from "prettier";
+
+const __dirname = path.join(process.cwd(), 'tools', 'native-properties-generator');
+
+const browserPropertiesListPath = path.join(__dirname, 'tmp', 'complete-propertes-list.txt');
+const macroFunctionTemplatePath = path.join(__dirname, 'templates', 'function.js');
+const nativeConfigurationOutputFilePath = path.join(__dirname, '..', '..', 'src', 'Configurations', 'NativeConfiguration.ts');
+const nativeConfigurationConfigTemplateFilePath = path.join(__dirname, 'templates', 'config.js');
 
 class NativePropertiesGenerator {
 	constructor() {
@@ -16,7 +23,7 @@ class NativePropertiesGenerator {
 			listsFilesContent += fs.readFileSync(path.join(__dirname, 'lists', file), 'utf8') + '\n';
 		})
 
-		let properties = [
+		let propertiesShortcuts = [
 			'background',
 			'border',
 			'border-radius',
@@ -37,33 +44,33 @@ class NativePropertiesGenerator {
 		while ((propertyMatch = re.exec(listsFilesContent))) {
 			let property = propertyMatch[0];
 
-			if (properties.indexOf(property) > -1) {
+			if (propertiesShortcuts.indexOf(property) > -1) {
 				continue
 			}
 
-			properties.push(property);
+			propertiesShortcuts.push(property);
 		}
 
-		properties.sort().forEach((property) => {
+		propertiesShortcuts.sort().forEach((property) => {
 			this.assignPropertyToPropertiesMap(property);
 		});
 
 		const processedPropertiesRegExpString = this.convertMapIntoRegularExpression(this.propertiesMap);
 		const propertiesRegExp = '(' + processedPropertiesRegExpString + ')\\\\b:(\\\\S+)'
 
-		fs.writeFileSync(path.join(__dirname, 'tmp', 'complete-propertes-list.txt'), properties.join('\n'));
+		fs.writeFileSync(browserPropertiesListPath, propertiesShortcuts.join('\n'));
 
 		const macrosTemplate = this.generateTemplate(
-			fs.readFileSync(path.join(__dirname, 'templates', 'function.js'), 'utf-8'),
+			fs.readFileSync(macroFunctionTemplatePath, 'utf-8'),
 			{
 				__REG_EXP__: propertiesRegExp,
 			}
 		)
 
 		fs.writeFileSync(
-			path.join(__dirname, '..', '..', 'src', 'configurations', 'native.ts'),
+			nativeConfigurationOutputFilePath,
 			this.generateTemplate(
-				fs.readFileSync(path.join(__dirname, 'templates', 'config.js'), 'utf-8'),
+				fs.readFileSync(nativeConfigurationConfigTemplateFilePath, 'utf-8'),
 				{
 					__SIDES_SHORTCUTS__: JSON.stringify(this.sidesShortcuts),
 					__SIZES_SHORTCUTS__: JSON.stringify(this.sizesShortcuts),
@@ -153,6 +160,7 @@ class NativePropertiesGenerator {
 	}
 
 	generateTemplate(template, values, prettierEnabled = false) {
+
 		Object.keys(values).forEach((key) => {
 			const value = values[key]
 
