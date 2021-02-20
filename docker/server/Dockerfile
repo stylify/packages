@@ -1,5 +1,10 @@
-FROM nginx:alpine
+FROM nginx
 
-RUN apk add --update --no-cache yarn git npm
+RUN apt-get update && apt-get install -y --no-install-recommends git curl
 
-RUN node -v && yarn -v && npm -v
+RUN curl -sL https://deb.nodesource.com/setup_14.x | bash - && \
+	apt-get update && apt-get install -y --no-install-recommends nodejs &&\
+	npm install --global yarn &&\
+	node -v &&\
+	npm -v &&\
+	yarn -v
