@@ -44,7 +44,7 @@ export default class Runtime {
 		});
 	}
 
-	public configure(config) {
+	public configure(config): Record<string, any> {
 		this.Compiler = config.compiler;
 
 		// What if cache
@@ -112,7 +112,7 @@ export default class Runtime {
 		return css;
 	}
 
-	public initMutationObserver() {
+	public initMutationObserver(): void {
 		const targetNode = document.documentElement;
 		const config = { attributeFilter: ['class'], childList: true, subtree: true };
 		let compilerContentQueue = '';
@@ -167,7 +167,7 @@ export default class Runtime {
 		observer.observe(targetNode, config);
 	}
 
-	public injectCss(css: string) {
+	public injectCss(css: string): void {
 		let el = document.querySelector('#' + this.STYLIFY_STYLE_EL_ID);
 
 		if (el) {
