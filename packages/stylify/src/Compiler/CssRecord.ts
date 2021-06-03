@@ -23,13 +23,13 @@ export default class CssRecord {
 		this.pseudoClasses = pseudoClases;
 	}
 
-	public addProperty(property, value) {
+	public addProperty(property: string, value: string) {
 		if (!this.hasProperty(property)) {
 			this.properties[property] = value;
 		}
 	}
 
-	public addSelector(selector, pseudoClass = null) {
+	public addSelector(selector: string, pseudoClass = null) {
 		// TODO is this selector[0] and substr necessary?
 		// selector = selector[0] + selector.substr(1).replace(/([^-_a-zA-Z\d])/g, '\\$1');
 		selector = selector.replace(/([^-_a-zA-Z\d])/g, '\\$1');
@@ -43,15 +43,15 @@ export default class CssRecord {
 		}
 	}
 
-	public getSelector(selector) {
+	public getSelector(selector: string) {
 		return this.hasSelector(selector) ? this.selectors[this.selectors.indexOf(selector)] : null;
 	}
 
-	public hasProperty(name) {
+	public hasProperty(name: string) {
 		return typeof this.properties[name] !== 'undefined';
 	}
 
-	public hasSelector(selector) {
+	public hasSelector(selector: string) {
 		return this.selectors.indexOf(selector) > -1;
 	}
 

@@ -2,6 +2,7 @@
 
 import CssRecord from './CssRecord';
 import MacroMatch from './MacroMatch';
+import SelectorProperties from './SelectorProperties';
 
 export default class CompilationResult {
 
@@ -105,7 +106,7 @@ export default class CompilationResult {
 		};
 	}
 
-	public addCssRecord(macroMatch: MacroMatch, selectorProperties): void {
+	public addCssRecord(macroMatch: MacroMatch, selectorProperties: SelectorProperties): void {
 		const macroResult = selectorProperties.properties;
 		const screen = macroMatch.screen;
 		const selector = macroMatch.selector;

@@ -44,7 +44,7 @@ export default class Runtime {
 		});
 	}
 
-	public configure(config): Record<string, any> {
+	public configure(config: Record<string, Compiler>): Record<string, any> {
 		this.Compiler = config.compiler;
 
 		// What if cache
