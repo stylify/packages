@@ -9,7 +9,7 @@ export default class SelectorProperties {
 		return this;
 	}
 
-	public addMultiple(properties: Record<string, any>) {
+	public addMultiple(properties: Record<string, any>): SelectorProperties {
 		let property: string;
 		// Object assign?
 		for (property in properties) {
