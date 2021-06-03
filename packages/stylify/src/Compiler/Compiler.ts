@@ -51,7 +51,9 @@ export default class Compiler {
 		}
 
 		this.classMatchRegExp = new RegExp(
-			'(?:' + ['class', 's-pregenerate'].concat(config.classRegExpClassAttributes || []).join('|') + ')="([^"]+)"', 'igm'
+			'(?:' + ['class', 's-pregenerate']
+				.concat(config.classRegExpClassAttributes || [])
+				.join('|') + ')="([^"]+)"', 'igm'
 		);
 
 		for (const componentSelector in config.components) {

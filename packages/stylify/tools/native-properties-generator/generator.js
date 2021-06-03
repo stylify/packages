@@ -6,7 +6,8 @@ const dirname = path.join(process.cwd(), 'tools', 'native-properties-generator')
 
 const browserPropertiesListPath = path.join(dirname, 'tmp', 'complete-propertes-list.txt');
 const macroFunctionTemplatePath = path.join(dirname, 'templates', 'function.js');
-const nativeConfigurationOutputFilePath = path.join(dirname, '..', '..', 'src', 'Configurations', 'NativeConfiguration.ts');
+const nativeConfigOutFilePath = path.join(dirname, '..', '..', 'src', 'Configurations', 'NativeConfiguration.ts');
+const nativeConfigurationOutputFilePath = nativeConfigOutFilePath;
 const nativeConfigurationConfigTemplateFilePath = path.join(dirname, 'templates', 'config.js');
 
 class NativePropertiesGenerator {

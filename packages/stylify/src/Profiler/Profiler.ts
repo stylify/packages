@@ -105,7 +105,12 @@ export default class Profiler {
 						display:inline-block
 						cursor:pointer
 					`,
-					'profiler-extension__button-icon': 'margin-right:8px display:inline-block font-weight:bold color:#aaa',
+					'profiler-extension__button-icon': `
+						margin-right:8px 
+						display:inline-block 
+						font-weight:bold 
+						color:#aaa
+					`,
 					'profiler-extension__button-label': 'line-height:1'
 
 				}
