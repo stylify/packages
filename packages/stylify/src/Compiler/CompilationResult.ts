@@ -31,7 +31,7 @@ export default class CompilationResult {
 		this.configure(config);
 	}
 
-	public configure(config: Record<string, any> = {}) {
+	public configure(config: Record<string, any> = {}): void {
 		this.dev = config.dev || this.dev;
 		this.screens = config.screens || this.screens;
 		// TODO always generate short id?
@@ -98,7 +98,7 @@ export default class CompilationResult {
 
 	// Generate css for each screen
 	// Možné potom použít pro linky, css se načte separátně jako soubor
-	public generateCssForScreens() {
+	public generateCssForScreens(): {screen: string} {
 		this.changed = false;
 		this.lastBuildInfo.completed = true;
 		return {
@@ -146,7 +146,7 @@ export default class CompilationResult {
 		this.processedSelectors[macroMatch.fullMatch] = mangledSelectorId;
 	}
 
-	public bindComponentsSelectors(componentsSelectorsMap: Record<string, any>) {
+	public bindComponentsSelectors(componentsSelectorsMap: Record<string, any>): void {
 		const processedComponents = [];
 
 		Object.keys(this.cssTree).forEach((screen) => {
@@ -237,7 +237,7 @@ export default class CompilationResult {
 	// Co když css bude vygenerované do souborů?
 	// <style> element bude jen pro vygenerované věci z runtime?
 	// Něco jako negeneruj dané selektory, protože jsou v externích souborech
-	public hydrate(data: Record<string, any>) {
+	public hydrate(data: Record<string, any>): void {
 		this.processedSelectors = Object.assign(this.processedSelectors, data.processedSelectors);
 
 		Object.keys(data.cssTree).forEach(screen => {
