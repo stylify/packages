@@ -4,11 +4,11 @@ export default class CssRecord {
 
 	private selectors: string[] = [];
 
-	private properties: Record<string, any> = {};
+	private properties: Record<string, string> = {};
 
 	public pseudoClasses: string[] = [];
 
-	constructor(selector: string|string[] = null, properties: Record<string, any> = {}, pseudoClases: string[] = []) {
+	constructor(selector: string|string[] = null, properties: Record<string, string> = {}, pseudoClases: string[] = []) {
 		if (selector) {
 			if (typeof selector === 'string') {
 				selector = [selector];
@@ -23,13 +23,15 @@ export default class CssRecord {
 		this.pseudoClasses = pseudoClases;
 	}
 
-	public addProperty(property, value) {
+	public addProperty(property: string, value: string) {
+
 		if (!this.hasProperty(property)) {
 			this.properties[property] = value;
 		}
+
 	}
 
-	public addSelector(selector, pseudoClass = null) {
+	public addSelector(selector: string, pseudoClass = null) {
 		// TODO is this selector[0] and substr necessary?
 		// selector = selector[0] + selector.substr(1).replace(/([^-_a-zA-Z\d])/g, '\\$1');
 		selector = selector.replace(/([^-_a-zA-Z\d])/g, '\\$1');
@@ -55,7 +57,7 @@ export default class CssRecord {
 		return this.selectors.indexOf(selector) > -1;
 	}
 
-	public compile(config: Record<string, any> = {}) {
+	public compile(config: Record<string, boolean> = {}) {
 		const minimize: boolean = config.minimize || false;
 		const newLine = minimize ? '' : '\n';
 

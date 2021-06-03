@@ -44,7 +44,7 @@ export default class Runtime {
 		});
 	}
 
-	public configure(config): Record<string, any> {
+	public configure(config): Runtime {
 		this.Compiler = config.compiler;
 
 		// What if cache
@@ -88,8 +88,8 @@ export default class Runtime {
 		const parsedData = typeof data === 'string' ? JSON.parse(data) : data;
 		this.Compiler.hydrate(parsedData);
 
-		if (!this.CompilerResult) {
-			this.CompilerResult = this.Compiler.createResultFromSerializedData(parsedData);
+		if (this.CompilerResult = this.Compiler.createResultFromSerializedData(parsedData)) {
+			this.CompilerResult;
 		} else {
 			this.CompilerResult.hydrate(parsedData);
 		}

@@ -29,8 +29,8 @@ export default class Stylify {
 		const compilerConfig: Record<string, any> = config.compiler || {};
 		const runtimeConfig: Record<string, any> = config.runtime || {};
 
-		if (!this.Compiler) {
-			this.Compiler = new Compiler(compilerConfig);
+		if (this.Compiler = new Compiler(compilerConfig)) {
+			this.Compiler;
 		} else {
 			this.Compiler.configure(compilerConfig || {});
 		}
@@ -39,8 +39,8 @@ export default class Stylify {
 			runtimeConfig.compiler = this.Compiler;
 		}
 
-		if (!this.Runtime) {
-			this.Runtime = new Runtime(runtimeConfig);
+		if (this.Runtime = new Runtime(runtimeConfig)) {
+			this.Runtime;
 		} else {
 			this.Runtime.configure(runtimeConfig);
 		}

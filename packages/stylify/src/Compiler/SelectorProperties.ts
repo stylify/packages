@@ -2,10 +2,11 @@
 
 export default class SelectorProperties {
 
-	public properties: Record<string, any> = {};
+	public properties: Record<string, string> = {};
 
-	public add(property: string, value: any): SelectorProperties {
+	public add(property: string, value: string): SelectorProperties {
 		this.properties[property] = value;
+
 		return this;
 	}
 

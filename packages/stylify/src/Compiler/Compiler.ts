@@ -111,12 +111,12 @@ export default class Compiler {
 			variables: this.variables
 		});
 
- 		while (classAttributeMatch = this.classMatchRegExp.exec(content)) {
+		while (classAttributeMatch = this.classMatchRegExp.exec(content)) {
 			classAtributesMatchesString += ' ' + classAttributeMatch[1];
 		}
 
 		if (classAtributesMatchesString.length) {
- 			while (pregenerateMatch = this.PREGENERATE_MATCH_REG_EXP.exec(content)) {
+			while (pregenerateMatch = this.PREGENERATE_MATCH_REG_EXP.exec(content)) {
 				classAtributesMatchesString += ' ' + pregenerateMatch[1];
 			}
 			content = classAtributesMatchesString;

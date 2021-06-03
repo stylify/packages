@@ -21,7 +21,7 @@ export default class MacroMatch {
 		this.screen = '_';
 		this.pseudoClasses = [];
 		match.splice(0, 2);
-	 	this.captures = match.filter(matchToFilter => typeof matchToFilter !== 'undefined');
+		this.captures = match.filter(matchToFilter => typeof matchToFilter !== 'undefined');
 
 		if (this.screenAndPseudoClassesMatch) {
 			const screenAndPseudoClassesMatchArray = this.screenAndPseudoClassesMatch.split(':');
