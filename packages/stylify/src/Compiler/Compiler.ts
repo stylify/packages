@@ -35,6 +35,7 @@ export default class Compiler {
 		this.configure(config);
 	}
 
+	//netuším nejde conosole.log
 	public configure(config: Record<string, any> = {}): Compiler {
 		this.dev = config.dev || this.dev;
 		this.macros = Object.assign(this.macros, config.macros || {});
@@ -69,10 +70,11 @@ export default class Compiler {
 
 	public addComponent(selector: string, selectorDependencies: string[] | string): Compiler {
 		if (typeof selectorDependencies === 'string') {
+			//nevím proč ty metody vrací any | neměla by být ve filteru podmínka?
 			selectorDependencies = selectorDependencies
 				.replaceAll(/\s/ig, ' ')
 				.split(' ')
-				.filter(selector => selector.trim().length);
+				.filter((selector: string) => selector.trim().length);
 		}
 
 		selectorDependencies.forEach((selectorDependency) => {
@@ -127,6 +129,7 @@ export default class Compiler {
 		content += ' ' + this.pregenerate;
 		this.pregenerate = '';
 
+		//proč replaceAll vrací any
 		content = content.replaceAll(/<script[\s\S]*?>[\s\S]*?<\/script>|<style[\s\S]*?>[\s\S]*?<\/style>/ig, '');
 		content = content.split(' ').filter((value, index, self) => self.indexOf(value) === index).join(' ');
 
@@ -179,10 +182,11 @@ export default class Compiler {
 	}
 
 	public hydrate(data: Record<string, any>): void {
-		const newComponentsSelectorsMap = {};
+		const newComponentsSelectorsMap: Record<string, string[]> = {};
 
 		Object.keys(this.componentsSelectorsMap).forEach(selector => {
-			const componentsSelectors = this.componentsSelectorsMap[selector].filter(componentSelector => {
+			//filter vrací any
+			const componentsSelectors: string[] = this.componentsSelectorsMap[selector].filter(componentSelector => {
 				return !(componentSelector in data.processedSelectors);
 			});
 
