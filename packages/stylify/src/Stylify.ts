@@ -29,20 +29,20 @@ export default class Stylify {
 		const compilerConfig: Record<string, any> = config.compiler || {};
 		const runtimeConfig: Record<string, any> = config.runtime || {};
 
-		if (this.Compiler = new Compiler(compilerConfig)) {
-			this.Compiler;
-		} else {
+		if (this.Compiler) {
 			this.Compiler.configure(compilerConfig || {});
+		} else {
+			this.Compiler = new Compiler(compilerConfig);
 		}
 
 		if (!('compiler' in runtimeConfig)) {
 			runtimeConfig.compiler = this.Compiler;
 		}
 
-		if (this.Runtime = new Runtime(runtimeConfig)) {
-			this.Runtime;
-		} else {
+		if (this.Runtime) {
 			this.Runtime.configure(runtimeConfig);
+		} else {
+			this.Runtime = new Runtime(runtimeConfig);
 		}
 
 		return this;

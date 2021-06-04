@@ -1,6 +1,7 @@
 // @ts-nocheck
 
 import { Compiler, EventsEmitter } from '.';
+import CompilationResult from './Compiler/CompilationResult';
 
 export default class Runtime {
 
@@ -10,7 +11,7 @@ export default class Runtime {
 
 	private Compiler: Compiler = null;
 
-	private CompilerResult = null;
+	private CompilerResult: CompilationResult = null;
 
 	private initialPaintCompleted = false;
 
@@ -68,7 +69,7 @@ export default class Runtime {
 	private hydrate(data: string|Record<string, any> = null): void {
 		if (!data) {
 			const cacheElements = document.querySelectorAll('.stylify-runtime-cache');
-			let cacheElement;
+			let cacheElement: HTMLElement;
 			if (cacheElements.length) {
 				for (cacheElement of cacheElements) {
 					cacheElement.classList.add('processed');
@@ -88,10 +89,10 @@ export default class Runtime {
 		const parsedData = typeof data === 'string' ? JSON.parse(data) : data;
 		this.Compiler.hydrate(parsedData);
 
-		if (this.CompilerResult = this.Compiler.createResultFromSerializedData(parsedData)) {
-			this.CompilerResult;
-		} else {
+		if (this.CompilerResult) {
 			this.CompilerResult.hydrate(parsedData);
+		} else {
+			this.CompilerResult = this.Compiler.createResultFromSerializedData(parsedData);
 		}
 
 		EventsEmitter.dispatch('stylify:runtime:hydrated', {

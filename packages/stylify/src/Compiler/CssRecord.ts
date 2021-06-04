@@ -24,11 +24,9 @@ export default class CssRecord {
 	}
 
 	public addProperty(property: string, value: string) {
-
 		if (!this.hasProperty(property)) {
 			this.properties[property] = value;
 		}
-
 	}
 
 	public addSelector(selector: string, pseudoClass = null) {
