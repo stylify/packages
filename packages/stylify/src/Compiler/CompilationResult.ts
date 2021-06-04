@@ -22,7 +22,7 @@ export default class CompilationResult {
 		_: {}
 	};
 
-	public variables: Record<string, any> = {};
+	public variables: Record<string, string> = {};
 
 	public lastBuildInfo: Record<string, string[]> = null;
 
@@ -31,7 +31,7 @@ export default class CompilationResult {
 		this.configure(config);
 	}
 
-	public configure(config: Record<string, boolean> = {}): void {
+	public configure(config: Record<string, boolean|Record<string, string>> = {}): void {
 		this.dev = config.dev || this.dev;
 		this.screens = config.screens || this.screens;
 		// TODO always generate short id?

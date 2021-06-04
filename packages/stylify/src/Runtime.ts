@@ -107,7 +107,7 @@ export default class Runtime {
 			return null;
 		}
 
-		const css = this.CompilerResult.generateCss();
+		const css: string = this.CompilerResult.generateCss();
 		this.injectCss(css);
 		return css;
 	}
