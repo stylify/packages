@@ -81,8 +81,8 @@ export default class CssRecord {
 		cssRecord.selectors = data.selectors;
 		return cssRecord;
 	}
-
-	public hydrate(data: Record<string, any>): void {
+	
+	public hydrate(data: Record<string, string[]>): void {
 		data.selectors.forEach(selector => {
 			this.addSelector(selector);
 		});

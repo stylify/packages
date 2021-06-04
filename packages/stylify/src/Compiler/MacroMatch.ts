@@ -14,7 +14,7 @@ export default class MacroMatch {
 
 	public captures: string[] = [];
 
-	constructor(match: string[], screensKeys: Record<string, any>) {
+	constructor(match: string[], screensKeys: string[]) {
 		this.fullMatch = match[0];
 		this.screenAndPseudoClassesMatch = match[1] || null;
 		this.selector = this.fullMatch;
@@ -25,7 +25,6 @@ export default class MacroMatch {
 
 		if (this.screenAndPseudoClassesMatch) {
 			const screenAndPseudoClassesMatchArray = this.screenAndPseudoClassesMatch.split(':');
-
 			if (screensKeys.indexOf(screenAndPseudoClassesMatchArray[0]) > -1) {
 				this.screen = screenAndPseudoClassesMatchArray[0];
 				screenAndPseudoClassesMatchArray.shift();
@@ -41,7 +40,8 @@ export default class MacroMatch {
 	}
 
 	public getCapture(index: number|string, defaultValue = ''): string|any {
-		return this.hasCapture(index) ? this.captures[index].replace(/__/g, ' ') : defaultValue;
+		const capturesIndex: string = this.captures[index];
+		return this.hasCapture(index) ? capturesIndex.replace(/__/g, ' ') : defaultValue;
 	}
 
 }

@@ -29,7 +29,7 @@ export default class Compiler {
 
 	public pregenerate = '';
 
-	public componentsSelectorsMap = {};
+	public componentsSelectorsMap: Record<string, string[]> = {};
 
 	constructor(config: Record<string, any> = {}) {
 		this.configure(config);
@@ -70,14 +70,14 @@ export default class Compiler {
 
 	public addComponent(selector: string, selectorDependencies: string[] | string): Compiler {
 		if (typeof selectorDependencies === 'string') {
-			//nevím proč ty metody vrací any | neměla by být ve filteru podmínka?
 			selectorDependencies = selectorDependencies
+				//nemělo by tu být replace() s global flagou u regexu?
 				.replaceAll(/\s/ig, ' ')
 				.split(' ')
 				.filter((selector: string) => selector.trim().length);
 		}
-
-		selectorDependencies.forEach((selectorDependency) => {
+		const selectorDependenciesArr: string[] = selectorDependencies;
+		selectorDependenciesArr.forEach((selectorDependency) => {
 			if (!(selectorDependency in this.componentsSelectorsMap)) {
 				this.componentsSelectorsMap[selectorDependency] = [];
 			}
@@ -129,7 +129,7 @@ export default class Compiler {
 		content += ' ' + this.pregenerate;
 		this.pregenerate = '';
 
-		//proč replaceAll vrací any
+		//nemá být místo replaceAll replace() a regex s globla flagů
 		content = content.replaceAll(/<script[\s\S]*?>[\s\S]*?<\/script>|<style[\s\S]*?>[\s\S]*?<\/style>/ig, '');
 		content = content.split(' ').filter((value, index, self) => self.indexOf(value) === index).join(' ');
 
@@ -137,14 +137,12 @@ export default class Compiler {
 
 			const macroRe = new RegExp('(?:([^\. ]+):)?(?<!-)\\b' + macroKey, 'igm');
 			let macroMatches;
-
 			while (macroMatches = macroRe.exec(content)) {
 				if (macroMatches[0] in compilationResult.processedSelectors) {
 					continue;
 				}
 
 				const macroMatch = new MacroMatch(macroMatches, this.screensKeys);
-
 				compilationResult.addCssRecord(
 					macroMatch,
 					this.macros[macroKey].call(

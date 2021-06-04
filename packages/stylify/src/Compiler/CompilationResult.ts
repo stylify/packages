@@ -125,7 +125,8 @@ export default class CompilationResult {
 		const selectorToAdd = this.mangleSelectors ? mangledSelectorId : selector;
 
 		for (const property in macroResult) {
-			const propertyValue: string = macroResult[property].replace(
+			const macroResultProperty = macroResult[property];
+			const propertyValue: string = macroResultProperty.replace(
 				this.MATCH_VARIABLE_REG_EXP,
 				(match, substring) => {
 					return this.variables[substring];
@@ -146,7 +147,7 @@ export default class CompilationResult {
 		this.processedSelectors[macroMatch.fullMatch] = mangledSelectorId;
 	}
 
-	public bindComponentsSelectors(componentsSelectorsMap: Record<string, any>): void {
+	public bindComponentsSelectors(componentsSelectorsMap: Record<string, string[]>): void {
 		const processedComponents: string[] = [];
 
 		Object.keys(this.cssTree).forEach((screen) => {

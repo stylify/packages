@@ -36,7 +36,7 @@ export default class Profiler {
 		}
 
 		this.stylify.Profiler = Profiler;
-
+		//nevím jak to napsat
 		this.stylify.configure({
 			compiler: {
 				dev: true,

@@ -2,14 +2,14 @@
 
 class EventsEmitter {
 
-	private eventListeners: Record<string, any> = {};
+	private eventListeners: Record<string, Record<string, any>[]> = {};
 
 	dispatch(eventName, eventData: Record<string, any> = null): EventsEmitter {
 		if (!(eventName in this.eventListeners)) {
 			return;
 		}
-
 		this.eventListeners[eventName].forEach(element => {
+			//je to objekt co má id a callbakc func nevím jak to napsat
 			element.callback(eventData);
 		});
 
