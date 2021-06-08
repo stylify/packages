@@ -6,8 +6,8 @@
 class SelectorsRewriter {
 
 	public rewrite = (compilationResult/* : CompilationResult */, regExp: RegExp, content: string): string => {
-		const classReplacementMap = {};
-		let originalClassMatch;
+		const classReplacementMap: Record<string, string> = {};
+		let originalClassMatch: RegExpExecArray|null;
 		const selectorsMap = compilationResult.processedSelectors;
 		regExp.lastIndex = 0;
 
@@ -20,7 +20,6 @@ class SelectorsRewriter {
 					selectorsMap[selector]
 				);
 			});
-			//nebude classReplacement vždy empty object - řádek 9
 			classReplacementMap[originalClassMatch[0]] = modifiedClassMatch;
 		}
 
