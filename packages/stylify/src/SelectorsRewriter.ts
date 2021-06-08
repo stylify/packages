@@ -20,7 +20,7 @@ class SelectorsRewriter {
 					selectorsMap[selector]
 				);
 			});
-
+			//nebude classReplacement vždy empty object - řádek 9
 			classReplacementMap[originalClassMatch[0]] = modifiedClassMatch;
 		}
 

@@ -128,7 +128,7 @@ export default class CompilationResult {
 			const macroResultProperty = macroResult[property];
 			const propertyValue: string = macroResultProperty.replace(
 				this.MATCH_VARIABLE_REG_EXP,
-				(match, substring) => {
+				(match, substring: string) => {
 					return this.variables[substring];
 				}
 			);

@@ -4,7 +4,7 @@ class EventsEmitter {
 
 	private eventListeners: Record<string, Record<string, any>[]> = {};
 
-	dispatch(eventName, eventData: Record<string, any> = null): EventsEmitter {
+	dispatch(eventName: string, eventData: Record<string, any> = null): EventsEmitter {
 		if (!(eventName in this.eventListeners)) {
 			return;
 		}
