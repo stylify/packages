@@ -43,8 +43,8 @@ export default class Runtime {
 			});
 		});
 	}
-
-	public configure(config: Record<string, Compiler>): Record<string, any> {
+	//je tam config.Compiler(:Compiler), config.cache, config.redrawTimeout
+	public configure(config: Record<string, any>): Record<string, any> {
 		this.Compiler = config.compiler;
 
 		// What if cache
