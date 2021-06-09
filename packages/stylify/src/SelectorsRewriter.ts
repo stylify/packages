@@ -4,28 +4,24 @@ class SelectorsRewriter {
 
 	public rewrite = (compilationResult: CompilationResult, regExp: RegExp, content: string): string => {
 		let classReplacementMap = {};
-		let originalClassMatch;
 		const selectorsMap = compilationResult.processedSelectors;
-		regExp.lastIndex = 0;
-
-		while(originalClassMatch = regExp.exec(content)) {
-			let modifiedClassMatch: string = originalClassMatch[0];
-
-			Object.keys(selectorsMap).forEach(selector => {
-				modifiedClassMatch = modifiedClassMatch.replace(
-					new RegExp(selector + '\\b', 'gi'),
-					selectorsMap[selector]
-				);
+		const matches = content.match(regExp)
+		
+		for (const match of matches) {
+			let modifiedClassMatch = match;
+			//seřazení podle délky aby delší selektory byly před kratšímy
+			//pořadí background-color:white -> color:white || nedojde k chybě
+			Object.keys(selectorsMap).sort((a,b) => b.length - a.length).forEach(selector => {
+				modifiedClassMatch = modifiedClassMatch.replace(new RegExp(selector, 'gi'), selectorsMap[selector]);
 			});
-
-			classReplacementMap[originalClassMatch[0]] = modifiedClassMatch
+			classReplacementMap[match] = modifiedClassMatch;
 		}
 
 		Object.keys(classReplacementMap).forEach(classToReplace => {
-			content = content.replace(classToReplace, classReplacementMap[classToReplace]);
+			const classToReplaceRegex = new RegExp(classToReplace, "g");
+			content = content.replace(classToReplaceRegex, classReplacementMap[classToReplace]);
 		});
 
-		regExp.lastIndex = 0;
 		return content;
 	}
 
