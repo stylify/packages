@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link href='https://fonts.googleapis.com/css?family=Montserrat' rel='stylesheet'>
+	<title>Stylify!</title>
+	<style>
+		[s-cloak] {
+			visibility: hidden;
+			content-visibility: hidden;
+		}
+		*{
+			margin: 0;
+			padding: 0;
+			box-sizing: border-box;
+			font-family: "Montserrat";
+		}
+		[img] {
+			width:100%;
+			height:320px;
+			background-color: grey;
+		}
+	</style>
+</head>
+<body>
+	<header class="display:flex flex-direction:row justify-content:space-between align-items:baseline tomd:width:90% margin:0__auto margin-top:40px md:width:700px lg:width:950px xl:width:1200px">
+		<div class="height:50px width:50px background-color:#3a3636 display:flex justify-content:center align-items:center"><div class="color:white font-size:19px">Yve</div></div>
+		<div class="tomd:display:none md:display:block">
+			<ul class="list-style-type:none display:flex flex-direction:row justify-content:space-around">
+				<li class="padding:15px__25px">Home</li>
+				<li class="padding:15px__25px margin-left:40px">Portfolio</li>
+				<li class="padding:15px__25px margin-left:40px">Info</li>
+				<li class="padding:15px__25px margin-left:40px">Blog</li>
+			</ul>
+		</div>
+	</header>
+	<main class="margin-top:300px tomd:width:90% margin:0__auto md:width:700px lg:width:950px xl:width:1200px">
+		<article class="lg:width:750px">
+			<h1 class="text-align:left font-size:35px color:#3a3636 line-height:1.5">Lorem ipsum dolor sit amet pa consectetur adipisicing elit</h1>
+			<p class="text-align:justify margin-top:15px">Lorem ipsum, dolor sit amet consectetur adipisicing elit. Ipsa accusamus, natus voluptatum quia eaque placeat nostrum, saepe quaerat explicabo non incidunt dolorum dolorem sequi accusantium, consequuntur nisi! Harum, id possimus!</p>
+		</article>
+		<div style="gap:15px;" class="padding-top:90px padding-bottom:90px margin-top:25px margin-bottom:25px display:grid md:grid-template-columns:auto__auto__auto md:grid-template-rows:auto__auto">
+			<div class="md:height:223px lg:height:306px xl:height:390px" img></div>
+			<div class="md:height:223px lg:height:306px xl:height:390px" img></div>
+			<div class="md:height:223px lg:height:306px xl:height:390px" img></div>
+			<div class="md:height:223px lg:height:306px xl:height:390px" img></div>
+			<div class="md:height:223px lg:height:306px xl:height:390px" img></div>
+			<div class="md:height:223px lg:height:306px xl:height:390px" img></div>
+		</div>
+	</main>
+	<footer class="background-color:#3a3636 padding:50px__0px">
+		<div class="margin:0__auto display:grid md:grid-template-columns:50%__50% md:grid-template-rows:auto__auto md:width:700px lg:width:950px xl:width:1200px lg:grid-template-columns:37%__21%__21%__21% lg:grid-template-rows:auto">
+			<div class="display:flex justify-content:center align-items:center flex-direction:column">
+				<div class="height:50px width:50px background-color:white text-align:center display:flex justify-content:center align-items:center"><div class="color:#3a3636 font-size:19px">Yve</div></div>
+				<p class="color:#777777 font-size:15px margin-top:5px font-weight:bold">© 2017 KLLR All Rights Reserved</p>
+			</div>
+			<div class="display:flex justify-content:center align-items:center flex-direction:column margin-top:25px">
+				<h2 class="color:white font-size:15px margin-bottom:15px">Contact</h2>
+				<ul class="list-style-type:none display:flex flex-direction:column align-items:center justify-content:center color:#777777 font-weight:bold">
+					<li>your@example.com</li>
+					<li>123 456 789</li>
+					<li>777 Fifth Ave</li>
+					<li>New York, NY 10153</li>
+				</ul>
+			</div>
+			<div class="display:flex justify-content:center align-items:center flex-direction:column margin-top:25px">
+				<h2 class="color:white font-size:15px margin-bottom:15px">Menu</h2>
+				<ul class="list-style-type:none display:flex flex-direction:column align-items:center justify-content:center color:#777777 font-weight:bold">
+					<li>Home</li>
+					<li>Portfolio</li>
+					<li>Info</li>
+					<li>Blog</li>
+				</ul>
+			</div>
+			<div class="display:flex justify-content:center align-items:center flex-direction:column margin-top:25px">
+				<h2 class="color:white font-size:15px margin-bottom:15px">Social</h2>
+				<ul class="list-style-type:none display:flex flex-direction:column align-items:center justify-content:center color:#777777 font-weight:bold">
+					<li>Facebook</li>
+					<li>Twitter</li>
+					<li>Instagram</li>
+					<li>Dribbble</li>
+				</ul>
+			</div>
+		</div>
+	</footer>
+
+	<script src="./dist/stylify.native.js"></script>
+ 	<script src="./dist/profiler.js"></script>
+</body>
+</html>
