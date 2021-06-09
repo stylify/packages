@@ -68,7 +68,15 @@ export default class CompilationResult {
 	public generateCss(): string {
 		let css = '';
 
-		for (let screenKey in this.cssTree) {
+		//posunutí class pro všechno na začátek a 
+		//mq na konec tak ja jdou za sebou
+		let cssTreeKeys = Object.keys(this.cssTree);
+		if (cssTreeKeys.length > 1) {
+			cssTreeKeys.pop();
+			cssTreeKeys.unshift('_');
+		}
+
+		for (const screenKey of cssTreeKeys) {
 			if (Object.keys(this.cssTree[screenKey]).length === 0) {
 				continue;
 			}
@@ -86,6 +94,7 @@ export default class CompilationResult {
 		};
 
 		this.changed = false;
+		this.lastBuildInfo = {};
 		this.lastBuildInfo.completed = true;
 		return css.trim();
 	}
