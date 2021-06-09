@@ -81,7 +81,7 @@ export default class CompilationResult {
 				continue;
 			}
 			let screenCss = '';
-			const screenOpen = screenKey === '_' ? '' : this.screens[screenKey] + '{'
+			const screenOpen = screenKey === '_' ? '' : `\n${this.screens[screenKey]}` + '{\n'
 			const screenClose = '}';
 
 			for (let selector in this.cssTree[screenKey]) {
