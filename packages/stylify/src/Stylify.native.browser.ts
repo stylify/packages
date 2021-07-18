@@ -1,8 +1,10 @@
-import Stylify from './Stylify.browser';
-import { compilerConfig } from '../es5/Configurations/NativeConfiguration';
+// @ts-nocheck
 
-export default (
+import Stylify from './Stylify.browser';
+import { nativeConfig as compilerConfig } from '.';
+
+export default
 	Stylify.configure({
 		compiler: compilerConfig
 	})
-);
+;

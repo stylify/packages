@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import { h, Component } from 'preact';
 
 export default class DomNodesCounterExtension extends Component {
@@ -9,7 +11,7 @@ export default class DomNodesCounterExtension extends Component {
 		totalDomNodesCount: 0
 	}
 
-	constructor() {
+	constructor(config) {
 		super();
 
 		document.addEventListener('DOMContentLoaded', () => {

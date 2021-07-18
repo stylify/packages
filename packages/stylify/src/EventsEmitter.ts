@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 class EventsEmitter {
 
 	private eventListeners: Record<string, any> = {};
@@ -12,7 +14,7 @@ class EventsEmitter {
 		});
 
 		return this;
-	};
+	}
 
 	addListener = (event: string, callback: CallableFunction, id: string = null): EventsEmitter => {
 		if (!(event in this.eventListeners)) {

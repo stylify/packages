@@ -1,13 +1,16 @@
+// @ts-nocheck
+
 import './icons/style.css';
 import { render, Component } from 'preact';
-import htm from 'htm';
-import EventsEmitter from '../EventsEmitter';
+//import htm from 'htm';
+//import EventsEmitter from '../EventsEmitter';
 
 const extensions = {};
+let extensionsConfig = {};
 
 const ToolbarExtension = ({ extensionName }) => {
 	const TagName = extensions[extensionName];
-	return <TagName />;
+	return <TagName config={extensionsConfig} />;
 }
 
 class ProfilerToolbar extends Component {
@@ -59,7 +62,7 @@ class ProfilerToolbar extends Component {
 	}
 
 	private componentDidMount = () => {
-		window.Stylify.EventsEmitter.addListener('stylify:runtime:uncloak', (data) => {
+		this.props.config.stylify.EventsEmitter.addListener('stylify:runtime:uncloak', (data) => {
 			const elementId = data.id || null;
 
 			if (elementId !== 'stylify-profiler') {
@@ -78,9 +81,9 @@ class ProfilerToolbar extends Component {
 				s-cloak="stylify-profiler"
 				hidden={this.state.profilerVisible === false}
 				id="stylify-profiler"
-				class="align-items:center position:fixed bottom:0 left:0 background:#000 color:#fff width:auto font-family:arial font-size:12px display:flex line-height:1"
+				class="align-items:center white-space:nowrap position:fixed bottom:0 left:0 background:#000 color:#fff width:auto font-family:arial font-size:12px display:flex line-height:1"
 			>
-				<a role="button" class="font-size:14px line-height:26px padding:0__8px align-items:center display:inline-block cursor:pointer user-select:none" onClick={this.toggleExtensionsVisibility}>
+				<a role="button" class="font-size:12px line-height:20px padding:0__8px align-items:center display:inline-block cursor:pointer user-select:none" onClick={this.toggleExtensionsVisibility}>
 					<strong>Stylify</strong>
 				</a>
 				<div class={`align-items:center display:${this.state.extensionsVisible ? 'flex' : 'none'} content-visibility:${this.state.extensionsVisible ? 'visible' : 'hidden'}`}>
@@ -93,7 +96,9 @@ class ProfilerToolbar extends Component {
 	}
 }
 
-const initProfilerToolbar = (): void => {
+const initProfilerToolbar = (profilerConfig): void => {
+	extensionsConfig = profilerConfig;
+
 	let profilerToolbarElement = document.querySelector('#stylify-profiler');
 
 	if (!profilerToolbarElement) {
@@ -102,7 +107,7 @@ const initProfilerToolbar = (): void => {
 		document.body.appendChild(profilerToolbarElement);
 	}
 
-	render(<ProfilerToolbar />, profilerToolbarElement, profilerToolbarElement);
+	render(<ProfilerToolbar config={extensionsConfig} />, profilerToolbarElement, profilerToolbarElement);
 };
 
 const addProfilerExtension = (component: Component) => {

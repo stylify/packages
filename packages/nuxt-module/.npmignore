@@ -1,0 +1,14 @@
+/tests/
+/tmp/
+/tools/
+/playground/
+.editorconfig
+.eslintrc.yml
+.gitignore
+.npmignore
+.prettierignore
+.prettierc.yml
+index.html
+jest.config.js
+rollup.config.js
+tsconfig.es6.json

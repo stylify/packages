@@ -1,5 +1,6 @@
-import { Compiler } from ".";
-import EventsEmitter from "./EventsEmitter";
+// @ts-nocheck
+
+import { Compiler, EventsEmitter } from '.';
 
 export default class Runtime {
 
@@ -11,40 +12,35 @@ export default class Runtime {
 
 	private CompilerResult = null;
 
-	private initialPaintCompleted: Boolean = false;
+	private initialPaintCompleted = false;
 
-	public redrawTimeout: number = 10;
+	private mutationObserverInitialized = false;
+
+	public redrawTimeout = 5;
 
 	constructor(config: Record<string, any> = {}) {
 		if (typeof document === 'undefined') {
 			return;
 		}
 
-		const repaintStartTime = performance.now();
 		this.configure(config);
 		this.initialPaintCompleted = false;
-		const content = document.documentElement.outerHTML;
 
-		document.addEventListener('DOMContentLoaded', () => {
-			const css = this.updateCss(content);
-			this.initialPaintCompleted = true;
-			this.initMutationObserver();
-
-			if (css === null) {
-				return;
-			}
-
-			EventsEmitter.dispatch('stylify:runtime:repainted', {
-				css: css,
-				repaintTime: performance.now() - repaintStartTime,
-				compilerResult: this.CompilerResult,
-				content: content
+		if (['complete', 'loaded', 'interactive'].includes(document.readyState)) {
+			this.init();
+		} else {
+			document.addEventListener('DOMContentLoaded', () => {
+				this.init();
 			});
-		});
+		}
 	}
 
-	public configure(config) {
+	public configure(config): Record<string, any> {
 		this.Compiler = config.compiler;
+
+		if (typeof config.cache !== 'undefined' && !this.initialPaintCompleted) {
+			this.hydrate(config.cache);
+		}
 
 		if (this.initialPaintCompleted) {
 			this.updateCss(document.documentElement.outerHTML);
@@ -52,15 +48,75 @@ export default class Runtime {
 
 		this.redrawTimeout = config.redrawTimeout || this.redrawTimeout;
 
-		EventsEmitter.dispatch('stylify:runtime:configured', this);
+		EventsEmitter.dispatch('stylify:runtime:configured', {
+			config: config
+		});
 
 		return this;
 	}
 
+	private init() {
+		if (!this.initialPaintCompleted) {
+			const repaintStartTime = performance.now();
+			const content = document.documentElement.outerHTML;
+			const css = this.updateCss(content);
+			this.initialPaintCompleted = true;
+
+			if (css !== null) {
+				EventsEmitter.dispatch('stylify:runtime:repainted', {
+					css: css,
+					repaintTime: performance.now() - repaintStartTime,
+					compilerResult: this.CompilerResult,
+					content: content
+				});
+			}
+		}
+
+		if (!this.mutationObserverInitialized) {
+			this.initMutationObserver();
+		}
+	}
+
+	private hydrate(data: string|Record<string, any> = null): void {
+		if (!data) {
+			const cacheElements = document.querySelectorAll('.stylify-runtime-cache');
+
+			let cacheElement;
+			if (cacheElements.length) {
+				for (cacheElement of cacheElements) {
+					cacheElement.classList.add('processed');
+					if (cacheElement.innerHTML.trim().length > 0) {
+						this.hydrate(cacheElement.innerHTML);
+					}
+					cacheElement.parentElement.removeChild(cacheElement);
+				}
+				return;
+			}
+		}
+
+		if (!data) {
+			return;
+		}
+
+		const parsedData = typeof data === 'string' ? JSON.parse(data) : data;
+		this.Compiler.hydrate(parsedData);
+
+		if (!this.CompilerResult) {
+			this.CompilerResult = this.Compiler.createResultFromSerializedData(parsedData);
+		} else {
+			this.CompilerResult.hydrate(parsedData);
+		}
+
+		EventsEmitter.dispatch('stylify:runtime:hydrated', {
+			cache: parsedData
+		});
+	}
+
 	private updateCss(content: string): string|null {
+		this.hydrate();
 		this.CompilerResult = this.Compiler.compile(content, this.CompilerResult);
 
-		if (!this.CompilerResult.changed) {
+		if (!this.CompilerResult.changed && this.initialPaintCompleted) {
 			return null;
 		}
 
@@ -69,7 +125,8 @@ export default class Runtime {
 		return css;
 	}
 
-	public initMutationObserver() {
+	public initMutationObserver(): void {
+		this.mutationObserverInitialized = true;
 		const targetNode = document.documentElement;
 		const config = { attributeFilter: ['class'], childList: true, subtree: true };
 		let compilerContentQueue = '';
@@ -82,13 +139,13 @@ export default class Runtime {
 			}
 
 			mutationsList.forEach(mutation => {
-				if (mutation.target.id === this.STYLIFY_STYLE_EL_ID) {
+				if (mutation.target.nodeType !== Node.ELEMENT_NODE || mutation.target.id === this.STYLIFY_STYLE_EL_ID) {
 					return;
 				}
 
 				compilerContentQueue += mutation.type === 'attributes' && mutation.attributeName === 'class'
 					? 'class="' + mutation.target['className'] + '"'
-					: mutation.target['outerHTML']
+					: mutation.target['outerHTML'];
 			});
 
 			if (!compilerContentQueue.trim().length) {
@@ -124,14 +181,14 @@ export default class Runtime {
 		observer.observe(targetNode, config);
 	}
 
-	public injectCss(css: string) {
-		let el = document.querySelector('#' + this.STYLIFY_STYLE_EL_ID)
+	public injectCss(css: string): void {
+		let el = document.querySelector('#' + this.STYLIFY_STYLE_EL_ID);
 
 		if (el) {
 			el.innerHTML = css;
 		} else {
 			el = document.createElement('style');
-			el.id = this.STYLIFY_STYLE_EL_ID
+			el.id = this.STYLIFY_STYLE_EL_ID;
 			el.innerHTML = css;
 			document.head.appendChild(el);
 		}
@@ -140,10 +197,10 @@ export default class Runtime {
 		let element: Element;
 
 		for (element of elements) {
-			element.removeAttribute(this.STYLIFY_CLOAK_ATTR_NAME)
+			element.removeAttribute(this.STYLIFY_CLOAK_ATTR_NAME);
 			EventsEmitter.dispatch('stylify:runtime:uncloak', {
 				id: element.getAttribute(this.STYLIFY_CLOAK_ATTR_NAME) || null,
-				el: element,
+				el: element
 			});
 		}
 	}

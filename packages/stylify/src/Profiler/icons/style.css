@@ -1,6 +1,6 @@
 @font-face {
   font-family: 'stylify-profiler';
-  src: url('fonts/stylify-profiler.woff?yzzyxu') format('woff');
+  src: url('fonts/stylify-profiler.woff?v857gh') format('woff');
   font-weight: normal;
   font-style: normal;
   font-display: block;
@@ -21,6 +21,9 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+.sp-icon-layers:before {
+  content: "\e908";
+}
 .sp-icon-link:before {
   content: "\e907";
 }

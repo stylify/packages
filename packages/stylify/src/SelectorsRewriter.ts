@@ -1,24 +1,26 @@
-import CompilationResult  from "./Compiler/CompilationResult";
+// @ts-nocheck
+
+/* import { CompilationResult }  from "./Compiler/CompilationResult";
+ */
 
 class SelectorsRewriter {
 
-	public rewrite = (compilationResult: CompilationResult, regExp: RegExp, content: string): string => {
-		let classReplacementMap = {};
+	public rewrite = (compilationResult/* : CompilationResult */, regExp: RegExp, content: string): string => {
+		const classReplacementMap = {};
 		let originalClassMatch;
-		const selectorsMap = compilationResult.processedSelectors;
 		regExp.lastIndex = 0;
 
-		while(originalClassMatch = regExp.exec(content)) {
+		while (originalClassMatch = regExp.exec(content)) {
 			let modifiedClassMatch: string = originalClassMatch[0];
 
-			Object.keys(selectorsMap).forEach(selector => {
+			Object.keys(compilationResult.selectorsList).forEach(selector => {
 				modifiedClassMatch = modifiedClassMatch.replace(
 					new RegExp(selector + '\\b', 'gi'),
-					selectorsMap[selector]
+					compilationResult.selectorsList[selector].mangledSelector
 				);
 			});
 
-			classReplacementMap[originalClassMatch[0]] = modifiedClassMatch
+			classReplacementMap[originalClassMatch[0]] = modifiedClassMatch;
 		}
 
 		Object.keys(classReplacementMap).forEach(classToReplace => {

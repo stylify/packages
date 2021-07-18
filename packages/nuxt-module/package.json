@@ -1,0 +1,52 @@
+{
+	"name": "@stylify/nuxt-module",
+	"description": "Nuxt module for @stylify/stylify.",
+	"version": "0.0.1",
+	"main": "./lib/index.js",
+	"scripts": {
+		"lint:check": "eslint ./{src}/**/*.{js,ts}",
+		"lint:fix": "eslint ./{src}/**/*.{js,ts}",
+		"jest:test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+		"plg:dev": "cd playground && yarn install && yarn dev",
+		"plg:start": "cd playground && yarn install && yarn build && yarn start"
+	},
+	"files": [
+		"lib/"
+	],
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/stylify/packages.git",
+		"directory": "packages/nuxt-module"
+	},
+	"keywords": [],
+	"author": "Vladimír Macháček",
+	"license": "MIT",
+	"bugs": {
+		"url": "https://github.com/stylify/packages/issues"
+	},
+	"homepage": "https://github.com/stylify/packages/#readme",
+	"devDependencies": {
+		"@babel/core": "^7.12.10",
+		"@babel/preset-env": "^7.12.11",
+		"@babel/preset-typescript": "^7.12.7",
+		"@stylify/stylify": "^0.0.1",
+		"@types/node": "^14.14",
+		"@typescript-eslint/eslint-plugin": "^4.11",
+		"@typescript-eslint/parser": "^4.11",
+		"babel-jest": "^26.6.3",
+		"eslint": "^7.16",
+		"jest": "^26.6.3",
+		"jest-environment-jsdom": "^26.6.2",
+		"jest-environment-node": "^26.6.2",
+		"prettier": "2.2.1",
+		"promise": "^8.1",
+		"tslib": "^2.0",
+		"typescript": "^4.1"
+	},
+	"publishConfig": {
+		"access": "public"
+	},
+	"dependencies": {
+		"loader-utils": "^2.0.0"
+	}
+}

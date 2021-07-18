@@ -1,13 +1,13 @@
-import path from 'path';
-import fs from 'fs';
-import prettier from "prettier";
+const path = require('path');
+const fs = require('fs');
+const prettier = require('prettier');
 
-const __dirname = path.join(process.cwd(), 'tools', 'native-properties-generator');
+const dirname = path.join(process.cwd(), 'tools', 'native-properties-generator');
 
-const browserPropertiesListPath = path.join(__dirname, 'tmp', 'complete-propertes-list.txt');
-const macroFunctionTemplatePath = path.join(__dirname, 'templates', 'function.js');
-const nativeConfigurationOutputFilePath = path.join(__dirname, '..', '..', 'src', 'Configurations', 'NativeConfiguration.ts');
-const nativeConfigurationConfigTemplateFilePath = path.join(__dirname, 'templates', 'config.js');
+const browserPropertiesListPath = path.join(dirname, 'tmp', 'complete-propertes-list.txt');
+const macroFunctionTemplatePath = path.join(dirname, 'templates', 'function.js');
+const nativeConfigurationOutputFilePath = path.join(dirname, '..', '..', 'src', 'Configurations', 'NativeConfiguration.ts');
+const nativeConfigurationConfigTemplateFilePath = path.join(dirname, 'templates', 'config.js');
 
 class NativePropertiesGenerator {
 	constructor() {
@@ -15,13 +15,13 @@ class NativePropertiesGenerator {
 	}
 
 	generate() {
-		const listsDirectoryPath = path.join(__dirname, 'lists')
-		let listsFilesContent = ''
+		const listsDirectoryPath = path.join(dirname, 'lists');
+		let listsFilesContent = '';
 
-		const lists = fs.readdirSync(listsDirectoryPath)
+		const lists = fs.readdirSync(listsDirectoryPath);
 		lists.forEach((file) => {
-			listsFilesContent += fs.readFileSync(path.join(__dirname, 'lists', file), 'utf8') + '\n';
-		})
+			listsFilesContent += fs.readFileSync(path.join(dirname, 'lists', file), 'utf8') + '\n';
+		});
 
 		let propertiesShortcuts = [
 			'background',
@@ -35,17 +35,17 @@ class NativePropertiesGenerator {
 			'font',
 			'list-style',
 			'margin',
-			'padding',
-		]
+			'padding'
+		];
 
-		const re = new RegExp(/^[\w-]+/, 'gm')
-		let propertyMatch
+		const re = new RegExp(/^[\w-]+/, 'gm');
+		let propertyMatch;
 
-		while ((propertyMatch = re.exec(listsFilesContent))) {
+		while (propertyMatch = re.exec(listsFilesContent)) {
 			let property = propertyMatch[0];
 
 			if (propertiesShortcuts.indexOf(property) > -1) {
-				continue
+				continue;
 			}
 
 			propertiesShortcuts.push(property);
@@ -56,16 +56,16 @@ class NativePropertiesGenerator {
 		});
 
 		const processedPropertiesRegExpString = this.convertMapIntoRegularExpression(this.propertiesMap);
-		const propertiesRegExp = '(' + processedPropertiesRegExpString + ')\\\\b:(\\\\S+)'
+		const propertiesRegExp = '(' + processedPropertiesRegExpString + ')\\\\b:(\\\\S+)';
 
 		fs.writeFileSync(browserPropertiesListPath, propertiesShortcuts.join('\n'));
 
 		const macrosTemplate = this.generateTemplate(
 			fs.readFileSync(macroFunctionTemplatePath, 'utf-8'),
 			{
-				__REG_EXP__: propertiesRegExp,
+				__REG_EXP__: propertiesRegExp
 			}
-		)
+		);
 
 		fs.writeFileSync(
 			nativeConfigurationOutputFilePath,
@@ -74,85 +74,85 @@ class NativePropertiesGenerator {
 				{
 					__SIDES_SHORTCUTS__: JSON.stringify(this.sidesShortcuts),
 					__SIZES_SHORTCUTS__: JSON.stringify(this.sizesShortcuts),
-					__MACROS__: macrosTemplate,
+					__MACROS__: macrosTemplate
 				},
 				true
 			)
-		)
+		);
 	}
 
 	assignPropertyToPropertiesMap(property) {
-		let keyPath = property.split('-')
-		let key
-		let lastKeyIndex = keyPath.length - 1
-		let object = this.propertiesMap
-		let i
+		let keyPath = property.split('-');
+		let key;
+		let lastKeyIndex = keyPath.length - 1;
+		let object = this.propertiesMap;
+		let i;
 
 		for (i = 0; i < lastKeyIndex; ++i) {
-			key = keyPath[i]
-			const keyInObject = key in object
+			key = keyPath[i];
+			const keyInObject = key in object;
 			if (!keyInObject) {
-				object[key] = {}
+				object[key] = {};
 			} else if (keyInObject && object[key] === true) {
-				object['_' + key] = true
-				object[key] = {}
+				object['_' + key] = true;
+				object[key] = {};
 			}
 
-			object = object[key]
+			object = object[key];
 		}
 
-		object[keyPath[lastKeyIndex]] = true
+		object[keyPath[lastKeyIndex]] = true;
 	}
 
 	convertMapIntoRegularExpression(map) {
-		let regExpString = ''
+		let regExpString = '';
 		const keys = Object.keys(map).filter((key) => {
-			return !key.startsWith('_')
-		})
-		const keysLength = keys.length
-		let iteration = 0
+			return !key.startsWith('_');
+		});
+		const keysLength = keys.length;
+		let iteration = 0;
 
 		keys.forEach((key) => {
-			iteration += 1
-			const value = map[key]
-			const keyShortHandIdentificator = '_' + key
-			const canBeShorthand = keyShortHandIdentificator in map
-			const keyIsShorthand = key.startsWith('_')
+			iteration += 1;
+			const value = map[key];
+			const keyShortHandIdentificator = '_' + key;
+			const canBeShorthand = keyShortHandIdentificator in map;
+			const keyIsShorthand = key.startsWith('_');
 
 			if (value !== true) {
-				const valueKeys = Object.keys(value)
+				const valueKeys = Object.keys(value);
 				if (!keyIsShorthand) {
-					regExpString += key
+					regExpString += key;
 				}
 
 				if (!canBeShorthand) {
-					regExpString += '-'
+					regExpString += '-';
 				}
 
 				if (valueKeys.length > 1 || value[valueKeys[0]] !== true) {
 					if (canBeShorthand) {
-						regExpString += '(?:-'
+						regExpString += '(?:-';
 					}
 
-					regExpString +=
-						'(?:' + this.convertMapIntoRegularExpression(value) + ')'
+					regExpString
+						+= '(?:' + this.convertMapIntoRegularExpression(value) + ')';
 
 					if (canBeShorthand) {
-						regExpString += ')?'
+						regExpString += ')?';
 					}
 				} else if (!keyIsShorthand) {
 					if (canBeShorthand) {
-						regExpString += '(?:-' + valueKeys[0] + ')?'
+						regExpString += '(?:-' + valueKeys[0] + ')?';
 					} else {
-						regExpString += valueKeys[0]
+						regExpString += valueKeys[0];
 					}
 				}
 			} else if (!keyIsShorthand) {
-				regExpString += key
+				regExpString += key;
 			}
 
 			if (iteration !== keysLength && !keyIsShorthand) {
-				regExpString += '|'
+				regExpString += '|';
 			}
 		});
 
@@ -162,17 +162,17 @@ class NativePropertiesGenerator {
 	generateTemplate(template, values, prettierEnabled = false) {
 
 		Object.keys(values).forEach((key) => {
-			const value = values[key]
+			const value = values[key];
 
-			template = template.replace(key, value)
-		})
+			template = template.replace(key, value);
+		});
 
 		if (prettierEnabled) {
-			template = prettier.format(template)
+			template = prettier.format(template);
 		}
 
-		return template
+		return template;
 	}
 }
 
-(new NativePropertiesGenerator()).generate();
+new NativePropertiesGenerator().generate();

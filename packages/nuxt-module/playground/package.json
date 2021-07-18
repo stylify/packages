@@ -1,0 +1,19 @@
+{
+	"name": "stylify-nuxt",
+	"type": "module",
+	"scripts": {
+		"dev": "nuxt",
+		"build": "nuxt build",
+		"generate": "nuxt generate",
+		"start": "nuxt start"
+	},
+	"dependencies": {
+		"@nuxt/components": "^1.1.1",
+		"@stylify/stylify": "../../stylify",
+		"nuxt": "^2.14.5"
+	},
+	"devDependencies": {
+		"node-sass": "^4.14.1",
+		"sass-loader": "^10.0.2"
+	}
+}
