@@ -1,12 +1,10 @@
-// @ts-nocheck
-
 import { h, Component } from 'preact';
 
 export default class BuildsAnalyzerExtension extends Component {
 
 	private openCodeInNewWindow = null;
 
-	private state: Record<string, any> = {
+	public state: Record<string, any> = {
 		cssInBase64: null,
 		totalRepaintTime: 0,
 		actualSize: 0,
@@ -80,7 +78,7 @@ export default class BuildsAnalyzerExtension extends Component {
 					|<strong title="Total builds repaint time" class="margin-left:8px"><i class="sp-icon sp-icon-clock profiler-extension__button-icon"></i><span class="profiler-extension__button-label">{this.convertTimeToSeconds(this.state.totalRepaintTime)}</span></strong>
 				</a>
 				<div class={`display:${this.state.buildsListVisible ? 'block' : 'none'} profiler-extension__dropdown`}>
-					<table class="text-align:left white-space:nowrap" cellspacing="0">
+					<table class="text-align:left white-space:nowrap" cellSpacing="0">
 						<thead>
 							<tr>
 								<th class="padding:8px">Build</th>

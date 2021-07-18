@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 export default class MacroMatch {
 
 	public fullMatch: string = null;
@@ -21,7 +19,7 @@ export default class MacroMatch {
 		this.screen = '_';
 		this.pseudoClasses = [];
 		match.splice(0, 2);
-	 	this.captures = match.filter(matchToFilter => typeof matchToFilter !== 'undefined');
+		this.captures = match.filter(matchToFilter => typeof matchToFilter !== 'undefined');
 
 		if (this.screenAndPseudoClassesMatch) {
 			const screenAndPseudoClassesMatchArray = this.screenAndPseudoClassesMatch.split(':');
@@ -40,8 +38,8 @@ export default class MacroMatch {
 		return typeof this.captures[index] !== 'undefined';
 	}
 
-	public getCapture(index: number|string, defaultValue = ''): string|any {
-		return this.hasCapture(index) ? this.captures[index].replace(/__/g, ' ') : defaultValue;
+	public getCapture(index: number|string, defaultValue = ''): string {
+		return this.hasCapture(index) ? this.captures[index].replace(/__/g, ' ') as string : defaultValue;
 	}
 
 }

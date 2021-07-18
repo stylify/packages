@@ -1,13 +1,34 @@
 import fs from 'fs';
 import path from 'path';
-import { Compiler, SelectorsRewriter, nativeConfig as compilerConfig } from '@stylify/stylify';
+import {
+	Compiler,
+	SelectorsRewriter,
+	nativeConfig as compilerConfig,
+	CompilerConfigInterface,
+	RuntimeConfigInterface,
+	CompilationResult
+} from '@stylify/stylify';
 
-const CONFIG_FILE_NAME = 'stylify.config.js';
+const configFileName = 'stylify.config.js';
 const serializedCompilationResultPreflightFileName = 'stylify-preflight-cache.json';
-let serializedCompilationResultPreflightFilePath = null;
+let serializedCompilationResultPreflightFilePath: string = null;
 
-let moduleConfig = {
-	configPath: CONFIG_FILE_NAME,
+export interface StylifyNuxtModuleConfigInterface {
+	configPath: string,
+	cache: {
+		enabled: boolean,
+		recordsLimit: number
+	},
+	generateCssPerPage: boolean,
+	embeddedCssLimit: number,
+	importStylify: boolean,
+	importProfiler: boolean,
+	compiler: Partial<CompilerConfigInterface>,
+	runtime: Partial<RuntimeConfigInterface>
+}
+
+let moduleConfig: StylifyNuxtModuleConfigInterface = {
+	configPath: configFileName,
 	cache: {
 		enabled: true,
 		recordsLimit: 100
@@ -20,7 +41,7 @@ let moduleConfig = {
 	runtime: {}
 };
 
-const mergeObject = (...objects) => {
+const mergeObject = (...objects): any => {
 	const newObject = {};
 
 	for (const processedObject of objects) {
@@ -28,22 +49,22 @@ const mergeObject = (...objects) => {
 			const processedObjectValue = processedObject[processedObjectKey];
 			newObject[processedObjectKey] = !(processedObjectKey in newObject)
 				|| !(typeof processedObjectValue !== null && typeof processedObjectValue === 'object')
-					? processedObjectValue
-					: mergeObject(newObject[processedObjectKey], processedObjectValue);
+				? processedObjectValue
+				: mergeObject(newObject[processedObjectKey], processedObjectValue);
 		}
 	}
 
 	return newObject;
-}
+};
 
-const mergeConfig = (config) => {
+const mergeConfig = (config): void => {
 	moduleConfig = mergeObject(moduleConfig, config);
-}
+};
 
-const convertObjectToStringableForm = (processedObject) => {
-	const newObject = {}
+const convertObjectToStringableForm = (processedObject: Record<string, any>): Record<string, any> => {
+	const newObject = {};
 
-	for (let key in processedObject) {
+	for (const key in processedObject) {
 		const processedValue = processedObject[key];
 
 		if (processedValue !== null
@@ -53,35 +74,35 @@ const convertObjectToStringableForm = (processedObject) => {
 		) {
 			newObject[key] = convertObjectToStringableForm(processedValue);
 		} else if (typeof processedValue === 'function') {
-			newObject[key] = 'FN__' + processedValue.toString();
+			newObject[key] = `FN__${processedValue.toString() as string}`;
 		} else {
 			newObject[key] = processedValue;
 		}
 	}
 
 	return newObject;
-}
+};
 
-const compilationResultCacheExists = () => {
-	return fs.existsSync(serializedCompilationResultPreflightFilePath);
-}
+const compilationResultCacheExists = (): boolean => {
+	return fs.existsSync(serializedCompilationResultPreflightFilePath) as boolean;
+};
 
-const loadCompilationResultCache = () => {
+const loadCompilationResultCache = (): Record<string, any> => {
 	if (!compilationResultCacheExists()) {
 		saveCompilationResultCache({});
 		return {};
 	}
 
-	return JSON.parse(fs.readFileSync(serializedCompilationResultPreflightFilePath));
+	return JSON.parse(fs.readFileSync(serializedCompilationResultPreflightFilePath).toString()) as Record<string, any>;
 };
 
-const saveCompilationResultCache = (data) => {
+const saveCompilationResultCache = (data: Record<string, any>): void => {
 	fs.writeFileSync(serializedCompilationResultPreflightFilePath, JSON.stringify(data, null, 4));
-}
+};
 
-export default function Stylify() {
-	const { nuxt } = this
-	const nuxtIsInDevMode =  typeof nuxt.options.dev === "boolean" ? nuxt.options.dev : false;
+export default function Stylify(): void {
+	const { nuxt } = this;
+	const nuxtIsInDevMode = typeof nuxt.options.dev === 'boolean' ? nuxt.options.dev : false;
 	const nuxtBuildDir = nuxt.options.buildDir;
 	serializedCompilationResultPreflightFilePath = path.join(
 		nuxtBuildDir, serializedCompilationResultPreflightFileName
@@ -109,7 +130,7 @@ export default function Stylify() {
 	const processTemplateParams = (params, context = null) => {
 		const url = context ? context.nuxt.routePath : null;
 		const isUrlCached = context ? url in cache : false;
-		let compilationResult;
+		let compilationResult: CompilationResult;
 		let metaTags;
 
 		if (context && !nuxtIsInDevMode && isUrlCached) {
@@ -170,13 +191,13 @@ export default function Stylify() {
 				options: {
 					loadCompilationResultCache: loadCompilationResultCache,
 					saveCompilationResultCache: saveCompilationResultCache,
-					Compiler: compiler,
+					Compiler: compiler
 				}
 			}
 		});
-	})
+	});
 
-	nuxt.hook('build:done', async () => {
+	nuxt.hook('build:done', () => {
 		const cache = loadCompilationResultCache();
 		const newSelectorsList = {};
 
@@ -187,7 +208,7 @@ export default function Stylify() {
 		}
 
 		cache.selectorsList = newSelectorsList;
-		
+
 		if (moduleConfig.generateCssPerPage) {
 			cache.cssTree = {};
 		}

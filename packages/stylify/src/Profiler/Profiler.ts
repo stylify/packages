@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 import * as preact from 'preact';
 import htm from 'htm';
 import { addProfilerExtension, initProfilerToolbar } from './Toolbar';
@@ -9,8 +7,16 @@ import {
 	DomNodesCounterExtension,
 	CacheInfoExtension
 } from './Extensions';
+import { Stylify } from '..';
 
-export default class Profiler {
+declare global {
+    interface Window {
+        title: string;
+		Stylify: Stylify
+    }
+}
+
+class Profiler {
 
 	private readonly PRISM_VERSION = '1.23.0';
 
@@ -23,8 +29,8 @@ export default class Profiler {
 	private stylify = null;
 
 
-	constructor(stylify = (<any>window).Stylify) {
-		this.stylify = stylify || null;
+	constructor(stylify = null) {
+		this.stylify = stylify || window.Stylify;
 	}
 
 	public init(stylify = null): boolean {
@@ -154,3 +160,7 @@ export default class Profiler {
 	}
 
 }
+
+export { Profiler };
+
+export default Profiler;

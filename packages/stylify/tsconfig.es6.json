@@ -5,10 +5,9 @@
 	"allowSyntheticDefaultImports": true,
 	"lib": [
 		"esnext",
+		"esnext.string",
 		"dom",
-		"esnext",
-		"es6",
-		"dom",
+		"dom.iterable",
 		"es5"
 	],
 	"esModuleInterop": true,
@@ -17,5 +16,6 @@
 	"resolveJsonModule": true,
 	"jsx": "react-jsx",
 	"jsxImportSource": "preact",
-	"noEmit": true
+	"noEmit": true,
+	"allowJs": true
 }

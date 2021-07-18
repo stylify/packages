@@ -1,14 +1,26 @@
-// @ts-nocheck
+export interface SerializedCssRecordInterface {
+	selectors: string[],
+	properties: Record<string, string | number>,
+	pseudoClasses: string[]
+}
 
-export default class CssRecord {
+export interface CssRecordCompileParametersConfig {
+	minimize: boolean
+}
+
+class CssRecord {
 
 	private selectors: string[] = [];
 
-	private properties: Record<string, any> = {};
+	private properties: Record<string, string | number> = {};
 
 	public pseudoClasses: string[] = [];
 
-	constructor(selector: string|string[] = null, properties: Record<string, any> = {}, pseudoClases: string[] = []) {
+	constructor(
+		selector: string|string[] = null,
+		properties: Record<string, string | number> = {},
+		pseudoClases: string[] = []
+	) {
 		if (selector) {
 			if (typeof selector === 'string') {
 				selector = [selector];
@@ -23,13 +35,13 @@ export default class CssRecord {
 		this.pseudoClasses = pseudoClases;
 	}
 
-	public addProperty(property, value) {
+	public addProperty(property: string, value: string | number): void {
 		if (!this.hasProperty(property)) {
 			this.properties[property] = value;
 		}
 	}
 
-	public addSelector(selector, pseudoClass = null) {
+	public addSelector(selector: string, pseudoClass: string = null): void {
 		// TODO is this selector[0] and substr necessary?
 		// selector = selector[0] + selector.substr(1).replace(/([^-_a-zA-Z\d])/g, '\\$1');
 		selector = selector.replace(/([^-_a-zA-Z\d])/g, '\\$1');
@@ -43,39 +55,42 @@ export default class CssRecord {
 		}
 	}
 
-	public getSelector(selector) {
+	public getSelector(selector: string): string | null {
 		return this.hasSelector(selector) ? this.selectors[this.selectors.indexOf(selector)] : null;
 	}
 
-	public hasProperty(name) {
-		return typeof this.properties[name] !== 'undefined';
+	public hasProperty(name: string): boolean {
+		return name in this.properties;
 	}
 
-	public hasSelector(selector) {
+	public hasSelector(selector: string): boolean {
 		return this.selectors.indexOf(selector) > -1;
 	}
 
-	public compile(config: Record<string, any> = {}) {
-		const minimize: boolean = typeof config.minimize === 'undefined' ? false : config.minimize;
+	public compile(config: Partial<CssRecordCompileParametersConfig> = {}): string {
+		const minimize: boolean = 'minimize' in config ? config.minimize : false;
 		const newLine = minimize ? '' : '\n';
 
 		return this.selectors.map(selector => '.' + selector).join(',' + newLine) + '{' + newLine
 			+ Object.keys(this.properties)
-				.map(property => (minimize ? '' : '\t') + property + ':' + this.properties[property])
+				.map(property => `${(minimize ? '' : '\t') + property}:${this.properties[property]}`)
 				.join(';' + newLine)
 			+ newLine + '}' + newLine;
 	}
 
-	public serialize(): Record<string, any> {
+	public serialize(): SerializedCssRecordInterface {
 		const serializedObject = {
 			selectors: this.selectors.map(selector => {
 				return selector.replace(/\\([^-_a-zA-Z\d])/g, '$1');
 			}),
 			properties: this.properties,
+			pseudoClasses: []
 		};
+
 		if (this.properties.length) {
-			serializedObject.pseudoClasses = this.pseudoClasses
+			serializedObject.pseudoClasses = this.pseudoClasses;
 		}
+
 		return serializedObject;
 	}
 
@@ -102,3 +117,7 @@ export default class CssRecord {
 	}
 
 }
+
+export { CssRecord };
+
+export default CssRecord;

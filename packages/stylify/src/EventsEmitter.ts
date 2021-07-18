@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 class EventsEmitter {
 
 	private eventListeners: Record<string, any> = {};

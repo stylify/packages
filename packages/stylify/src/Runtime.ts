@@ -1,8 +1,14 @@
-// @ts-nocheck
+import { Compiler, SerializedCompilerInterface } from './Compiler';
+import { CompilationResult } from './Compiler/CompilationResult';
+import EventsEmitter from './EventsEmitter';
 
-import { Compiler, EventsEmitter } from '.';
+export interface RuntimeConfigInterface {
+	compiler: Compiler,
+	cache: string | SerializedCompilerInterface,
+	redrawTimeout: number
+}
 
-export default class Runtime {
+class Runtime {
 
 	private readonly STYLIFY_STYLE_EL_ID: string = 'stylify-css';
 
@@ -10,7 +16,7 @@ export default class Runtime {
 
 	private Compiler: Compiler = null;
 
-	private CompilerResult = null;
+	private CompilationResult: CompilationResult = null;
 
 	private initialPaintCompleted = false;
 
@@ -18,7 +24,7 @@ export default class Runtime {
 
 	public redrawTimeout = 5;
 
-	constructor(config: Record<string, any> = {}) {
+	constructor(config: Partial<RuntimeConfigInterface> = {}) {
 		if (typeof document === 'undefined') {
 			return;
 		}
@@ -35,7 +41,7 @@ export default class Runtime {
 		}
 	}
 
-	public configure(config): Record<string, any> {
+	public configure(config: Partial<RuntimeConfigInterface>): Record<string, any> {
 		this.Compiler = config.compiler;
 
 		if (typeof config.cache !== 'undefined' && !this.initialPaintCompleted) {
@@ -66,7 +72,7 @@ export default class Runtime {
 				EventsEmitter.dispatch('stylify:runtime:repainted', {
 					css: css,
 					repaintTime: performance.now() - repaintStartTime,
-					compilerResult: this.CompilerResult,
+					compilerResult: this.CompilationResult,
 					content: content
 				});
 			}
@@ -92,19 +98,17 @@ export default class Runtime {
 				}
 				return;
 			}
-		}
 
-		if (!data) {
 			return;
 		}
 
 		const parsedData = typeof data === 'string' ? JSON.parse(data) : data;
 		this.Compiler.hydrate(parsedData);
 
-		if (!this.CompilerResult) {
-			this.CompilerResult = this.Compiler.createResultFromSerializedData(parsedData);
+		if (this.CompilationResult) {
+			this.CompilationResult.hydrate(parsedData);
 		} else {
-			this.CompilerResult.hydrate(parsedData);
+			this.CompilationResult = this.Compiler.createResultFromSerializedData(parsedData);
 		}
 
 		EventsEmitter.dispatch('stylify:runtime:hydrated', {
@@ -114,13 +118,13 @@ export default class Runtime {
 
 	private updateCss(content: string): string|null {
 		this.hydrate();
-		this.CompilerResult = this.Compiler.compile(content, this.CompilerResult);
+		this.CompilationResult = this.Compiler.compile(content, this.CompilationResult);
 
-		if (!this.CompilerResult.changed && this.initialPaintCompleted) {
+		if (!this.CompilationResult.changed && this.initialPaintCompleted) {
 			return null;
 		}
 
-		const css = this.CompilerResult.generateCss();
+		const css: string = this.CompilationResult.generateCss();
 		this.injectCss(css);
 		return css;
 	}
@@ -138,13 +142,15 @@ export default class Runtime {
 				repaintStartTime = performance.now();
 			}
 
-			mutationsList.forEach(mutation => {
-				if (mutation.target.nodeType !== Node.ELEMENT_NODE || mutation.target.id === this.STYLIFY_STYLE_EL_ID) {
+			mutationsList.forEach((mutation) => {
+				if (mutation.target.nodeType !== Node.ELEMENT_NODE
+					|| mutation.target['id'] === this.STYLIFY_STYLE_EL_ID
+				) {
 					return;
 				}
 
 				compilerContentQueue += mutation.type === 'attributes' && mutation.attributeName === 'class'
-					? 'class="' + mutation.target['className'] + '"'
+					? `class="${mutation.target['className'] as string}"`
 					: mutation.target['outerHTML'];
 			});
 
@@ -168,7 +174,7 @@ export default class Runtime {
 				EventsEmitter.dispatch('stylify:runtime:repainted', {
 					css: css,
 					repaintTime: repaintTime,
-					compilerResult: this.CompilerResult,
+					compilerResult: this.CompilationResult,
 					content: compilerContentQueue
 				});
 
@@ -206,3 +212,7 @@ export default class Runtime {
 	}
 
 }
+
+export { Runtime };
+
+export default Runtime;

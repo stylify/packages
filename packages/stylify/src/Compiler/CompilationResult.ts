@@ -1,9 +1,31 @@
-// @ts-nocheck
-
-import CssRecord from './CssRecord';
+import { CssRecord, SerializedCssRecordInterface } from './CssRecord';
 import MacroMatch from './MacroMatch';
+import SelectorProperties from './SelectorProperties';
 
-export default class CompilationResult {
+export interface CompilationResultConfigInterface {
+	dev: boolean,
+	screens: Record<string, string>,
+	selectorsList: Record<string, string>,
+	mangleSelectors: boolean,
+	variables: Record<string, string| number>
+}
+
+interface SerializedCompilationResultInterface {
+	mangleSelectors: boolean,
+	dev: boolean,
+	screens: Record<string, string>,
+	selectorsList: Record<string, SelectorsListInterface>,
+	mangledSelectorsMap: Record<string, string>,
+	cssTree: Record<string, Record<string, SerializedCssRecordInterface>>,
+	variables: Record<string, string | number>
+}
+
+export interface SelectorsListInterface {
+	mangledSelector: string,
+	processed: boolean
+}
+
+class CompilationResult {
 
 	private MATCH_VARIABLE_REG_EXP = /\$([\w-_]+)/g;
 
@@ -11,19 +33,19 @@ export default class CompilationResult {
 
 	public mangleSelectors = false;
 
-	public dev = false
+	public dev = false;
 
-	public screens: Record<string, any> = {};
+	public screens: Record<string, string> = {};
 
-	public mangledSelectorsMap: Record<string, any> = {};
+	public mangledSelectorsMap: Record<string, string> = {};
 
-	public selectorsList: Record<string, any> = {};
+	public selectorsList: Record<string, SelectorsListInterface> = {};
 
-	public cssTree: Record<string, any> = {
+	public cssTree: Record<string, Record<string, CssRecord>> = {
 		_: {}
 	};
 
-	public variables: Record<string, any> = {};
+	public variables: Record<string, string | number> = {};
 
 	public lastBuildInfo: Record<string, any> = null;
 
@@ -32,12 +54,13 @@ export default class CompilationResult {
 		this.configure(config);
 	}
 
-	public configure(config: Record<string, any> = {}) {
+	public configure(config: Partial<CompilationResultConfigInterface> = {}): void {
 		this.dev = typeof config.dev === 'undefined' ? this.dev : config.dev;
 		this.screens = config.screens || this.screens;
 		this.selectorsList = Object.assign(this.selectorsList, 'selectorsList' in config ? config.selectorsList : {});
-		// TODO always generate short id?
-		this.mangleSelectors = typeof config.mangleSelectors === 'undefined' ? this.mangleSelectors : config.mangleSelectors;
+		this.mangleSelectors = typeof config.mangleSelectors === 'undefined'
+			? this.mangleSelectors
+			: config.mangleSelectors;
 		this.variables = config.variables;
 
 		// TODO block keys sorting - keep order given by developer
@@ -46,7 +69,7 @@ export default class CompilationResult {
 		});
 	}
 
-	private setBuildInfo = (data: Record<string, any> = null) => {
+	private setBuildInfo = (data: Record<string, any> = null): void => {
 		if (data === null
 			|| this.lastBuildInfo === null
 			|| this.changed === true && this.lastBuildInfo.completed === true
@@ -75,13 +98,11 @@ export default class CompilationResult {
 	public generateCss(): string {
 		let css = '';
 
-		// Přenést tuto funkci do generateCssForScreens
-		// Vrátit objekt s csskem
-		// Mergnout, trimnout, vrátit string
 		for (const screenKey in this.cssTree) {
 			if (Object.keys(this.cssTree[screenKey]).length === 0) {
 				continue;
 			}
+
 			let screenCss = '';
 			const screenOpen = screenKey === '_' ? '' : this.screens[screenKey] + '{';
 			const screenClose = '}';
@@ -102,19 +123,7 @@ export default class CompilationResult {
 		return css.trim();
 	}
 
-	// Generate css for each screen
-	// Možné potom použít pro linky, css se načte separátně jako soubor
-	public generateCssForScreens() {
-		this.changed = false;
-		this.setBuildInfo({
-			completed: true
-		})
-		return {
-			screen: 'css'
-		};
-	}
-
-	public addCssRecord(macroMatch: MacroMatch, selectorProperties): void {
+	public addCssRecord(macroMatch: MacroMatch, selectorProperties: SelectorProperties): void {
 		const macroResult = selectorProperties.properties;
 		const screen = macroMatch.screen;
 		const selector = macroMatch.selector;
@@ -122,11 +131,9 @@ export default class CompilationResult {
 			? this.selectorsList[macroMatch.fullMatch].mangledSelector
 			: this.getUniqueSelectorId();
 
-		if (typeof this.cssTree[screen] === 'undefined') {
+		if (!(screen in this.cssTree)) {
 			this.cssTree[screen] = {};
-		}
-
-		if (selector in this.cssTree[screen]) {
+		} else if (selector in this.cssTree[screen]) {
 			return;
 		}
 
@@ -137,8 +144,8 @@ export default class CompilationResult {
 		for (const property in macroResult) {
 			const propertyValue = macroResult[property].replace(
 				this.MATCH_VARIABLE_REG_EXP,
-				(match, substring) => {
-					return this.variables[substring];
+				(match, substring): string => {
+					return String(this.variables[substring]);
 				}
 			);
 			newCssRecord.addProperty(property, propertyValue);
@@ -156,16 +163,16 @@ export default class CompilationResult {
 		this.addSelectorIntoList(macroMatch.fullMatch, mangledSelectorId, true);
 	}
 
-	private addSelectorIntoList(selector, mangledSelector, processed) {
+	private addSelectorIntoList(selector, mangledSelector, processed): void {
 		this.selectorsList[selector] = {
 			mangledSelector: mangledSelector,
 			processed: processed
-		}
+		};
 
 		this.mangledSelectorsMap[mangledSelector] = selector;
 	}
 
-	public bindComponentsSelectors(componentsSelectorsMap: Record<string, any>) {
+	public bindComponentsSelectors(componentsSelectorsMap: Record<string, any>): void {
 		const processedComponents = [];
 
 		Object.keys(this.cssTree).forEach((screen) => {
@@ -209,8 +216,8 @@ export default class CompilationResult {
 		cssRecord.addSelector(selectorToAdd);
 	}
 
-	public serialize(): Record<string, any> {
-		const serializedCompilationResult = {
+	public serialize(): SerializedCompilationResultInterface {
+		const serializedCompilationResult: SerializedCompilationResultInterface = {
 			mangleSelectors: this.mangleSelectors,
 			dev: this.dev,
 			screens: this.screens,
@@ -230,7 +237,7 @@ export default class CompilationResult {
 		return serializedCompilationResult;
 	}
 
-	public static deserialize(data: Record<string, any>): CompilationResult {
+	public static deserialize(data: Required<SerializedCompilationResultInterface>): CompilationResult {
 		const compilationResult = new CompilationResult({
 			dev: data.dev,
 			screens: data.screens,
@@ -258,10 +265,9 @@ export default class CompilationResult {
 		return compilationResult;
 	}
 
-	// Co když css bude vygenerované do souborů?
-	// <style> element bude jen pro vygenerované věci z runtime?
-	// Něco jako negeneruj dané selektory, protože jsou v externích souborech
-	public hydrate(data: Record<string, any>) {
+	// TODO what if some selectors are already generated?
+	// Something like do not generate them,  because they are already generated
+	public hydrate(data: Required<SerializedCompilationResultInterface>): void {
 		this.selectorsList = Object.assign(this.selectorsList, data.selectorsList || {});
 		this.mangledSelectorsMap = Object.assign(this.mangledSelectorsMap, data.mangledSelectorsMap || {});
 
@@ -271,11 +277,14 @@ export default class CompilationResult {
 				this.cssTree[screen][selector].hydrate(serializedSelectorData);
 			});
 		});
-
 	}
 
 	private getUniqueSelectorId(): string {
-		return 's' + Object.keys(this.selectorsList).length;
+		return `s${Object.keys(this.selectorsList).length}`;
 	}
 
 }
+
+export { CompilationResult };
+
+export default CompilationResult;

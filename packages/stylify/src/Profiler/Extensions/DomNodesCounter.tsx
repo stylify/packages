@@ -1,12 +1,10 @@
-// @ts-nocheck
-
 import { h, Component } from 'preact';
 
-export default class DomNodesCounterExtension extends Component {
+export default class DomNodesCounterExtension extends Component<any> {
 
 	private profilerElement: HTMLElement = document.querySelector('#stylify-profiler');
 
-	private state: Record<string, any> = {
+	public state: Record<string, any> = {
 		recommendedDomNodesCount: 1500,
 		totalDomNodesCount: 0
 	}

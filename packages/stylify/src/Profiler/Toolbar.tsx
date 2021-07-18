@@ -1,5 +1,3 @@
-// @ts-nocheck
-
 import './icons/style.css';
 import { render, Component } from 'preact';
 //import htm from 'htm';
@@ -13,11 +11,11 @@ const ToolbarExtension = ({ extensionName }) => {
 	return <TagName config={extensionsConfig} />;
 }
 
-class ProfilerToolbar extends Component {
+class ProfilerToolbar extends Component<any> {
 
 	private LOCAL_STORAGE_ID = 'stylify-profiler;'
 
-	private state: Record<string, any> = {
+	public state: Record<string, any> = {
 		profilerVisible: false,
 		extensions: extensions,
 		extensionsVisible: true
@@ -61,7 +59,7 @@ class ProfilerToolbar extends Component {
 		})
 	}
 
-	private componentDidMount = () => {
+	public componentDidMount = () => {
 		this.props.config.stylify.EventsEmitter.addListener('stylify:runtime:uncloak', (data) => {
 			const elementId = data.id || null;
 
@@ -110,7 +108,7 @@ const initProfilerToolbar = (profilerConfig): void => {
 	render(<ProfilerToolbar config={extensionsConfig} />, profilerToolbarElement, profilerToolbarElement);
 };
 
-const addProfilerExtension = (component: Component) => {
+const addProfilerExtension = (component: any) => {
 	extensions[component.name] = component;
 }
 

@@ -1,11 +1,9 @@
-// @ts-nocheck
-
 export default class SelectorProperties {
 
-	public properties: Record<string, any> = {};
+	public properties: Record<string, string> = {};
 
-	public add(property: string, value: any): SelectorProperties {
-		this.properties[property] = value;
+	public add(property: string, value: string|number): SelectorProperties {
+		this.properties[property] = String(value);
 		return this;
 	}
 

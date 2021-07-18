@@ -6,7 +6,9 @@ const dirname = path.join(process.cwd(), 'tools', 'native-properties-generator')
 
 const browserPropertiesListPath = path.join(dirname, 'tmp', 'complete-propertes-list.txt');
 const macroFunctionTemplatePath = path.join(dirname, 'templates', 'function.js');
-const nativeConfigurationOutputFilePath = path.join(dirname, '..', '..', 'src', 'Configurations', 'NativeConfiguration.ts');
+const nativeConfigurationOutputFilePath = path.join(
+	dirname, '..', '..', 'src', 'Configurations', 'NativeConfiguration.ts'
+);
 const nativeConfigurationConfigTemplateFilePath = path.join(dirname, 'templates', 'config.js');
 
 class NativePropertiesGenerator {
@@ -41,7 +43,7 @@ class NativePropertiesGenerator {
 		const re = new RegExp(/^[\w-]+/, 'gm');
 		let propertyMatch;
 
-		while (propertyMatch = re.exec(listsFilesContent)) {
+		while ((propertyMatch = re.exec(listsFilesContent))) {
 			let property = propertyMatch[0];
 
 			if (propertiesShortcuts.indexOf(property) > -1) {
@@ -81,6 +83,9 @@ class NativePropertiesGenerator {
 		);
 	}
 
+	/**
+	 * @param {string} property
+	 */
 	assignPropertyToPropertiesMap(property) {
 		let keyPath = property.split('-');
 		let key;
@@ -104,6 +109,11 @@ class NativePropertiesGenerator {
 		object[keyPath[lastKeyIndex]] = true;
 	}
 
+	/**
+	 *
+	 * @param {Reord<string, any>} map
+	 * @returns {string}
+	 */
 	convertMapIntoRegularExpression(map) {
 		let regExpString = '';
 		const keys = Object.keys(map).filter((key) => {
@@ -159,12 +169,17 @@ class NativePropertiesGenerator {
 		return regExpString;
 	}
 
+	/**
+	 *
+	 * @param {string} template
+	 * @param {Record<string, any>} values
+	 * @param {boolean} prettierEnabled
+	 * @returns {string}
+	 */
 	generateTemplate(template, values, prettierEnabled = false) {
 
 		Object.keys(values).forEach((key) => {
-			const value = values[key];
-
-			template = template.replace(key, value);
+			template = template.replace(key, values[key]);
 		});
 
 		if (prettierEnabled) {
