@@ -1,28 +1,32 @@
+import { CompilationResult } from '.';
+
 class SelectorsRewriter {
 
-	public rewrite = (compilationResult/* : CompilationResult */, regExp: RegExp, content: string): string => {
+	public rewrite = (compilationResult : CompilationResult, regExp: RegExp, content: string): string => {
 		const classReplacementMap = {};
-		let originalClassMatch;
-		regExp.lastIndex = 0;
+		let match: string[];
+		const sortedOSelectorsListKeys = Object
+			.keys(compilationResult.selectorsList)
+			.sort((a, b) => b.length - a.length);
 
-		while ((originalClassMatch = regExp.exec(content))) {
-			let modifiedClassMatch: string = originalClassMatch[0];
+		while ((match = regExp.exec(content))) {
+			let modifiedClassMatch = match[0];
 
-			Object.keys(compilationResult.selectorsList).forEach(selector => {
+			sortedOSelectorsListKeys.forEach(selector => {
 				modifiedClassMatch = modifiedClassMatch.replace(
-					new RegExp(selector + '\\b', 'gi'),
+					new RegExp(selector, 'g'),
 					compilationResult.selectorsList[selector].mangledSelector
 				);
 			});
 
-			classReplacementMap[originalClassMatch[0]] = modifiedClassMatch;
+			classReplacementMap[match[0]] = modifiedClassMatch;
 		}
 
 		Object.keys(classReplacementMap).forEach(classToReplace => {
-			content = content.replace(classToReplace, classReplacementMap[classToReplace]);
+			const classToReplaceRegex = new RegExp(classToReplace, 'g');
+			content = content.replace(classToReplaceRegex, classReplacementMap[classToReplace]);
 		});
 
-		regExp.lastIndex = 0;
 		return content;
 	}
 

@@ -27,7 +27,7 @@ export interface SelectorsListInterface {
 
 class CompilationResult {
 
-	private MATCH_VARIABLE_REG_EXP = /\$([\w-_]+)/g;
+	private matchVariableRegExp = /\$([\w-_]+)/g;
 
 	public changed = false
 
@@ -97,6 +97,7 @@ class CompilationResult {
 
 	public generateCss(): string {
 		let css = '';
+		const newLine = this.dev ? '\n' : '';
 
 		for (const screenKey in this.cssTree) {
 			if (Object.keys(this.cssTree[screenKey]).length === 0) {
@@ -104,7 +105,7 @@ class CompilationResult {
 			}
 
 			let screenCss = '';
-			const screenOpen = screenKey === '_' ? '' : this.screens[screenKey] + '{';
+			const screenOpen = screenKey === '_' ? '' : `${newLine}${this.screens[screenKey]}{${newLine}`;
 			const screenClose = '}';
 
 			for (const selector in this.cssTree[screenKey]) {
@@ -143,7 +144,7 @@ class CompilationResult {
 
 		for (const property in macroResult) {
 			const propertyValue = macroResult[property].replace(
-				this.MATCH_VARIABLE_REG_EXP,
+				this.matchVariableRegExp,
 				(match, substring): string => {
 					return String(this.variables[substring]);
 				}

@@ -20,12 +20,16 @@ const createConfig = (config) => {
 	const esVersion = /* config.esVersion || */ 'es6';
 	const configs = [];
 	const getPlugins = (config) => {
+		const typescriptConfig = getTypescriptConfig();
+		typescriptConfig.exclude = [
+			'./tests/**/*.ts'
+		];
 		const plugins = [
 			replace({
 				'process.env.NODE_ENV': JSON.stringify('production'),
 				preventAssignment: true,
 			}),
-			typescript(getTypescriptConfig()),
+			typescript(typescriptConfig),
 			postcss({
 				plugins: [
 					postcssUrlPlugin({

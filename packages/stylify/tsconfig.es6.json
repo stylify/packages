@@ -10,6 +10,10 @@
 		"dom.iterable",
 		"es5"
 	],
+	"types": [
+		"node",
+		"jest"
+	],
 	"esModuleInterop": true,
 	"removeComments": true,
 	"experimentalDecorators": true,
