@@ -17,12 +17,16 @@ parserOptions:
     sourceType: 'module'
     project: './tsconfig.es6.json'
 
+ignorePatterns:
+    - tools/native-properties-generator/templates/*.js
+    - src/Configurations/NativeConfiguration.ts
+
 rules:
     # Possible errors
     for-direction: [error]
     getter-return: [error]
     no-await-in-loop: [error]
-    no-extra-parens: [error]
+    no-extra-parens: [error, all, {conditionalAssign: false}]
     no-template-curly-in-string: [error]
 
     # Best practice
@@ -47,7 +51,7 @@ rules:
     no-warning-comments: [warn]
     no-with: [error]
     yoda: [error]
-    no-console: [warn]
+    no-console: [error, { "allow": ["warn", "error"] }]
 
     # Variables
     no-catch-shadow: [error]
@@ -100,3 +104,7 @@ rules:
 
     # Typescript
     '@typescript-eslint/no-explicit-any': off
+    '@typescript-eslint/no-unsafe-assignment': off
+    '@typescript-eslint/no-unsafe-member-access': off
+    '@typescript-eslint/no-var-requires': off
+    '@typescript-eslint/no-unsafe-call': off

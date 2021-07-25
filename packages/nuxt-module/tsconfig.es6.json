@@ -1,6 +1,7 @@
 {
 	"target": "es6",
 	"moduleResolution": "node",
+	"allowSyntheticDefaultImports": true,
 	"lib": [
 		"es5",
 		"esnext",
@@ -13,5 +14,6 @@
 	"resolveJsonModule": true,
 	"noEmit": true,
 	"jsx": "react-jsx",
-	"jsxImportSource": "preact"
+	"jsxImportSource": "preact",
+	"allowJs": true
 }

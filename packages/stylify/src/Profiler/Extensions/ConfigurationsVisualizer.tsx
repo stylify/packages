@@ -1,11 +1,9 @@
-// @ts-nocheck
-
 import { h, render, Component } from 'preact';
 import { EventsEmitter } from '../../';
 
-export default class ConfigurationsVisualizerExtension extends Component {
+export default class ConfigurationsVisualizerExtension extends Component<any> {
 
-	private state: Record<string, any> = {
+	public state: Record<string, any> = {
 		components: {},
 		componentsListVisible: false,
 

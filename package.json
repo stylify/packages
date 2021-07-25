@@ -9,15 +9,20 @@
 	"scripts": {
 		"repo-init": "yarn install && yarn link && yarn bootstrap",
 		"bootstrap": "lerna bootstrap --force-local",
-		"watch": "node --max-old-space-size=8192 node_modules/.bin/lerna run --parallel --concurrency=2 watch ",
-		"build": "node --max-old-space-size=8192 node_modules/.bin/lerna run --parallel --concurrency=2 build",
+		"watch": "lerna run --parallel --concurrency=2 watch ",
+		"build": "lerna run --parallel --concurrency=2 build",
 		"stylify:build": "yarn build --scope=@stylify/stylify",
 		"stylify:watch": "yarn watch --scope=@stylify/stylify",
+		"stylify:lint:check": "yarn lint:check --scope=@stylify/stylify",
+		"stylify:lint:fix": "yarn lint:fix --scope=@stylify/stylify",
 		"nuxtmodule:build": "yarn build --scope=@stylify/nuxt-module",
 		"nuxtmodule:watch": "yarn watch --scope=@stylify/nuxt-module",
+		"nuxtmodule:lint:check": "yarn lint:check --scope=@stylify/nuxt-module",
+		"nuxtmodule:lint:fix": "yarn lint:fix --scope=@stylify/nuxt-module",
 		"nuxtmodule:plg:dev": "lerna run plg:dev --scope=@stylify/nuxt-module",
 		"nuxtmodule:plg:start": "lerna run plg:start --scope=@stylify/nuxt-module",
 		"lint:check": "lerna run lint:check",
+		"lint:fix": "lerna run lint:fix",
 		"jest:test": "lerna run jest:test"
 	},
 	"repository": {

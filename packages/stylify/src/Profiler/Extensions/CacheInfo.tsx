@@ -1,14 +1,12 @@
-// @ts-nocheck
-
 import { h, Component } from 'preact';
 
-export default class CacheInfoExtension extends Component {
+export default class CacheInfoExtension extends Component<any> {
 
 	private Stylify = null;
 
 	private openCodeInNewWindow = null;
 
-	private state: Record<string, any> = {
+	public state: Record<string, any> = {
 		cacheInfoVisible: false,
 		cacheList: []
 	}
@@ -39,7 +37,7 @@ export default class CacheInfoExtension extends Component {
 	}
 
 	public openActualCacheInNewWindow = (): void => {
-		this.openCodeInNewWindow(this.stringifyCache(this.Stylify.Runtime.CompilerResult.serialize()), 'json');
+		this.openCodeInNewWindow(this.stringifyCache(this.Stylify.Runtime.CompilationResult.serialize()), 'json');
 	}
 
 	private stringifyCache = (cache: Record<string, any>): string => {

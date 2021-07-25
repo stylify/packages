@@ -1,5 +1,7 @@
 /tests/test-stack.js
 /tmp/
+/lib/
+/types/
 /node_modules/
 # Lerna
 *.lerna_backup
