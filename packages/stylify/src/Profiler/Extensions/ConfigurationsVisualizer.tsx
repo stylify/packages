@@ -1,5 +1,4 @@
 import { h, render, Component } from 'preact';
-import { EventsEmitter } from '../../';
 
 export default class ConfigurationsVisualizerExtension extends Component<any> {
 
@@ -19,7 +18,7 @@ export default class ConfigurationsVisualizerExtension extends Component<any> {
 
 		this.updateCompilerConfigs(props.config.stylify.Compiler);
 
-		props.config.stylify.EventsEmitter.addListener('stylify:compiler:configured', (data) => {
+		props.config.stylify.hooks.addHook('stylify:compiler:configured', (data) => {
 			this.updateCompilerConfigs(data.compiler);
 		});
 	}
@@ -59,7 +58,7 @@ export default class ConfigurationsVisualizerExtension extends Component<any> {
 									return (
 										<tr class="hover:background:#333">
 											<td class="padding:8px white-space:nowrap max-width:800px overflow-x:auto">
-												<pre><code>{this.state.macros[macroRegExp].toString().replaceAll(/  |\t\t/ig, ' ')}</code></pre>
+												<pre><code>{macroRegExp}{this.state.macros[macroRegExp].toString().replaceAll(/  |\t\t/ig, ' ')}</code></pre>
 											</td>
 										</tr>
 									)

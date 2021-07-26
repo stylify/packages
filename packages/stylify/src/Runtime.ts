@@ -1,6 +1,6 @@
 import { Compiler, SerializedCompilerInterface } from './Compiler';
 import { CompilationResult } from './Compiler/CompilationResult';
-import EventsEmitter from './EventsEmitter';
+import HooksManager from './HooksManager';
 
 export interface RuntimeConfigInterface {
 	compiler: Compiler,
@@ -54,7 +54,7 @@ class Runtime {
 
 		this.redrawTimeout = config.redrawTimeout || this.redrawTimeout;
 
-		EventsEmitter.dispatch('stylify:runtime:configured', {
+		HooksManager.callHook('stylify:runtime:configured', {
 			config: config
 		});
 
@@ -69,7 +69,7 @@ class Runtime {
 			this.initialPaintCompleted = true;
 
 			if (css !== null) {
-				EventsEmitter.dispatch('stylify:runtime:repainted', {
+				HooksManager.callHook('stylify:runtime:repainted', {
 					css: css,
 					repaintTime: performance.now() - repaintStartTime,
 					compilerResult: this.CompilationResult,
@@ -111,7 +111,7 @@ class Runtime {
 			this.CompilationResult = this.Compiler.createResultFromSerializedData(parsedData);
 		}
 
-		EventsEmitter.dispatch('stylify:runtime:hydrated', {
+		HooksManager.callHook('stylify:runtime:hydrated', {
 			cache: parsedData
 		});
 	}
@@ -171,7 +171,7 @@ class Runtime {
 					return;
 				}
 
-				EventsEmitter.dispatch('stylify:runtime:repainted', {
+				HooksManager.callHook('stylify:runtime:repainted', {
 					css: css,
 					repaintTime: repaintTime,
 					compilerResult: this.CompilationResult,
@@ -204,7 +204,7 @@ class Runtime {
 
 		for (element of elements) {
 			element.removeAttribute(this.STYLIFY_CLOAK_ATTR_NAME);
-			EventsEmitter.dispatch('stylify:runtime:uncloak', {
+			HooksManager.callHook('stylify:runtime:uncloak', {
 				id: element.getAttribute(this.STYLIFY_CLOAK_ATTR_NAME) || null,
 				el: element
 			});

@@ -1,7 +1,7 @@
 import { CompilationResult, SelectorsListInterface } from './CompilationResult';
 import SelectorProperties from './SelectorProperties';
 import MacroMatch from './MacroMatch';
-import EventsEmitter from '../EventsEmitter';
+import HooksManager from '../HooksManager';
 
 export interface SerializedCompilerInterface {
 	selectorsList: SelectorsListInterface
@@ -73,7 +73,7 @@ class Compiler {
 			this.addComponent(componentSelector, config.components[componentSelector]);
 		}
 
-		EventsEmitter.dispatch('stylify:compiler:configured', {
+		HooksManager.callHook('stylify:compiler:configured', {
 			compiler: this
 		});
 
