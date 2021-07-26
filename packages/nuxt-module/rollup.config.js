@@ -1,7 +1,4 @@
-// System
 import fs from 'fs';
-
-// Libraries
 import banner from 'rollup-plugin-banner';
 import { babel } from '@rollup/plugin-babel';
 import path from 'path';

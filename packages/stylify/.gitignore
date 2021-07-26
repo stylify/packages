@@ -3,6 +3,7 @@
 /lib/
 /dist/
 /tmp/
+/types/
 /node_modules/
 # Lerna
 *.lerna_backup
