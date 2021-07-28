@@ -1,5 +1,5 @@
 import { Compiler, CompilerConfigInterface } from './Compiler';
-import EventsEmitter from './EventsEmitter';
+import HooksManager from './HooksManager';
 import { Runtime, RuntimeConfigInterface } from './Runtime';
 
 export interface StylifyConfigInterface {
@@ -13,18 +13,18 @@ class Stylify {
 
 	public Runtime: Runtime = null;
 
-	public EventsEmitter = null;
+	public hooks = null;
 
 	constructor(config: Partial<StylifyConfigInterface> = {}) {
-		this.EventsEmitter = EventsEmitter;
+		this.hooks = HooksManager;
 
-		EventsEmitter.dispatch('stylify:beforeInit', {
+		this.hooks.callHook('stylify:beforeInit', {
 			config: config
 		});
 
 		this.configure(config);
 
-		EventsEmitter.dispatch('stylify:init', {
+		this.hooks.callHook('stylify:init', {
 			runtime: this.Runtime
 		});
 	}

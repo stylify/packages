@@ -95,7 +95,7 @@ const createConfig = (config) => {
 					name: config.output.name,
 					file: config.output.file + suffix,
 					format: format,
-					exports: 'named',
+					exports: format === 'umd' ? 'auto' : 'named',
 				},
 				plugins: getPlugins({
 					terser: suffix === '.min.js',
@@ -216,7 +216,7 @@ const configs = createFileConfigs([
 	{inputFile: 'index', formats: ['esm', 'lib'], external: [
 		'./Compiler',
 		'./Configurations',
-		'./EventsEmitter',
+		'./HooksManager',
 		'./Profiler',
 		'./Runtime',
 		'./SelectorsRewriter',
@@ -230,7 +230,7 @@ const configs = createFileConfigs([
 	]},
 	{inputFile: 'Stylify', formats:['esm', 'lib'], external: [
 		'./Compiler',
-		'./EventsEmitter',
+		'./HooksManager',
 		'./Runtime'
 	]},
 
@@ -248,11 +248,11 @@ const configs = createFileConfigs([
 	{inputFile: 'Runtime', formats:['esm', 'lib'], external: [
 		'./Compiler',
 		'./Compiler/CompilationResult',
-		'./EventsEmitter'
+		'./HooksManager'
 	]},
 
 	{inputFile: 'SelectorsRewriter', formats:['esm', 'lib']},
-	{inputFile: 'EventsEmitter', formats:['esm', 'lib']},
+	{inputFile: 'HooksManager', formats:['esm', 'lib']},
 	{inputFile: 'Stylify.native.browser', outputFile: 'Stylify.native', formats:['browser'], external: [
 		'./Profiler',
 		'./icons/style.css'

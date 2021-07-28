@@ -1,7 +1,5 @@
 import './icons/style.css';
 import { render, Component } from 'preact';
-//import htm from 'htm';
-//import EventsEmitter from '../EventsEmitter';
 
 const extensions = {};
 let extensionsConfig = {};
@@ -60,7 +58,7 @@ class ProfilerToolbar extends Component<any> {
 	}
 
 	public componentDidMount = () => {
-		this.props.config.stylify.EventsEmitter.addListener('stylify:runtime:uncloak', (data) => {
+		this.props.config.stylify.hooks.addHook('stylify:runtime:uncloak', (data) => {
 			const elementId = data.id || null;
 
 			if (elementId !== 'stylify-profiler') {

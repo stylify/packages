@@ -16,7 +16,7 @@ export default class BuildsAnalyzerExtension extends Component {
 		super();
 
 		this.openCodeInNewWindow = props.config.openCodeInNewWindow;
-		props.config.stylify.EventsEmitter.addListener('stylify:runtime:repainted', (data) => {
+		props.config.stylify.hooks.addHook('stylify:runtime:repainted', (data) => {
 			const builds = this.state.builds;
 			const buildSize = this.state.actualSize === 0 ? data.css.length : data.css.length - this.state.actualSize;
 
