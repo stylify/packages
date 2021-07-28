@@ -11,6 +11,7 @@
 		"bootstrap": "lerna bootstrap --force-local",
 		"watch": "lerna run --parallel --concurrency=2 watch ",
 		"build": "lerna run --parallel --concurrency=2 build",
+		"stylify:gnp": "lerna run gnp --scope=@stylify/stylify",
 		"stylify:build": "yarn build --scope=@stylify/stylify",
 		"stylify:watch": "yarn watch --scope=@stylify/stylify",
 		"stylify:lint:check": "yarn lint:check --scope=@stylify/stylify",

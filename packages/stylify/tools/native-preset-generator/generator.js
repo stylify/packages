@@ -2,16 +2,16 @@ const path = require('path');
 const fs = require('fs');
 const prettier = require('prettier');
 
-const dirname = path.join(process.cwd(), 'tools', 'native-properties-generator');
+const dirname = path.join(process.cwd(), 'tools', 'native-preset-generator');
 
 const browserPropertiesListPath = path.join(dirname, 'tmp', 'complete-propertes-list.txt');
 const macroFunctionTemplatePath = path.join(dirname, 'templates', 'function.js');
-const nativeConfigurationOutputFilePath = path.join(
-	dirname, '..', '..', 'src', 'Configurations', 'NativeConfiguration.ts'
+const nativePresetOutputFilePath = path.join(
+	dirname, '..', '..', 'src', 'Presets', 'NativePreset.ts'
 );
-const nativeConfigurationConfigTemplateFilePath = path.join(dirname, 'templates', 'config.js');
+const nativePresetTemplateFilePath = path.join(dirname, 'templates', 'preset.js');
 
-class NativePropertiesGenerator {
+class NativePresetGenerator {
 	constructor() {
 		this.propertiesMap = {};
 	}
@@ -70,9 +70,9 @@ class NativePropertiesGenerator {
 		);
 
 		fs.writeFileSync(
-			nativeConfigurationOutputFilePath,
+			nativePresetOutputFilePath,
 			this.generateTemplate(
-				fs.readFileSync(nativeConfigurationConfigTemplateFilePath, 'utf-8'),
+				fs.readFileSync(nativePresetTemplateFilePath, 'utf-8'),
 				{
 					__SIDES_SHORTCUTS__: JSON.stringify(this.sidesShortcuts),
 					__SIZES_SHORTCUTS__: JSON.stringify(this.sizesShortcuts),
@@ -190,4 +190,4 @@ class NativePropertiesGenerator {
 	}
 }
 
-new NativePropertiesGenerator().generate();
+new NativePresetGenerator().generate();

@@ -18,8 +18,8 @@ parserOptions:
     project: './tsconfig.es6.json'
 
 ignorePatterns:
-    - tools/native-properties-generator/templates/*.js
-    - src/Configurations/NativeConfiguration.ts
+    - tools/native-preset-generator/templates/*.js
+    - src/Presets/NativePreset.ts
 
 rules:
     # Possible errors

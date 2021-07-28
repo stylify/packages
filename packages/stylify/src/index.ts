@@ -5,7 +5,7 @@ export {
 	SerializedCompilerInterface
 } from './Compiler';
 export { Runtime, RuntimeConfigInterface } from './Runtime';
-export * from './Configurations';
+export * from './Presets';
 export { default as HooksManager } from './HooksManager';
 export { Profiler } from './Profiler';
 export { default as SelectorsRewriter } from './SelectorsRewriter';

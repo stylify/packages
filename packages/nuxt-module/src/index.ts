@@ -3,7 +3,7 @@ import path from 'path';
 import {
 	Compiler,
 	SelectorsRewriter,
-	nativeConfig as compilerConfig,
+	nativePreset,
 	CompilerConfigInterface,
 	RuntimeConfigInterface,
 	CompilationResult
@@ -37,7 +37,7 @@ let moduleConfig: StylifyNuxtModuleConfigInterface = {
 	embeddedCssLimit: 50,
 	importStylify: true,
 	importProfiler: true,
-	compiler: compilerConfig,
+	compiler: nativePreset.compiler,
 	runtime: {}
 };
 
