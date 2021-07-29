@@ -15,7 +15,7 @@
 		"lint:check": "eslint ./{src,tools}/**/*.{js,ts}",
 		"lint:fix": "yarn lint:check --fix",
 		"jest:test": "node --experimental-modules node_modules/.bin/jest",
-		"gnp": "node --experimental-modules ./tools/native-properties-generator/generator.js",
+		"gnp": "node --experimental-modules ./tools/native-preset-generator/generator.js",
 		"gnr": "node --experimental-modules ./tests/jest/selectorsRewritter/html.test.js"
 	},
 	"files": [

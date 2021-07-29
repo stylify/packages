@@ -1,13 +1,13 @@
 const fs = require('fs');
 const path = require('path');
 import { SelectorsRewriter, Compiler } from './../../lib/index.js';
-import { nativeConfig as compilerConfig } from './../../lib/Configurations/NativeConfiguration.js';
+import { nativePreset } from './../../lib/Presets/NativePreset.js';
 
 const inputIndex = fs.readFileSync(path.join(__dirname, 'page2', 'input', 'index.html'), 'utf8');
 
-compilerConfig.dev = true;
-compilerConfig.mangleSelectors = true;
-const compiler = new Compiler(compilerConfig);
+nativePreset.compiler.dev = true;
+nativePreset.compiler.mangleSelectors = true;
+const compiler = new Compiler(nativePreset.compiler);
 const compilerRegExp = compiler.classMatchRegExp;
 let compilationResult = compiler.compile(inputIndex);
 

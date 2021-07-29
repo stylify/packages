@@ -205,8 +205,8 @@ const configs = createFileConfigs([
 		"./SelectorProperties",
 		'./Compiler'
 	]},
-	{inputFile: 'Configurations/index', formats: ['esm', 'lib'], external: [
-		'./NativeConfiguration'
+	{inputFile: 'Presets/index', formats: ['esm', 'lib'], external: [
+		'./NativePreset'
 	]},
 	{inputFile: 'Profiler/index', formats: ['esm', 'lib'], external: [
 		'./Toolbar',
@@ -257,7 +257,7 @@ const configs = createFileConfigs([
 		'./Profiler',
 		'./icons/style.css'
 	]},
-	{inputFile: 'Configurations/NativeConfiguration', formats:['esm', 'lib']},
+	{inputFile: 'Presets/NativePreset', formats:['esm', 'lib']},
 
 	// Profiler
 	{inputFile: 'Profiler/Profiler', formats:['lib', 'esm']},
