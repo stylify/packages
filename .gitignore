@@ -3,3 +3,11 @@
 /node_modules/
 # Lerna
 *.lerna_backup
+
+#Packages
+/packages/**/dist
+/packages/**/esm
+/packages/**/lib
+/packages/**/tmp
+/packages/**/types
+
