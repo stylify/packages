@@ -14,7 +14,9 @@
 	},
 	"files": [
 		"lib/",
-		"types/"
+		"types/",
+		"LICENSE",
+		"README.md"
 	],
 	"repository": {
 		"type": "git",
