@@ -1,4 +1,1 @@
-import Profiler from './Profiler';
-
-export { Profiler };
-export default Profiler;
+export { Profiler } from './Profiler';

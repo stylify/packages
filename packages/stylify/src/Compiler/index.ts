@@ -1,12 +1,6 @@
-import {
+export {
 	Compiler,
 	CompilerConfigInterface,
 	SerializedCompilerInterface
 } from './Compiler';
-import { CompilationResult } from './CompilationResult';
-export {
-	Compiler,
-	CompilerConfigInterface,
-	CompilationResult,
-	SerializedCompilerInterface
-};
+export { CompilationResult } from './CompilationResult';

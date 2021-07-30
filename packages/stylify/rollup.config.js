@@ -98,8 +98,7 @@ const createConfig = (config) => {
 					exports: format === 'umd' ? 'auto' : 'named',
 				},
 				plugins: getPlugins({
-					terser: suffix === '.min.js',
-					babel: suffix === 'es5',
+					terser: suffix === '.min.js'
 				}).concat(plugins)
 			})
 		})
@@ -197,70 +196,33 @@ devDirectories.forEach(directory => {
 });
 
 const configs = createFileConfigs([
-	// Indexes
-	{inputFile: 'Compiler/index', formats: ['esm', 'lib'], external: [
-		"./CompilationResult",
-		"./CssRecord",
-		"./MacroMatch",
-		"./SelectorProperties",
-		'./Compiler'
-	]},
-	{inputFile: 'Presets/index', formats: ['esm', 'lib'], external: [
-		'./NativePreset'
-	]},
-	{inputFile: 'Profiler/index', formats: ['esm', 'lib'], external: [
-		'./Toolbar',
-		'./Extensions',
-		'./Profiler'
-	]},
+	// Stylify
+	{inputFile: 'SelectorsRewriter', outputFile: 'SelectorsRewriter/index', formats:['esm', 'lib']},
 	{inputFile: 'index', formats: ['esm', 'lib'], external: [
-		'./Compiler',
-		'./Configurations',
-		'./HooksManager',
 		'./Profiler',
-		'./Runtime',
-		'./SelectorsRewriter',
-		'./Stylify',
+		'./Presets',
+		'./SelectorsRewriter'
 	]},
 
-	// Stylify
 	{inputFile: 'Stylify', formats:['browser'], external: [
 		'./Profiler',
+		'./SelectorsRewriter',
 		'./icons/style.css'
 	]},
-	{inputFile: 'Stylify', formats:['esm', 'lib'], external: [
-		'./Compiler',
-		'./HooksManager',
-		'./Runtime'
-	]},
 
-	{inputFile: 'Compiler/Compiler', formats:['esm', 'lib']},
-	{inputFile: 'Compiler/CompilationResult', formats:['esm', 'lib'], external: [
-		'./CssRecord',
-		'./MacroMatch',
-		'./SelectorProperties'
-	]},
-
-	{inputFile: 'Compiler/MacroMatch', formats:['esm', 'lib']},
-	{inputFile: 'Compiler/CssRecord', formats:['esm', 'lib']},
-	{inputFile: 'Compiler/SelectorProperties', formats:['esm', 'lib']},
-
-	{inputFile: 'Runtime', formats:['esm', 'lib'], external: [
-		'./Compiler',
-		'./Compiler/CompilationResult',
-		'./HooksManager'
-	]},
-
-	{inputFile: 'SelectorsRewriter', formats:['esm', 'lib']},
-	{inputFile: 'HooksManager', formats:['esm', 'lib']},
 	{inputFile: 'Stylify.native.browser', outputFile: 'Stylify.native', formats:['browser'], external: [
 		'./Profiler',
+		'./SelectorsRewriter',
 		'./icons/style.css'
+	]},
+
+	{inputFile: 'Presets/index', formats: ['esm', 'lib'], external: [
+		'./NativePreset'
 	]},
 	{inputFile: 'Presets/NativePreset', formats:['esm', 'lib']},
 
 	// Profiler
-	{inputFile: 'Profiler/Profiler', formats:['lib', 'esm']},
+	{inputFile: 'Profiler/Profiler', outputFile: 'Profiler/index', formats:['lib', 'esm']},
 	{inputFile: 'Profiler.browser', formats:['browser']}
 ]);
 

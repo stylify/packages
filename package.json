@@ -20,6 +20,7 @@
 		"nuxtmodule:watch": "yarn watch --scope=@stylify/nuxt-module",
 		"nuxtmodule:lint:check": "yarn lint:check --scope=@stylify/nuxt-module",
 		"nuxtmodule:lint:fix": "yarn lint:fix --scope=@stylify/nuxt-module",
+		"nuxtmodule:plg:build": "lerna run plg:build --scope=@stylify/nuxt-module",
 		"nuxtmodule:plg:dev": "lerna run plg:dev --scope=@stylify/nuxt-module",
 		"nuxtmodule:plg:start": "lerna run plg:start --scope=@stylify/nuxt-module",
 		"lint:check": "lerna run lint:check",

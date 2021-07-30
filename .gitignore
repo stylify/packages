@@ -1,14 +1,12 @@
-# Testing environments
-# Dependencies
+# Root
 /node_modules/
-# Lerna
 *.lerna_backup
 
 #Packages
+/packages/**/*.lerna_backup
 /packages/**/node_modules
 /packages/**/dist
 /packages/**/esm
 /packages/**/lib
 /packages/**/tmp
 /packages/**/types
-

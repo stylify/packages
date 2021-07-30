@@ -1,6 +1,10 @@
-import { Compiler, CompilerConfigInterface } from './Compiler';
-import HooksManager from './HooksManager';
-import { Runtime, RuntimeConfigInterface } from './Runtime';
+import {
+	Compiler,
+	CompilerConfigInterface,
+	HooksManager,
+	Runtime,
+	RuntimeConfigInterface
+} from '.';
 
 export interface StylifyConfigInterface {
 	compiler: Partial<CompilerConfigInterface>,
