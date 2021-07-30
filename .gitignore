@@ -5,6 +5,7 @@
 *.lerna_backup
 
 #Packages
+/packages/**/node_modules
 /packages/**/dist
 /packages/**/esm
 /packages/**/lib
