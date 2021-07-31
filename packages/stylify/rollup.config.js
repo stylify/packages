@@ -13,11 +13,11 @@ import typescript from "@rollup/plugin-typescript";
 
 const exportName = 'Stylify';
 
-const getTypescriptConfig = () => JSON.parse(fs.readFileSync('tsconfig.es6.json', 'utf8'));
+const getTypescriptConfig = () => JSON.parse(fs.readFileSync('tsconfig.json', 'utf8'));
 const devDirectories = ['dist', 'esm', 'lib', 'tmp', 'types'];
 const extensions = ['.js', '.jsx', '.ts', '.tsx'];
 const createConfig = (config) => {
-	const esVersion = /* config.esVersion || */ 'es6';
+	const esVersion = config.esVersion || 'es6';
 	const configs = [];
 	const getPlugins = (config) => {
 		const typescriptConfig = getTypescriptConfig();
@@ -40,6 +40,11 @@ const createConfig = (config) => {
 			babel({
 				extensions: extensions,
 				"presets": [
+					["@babel/preset-env", {
+						"bugfixes": true,
+						"modules": false,
+						"targets": esVersion === 'es5' ? "> 0.25%, not dead, ie 11" : "> 0.25%, not dead, not ie 11"
+					}],
 					["@babel/preset-react", {
 						"pragma": "h"
 					}]
@@ -223,7 +228,7 @@ const configs = createFileConfigs([
 
 	// Profiler
 	{inputFile: 'Profiler/Profiler', outputFile: 'Profiler/index', formats:['lib', 'esm']},
-	{inputFile: 'Profiler.browser', formats:['browser']}
+	{inputFile: 'Profiler.browser', outputFile: 'profiler', formats:['browser']}
 ]);
 
 export default configs;
