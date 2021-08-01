@@ -15,7 +15,7 @@ parser: "@typescript-eslint/parser"
 parserOptions:
     ecmaVersion: 6
     sourceType: 'module'
-    project: './tsconfig.es6.json'
+    project: './tsconfig.json'
 
 rules:
     # Possible errors

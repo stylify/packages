@@ -7,8 +7,7 @@
 		"esnext",
 		"esnext.string",
 		"dom",
-		"dom.iterable",
-		"es5"
+		"dom.iterable"
 	],
 	"types": [
 		"node",

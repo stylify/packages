@@ -13,11 +13,11 @@ import typescript from "@rollup/plugin-typescript";
 
 const exportName = 'Stylify';
 
-const getTypescriptConfig = () => JSON.parse(fs.readFileSync('tsconfig.es6.json', 'utf8'));
+const getTypescriptConfig = () => JSON.parse(fs.readFileSync('tsconfig.json', 'utf8'));
 const devDirectories = ['dist', 'esm', 'lib', 'tmp', 'types'];
 const extensions = ['.js', '.jsx', '.ts', '.tsx'];
 const createConfig = (config) => {
-	const esVersion = /* config.esVersion || */ 'es6';
+	const esVersion = config.esVersion || 'es6';
 	const configs = [];
 	const getPlugins = (config) => {
 		const typescriptConfig = getTypescriptConfig();
@@ -40,6 +40,11 @@ const createConfig = (config) => {
 			babel({
 				extensions: extensions,
 				"presets": [
+					["@babel/preset-env", {
+						"bugfixes": true,
+						"modules": false,
+						"targets": esVersion === 'es5' ? "> 0.25%, not dead, ie 11" : "> 0.25%, not dead, not ie 11"
+					}],
 					["@babel/preset-react", {
 						"pragma": "h"
 					}]
@@ -98,8 +103,7 @@ const createConfig = (config) => {
 					exports: format === 'umd' ? 'auto' : 'named',
 				},
 				plugins: getPlugins({
-					terser: suffix === '.min.js',
-					babel: suffix === 'es5',
+					terser: suffix === '.min.js'
 				}).concat(plugins)
 			})
 		})
@@ -197,71 +201,34 @@ devDirectories.forEach(directory => {
 });
 
 const configs = createFileConfigs([
-	// Indexes
-	{inputFile: 'Compiler/index', formats: ['esm', 'lib'], external: [
-		"./CompilationResult",
-		"./CssRecord",
-		"./MacroMatch",
-		"./SelectorProperties",
-		'./Compiler'
-	]},
-	{inputFile: 'Presets/index', formats: ['esm', 'lib'], external: [
-		'./NativePreset'
-	]},
-	{inputFile: 'Profiler/index', formats: ['esm', 'lib'], external: [
-		'./Toolbar',
-		'./Extensions',
-		'./Profiler'
-	]},
+	// Stylify
+	{inputFile: 'SelectorsRewriter', outputFile: 'SelectorsRewriter/index', formats:['esm', 'lib']},
 	{inputFile: 'index', formats: ['esm', 'lib'], external: [
-		'./Compiler',
-		'./Configurations',
-		'./HooksManager',
 		'./Profiler',
-		'./Runtime',
-		'./SelectorsRewriter',
-		'./Stylify',
+		'./Presets',
+		'./SelectorsRewriter'
 	]},
 
-	// Stylify
 	{inputFile: 'Stylify', formats:['browser'], external: [
 		'./Profiler',
+		'./SelectorsRewriter',
 		'./icons/style.css'
 	]},
-	{inputFile: 'Stylify', formats:['esm', 'lib'], external: [
-		'./Compiler',
-		'./HooksManager',
-		'./Runtime'
-	]},
 
-	{inputFile: 'Compiler/Compiler', formats:['esm', 'lib']},
-	{inputFile: 'Compiler/CompilationResult', formats:['esm', 'lib'], external: [
-		'./CssRecord',
-		'./MacroMatch',
-		'./SelectorProperties'
-	]},
-
-	{inputFile: 'Compiler/MacroMatch', formats:['esm', 'lib']},
-	{inputFile: 'Compiler/CssRecord', formats:['esm', 'lib']},
-	{inputFile: 'Compiler/SelectorProperties', formats:['esm', 'lib']},
-
-	{inputFile: 'Runtime', formats:['esm', 'lib'], external: [
-		'./Compiler',
-		'./Compiler/CompilationResult',
-		'./HooksManager'
-	]},
-
-	{inputFile: 'SelectorsRewriter', formats:['esm', 'lib']},
-	{inputFile: 'HooksManager', formats:['esm', 'lib']},
 	{inputFile: 'Stylify.native.browser', outputFile: 'Stylify.native', formats:['browser'], external: [
 		'./Profiler',
+		'./SelectorsRewriter',
 		'./icons/style.css'
+	]},
+
+	{inputFile: 'Presets/index', formats: ['esm', 'lib'], external: [
+		'./NativePreset'
 	]},
 	{inputFile: 'Presets/NativePreset', formats:['esm', 'lib']},
 
 	// Profiler
-	{inputFile: 'Profiler/Profiler', formats:['lib', 'esm']},
-	{inputFile: 'Profiler.browser', formats:['browser']}
+	{inputFile: 'Profiler/Profiler', outputFile: 'Profiler/index', formats:['lib', 'esm']},
+	{inputFile: 'Profiler.browser', outputFile: 'profiler', formats:['browser']}
 ]);
 
 export default configs;

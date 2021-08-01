@@ -1,19 +1,23 @@
 {
-	"target": "es6",
+	"target": "esnext",
+	"module": "esnext",
 	"moduleResolution": "node",
 	"allowSyntheticDefaultImports": true,
 	"lib": [
-		"es5",
 		"esnext",
-		"es6",
-		"dom"
+		"esnext.string",
+		"dom",
+		"dom.iterable"
+	],
+	"types": [
+		"node"
 	],
 	"esModuleInterop": true,
 	"removeComments": true,
 	"experimentalDecorators": true,
 	"resolveJsonModule": true,
-	"noEmit": true,
 	"jsx": "react-jsx",
 	"jsxImportSource": "preact",
+	"noEmit": true,
 	"allowJs": true
 }
