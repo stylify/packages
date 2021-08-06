@@ -113,7 +113,7 @@
 	margin-bottom:15px
 }
 
-@media (max-width: 767px){
+@media (max-width: 767px) {
 .s4{
 	width:90%
 }
@@ -121,7 +121,8 @@
 	display:none
 }
 }
-@media (min-width: 768px){
+
+@media (min-width: 768px) {
 .s7{
 	width:700px
 }
@@ -141,7 +142,8 @@
 	grid-template-columns:50% 50%
 }
 }
-@media (min-width: 1024px){
+
+@media (min-width: 1024px) {
 .s8{
 	width:950px
 }
@@ -158,7 +160,8 @@
 	grid-template-rows:auto
 }
 }
-@media (min-width: 1280px){
+
+@media (min-width: 1280px) {
 .s9{
 	width:1200px
 }

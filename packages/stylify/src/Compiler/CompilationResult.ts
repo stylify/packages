@@ -4,7 +4,7 @@ import SelectorProperties from './SelectorProperties';
 
 export interface CompilationResultConfigInterface {
 	dev: boolean,
-	screens: Record<string, string>,
+	screens: Record<string, string|CallableFunction>,
 	selectorsList: Record<string, string>,
 	mangleSelectors: boolean,
 	variables: Record<string, string| number>
@@ -35,7 +35,7 @@ class CompilationResult {
 
 	public dev = false;
 
-	public screens: Record<string, string> = {};
+	public screens: Record<string, any> = {};
 
 	public mangledSelectorsMap: Record<string, string> = {};
 
@@ -105,8 +105,6 @@ class CompilationResult {
 			}
 
 			let screenCss = '';
-			const screenOpen = screenKey === '_' ? '' : `${newLine}${this.screens[screenKey]}{${newLine}`;
-			const screenClose = '}';
 
 			for (const selector in this.cssTree[screenKey]) {
 				screenCss += this.cssTree[screenKey][selector].compile({
@@ -114,7 +112,7 @@ class CompilationResult {
 				});
 			}
 
-			css += screenKey === '_' ? screenCss : screenOpen + screenCss + screenClose;
+			css += screenKey === '_' ? screenCss : `${newLine}@media ${screenKey} {${newLine + screenCss}}${newLine}`;
 		}
 
 		this.changed = false;
@@ -221,12 +219,20 @@ class CompilationResult {
 		const serializedCompilationResult: SerializedCompilationResultInterface = {
 			mangleSelectors: this.mangleSelectors,
 			dev: this.dev,
-			screens: this.screens,
+			screens: {},
 			selectorsList: this.selectorsList,
 			mangledSelectorsMap: this.mangledSelectorsMap,
 			cssTree: {},
 			variables: this.variables
 		};
+
+		Object.keys(this.screens).forEach(screen => {
+			const screenValue: CallableFunction|string = this.screens[screen];
+
+			serializedCompilationResult.screens[screen] = typeof screenValue === 'function'
+				? `FN__${screenValue.toString()}`
+				: screenValue;
+		});
 
 		Object.keys(this.cssTree).forEach(screen => {
 			serializedCompilationResult.cssTree[screen] = {};
@@ -241,13 +247,20 @@ class CompilationResult {
 	public static deserialize(data: Required<SerializedCompilationResultInterface>): CompilationResult {
 		const compilationResult = new CompilationResult({
 			dev: data.dev,
-			screens: data.screens,
+			screens: {},
 			variables: data.variables,
 			mangleSelectors: data.mangleSelectors
 		});
 
 		compilationResult.selectorsList = data.selectorsList || {};
 		compilationResult.mangledSelectorsMap = data.mangledSelectorsMap || {};
+
+		Object.keys(data.screens).forEach(key => {
+			compilationResult.screens[key] = key.startsWith('FN__')
+				// eslint-disable-next-line @typescript-eslint/no-implied-eval
+				? new Function(key.replace('FN__', ''))
+				: key;
+		});
 
 		if ('cssTree' in data) {
 			Object.keys(data.cssTree).forEach(screen => {

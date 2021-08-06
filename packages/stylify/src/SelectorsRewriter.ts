@@ -14,7 +14,7 @@ class SelectorsRewriter {
 
 			sortedOSelectorsListKeys.forEach(selector => {
 				modifiedClassMatch = modifiedClassMatch.replace(
-					new RegExp(selector, 'g'),
+					new RegExp(selector.replace(/\|/g, '\\|'), 'g'),
 					compilationResult.selectorsList[selector].mangledSelector
 				);
 			});
@@ -23,7 +23,7 @@ class SelectorsRewriter {
 		}
 
 		Object.keys(classReplacementMap).forEach(classToReplace => {
-			const classToReplaceRegex = new RegExp(classToReplace, 'g');
+			const classToReplaceRegex = new RegExp(classToReplace.replace(/\|/g, '\\|'), 'g');
 			content = content.replace(classToReplaceRegex, classReplacementMap[classToReplace]);
 		});
 
