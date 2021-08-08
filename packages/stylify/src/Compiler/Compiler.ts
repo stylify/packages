@@ -12,7 +12,7 @@ export interface CompilerConfigInterface {
 	macros: Record<string, CallableFunction>,
 	helpers: Record<string, CallableFunction>,
 	variables: Record<string, string | number>,
-	screens: Record<string, string>,
+	screens: Record<string, string|CallableFunction>,
 	mangleSelectors: boolean,
 	selectorsAttributes: string[],
 	pregenerate: string[]|string,
@@ -35,8 +35,6 @@ class Compiler {
 
 	public screens: Record<string, any> = {};
 
-	public screensKeys: string[] = [];
-
 	public variables: Record<string, any> = {};
 
 	public components: Record<string, any> = {};
@@ -56,7 +54,6 @@ class Compiler {
 		this.helpers = Object.assign(this.helpers, config.helpers || {});
 		this.variables = Object.assign(this.variables, config.variables || {});
 		this.screens = Object.assign(this.screens, config.screens || {});
-		this.screensKeys = Object.keys(this.screens);
 		this.mangleSelectors = typeof config.mangleSelectors === 'undefined'
 			? this.mangleSelectors
 			: config.mangleSelectors;
@@ -206,7 +203,10 @@ class Compiler {
 	}
 
 	private processMacros(content: string, compilationResult: CompilationResult = null) {
-		content = content.replace(/<script[\s\S]*?>[\s\S]*?<\/script>|<style[\s\S]*?>[\s\S]*?<\/style>/ig, '');
+		content = content
+			.replace(/<script[\s\S]*?>[\s\S]*?<\/script>|<style[\s\S]*?>[\s\S]*?<\/style>/ig, '')
+			.replace(/\r\n|\r|\n|\t/ig, ' ')
+			.replace(/&amp;/ig, '&');
 
 		if (compilationResult && Object.keys(compilationResult.mangledSelectorsMap).length) {
 			content = content.replace(/s\d+/ig, (matched) => {
@@ -217,7 +217,7 @@ class Compiler {
 		}
 
 		for (const macroKey in this.macros) {
-			const macroRe = new RegExp('(?:([^. ]+):)?(?<!-)\\b' + macroKey, 'igm');
+			const macroRe = new RegExp('(?:([^.\\s]+):)?(?<!-)\\b' + macroKey, 'igm');
 
 			let macroMatches: string[];
 
@@ -230,8 +230,7 @@ class Compiler {
 					continue;
 				}
 
-				const macroMatch = new MacroMatch(macroMatches, this.screensKeys);
-
+				const macroMatch = new MacroMatch(macroMatches, this.screens);
 				compilationResult.addCssRecord(
 					macroMatch,
 					this.macros[macroKey].call(

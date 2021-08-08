@@ -149,6 +149,7 @@ export default function Stylify(): void {
 			}
 
 			compilationResult = compiler.compile(params.APP, preparedCompilationResult);
+			const css: string = compilationResult.generateCss();
 			const serializedCompilatiResultHtml = `
 				<script class="stylify-runtime-cache" type="application/json">
 					${JSON.stringify(compilationResult.serialize())}
@@ -156,7 +157,7 @@ export default function Stylify(): void {
 			`;
 			metaTags = `
 				${moduleConfig.importStylify ? serializedCompilatiResultHtml : ''}
-				<style id="stylify-css">${compilationResult.generateCss()}</style>
+				<style id="stylify-css">${css}</style>
 			`;
 
 			if (context) {
