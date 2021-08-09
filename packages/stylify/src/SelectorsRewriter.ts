@@ -5,14 +5,14 @@ class SelectorsRewriter {
 	public rewrite = (compilationResult : CompilationResult, regExp: RegExp, content: string): string => {
 		const classReplacementMap = {};
 		let match: string[];
-		const sortedOSelectorsListKeys = Object
+		const sortedSelectorsListKeys = Object
 			.keys(compilationResult.selectorsList)
 			.sort((a, b) => b.length - a.length);
 
 		while ((match = regExp.exec(content))) {
 			let modifiedClassMatch = match[0];
 
-			sortedOSelectorsListKeys.forEach(selector => {
+			sortedSelectorsListKeys.forEach(selector => {
 				modifiedClassMatch = modifiedClassMatch.replace(
 					new RegExp(selector.replace(/\|/g, '\\|'), 'g'),
 					compilationResult.selectorsList[selector].mangledSelector
