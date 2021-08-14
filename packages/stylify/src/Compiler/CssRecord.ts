@@ -1,3 +1,5 @@
+import HooksManager from '../HooksManager';
+
 export interface SerializedCssRecordInterface {
 	selectors: string[],
 	properties: Record<string, string | number>,
@@ -10,49 +12,76 @@ export interface CssRecordCompileParametersConfig {
 
 class CssRecord {
 
-	private selectors: string[] = [];
+	public selectors: string[] = [];
 
-	private properties: Record<string, string | number> = {};
+	public properties: Record<string, string | number> = {};
 
 	public pseudoClasses: string[] = [];
 
 	constructor(
-		selector: string|string[] = null,
+		selectors: string|string[] = [],
 		properties: Record<string, string | number> = {},
 		pseudoClases: string[] = []
 	) {
-		if (selector) {
-			if (typeof selector === 'string') {
-				selector = [selector];
-			}
+		selectors = Array.isArray(selectors) ? selectors : [selectors];
 
-			selector.forEach((selector) => {
-				this.addSelector(selector);
-			});
+		for (const selector of selectors) {
+			this.addSelector(selector);
 		}
 
-		this.properties = properties;
-		this.pseudoClasses = pseudoClases;
+		this.addProperties(properties);
+		this.addPseudoClasses(pseudoClases);
+	}
+
+	public addProperties(properties: Record<string, string|number>): void {
+		for (const property in properties) {
+			this.addProperty(property, properties[property]);
+		}
 	}
 
 	public addProperty(property: string, value: string | number): void {
-		if (!this.hasProperty(property)) {
-			this.properties[property] = value;
+		if (this.hasProperty(property)) {
+			return;
+		}
+
+		const propertiesToAdd = {};
+		propertiesToAdd[property] = value;
+		const { data } = HooksManager.callHook('stylify:cssRecord:addProperty', propertiesToAdd);
+		this.properties = {...this.properties, ...data};
+	}
+
+	public addPseudoClasses(pseudoClasses: string[] | string): void {
+		if (!Array.isArray(pseudoClasses)) {
+			pseudoClasses = [pseudoClasses];
+		}
+
+		const { data } = HooksManager.callHook('stylify:cssRecord:addPseudoClasses', pseudoClasses);
+		for (const pseudoClass of data) {
+			if (!this.pseudoClasses.includes(pseudoClass)) {
+				this.pseudoClasses.push(pseudoClass);
+			}
+		}
+	}
+
+	public addSelectors(selectors: Record<string, string | null>): void {
+		for (const selector in selectors) {
+			this.addSelector(selector, selectors[selector]);
 		}
 	}
 
 	public addSelector(selector: string, pseudoClass: string = null): void {
-		// TODO is this selector[0] and substr necessary?
-		// selector = selector[0] + selector.substr(1).replace(/([^-_a-zA-Z\d])/g, '\\$1');
 		selector = selector.replace(/([^-_a-zA-Z\d])/g, '\\$1');
 
 		if (pseudoClass) {
 			selector += ':' + pseudoClass;
 		}
 
-		if (!this.hasSelector(selector)) {
-			this.selectors.push(selector);
+		if (this.hasSelector(selector)) {
+			return;
 		}
+
+		const { data } = HooksManager.callHook('stylify:cssRecord:addSelector', selector);
+		this.selectors.push(data);
 	}
 
 	public getSelector(selector: string): string | null {
@@ -101,19 +130,15 @@ class CssRecord {
 	}
 
 	public hydrate(data: Record<string, any>): void {
-		data.selectors.forEach(selector => {
+		for (const selector of data.selectors) {
 			this.addSelector(selector);
-		});
-
-		if (data.pseudoClasses.length) {
-			this.pseudoClasses = this.pseudoClasses.concat(
-				data.pseudoClasses.filter(pseudoClass => this.pseudoClasses.indexOf(pseudoClass) === -1)
-			);
 		}
 
-		Object.keys(data.properties).forEach(property => {
-			this.addProperty(property, data.properties[property]);
-		});
+		if (data.pseudoClasses.length) {
+			this.addPseudoClasses(data.pseudoClasses);
+		}
+
+		this.addProperties(data.properties);
 	}
 
 }

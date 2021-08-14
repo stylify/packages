@@ -58,7 +58,7 @@ class ProfilerToolbar extends Component<any> {
 	}
 
 	public componentDidMount = () => {
-		this.props.config.stylify.hooks.addHook('stylify:runtime:uncloak', (data) => {
+		this.props.config.stylify.hooks.addHook('stylify:runtime:uncloak', ({data}) => {
 			const elementId = data.id || null;
 
 			if (elementId !== 'stylify-profiler') {

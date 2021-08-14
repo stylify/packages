@@ -1,32 +1,34 @@
+export interface HookReturnDataInterface {
+	data: any
+}
+
 class HooksManager {
 
-	private hooksRegister = {};
+	private hooksRegister: Record<string, CallableFunction[]> = {};
 
-	public addHook(hook: string, callback: CallableFunction): this {
+	public addHook(hook: string, callback: CallableFunction): void {
+		this.getHookQueue(hook).push(callback);
+	}
+
+	public callHook(hook: string, hookArguments: any = null): HookReturnDataInterface
+	{
+		const hookArgumentsWithReference = {
+			data: hookArguments
+		} as HookReturnDataInterface;
+
+		this.getHookQueue(hook).forEach((hookCallback: CallableFunction) => {
+			hookCallback(...[hookArgumentsWithReference]);
+		});
+
+		return hookArgumentsWithReference;
+	}
+
+	private getHookQueue(hook: string): CallableFunction[] {
 		if (!(hook in this.hooksRegister)) {
 			this.hooksRegister[hook] = [];
 		}
 
-		this.hooksRegister[hook].push(callback);
-
-		return this;
-	}
-
-	public callHook(hook: string, parameters: any|null = []): this
-	{
-		if (!Array.isArray(parameters)) {
-			parameters = [parameters];
-		}
-
-		if (!(hook in this.hooksRegister)) {
-			return;
-		}
-
-		this.hooksRegister[hook].forEach((hookCallback: CallableFunction) => {
-			hookCallback(...parameters);
-		});
-
-		return this;
+		return this.hooksRegister[hook];
 	}
 
 }
