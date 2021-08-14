@@ -1,5 +1,5 @@
-import { SelectorsRewriter, Compiler } from './../../lib';
-import { nativePreset} from './../../lib/Presets';
+import { SelectorsRewriter, Compiler } from '../../lib';
+import { nativePreset } from '../../lib/Presets';
 import TestUtils from './TestUtils';
 
 const testName = 'combined-pages';

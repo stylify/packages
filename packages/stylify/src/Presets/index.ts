@@ -1,1 +1,1 @@
-export * from './NativePreset';
+export { nativePreset } from './NativePreset';

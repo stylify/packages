@@ -84,7 +84,7 @@ const convertObjectToStringableForm = (processedObject: Record<string, any>): Re
 };
 
 const compilationResultCacheExists = (): boolean => {
-	return fs.existsSync(serializedCompilationResultPreflightFilePath) as boolean;
+	return fs.existsSync(serializedCompilationResultPreflightFilePath);
 };
 
 const loadCompilationResultCache = (): Record<string, any> => {

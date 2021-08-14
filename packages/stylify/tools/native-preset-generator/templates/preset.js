@@ -1,8 +1,10 @@
-const minWidthScreen = (screen) => `(min-width: ${screen.replace('minw', '')})`;
-const maxWidthScreen = (screen) => `(max-width: ${screen.replace('maxw', '')})`;
-const minHeightScreen = (screen) => `(min-height: ${screen.replace('minh', '')})`;
-const maxHeightScreen = (screen) => `(max-height: ${screen.replace('maxh', '')})`;
-const orientationScreen = (screen) => `(orientation: ${screen})`;
+import type { CompilerConfigInterface, MacroMatch, SelectorProperties } from '..';
+
+const minWidthScreen = (screen: string): string => `(min-width: ${screen.replace('minw', '')})`;
+const maxWidthScreen = (screen: string): string => `(max-width: ${screen.replace('maxw', '')})`;
+const minHeightScreen = (screen: string): string => `(min-height: ${screen.replace('minh', '')})`;
+const maxHeightScreen = (screen: string): string => `(max-height: ${screen.replace('maxh', '')})`;
+const orientationScreen = (screen: string): string => `(orientation: ${screen})`;
 
 const nativePreset = {
 	compiler: {
@@ -31,7 +33,10 @@ const nativePreset = {
 			dark: '(prefers-color-scheme: dark)'
 		},
 		macros: {
-			__MACROS__
+			// eslint-disable-next-line quote-props
+			'__REG_EXP__': (m: MacroMatch, p: SelectorProperties): void => {
+				p.add(m.getCapture(0), m.getCapture(1));
+			}
 		}
 	}
 };
