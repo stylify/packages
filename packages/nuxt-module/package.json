@@ -6,6 +6,7 @@
 	"module": "./esm/index.js",
 	"types": "./types",
 	"scripts": {
+		"init": "yarn install",
 		"watch": "yarn build -w src",
 		"build": "node --max-old-space-size=8192 node_modules/.bin/rollup -c rollup.config.js && yarn types",
 		"types": "yarn tsc ./src/index.ts --d --moduleResolution node --emitDeclarationOnly --allowSyntheticDefaultImports --target esnext --jsx react-jsx --jsxImportSource preact --outDir types",
@@ -35,16 +36,17 @@
 	},
 	"homepage": "https://github.com/stylify/packages/#readme",
 	"devDependencies": {
-		"@babel/core": "^7.12.10",
-		"@babel/preset-env": "^7.12.11",
-		"@babel/preset-react": "^7.12.10",
-		"@babel/preset-typescript": "^7.12.7",
+		"@babel/core": "^7.12",
+		"@babel/plugin-proposal-class-properties": "^7.14",
+		"@babel/plugin-proposal-object-rest-spread": "^7.14",
+		"@babel/preset-env": "^7.12",
+		"@babel/preset-react": "^7.12",
+		"@babel/preset-typescript": "^7.12",
 		"@rollup/plugin-babel": "^5.2",
-		"@rollup/plugin-commonjs": "^17.0.0",
-		"@rollup/plugin-node-resolve": "^11.0.1",
-		"@rollup/plugin-replace": "^2.3.4",
+		"@rollup/plugin-commonjs": "^17.0",
+		"@rollup/plugin-node-resolve": "^11.0",
+		"@rollup/plugin-replace": "^2.3",
 		"@rollup/plugin-typescript": "^8.1",
-		"@stylify/stylify": "^0.0.1",
 		"@types/node": "^14.14",
 		"@typescript-eslint/eslint-plugin": "^4.11",
 		"@typescript-eslint/parser": "^4.11",
@@ -60,6 +62,8 @@
 		"access": "public"
 	},
 	"dependencies": {
-		"loader-utils": "^2.0.0"
+		"@stylify/autoprefixer": "^0.0",
+		"@stylify/stylify": "^0.0",
+		"loader-utils": "^2.0"
 	}
 }
