@@ -43,7 +43,7 @@ const createConfig = (config) => {
 					["@babel/preset-env", {
 						"bugfixes": true,
 						"modules": false,
-						"targets": esVersion === 'es5' ? "> 0.25%, not dead, ie 11" : "> 0.25%, not dead, not ie 11"
+						"targets": esVersion === 'es5' ? "> 0.25%, not dead, not ie 11" : ">= 0.5% and supports es6-class"
 					}],
 					["@babel/preset-react", {
 						"pragma": "h"
@@ -157,7 +157,6 @@ const createFileConfigs = (buildConfigs) => {
 			configs = configs.concat(
 				createConfig({
 					input: inputFile,
-					esVersion: 'es5',
 					plugins: buildConfig.plugins || [],
 					external: buildConfig.external || [],
 					output: {

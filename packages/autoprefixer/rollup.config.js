@@ -12,10 +12,10 @@ import typescript from "@rollup/plugin-typescript";
 const exportName = 'Stylify';
 
 const getTypescriptConfig = () => JSON.parse(fs.readFileSync('tsconfig.json', 'utf8'));
-const devDirectories = ['dist', 'esm', 'lib', 'tmp', 'types'];
+const devDirectories = ['esm', 'lib', 'tmp', 'types'];
 const extensions = ['.js', '.jsx', '.ts', '.tsx'];
 const createConfig = (config) => {
-	const esVersion = /* config.esVersion || 'es6'; */ 'es6';
+	const esVersion = config.esVersion || 'es6';
 	const configs = [];
 	const getPlugins = (config) => {
 		const typescriptConfig = getTypescriptConfig();
@@ -35,7 +35,7 @@ const createConfig = (config) => {
 					["@babel/preset-env", {
 						"bugfixes": true,
 						"modules": false,
-						"targets": /* esVersion === 'es5' ? "> 0.25%, not dead, ie 11" : */ "> 1%"
+						"targets": esVersion === 'es5' ? "> 0.25%, not dead, not ie 11" : ">= 0.5% and supports es6-class"
 					}]
 				],
 				include: ['src/**/*'],
@@ -142,7 +142,6 @@ const createFileConfigs = (buildConfigs) => {
 			configs = configs.concat(
 				createConfig({
 					input: inputFile,
-					esVersion: 'es5',
 					plugins: buildConfig.plugins || [],
 					external: buildConfig.external || [],
 					output: {
@@ -186,7 +185,7 @@ devDirectories.forEach(directory => {
 });
 
 const configs = createFileConfigs([
-	{inputFile: 'index', formats: ['esm', 'lib'], external: [
+ 	{inputFile: 'index', formats: ['esm', 'lib'], external: [
 		'./PrefixesGenerator',
 		'./Prefixer'
 	]},
