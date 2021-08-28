@@ -38,7 +38,7 @@ const nativePreset = {
 				p.add(m.getCapture(0), m.getCapture(1));
 			}
 		}
-	}
+	} as Partial<CompilerConfigInterface>
 };
 
 export {

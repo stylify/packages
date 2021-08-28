@@ -9,6 +9,7 @@
 	"jsdelivr": "./dist/stylify.js",
 	"types": "./types",
 	"scripts": {
+		"init": "yarn install",
 		"watch": "yarn gnp && node --max-old-space-size=8192 node_modules/.bin/rollup -c rollup.config.js -w src",
 		"build": "yarn gnp && node --max-old-space-size=8192 node_modules/.bin/rollup -c rollup.config.js && yarn types",
 		"types": "yarn tsc ./src/**/*.ts --d --moduleResolution node --emitDeclarationOnly --target esnext --jsx react-jsx --jsxImportSource preact --outDir types",
@@ -63,7 +64,6 @@
 		"postcss": "^8.2",
 		"postcss-url": "^10.1",
 		"preact": "^10.5",
-		"prettier": "2.2",
 		"promise": "^8.1",
 		"rollup": "^2.35",
 		"rollup-plugin-banner": "^0.2",

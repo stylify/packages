@@ -41,4 +41,6 @@ const nativePreset = {
 	} as Partial<CompilerConfigInterface>
 };
 
-export { nativePreset };
+export {
+	nativePreset
+};

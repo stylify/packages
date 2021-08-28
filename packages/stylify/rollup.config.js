@@ -22,7 +22,8 @@ const createConfig = (config) => {
 	const getPlugins = (config) => {
 		const typescriptConfig = getTypescriptConfig();
 		typescriptConfig.exclude = [
-			'./tests/**/*.ts'
+			'./tests/**/*.ts',
+			'./tools/native-preset-generator/templates/**/*.ts'
 		];
 		const plugins = [
 			replace({
