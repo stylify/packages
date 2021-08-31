@@ -7,7 +7,7 @@ import { nodeResolve } from '@rollup/plugin-node-resolve';
 import replace from '@rollup/plugin-replace';
 import postcss from 'rollup-plugin-postcss';
 import postcssUrlPlugin from 'postcss-url';
-import typescript from "@rollup/plugin-typescript";
+import typescript from "rollup-plugin-typescript2";
 
 "use strict";
 

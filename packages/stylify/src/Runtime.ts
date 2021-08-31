@@ -85,20 +85,14 @@ class Runtime {
 
 	private hydrate(data: string|Record<string, any> = null): void {
 		if (!data) {
-			const cacheElements = document.querySelectorAll('.stylify-runtime-cache');
-
-			let cacheElement;
-			if (cacheElements.length) {
-				for (cacheElement of cacheElements) {
-					cacheElement.classList.add('processed');
-					if (cacheElement.innerHTML.trim().length > 0) {
-						this.hydrate(cacheElement.innerHTML);
-					}
-					cacheElement.parentElement.removeChild(cacheElement);
+			const cacheElements = document.querySelectorAll('.stylify-runtime-cache') || [];
+			cacheElements.forEach((cacheElement: Element) => {
+				cacheElement.classList.add('processed');
+				if (cacheElement.innerHTML.trim().length > 0) {
+					this.hydrate(cacheElement.innerHTML);
 				}
-				return;
-			}
-
+				cacheElement.parentElement.removeChild(cacheElement);
+			});
 			return;
 		}
 
@@ -200,15 +194,13 @@ class Runtime {
 		}
 
 		const elements = document.querySelectorAll('[' + this.STYLIFY_CLOAK_ATTR_NAME + ']');
-		let element: Element;
-
-		for (element of elements) {
+		elements.forEach((element) => {
 			element.removeAttribute(this.STYLIFY_CLOAK_ATTR_NAME);
 			HooksManager.callHook('stylify:runtime:uncloak', {
 				id: element.getAttribute(this.STYLIFY_CLOAK_ATTR_NAME) || null,
 				el: element
 			});
-		}
+		});
 	}
 
 }

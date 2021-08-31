@@ -4,7 +4,7 @@ import { babel } from '@rollup/plugin-babel';
 import path from 'path';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 import replace from '@rollup/plugin-replace';
-import typescript from "@rollup/plugin-typescript";
+import typescript from "rollup-plugin-typescript2";
 
 "use strict";
 
