@@ -231,18 +231,19 @@ class Compiler {
 				}
 
 				const macroMatch = new MacroMatch(macroMatches, this.screens);
-				compilationResult.addCssRecord(
+				const selectorProperties = new SelectorProperties();
+
+				this.macros[macroKey].call(
+					{
+						dev: this.dev,
+						variables: this.variables,
+						helpers: this.helpers
+					},
 					macroMatch,
-					this.macros[macroKey].call(
-						{
-							dev: this.dev,
-							variables: this.variables,
-							helpers: this.helpers
-						},
-						macroMatch,
-						new SelectorProperties()
-					)
+					selectorProperties
 				);
+
+				compilationResult.addCssRecord(macroMatch, selectorProperties);
 
 				if (macroIsInSelectorsList && !macroIsProcessed) {
 					compilationResult.selectorsList[fullMatch].processed = true;

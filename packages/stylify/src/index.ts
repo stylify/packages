@@ -2,7 +2,9 @@ export {
 	Compiler,
 	CompilerConfigInterface,
 	CompilationResult,
-	SerializedCompilerInterface
+	SerializedCompilerInterface,
+	MacroMatch,
+	SelectorProperties
 } from './Compiler';
 export { Runtime, RuntimeConfigInterface } from './Runtime';
 export * from './Presets';

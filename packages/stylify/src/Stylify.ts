@@ -22,11 +22,9 @@ class Stylify {
 	constructor(config: Partial<StylifyConfigInterface> = {}) {
 		this.hooks = HooksManager;
 
-		this.hooks.callHook('stylify:beforeInit', {
-			config: config
-		});
+		const { data } = this.hooks.callHook('stylify:beforeInit', config);
 
-		this.configure(config);
+		this.configure(data);
 
 		this.hooks.callHook('stylify:init', {
 			runtime: this.Runtime
@@ -38,7 +36,7 @@ class Stylify {
 		const runtimeConfig: Record<string, any> = config.runtime || {};
 
 		if (this.Compiler) {
-			this.Compiler.configure(compilerConfig || {});
+			this.Compiler.configure(compilerConfig);
 		} else {
 			this.Compiler = new Compiler(compilerConfig);
 		}

@@ -5,8 +5,6 @@ import { babel } from '@rollup/plugin-babel';
 import path from 'path';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 import replace from '@rollup/plugin-replace';
-import postcss from 'rollup-plugin-postcss';
-import postcssUrlPlugin from 'postcss-url';
 import typescript from "rollup-plugin-typescript2";
 
 "use strict";
@@ -14,7 +12,7 @@ import typescript from "rollup-plugin-typescript2";
 const exportName = 'Stylify';
 
 const getTypescriptConfig = () => JSON.parse(fs.readFileSync('tsconfig.json', 'utf8'));
-const devDirectories = ['dist', 'esm', 'lib', 'tmp', 'types'];
+const devDirectories = ['esm', 'lib', 'tmp', 'types'];
 const extensions = ['.js', '.jsx', '.ts', '.tsx'];
 const createConfig = (config) => {
 	const esVersion = config.esVersion || 'es6';
@@ -22,22 +20,15 @@ const createConfig = (config) => {
 	const getPlugins = (config) => {
 		const typescriptConfig = getTypescriptConfig();
 		typescriptConfig.exclude = [
-			'./tests/**/*.ts',
-			'./tools/native-preset-generator/templates/**/*.ts'
+			'./tests/**/*.ts'
 		];
+
 		const plugins = [
 			replace({
 				'process.env.NODE_ENV': JSON.stringify('production'),
 				preventAssignment: true,
 			}),
 			typescript(typescriptConfig),
-			postcss({
-				plugins: [
-					postcssUrlPlugin({
-						url: 'inline'
-					})
-				]
-			}),
 			babel({
 				extensions: extensions,
 				"presets": [
@@ -45,9 +36,6 @@ const createConfig = (config) => {
 						"bugfixes": true,
 						"modules": false,
 						"targets": esVersion === 'es5' ? "> 0.25%, not dead, not ie 11" : ">= 0.5% and supports es6-class"
-					}],
-					["@babel/preset-react", {
-						"pragma": "h"
 					}]
 				],
 				include: ['src/**/*'],
@@ -55,10 +43,6 @@ const createConfig = (config) => {
 				"plugins": [
 					"@babel/proposal-class-properties",
 					"@babel/proposal-object-rest-spread",
-					["@babel/plugin-transform-react-jsx", {
-						"runtime": "automatic",
-						"importSource": "preact",
-					}]
 				]
 			}),
 			nodeResolve({
@@ -201,34 +185,15 @@ devDirectories.forEach(directory => {
 });
 
 const configs = createFileConfigs([
-	// Stylify
-	{inputFile: 'SelectorsRewriter', outputFile: 'SelectorsRewriter/index', formats:['esm', 'lib']},
-	{inputFile: 'index', formats: ['esm', 'lib'], external: [
-		'./Profiler',
-		'./Presets',
-		'./SelectorsRewriter'
+ 	{inputFile: 'index', formats: ['esm', 'lib'], external: [
+		'./PrefixesGenerator',
+		'./Prefixer'
+	]},
+	{inputFile: 'PrefixesGenerator', formats: ['esm', 'lib']},
+	{inputFile: 'Prefixer', formats: ['esm', 'lib'], external: [
+		'@stylify/stylify'
 	]},
 
-	{inputFile: 'Stylify', formats:['browser'], external: [
-		'./Profiler',
-		'./SelectorsRewriter',
-		'./icons/style.css'
-	]},
-
-	{inputFile: 'Stylify.native.browser', outputFile: 'Stylify.native', formats:['browser'], external: [
-		'./Profiler',
-		'./SelectorsRewriter',
-		'./icons/style.css'
-	]},
-
-	{inputFile: 'Presets/index', formats: ['esm', 'lib'], external: [
-		'./NativePreset'
-	]},
-	{inputFile: 'Presets/NativePreset', formats:['esm', 'lib']},
-
-	// Profiler
-	{inputFile: 'Profiler/Profiler', outputFile: 'Profiler/index', formats:['lib', 'esm']},
-	{inputFile: 'Profiler.browser', outputFile: 'profiler', formats:['browser']}
 ]);
 
 export default configs;

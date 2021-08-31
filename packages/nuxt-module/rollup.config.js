@@ -4,7 +4,7 @@ import { babel } from '@rollup/plugin-babel';
 import path from 'path';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 import replace from '@rollup/plugin-replace';
-import typescript from "@rollup/plugin-typescript";
+import typescript from "rollup-plugin-typescript2";
 
 "use strict";
 
@@ -28,7 +28,7 @@ const createConfig = (config) => {
 					["@babel/preset-env", {
 						"bugfixes": true,
 						"modules": false,
-						"targets": esVersion === 'es5' ? "> 0.25%, not dead, ie 11" : "> 0.25%, not dead, not ie 11"
+						"targets": esVersion === 'es5' ? "> 0.25%, not dead, not ie 11" : ">= 0.5% and supports es6-class"
 					}]
 				],
 				include: ['src/**/*'],
@@ -84,7 +84,6 @@ const createFileConfigs = (buildConfigs) => {
 			configs = configs.concat(
 				createConfig({
 					input: inputFile,
-					esVersion: 'es5',
 					plugins: buildConfig.plugins || [],
 					external: buildConfig.external || [],
 					output: {

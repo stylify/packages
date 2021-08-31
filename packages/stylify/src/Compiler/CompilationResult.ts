@@ -137,7 +137,7 @@ class CompilationResult {
 		}
 
 		const newCssRecord = new CssRecord();
-		newCssRecord.pseudoClasses = macroMatch.pseudoClasses;
+		newCssRecord.addPseudoClasses(macroMatch.pseudoClasses);
 		const selectorToAdd = this.mangleSelectors ? mangledSelectorId : selector;
 
 		for (const property in macroResult) {

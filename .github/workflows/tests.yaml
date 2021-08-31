@@ -15,11 +15,9 @@ jobs:
     steps:
         - uses: actions/checkout@v2
         - name: Install packages
-          run: yarn repo-init
+          run: yarn repo:init
         - name: Build packages
-          run: |
-            yarn build --scope=@stylify/stylify
-            yarn build --scope=@stylify/nuxt-module
+          run: yarn build:all
         - name: Eslint
           run: yarn lint:check
         - name: Jest tests

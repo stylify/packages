@@ -1,0 +1,11 @@
+.display\:grid{
+	display:grid
+}
+.user-select\:none{
+	-webkit-user-select:none;
+	-ms-user-select:none;
+	user-select:none
+}
+.background\:linear-gradient\(to__bottom\,__white\,__black\){
+	background:linear-gradient(to bottom, white, black)
+}

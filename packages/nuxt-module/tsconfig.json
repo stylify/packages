@@ -1,23 +1,25 @@
 {
-	"target": "esnext",
-	"module": "esnext",
-	"moduleResolution": "node",
-	"allowSyntheticDefaultImports": true,
-	"lib": [
-		"esnext",
-		"esnext.string",
-		"dom",
-		"dom.iterable"
-	],
-	"types": [
-		"node"
-	],
-	"esModuleInterop": true,
-	"removeComments": true,
-	"experimentalDecorators": true,
-	"resolveJsonModule": true,
-	"jsx": "react-jsx",
-	"jsxImportSource": "preact",
-	"noEmit": true,
-	"allowJs": true
+	"compilerOptions": {
+		"target": "esnext",
+		"module": "esnext",
+		"moduleResolution": "node",
+		"allowSyntheticDefaultImports": true,
+		"lib": [
+			"esnext",
+			"esnext.string",
+			"dom",
+			"dom.iterable"
+		],
+		"types": [
+			"node"
+		],
+		"esModuleInterop": true,
+		"removeComments": true,
+		"experimentalDecorators": true,
+		"resolveJsonModule": true,
+		"jsx": "react-jsx",
+		"jsxImportSource": "preact",
+		"noEmit": true,
+		"allowJs": true
+	}
 }

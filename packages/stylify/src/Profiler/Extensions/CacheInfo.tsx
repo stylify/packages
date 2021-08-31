@@ -17,7 +17,7 @@ export default class CacheInfoExtension extends Component<any> {
 		this.Stylify = props.config.stylify;
 		this.openCodeInNewWindow = props.config.openCodeInNewWindow;
 
-		props.config.stylify.hooks.addHook('stylify:runtime:hydrated', (data) => {
+		props.config.stylify.hooks.addHook('stylify:runtime:hydrated', ({data}) => {
 			this.state.cacheList.push(this.stringifyCache(data.cache));
 
 			this.setState({

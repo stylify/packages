@@ -1,15 +1,13 @@
 const path = require('path');
 const fs = require('fs');
-const prettier = require('prettier');
 
 const dirname = path.join(process.cwd(), 'tools', 'native-preset-generator');
 
 const browserPropertiesListPath = path.join(dirname, 'tmp', 'complete-propertes-list.txt');
-const macroFunctionTemplatePath = path.join(dirname, 'templates', 'function.js');
 const nativePresetOutputFilePath = path.join(
 	dirname, '..', '..', 'src', 'Presets', 'NativePreset.ts'
 );
-const nativePresetTemplateFilePath = path.join(dirname, 'templates', 'preset.js');
+const nativePresetTemplateFilePath = path.join(dirname, 'templates', 'preset.ts');
 
 class NativePresetGenerator {
 	constructor() {
@@ -37,7 +35,11 @@ class NativePresetGenerator {
 			'font',
 			'list-style',
 			'margin',
-			'padding'
+			'marker',
+			'overflow',
+			'outline',
+			'padding',
+			'scroll-margin'
 		];
 
 		const re = new RegExp(/^[\w-]+/, 'gm');
@@ -62,13 +64,6 @@ class NativePresetGenerator {
 
 		fs.writeFileSync(browserPropertiesListPath, propertiesShortcuts.join('\n'));
 
-		const macrosTemplate = this.generateTemplate(
-			fs.readFileSync(macroFunctionTemplatePath, 'utf-8'),
-			{
-				__REG_EXP__: propertiesRegExp
-			}
-		);
-
 		fs.writeFileSync(
 			nativePresetOutputFilePath,
 			this.generateTemplate(
@@ -76,9 +71,8 @@ class NativePresetGenerator {
 				{
 					__SIDES_SHORTCUTS__: JSON.stringify(this.sidesShortcuts),
 					__SIZES_SHORTCUTS__: JSON.stringify(this.sizesShortcuts),
-					__MACROS__: macrosTemplate
-				},
-				true
+					__REG_EXP__: propertiesRegExp
+				}
 			)
 		);
 	}
@@ -176,15 +170,11 @@ class NativePresetGenerator {
 	 * @param {boolean} prettierEnabled
 	 * @returns {string}
 	 */
-	generateTemplate(template, values, prettierEnabled = false) {
+	generateTemplate(template, values) {
 
 		Object.keys(values).forEach((key) => {
 			template = template.replace(key, values[key]);
 		});
-
-		if (prettierEnabled) {
-			template = prettier.format(template);
-		}
 
 		return template;
 	}
