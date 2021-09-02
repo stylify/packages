@@ -12,7 +12,7 @@ import typescript from "rollup-plugin-typescript2";
 const exportName = 'Stylify';
 
 const getTypescriptConfig = () => JSON.parse(fs.readFileSync('tsconfig.json', 'utf8'));
-const devDirectories = ['esm', 'lib', 'tmp', 'types'];
+const devDirectories = ['dist', 'types'];
 const extensions = ['.js', '.jsx', '.ts', '.tsx'];
 const createConfig = (config) => {
 	const esVersion = config.esVersion || 'es6';
@@ -145,7 +145,7 @@ const createFileConfigs = (buildConfigs) => {
 					plugins: buildConfig.plugins || [],
 					external: buildConfig.external || [],
 					output: {
-						file: path.join('esm', outputFile),
+						file: path.join('dist', outputFile + '.module'),
 						format: ['esm']
 					}
 				})
@@ -159,7 +159,7 @@ const createFileConfigs = (buildConfigs) => {
 					plugins: buildConfig.plugins || [],
 					external: buildConfig.external,
 					output: {
-						file: path.join('lib', outputFile),
+						file: path.join('dist', outputFile),
 						format: ['cjs']
 					}
 				})
@@ -185,15 +185,7 @@ devDirectories.forEach(directory => {
 });
 
 const configs = createFileConfigs([
- 	{inputFile: 'index', formats: ['esm', 'lib'], external: [
-		'./PrefixesGenerator',
-		'./Prefixer'
-	]},
-	{inputFile: 'PrefixesGenerator', formats: ['esm', 'lib']},
-	{inputFile: 'Prefixer', formats: ['esm', 'lib'], external: [
-		'@stylify/stylify'
-	]},
-
+ 	{inputFile: 'index', formats: ['esm', 'lib']}
 ]);
 
 export default configs;
