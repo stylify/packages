@@ -1,5 +1,5 @@
-const { getOptions } = require('loader-utils');
-const { SelectorsRewriter } = require('@stylify/stylify');
+import { SelectorsRewriter } from '@stylify/stylify';
+import { getOptions } from 'loader-utils';
 
 /**
  *
