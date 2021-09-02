@@ -43,6 +43,8 @@ class Compiler {
 
 	public componentsSelectorsRegExp: RegExp = null;
 
+	public selectorAttributes = ['class', 's-pregenerate', 'data-s-pregenerate']
+
 	constructor(config: Record<string, any> = {}) {
 		this.configure(config);
 	}
@@ -62,8 +64,9 @@ class Compiler {
 			this.pregenerate += Array.isArray(config.pregenerate) ? config.pregenerate.join(' ') : config.pregenerate;
 		}
 
+		this.selectorAttributes = this.selectorAttributes.concat(config.selectorsAttributes || []);
 		this.classMatchRegExp = new RegExp(
-			'(?:' + ['class', 's-pregenerate'].concat(config.selectorsAttributes || []).join('|') + ')="([^"]+)"', 'igm'
+			'(?:' + this.selectorAttributes.join('|') + ')="([^"]+)"', 'igm'
 		);
 
 		for (const componentSelector in config.components) {
