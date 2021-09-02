@@ -2,12 +2,11 @@
 	"name": "@stylify/stylify",
 	"description": "Dynamic CSS generator for rapid UI development.",
 	"version": "0.0.1",
-	"main": "./lib/index.js",
-	"module": "./esm/index.js",
-	"browser": "./dist/stylify.js",
-	"unpkg": "./dist/stylify.js",
-	"jsdelivr": "./dist/stylify.js",
-	"types": "./types",
+	"main": "dist/index.js",
+	"module": "dist/index.module.js",
+	"unpkg": "dist/stylify.native.min.js",
+  	"jsdelivr": "dist/stylify.native.min.js",
+	"types": "types",
 	"scripts": {
 		"init": "yarn install",
 		"watch": "yarn gnp && node --max-old-space-size=8192 node_modules/.bin/rollup -c rollup.config.js -w src",
@@ -20,10 +19,9 @@
 		"gnr": "node --experimental-modules ./tests/jest/selectorsRewritter/html.test.js"
 	},
 	"files": [
-		"dist/",
-		"esm/",
-		"lib/",
-		"types/",
+		"dist",
+		"types",
+		"package.json",
 		"LICENSE",
 		"README.md"
 	],
