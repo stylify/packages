@@ -14,8 +14,7 @@ export default {
 </script>
 
 <style>
-body,
-.superselector {
+body {
 	background-color: #000;
 }
 </style>
