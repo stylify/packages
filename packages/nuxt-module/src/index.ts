@@ -4,8 +4,6 @@ import {
 	Compiler,
 	SelectorsRewriter,
 	nativePreset,
-	CompilerConfigInterface,
-	RuntimeConfigInterface,
 	CompilationResult
 } from '@stylify/stylify';
 import { StylifyConfigInterface } from '@stylify/stylify/types/Stylify';

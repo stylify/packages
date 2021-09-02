@@ -2,7 +2,7 @@ import { CompilationResult } from '.';
 
 class SelectorsRewriter {
 
-	public rewrite = (compilationResult : CompilationResult, regExp: RegExp, content: string): string => {
+	public rewrite(compilationResult : CompilationResult, regExp: RegExp, content: string): string {
 		const classReplacementMap = {};
 		let match: string[];
 		const sortedSelectorsListKeys = Object

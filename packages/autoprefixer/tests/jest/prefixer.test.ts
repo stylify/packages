@@ -1,7 +1,7 @@
 import TestUtils from './TestUtils';
 import { Compiler } from '@stylify/stylify';
 import { nativePreset, HooksManager } from '@stylify/stylify';
-import { Prefixer, PrefixesGenerator } from '../../lib';
+import { Prefixer, PrefixesGenerator } from '../../dist';
 
 const prefixesGenerator = new PrefixesGenerator();
 const testName = 'prefixer';
@@ -10,17 +10,17 @@ const inputIndex = testUtils.getHtmlInputFile();
 
 nativePreset.compiler.dev = true;
 
-// Simulate server side prefixes pregenerating
+// Prefixes server side pregeneration simulation
 const serverCompiler = new Compiler(nativePreset.compiler);
 let serverCompilationResult = serverCompiler.compile(inputIndex);
 const prefixesMap = prefixesGenerator.createPrefixesMap(serverCompilationResult);
 
-// Simulate in browser or SSR prefixing
+// In browser or SSR prefixing simulation
 const compiler = new Compiler(nativePreset.compiler);
 new Prefixer(HooksManager, prefixesMap);
 let compilationResult = compiler.compile(inputIndex);
 
-test('Generated css, rewritten HTML', () => {
+test('Generated css, rewritten HTML', (): void => {
 	testUtils.testCssFileToBe(compilationResult.generateCss());
 	testUtils.testJsonFileToBe(prefixesMap);
 });

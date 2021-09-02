@@ -92,7 +92,7 @@ rules:
     operator-assignment: [error]
     operator-linebreak: [error, before, overrides: { "?": ignore, ":": ignore, "=": after}]
     quote-props: [error, as-needed]
-    quotes: [error, single]
+    quotes: [error, single, { allowTemplateLiterals: true }]
     semi: [error, always]
     semi-spacing: [error, {before: false, after: true}]
     space-before-blocks: [error]

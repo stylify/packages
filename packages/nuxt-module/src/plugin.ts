@@ -1,7 +1,9 @@
 import { Stylify, Profiler } from '@stylify/stylify';
 import { StylifyNuxtModuleConfigInterface } from '.';
 
-const convertObjectFromStringableForm = (processedObject: string[]|number[]|Record<string, string|number|string[]|number[]>): Record<string, string|number|string[]|number[]> => {
+const convertObjectFromStringableForm = (
+	processedObject: string[]|number[]|Record<string, string|number|string[]|number[]>
+): Record<string, string|number|string[]|number[]> => {
 	const newObject = {};
 
 	for (const key in processedObject) {
@@ -22,7 +24,7 @@ const convertObjectFromStringableForm = (processedObject: string[]|number[]|Reco
 
 const moduleConfig = convertObjectFromStringableForm(
 	JSON.parse(decodeURIComponent(`<%= encodeURIComponent(JSON.stringify(options)) %>`))
-) as Partial<StylifyNuxtModuleConfigInterface>
+) as Partial<StylifyNuxtModuleConfigInterface>;
 
 export default function (): void {
 	const stylify = new Stylify({
