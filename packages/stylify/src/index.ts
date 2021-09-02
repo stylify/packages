@@ -7,7 +7,7 @@ export {
 	SelectorProperties
 } from './Compiler';
 export { Runtime, RuntimeConfigInterface } from './Runtime';
-export * from './Presets';
+export { nativePreset } from './Presets';
 export { default as HooksManager } from './HooksManager';
 export { Profiler } from './Profiler';
 export { default as SelectorsRewriter } from './SelectorsRewriter';
