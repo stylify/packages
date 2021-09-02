@@ -8,12 +8,13 @@ import {
 	RuntimeConfigInterface,
 	CompilationResult
 } from '@stylify/stylify';
+import { StylifyConfigInterface } from '@stylify/stylify/types/Stylify';
 
 const configFileName = 'stylify.config.js';
-const serializedCompilationResultPreflightFileName = 'stylify-preflight-cache.json';
+const serializedCompilationResultPreflightFileName = 'stylify-cache.json';
 let serializedCompilationResultPreflightFilePath: string = null;
 
-export interface StylifyNuxtModuleConfigInterface {
+export interface StylifyNuxtModuleConfigInterface extends StylifyConfigInterface {
 	configPath: string,
 	cache: {
 		enabled: boolean,
@@ -22,9 +23,7 @@ export interface StylifyNuxtModuleConfigInterface {
 	generateCssPerPage: boolean,
 	embeddedCssLimit: number,
 	importStylify: boolean,
-	importProfiler: boolean,
-	compiler: Partial<CompilerConfigInterface>,
-	runtime: Partial<RuntimeConfigInterface>
+	importProfiler: boolean
 }
 
 let moduleConfig: StylifyNuxtModuleConfigInterface = {
@@ -108,6 +107,7 @@ export default function Stylify(): void {
 		nuxtBuildDir, serializedCompilationResultPreflightFileName
 	);
 
+	moduleConfig.compiler.selectorsAttributes = ['v-bind:class', ':class'];
 	moduleConfig.compiler.dev = nuxtIsInDevMode;
 	moduleConfig.compiler.mangleSelectors = !nuxtIsInDevMode;
 	moduleConfig.importProfiler = nuxtIsInDevMode;
