@@ -1,5 +1,5 @@
 import TestUtils from './TestUtils';
-import { SelectorsRewriter, Compiler, nativePreset } from '../../dist';
+import { SelectorsRewriter, Compiler, nativePreset } from '../../src';
 
 const testName = 'larger-page';
 const testUtils = new TestUtils(testName);

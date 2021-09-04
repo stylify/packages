@@ -9,9 +9,13 @@ import typescript from "rollup-plugin-typescript2";
 
 "use strict";
 
+const isDevMode = process.env.ROLLUP_WATCH;
+
 const exportName = 'Stylify';
 
 const getTypescriptConfig = () => JSON.parse(fs.readFileSync('tsconfig.json', 'utf8'));
+const getBabelConfig = () => JSON.parse(fs.readFileSync('babel.config.json', 'utf8'));
+
 const devDirectories = ['dist', 'types'];
 const extensions = ['.js', '.jsx', '.ts', '.tsx'];
 const createConfig = (config) => {
@@ -19,32 +23,19 @@ const createConfig = (config) => {
 	const configs = [];
 	const getPlugins = (config) => {
 		const typescriptConfig = getTypescriptConfig();
+		const babelConfig = getBabelConfig();
+		babelConfig.extensions = extensions;
+		babelConfig.babelHelpers = 'bundled';
 		typescriptConfig.exclude = [
-			'./tests/**/*.ts'
+			'./tests/**/*.ts',
 		];
-
 		const plugins = [
 			replace({
 				'process.env.NODE_ENV': JSON.stringify('production'),
 				preventAssignment: true,
 			}),
 			typescript(typescriptConfig),
-			babel({
-				extensions: extensions,
-				"presets": [
-					["@babel/preset-env", {
-						"bugfixes": true,
-						"modules": false,
-						"targets": esVersion === 'es5' ? "> 0.25%, not dead, not ie 11" : ">= 0.5% and supports es6-class"
-					}]
-				],
-				include: ['src/**/*'],
-				babelHelpers: 'bundled',
-				"plugins": [
-					"@babel/proposal-class-properties",
-					"@babel/proposal-object-rest-spread",
-				]
-			}),
+			babel(babelConfig),
 			nodeResolve({
 				extensions: extensions,
 			}),
@@ -60,9 +51,11 @@ const createConfig = (config) => {
 			);
 		}
 
-		plugins.push(
-			banner('<%= pkg.name %> v<%= pkg.version %> \n(c) 2020-' + new Date().getFullYear() + ' <%= pkg.author %>\nReleased under the MIT License.')
-		)
+		if (!isDevMode) {
+			plugins.push(
+				banner('<%= pkg.name %> v<%= pkg.version %> \n(c) 2020-' + new Date().getFullYear() + ' <%= pkg.author %>\nReleased under the MIT License.')
+			)
+		}
 
 		return plugins;
 	}
@@ -74,7 +67,7 @@ const createConfig = (config) => {
 			const minify = config.output.minify || false;
 			const plugins = config.plugins || {};
 
-			if (suffix === '.min.js' && ! minify) {
+			if (suffix === '.min.js' && (!minify || isDevMode)) {
 				return;
 			}
 
@@ -112,18 +105,6 @@ const createFileConfigs = (buildConfigs) => {
 			const outputPath = path.join('dist', convertCamelCaseIntoDashCase(outputFile));
 
 			configs = configs.concat(
- 				createConfig({
-					input: inputFile,
-					esVersion: 'es5',
-					plugins: buildConfig.plugins || [],
-					external: buildConfig.external || [],
-					output: {
-						name: exportName,
-						file: outputPath + '.es5',
-						format: ['umd'],
-						minify: true
-					}
-				}),
 				createConfig({
 					input: inputFile,
 					plugins: buildConfig.plugins || [],
@@ -136,6 +117,23 @@ const createFileConfigs = (buildConfigs) => {
 					}
 				}),
 			);
+
+			if (!isDevMode) {
+				configs = configs.concat(
+					createConfig({
+						input: inputFile,
+						esVersion: 'es5',
+						plugins: buildConfig.plugins || [],
+						external: buildConfig.external || [],
+						output: {
+							name: exportName,
+							file: outputPath + '.es5',
+							format: ['umd'],
+							minify: true
+						}
+					})
+				);
+			}
 		}
 
 		if (buildConfig.formats.includes('esm')) {

@@ -12,7 +12,7 @@
 		"types": "yarn tsc ./src/index.ts --d --moduleResolution node --emitDeclarationOnly --allowSyntheticDefaultImports --target esnext --jsx react-jsx --jsxImportSource preact --outDir types",
 		"lint:check": "eslint ./src/*.ts",
 		"lint:fix": "yarn lint:check --fix",
-		"jest:test": "node --experimental-modules node_modules/.bin/jest"
+		"jest:test": "node --experimental-modules node_modules/.bin/jest --collectCoverage --coverageProvider=v8"
 	},
 	"files": [
 		"dist",

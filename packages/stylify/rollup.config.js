@@ -16,6 +16,8 @@ const isDevMode = process.env.ROLLUP_WATCH;
 const exportName = 'Stylify';
 
 const getTypescriptConfig = () => JSON.parse(fs.readFileSync('tsconfig.json', 'utf8'));
+const getBabelConfig = () => JSON.parse(fs.readFileSync('babel.config.json', 'utf8'));
+
 const devDirectories = ['dist', 'types'];
 const extensions = ['.js', '.jsx', '.ts', '.tsx'];
 const createConfig = (config) => {
@@ -23,6 +25,16 @@ const createConfig = (config) => {
 	const configs = [];
 	const getPlugins = (config) => {
 		const typescriptConfig = getTypescriptConfig();
+		const babelConfig = getBabelConfig();
+		babelConfig.presets.push([
+			"@babel/preset-env", {
+				"bugfixes": true,
+				"modules": false,
+				"targets": esVersion === "es5" ? "> 0.25%, not dead, not ie 11" : ">= 0.5% and supports es6-class"
+			}
+		]);
+		babelConfig.extensions = extensions;
+		babelConfig.babelHelpers = 'bundled';
 		typescriptConfig.exclude = [
 			'./tests/**/*.ts',
 			'./tools/native-preset-generator/templates/**/*.ts'
@@ -40,29 +52,7 @@ const createConfig = (config) => {
 					})
 				]
 			}),
-			babel({
-				extensions: extensions,
-				"presets": [
-					["@babel/preset-env", {
-						"bugfixes": true,
-						"modules": false,
-						"targets": esVersion === 'es5' ? "> 0.25%, not dead, not ie 11" : ">= 0.5% and supports es6-class"
-					}],
-					["@babel/preset-react", {
-						"pragma": "h"
-					}]
-				],
-				include: ['src/**/*'],
-				babelHelpers: 'bundled',
-				"plugins": [
-					"@babel/proposal-class-properties",
-					"@babel/proposal-object-rest-spread",
-					["@babel/plugin-transform-react-jsx", {
-						"runtime": "automatic",
-						"importSource": "preact",
-					}]
-				]
-			}),
+			babel(babelConfig),
 			nodeResolve({
 				extensions: extensions,
 			}),
