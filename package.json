@@ -39,7 +39,7 @@
 		"nuxtmodule:test": "yarn jest:test --scope=@stylify/nuxt-module",
 		"lint:check": "lerna run lint:check",
 		"lint:fix": "lerna run lint:fix",
-		"jest:test": "lerna run jest:test"
+		"jest:test": "lerna run --stream jest:test"
 	},
 	"repository": {
 		"type": "git",

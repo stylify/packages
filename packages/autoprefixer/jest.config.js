@@ -2,7 +2,7 @@ module.exports = {
 	verbose: true,
 	testRegex: 'tests/jest/.*\\.test.(js|ts|tsx|mjs)$',
 	testEnvironment: 'jest-environment-jsdom',
-	"moduleFileExtensions": [
+	moduleFileExtensions: [
 		"js",
 		"ts",
 		"tsx",
@@ -11,5 +11,8 @@ module.exports = {
 	preset: 'ts-jest',
 	transform: {
 		'^.+\\.(js|ts|tsx|mjs)?$': 'ts-jest'
-	}
+	},
+	collectCoverageFrom: [
+		'src/**/*.ts'
+	]
 }

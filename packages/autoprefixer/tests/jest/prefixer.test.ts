@@ -1,7 +1,7 @@
 import TestUtils from './TestUtils';
 import { Compiler } from '@stylify/stylify';
 import { nativePreset, HooksManager } from '@stylify/stylify';
-import { Prefixer, PrefixesGenerator } from '../../dist';
+import { Prefixer, PrefixesGenerator } from '../../src';
 
 const prefixesGenerator = new PrefixesGenerator();
 const testName = 'prefixer';
