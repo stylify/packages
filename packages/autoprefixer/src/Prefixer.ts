@@ -1,4 +1,4 @@
-import { HooksManager } from '@stylify/stylify';
+import type { HooksManager } from '@stylify/stylify';
 import { PrefixesMapRecordType } from '.';
 
 class Prefixer {

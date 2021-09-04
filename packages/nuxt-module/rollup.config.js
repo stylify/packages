@@ -127,9 +127,9 @@ devDirectories.forEach(directory => {
 });
 
 const configs = createFileConfigs([
-	{inputFile: 'index', formats: ['esm', 'lib']},
-	{inputFile: 'plugin', formats: ['esm', 'lib']},
-	{inputFile: 'webpack-loader', formats: ['esm', 'lib']}
+	{inputFile: 'index', formats: ['esm', 'lib'], external: ['@stylify/stylify']},
+	{inputFile: 'plugin', formats: ['esm', 'lib'], external: ['@stylify/stylify']},
+	{inputFile: 'webpack-loader', formats: ['esm', 'lib'], external: ['@stylify/stylify', 'loader-utils']}
 ]);
 
 export default configs;

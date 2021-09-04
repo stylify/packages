@@ -1,5 +1,4 @@
-import { SelectorsRewriter, Compiler } from '../../lib';
-import { nativePreset } from '../../lib/Presets';
+import { SelectorsRewriter, Compiler, nativePreset } from '../../dist';
 import TestUtils from './TestUtils';
 
 const testName = 'combined-pages';
@@ -15,7 +14,7 @@ const compilerRegExp = compiler.classMatchRegExp;
 let compilationResult = compiler.compile(inputIndex);
 compilationResult = compiler.compile(inputAbout, compilationResult);
 
-test('Two HTML files build with selectors rewriter', () => {
+test('Two HTML files build with selectors rewriter', (): void => {
 	testUtils.testCssFileToBe(compilationResult.generateCss());
 	testUtils.testHtmlFileToBe(SelectorsRewriter.rewrite(compilationResult, compilerRegExp, inputIndex));
 	testUtils.testHtmlFileToBe(SelectorsRewriter.rewrite(compilationResult, compilerRegExp, inputAbout), 'about');

@@ -124,9 +124,7 @@ class CssRecord {
 	}
 
 	public static deserialize(data: Record<string, any>): CssRecord {
-		const cssRecord = new CssRecord(null, data.properties, data.pseudoClasses);
-		cssRecord.selectors = data.selectors;
-		return cssRecord;
+		return new CssRecord(data.selectors, data.properties, data.pseudoClasses);
 	}
 
 	public hydrate(data: Record<string, any>): void {

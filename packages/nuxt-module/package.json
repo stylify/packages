@@ -2,9 +2,9 @@
 	"name": "@stylify/nuxt-module",
 	"description": "Nuxt module for @stylify/stylify.",
 	"version": "0.0.1",
-	"main": "./lib/index.js",
-	"module": "./esm/index.js",
-	"types": "./types",
+	"main": "lib/index.js",
+	"module": "esm/index.js",
+	"types": "types",
 	"scripts": {
 		"init": "yarn install",
 		"watch": "yarn build -w src",
@@ -18,8 +18,8 @@
 	},
 	"files": [
 		"esm",
-		"lib/",
-		"types/",
+		"lib",
+		"types",
 		"LICENSE",
 		"README.md"
 	],

@@ -11,10 +11,12 @@ import typescript from "rollup-plugin-typescript2";
 
 "use strict";
 
+const isDevMode = process.env.ROLLUP_WATCH;
+
 const exportName = 'Stylify';
 
 const getTypescriptConfig = () => JSON.parse(fs.readFileSync('tsconfig.json', 'utf8'));
-const devDirectories = ['dist', 'esm', 'lib', 'tmp', 'types'];
+const devDirectories = ['dist', 'types'];
 const extensions = ['.js', '.jsx', '.ts', '.tsx'];
 const createConfig = (config) => {
 	const esVersion = config.esVersion || 'es6';
@@ -76,9 +78,11 @@ const createConfig = (config) => {
 			);
 		}
 
-		plugins.push(
-			banner('<%= pkg.name %> v<%= pkg.version %> \n(c) 2020-' + new Date().getFullYear() + ' <%= pkg.author %>\nReleased under the MIT License.')
-		)
+		if (!isDevMode) {
+			plugins.push(
+				banner('<%= pkg.name %> v<%= pkg.version %> \n(c) 2020-' + new Date().getFullYear() + ' <%= pkg.author %>\nReleased under the MIT License.')
+			)
+		}
 
 		return plugins;
 	}
@@ -90,7 +94,7 @@ const createConfig = (config) => {
 			const minify = config.output.minify || false;
 			const plugins = config.plugins || {};
 
-			if (suffix === '.min.js' && ! minify) {
+			if (suffix === '.min.js' && (!minify || isDevMode)) {
 				return;
 			}
 
@@ -128,18 +132,6 @@ const createFileConfigs = (buildConfigs) => {
 			const outputPath = path.join('dist', convertCamelCaseIntoDashCase(outputFile));
 
 			configs = configs.concat(
- 				createConfig({
-					input: inputFile,
-					esVersion: 'es5',
-					plugins: buildConfig.plugins || [],
-					external: buildConfig.external || [],
-					output: {
-						name: exportName,
-						file: outputPath + '.es5',
-						format: ['umd'],
-						minify: true
-					}
-				}),
 				createConfig({
 					input: inputFile,
 					plugins: buildConfig.plugins || [],
@@ -152,6 +144,23 @@ const createFileConfigs = (buildConfigs) => {
 					}
 				}),
 			);
+
+			if (!isDevMode) {
+				configs = configs.concat(
+					createConfig({
+						input: inputFile,
+						esVersion: 'es5',
+						plugins: buildConfig.plugins || [],
+						external: buildConfig.external || [],
+						output: {
+							name: exportName,
+							file: outputPath + '.es5',
+							format: ['umd'],
+							minify: true
+						}
+					})
+				);
+			}
 		}
 
 		if (buildConfig.formats.includes('esm')) {
@@ -161,7 +170,7 @@ const createFileConfigs = (buildConfigs) => {
 					plugins: buildConfig.plugins || [],
 					external: buildConfig.external || [],
 					output: {
-						file: path.join('esm', outputFile),
+						file: path.join('dist', outputFile + '.module'),
 						format: ['esm']
 					}
 				})
@@ -175,7 +184,7 @@ const createFileConfigs = (buildConfigs) => {
 					plugins: buildConfig.plugins || [],
 					external: buildConfig.external,
 					output: {
-						file: path.join('lib', outputFile),
+						file: path.join('dist', outputFile),
 						format: ['cjs']
 					}
 				})
@@ -200,35 +209,21 @@ devDirectories.forEach(directory => {
 	fs.mkdirSync(directory);
 });
 
+const browserExternalDependencies = ['./Profiler', './SelectorsRewriter', './icons/style.css'];
 const configs = createFileConfigs([
-	// Stylify
-	{inputFile: 'SelectorsRewriter', outputFile: 'SelectorsRewriter/index', formats:['esm', 'lib']},
-	{inputFile: 'index', formats: ['esm', 'lib'], external: [
-		'./Profiler',
-		'./Presets',
-		'./SelectorsRewriter'
-	]},
+  	{inputFile: 'index', formats: ['esm', 'lib']},
 
-	{inputFile: 'Stylify', formats:['browser'], external: [
-		'./Profiler',
+	{inputFile: 'Stylify', formats:['browser'], external: [...browserExternalDependencies, ...['./Presets']]},
+ 	{inputFile: 'Stylify.native.browser', outputFile: 'Stylify.native', formats:['browser'], external: browserExternalDependencies},
+
+ 	{inputFile: 'Profiler.browser', outputFile: 'profiler', formats:['browser'], external: [
+		'./Compiler',
+		'./Stylify',
+		'./HooksManager',
 		'./SelectorsRewriter',
-		'./icons/style.css'
-	]},
-
-	{inputFile: 'Stylify.native.browser', outputFile: 'Stylify.native', formats:['browser'], external: [
-		'./Profiler',
-		'./SelectorsRewriter',
-		'./icons/style.css'
-	]},
-
-	{inputFile: 'Presets/index', formats: ['esm', 'lib'], external: [
-		'./NativePreset'
-	]},
-	{inputFile: 'Presets/NativePreset', formats:['esm', 'lib']},
-
-	// Profiler
-	{inputFile: 'Profiler/Profiler', outputFile: 'Profiler/index', formats:['lib', 'esm']},
-	{inputFile: 'Profiler.browser', outputFile: 'profiler', formats:['browser']}
+		'./Runtime',
+		'./Presets'
+	 ]}
 ]);
 
 export default configs;

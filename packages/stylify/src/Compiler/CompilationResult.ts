@@ -255,12 +255,14 @@ class CompilationResult {
 		compilationResult.selectorsList = data.selectorsList || {};
 		compilationResult.mangledSelectorsMap = data.mangledSelectorsMap || {};
 
-		Object.keys(data.screens).forEach(key => {
-			compilationResult.screens[key] = key.startsWith('FN__')
-				// eslint-disable-next-line @typescript-eslint/no-implied-eval
-				? new Function(key.replace('FN__', ''))
-				: key;
-		});
+		if ('screens' in data) {
+			Object.keys(data.screens).forEach(key => {
+				compilationResult.screens[key] = key.startsWith('FN__')
+					// eslint-disable-next-line @typescript-eslint/no-implied-eval
+					? new Function(key.replace('FN__', ''))
+					: key;
+			});
+		}
 
 		if ('cssTree' in data) {
 			Object.keys(data.cssTree).forEach(screen => {

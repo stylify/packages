@@ -2,9 +2,9 @@
 	"name": "@stylify/autoprefixer",
 	"description": "Autoprefixer browser/ssr integration for @stylify/stylify.",
 	"version": "0.0.1",
-	"main": "./lib/index.js",
-	"module": "./esm/index.js",
-	"types": "./types",
+	"main": "dist/index.js",
+	"module": "dist/index.module.js",
+	"types": "types",
 	"scripts": {
 		"init": "yarn install",
 		"watch": "node --max-old-space-size=8192 node_modules/.bin/rollup -c rollup.config.js -w src",
@@ -15,9 +15,8 @@
 		"jest:test": "node --experimental-modules node_modules/.bin/jest"
 	},
 	"files": [
-		"esm/",
-		"lib/",
-		"types/",
+		"dist",
+		"types",
 		"LICENSE",
 		"README.md"
 	],

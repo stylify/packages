@@ -1,5 +1,5 @@
-const { getOptions } = require('loader-utils');
-const { SelectorsRewriter } = require('@stylify/stylify');
+import { SelectorsRewriter } from '@stylify/stylify';
+import { getOptions } from 'loader-utils';
 
 /**
  *
@@ -15,6 +15,6 @@ export default function (source: string): string {
 	saveCompilationResultCache(compilationResult.serialize());
 
 	return Compiler.mangleSelectors
-		? SelectorsRewriter.rewrite(compilationResult, Compiler.classMatchRegExp, source) as string
+		? SelectorsRewriter.rewrite(compilationResult, Compiler.classMatchRegExp, source)
 		: source;
 }
