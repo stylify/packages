@@ -113,15 +113,6 @@
 	margin-bottom:15px
 }
 
-@media (max-width: 767px) {
-.s4{
-	width:90%
-}
-.s17{
-	display:none
-}
-}
-
 @media (min-width: 768px) {
 .s7{
 	width:700px
@@ -167,5 +158,14 @@
 }
 .s40{
 	height:390px
+}
+}
+
+@media (max-width: 767px) {
+.s4{
+	width:90%
+}
+.s17{
+	display:none
 }
 }

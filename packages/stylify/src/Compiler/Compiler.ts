@@ -121,7 +121,6 @@ class Compiler {
 
 		compilationResult.configure({
 			dev: this.dev,
-			screens: this.screens,
 			mangleSelectors: this.mangleSelectors,
 			variables: this.variables
 		});
