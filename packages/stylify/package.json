@@ -15,8 +15,8 @@
 		"lint:check": "eslint ./{src,tools}/**/*.{js,ts}",
 		"lint:fix": "yarn lint:check --fix",
 		"jest:test": "node --experimental-modules node_modules/.bin/jest --coverage --coverageProvider v8",
-		"gnp": "node --experimental-modules ./tools/native-preset-generator/generator.js",
-		"gnr": "node --experimental-modules ./tests/jest/selectorsRewritter/html.test.js"
+		"gnp": "node --experimental-modules ./tools/native-preset-generator",
+		"mqe": "node --experimental-modules ./tools/media-queries-extractor"
 	},
 	"files": [
 		"dist",
