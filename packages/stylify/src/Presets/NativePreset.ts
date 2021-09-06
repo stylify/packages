@@ -1,5 +1,9 @@
 import type { CompilerConfigInterface, MacroMatch, SelectorProperties } from '..';
 
+const rangeScreen = (screen: string): string => {
+	const ranges = screen.replace('rng', '').split('-');
+	return `${minWidthScreen(ranges[0])} and ${maxWidthScreen(ranges[1])}`;
+};
 const minWidthScreen = (screen: string): string => `(min-width: ${screen.replace('minw', '')})`;
 const maxWidthScreen = (screen: string): string => `(max-width: ${screen.replace('maxw', '')})`;
 const minHeightScreen = (screen: string): string => `(min-height: ${screen.replace('minh', '')})`;
@@ -27,7 +31,9 @@ const nativePreset = {
 			'maxw\\w+': maxWidthScreen,
 			'minh\\w+': minHeightScreen,
 			'maxh\\w+': maxHeightScreen,
+			rng: rangeScreen,
 			screen: 'screen',
+			onlyScreen: 'only screen',
 			portrait: orientationScreen('portrait'),
 			landscape: orientationScreen('landscape'),
 			dark: '(prefers-color-scheme: dark)'
