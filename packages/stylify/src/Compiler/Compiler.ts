@@ -16,7 +16,7 @@ export interface CompilerConfigInterface {
 	mangleSelectors: boolean,
 	selectorsAttributes: string[],
 	pregenerate: string[]|string,
-	components: Record<string, string>
+	components: Record<string, string|string[]>
 }
 
 class Compiler {
@@ -80,7 +80,7 @@ class Compiler {
 		return this;
 	}
 
-	public addComponent(selector: string, selectorDependencies: string[] | string): Compiler {
+	public addComponent(selector: string, selectorDependencies: string|string[]): Compiler {
 		if (selector in this.components) {
 			return;
 		}
@@ -92,6 +92,8 @@ class Compiler {
 				.filter((selector: string): boolean => {
 					return selector.trim().length > 0;
 				});
+		} else {
+			selectorDependencies = selectorDependencies.join(' ').split(' ');
 		}
 
 		this.components[selector] = {
@@ -121,7 +123,6 @@ class Compiler {
 
 		compilationResult.configure({
 			dev: this.dev,
-			screens: this.screens,
 			mangleSelectors: this.mangleSelectors,
 			variables: this.variables
 		});

@@ -12,11 +12,10 @@ class PrefixesGenerator {
 	public createPrefixesMap(compilationResult: CompilationResult): Partial<PrefixesMapRecordType> {
 		const prefixesMap = {};
 
-		for (const screenKey in compilationResult.cssTree) {
-			const screenCssRecords = compilationResult.cssTree[screenKey];
+		for (const [screen, screenSelectors] of compilationResult.cssTree) {
 
-			for (const selector in screenCssRecords) {
-				const cssRecord = screenCssRecords[selector];
+			for (const selector in screenSelectors) {
+				const cssRecord = screenSelectors[selector];
 
 				for (const property in cssRecord.properties) {
 					const propertyAndValueToProcess = {};

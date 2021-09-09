@@ -7,7 +7,7 @@ const browserPropertiesListPath = path.join(dirname, 'tmp', 'complete-propertes-
 const nativePresetOutputFilePath = path.join(
 	dirname, '..', '..', 'src', 'Presets', 'NativePreset.ts'
 );
-const nativePresetTemplateFilePath = path.join(dirname, 'templates', 'preset.ts');
+const nativePresetTemplateFilePath = path.join(dirname, 'template.ts');
 
 class NativePresetGenerator {
 	constructor() {

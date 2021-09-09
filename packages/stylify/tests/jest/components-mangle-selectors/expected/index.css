@@ -1,0 +1,36 @@
+.s0,
+.s8{
+	padding:8px
+}
+.s1,
+.s8{
+	background-color:#000
+}
+.s2,
+.s8{
+	display:inline-block
+}
+.s3,
+.s8,
+.s9{
+	font-size:24px
+}
+.s4,
+.s10{
+	max-width:800px
+}
+.s5,
+.s10{
+	margin:0 auto
+}
+.s6,
+.s9{
+	color:green
+}
+
+@media (min-width: 768px) {
+.s7,
+.s9{
+	font-size:32px
+}
+}

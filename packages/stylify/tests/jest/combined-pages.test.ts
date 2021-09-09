@@ -1,4 +1,4 @@
-import { SelectorsRewriter, Compiler, nativePreset } from '../../dist';
+import { SelectorsRewriter, Compiler, nativePreset } from '../../src';
 import TestUtils from './TestUtils';
 
 const testName = 'combined-pages';
