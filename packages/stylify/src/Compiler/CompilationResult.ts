@@ -341,7 +341,7 @@ class CompilationResult {
 					const serializedSelectorData = data.cssTree[screen][selector];
 
 					if (!compilationResult.cssTree.has(screen)) {
-						compilationResult.cssTree.set('screen', {});
+						compilationResult.cssTree.set(screen, {});
 					}
 
 					compilationResult.cssTree.get(screen)[selector] = new CssRecord(

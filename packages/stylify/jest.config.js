@@ -18,5 +18,9 @@ module.exports = {
 	},
 	collectCoverageFrom: [
 		'src/**/*.ts'
+	],
+	coveragePathIgnorePatterns: [
+		'src/(Stylify.native.browser|Stylify.browser|Runtime|Profiler.browser|Stylify).ts',
+		'src/Profiler'
 	]
 }
