@@ -1,5 +1,6 @@
 import { SelectorsRewriter } from '@stylify/stylify';
 import { getOptions } from 'loader-utils';
+import PrefixesGenerator from '@stylify/autoprefixer/esm/PrefixesGenerator';
 
 /**
  *
@@ -7,14 +8,19 @@ import { getOptions } from 'loader-utils';
  * @returns {string}
  */
 export default function (source: string): string {
-	const { Compiler, loadCompilationResultCache, saveCompilationResultCache } = getOptions(this);
+	const {
+		compiler,
+		getPreflightCompilationResult,
+		setPreflightCompilationResult,
+		mergePrefixesMap
+	} = getOptions(this);
 
-	let compilationResult = Compiler.createResultFromSerializedData(loadCompilationResultCache());
+	const compilationResult = compiler.compile(source, getPreflightCompilationResult());
 
-	compilationResult = Compiler.compile(source, compilationResult);
-	saveCompilationResultCache(compilationResult.serialize());
+	setPreflightCompilationResult(compilationResult);
+	mergePrefixesMap(new PrefixesGenerator().createPrefixesMap(compilationResult));
 
-	return Compiler.mangleSelectors
-		? SelectorsRewriter.rewrite(compilationResult, Compiler.classMatchRegExp, source)
+	return compiler.mangleSelectors
+		? SelectorsRewriter.rewrite(compilationResult, compiler.selectorAttributes, source)
 		: source;
 }

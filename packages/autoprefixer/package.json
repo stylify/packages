@@ -2,8 +2,8 @@
 	"name": "@stylify/autoprefixer",
 	"description": "Autoprefixer browser/ssr integration for @stylify/stylify.",
 	"version": "0.0.1",
-	"main": "dist/index.js",
-	"module": "dist/index.module.js",
+	"main": "lib/index.js",
+	"module": "esm/index.js",
 	"types": "types",
 	"scripts": {
 		"init": "yarn install",
@@ -68,6 +68,6 @@
 		"postcss-js": "^3.0"
 	},
 	"browserslist": [
-		"> 0.25%"
+		"> 0.10%"
 	]
 }

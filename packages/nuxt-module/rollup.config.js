@@ -10,7 +10,7 @@ import typescript from "rollup-plugin-typescript2";
 
 const getTypescriptConfig = () => JSON.parse(fs.readFileSync('tsconfig.json', 'utf8'));
 const devDirectories = ['esm', 'lib', 'types'];
-const extensions = ['.js', '.jsx', '.ts', '.tsx'];
+const extensions = ['.ts'];
 const createConfig = (config) => {
 	const esVersion = config.esVersion || 'es6';
 	const configs = [];
@@ -127,9 +127,10 @@ devDirectories.forEach(directory => {
 });
 
 const configs = createFileConfigs([
-	{inputFile: 'index', formats: ['esm', 'lib'], external: ['@stylify/stylify']},
-	{inputFile: 'plugin', formats: ['esm', 'lib'], external: ['@stylify/stylify']},
-	{inputFile: 'webpack-loader', formats: ['esm', 'lib'], external: ['@stylify/stylify', 'loader-utils']}
+ 	{inputFile: 'index', formats: ['esm', 'lib'], external: ['@stylify/stylify', '@stylify/autoprefixer']},
+	{inputFile: 'stylify-plugin', formats: ['esm', 'lib'], external: ['@stylify/stylify', '@stylify/autoprefixer']},
+	{inputFile: 'profiler-plugin', formats: ['esm', 'lib'], external: ['@stylify/stylify']},
+	{inputFile: 'webpack-loader', formats: ['esm', 'lib'], external: ['@stylify/stylify', '@stylify/autoprefixer', 'loader-utils']}
 ]);
 
 export default configs;

@@ -16,7 +16,7 @@ const exportName = 'Stylify';
 const getTypescriptConfig = () => JSON.parse(fs.readFileSync('tsconfig.json', 'utf8'));
 const getBabelConfig = () => JSON.parse(fs.readFileSync('babel.config.json', 'utf8'));
 
-const devDirectories = ['dist', 'types'];
+const devDirectories = ['dist', 'esm', 'lib', 'types'];
 const extensions = ['.js', '.jsx', '.ts', '.tsx'];
 const createConfig = (config) => {
 	const esVersion = config.esVersion || 'es6';
@@ -143,7 +143,7 @@ const createFileConfigs = (buildConfigs) => {
 					plugins: buildConfig.plugins || [],
 					external: buildConfig.external || [],
 					output: {
-						file: path.join('dist', outputFile + '.module'),
+						file: path.join('esm', outputFile),
 						format: ['esm']
 					}
 				})
@@ -157,7 +157,7 @@ const createFileConfigs = (buildConfigs) => {
 					plugins: buildConfig.plugins || [],
 					external: buildConfig.external,
 					output: {
-						file: path.join('dist', outputFile),
+						file: path.join('lib', outputFile),
 						format: ['cjs']
 					}
 				})
@@ -183,7 +183,16 @@ devDirectories.forEach(directory => {
 });
 
 const configs = createFileConfigs([
- 	{inputFile: 'index', formats: ['esm', 'lib']}
+ 	{inputFile: 'index', formats: ['esm', 'lib']},
+	{inputFile: 'Prefixer', outputFile: 'Prefixer/index', formats: ['esm', 'lib'], external: [
+		'@stylify/stylify',
+		'.'
+	]},
+	{inputFile: 'PrefixesGenerator', outputFile: 'PrefixesGenerator/index',  formats: ['esm', 'lib'], external: [
+		'@stylify/stylify',
+		'postcss-js',
+		'autoprefixer'
+	]}
 ]);
 
 export default configs;

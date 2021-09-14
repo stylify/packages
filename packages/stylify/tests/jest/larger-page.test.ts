@@ -8,10 +8,9 @@ const inputIndex = testUtils.getHtmlInputFile();
 nativePreset.compiler.dev = true;
 nativePreset.compiler.mangleSelectors = true;
 const compiler = new Compiler(nativePreset.compiler);
-const compilerRegExp = compiler.classMatchRegExp;
 let compilationResult = compiler.compile(inputIndex);
 
 test('Generated css, rewritten HTML', (): void => {
 	testUtils.testCssFileToBe(compilationResult.generateCss());
-	testUtils.testHtmlFileToBe(SelectorsRewriter.rewrite(compilationResult, compilerRegExp, inputIndex));
+	testUtils.testHtmlFileToBe(SelectorsRewriter.rewrite(compilationResult, compiler.selectorAttributes, inputIndex));
 });

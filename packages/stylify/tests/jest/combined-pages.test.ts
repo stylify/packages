@@ -10,12 +10,11 @@ const inputAbout = testUtils.getInputFile('about.html');
 nativePreset.compiler.dev = true;
 nativePreset.compiler.mangleSelectors = true;
 const compiler = new Compiler(nativePreset.compiler);
-const compilerRegExp = compiler.classMatchRegExp;
 let compilationResult = compiler.compile(inputIndex);
 compilationResult = compiler.compile(inputAbout, compilationResult);
 
 test('Two HTML files build with selectors rewriter', (): void => {
 	testUtils.testCssFileToBe(compilationResult.generateCss());
-	testUtils.testHtmlFileToBe(SelectorsRewriter.rewrite(compilationResult, compilerRegExp, inputIndex));
-	testUtils.testHtmlFileToBe(SelectorsRewriter.rewrite(compilationResult, compilerRegExp, inputAbout), 'about');
+	testUtils.testHtmlFileToBe(SelectorsRewriter.rewrite(compilationResult, compiler.selectorAttributes, inputIndex));
+	testUtils.testHtmlFileToBe(SelectorsRewriter.rewrite(compilationResult, compiler.selectorAttributes, inputAbout), 'about');
 });

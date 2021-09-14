@@ -7,7 +7,7 @@
 	"types": "types",
 	"scripts": {
 		"init": "yarn install",
-		"watch": "yarn build -w src",
+		"watch": "node --max-old-space-size=8192 node_modules/.bin/rollup -c rollup.config.js -w ./src",
 		"build": "node --max-old-space-size=8192 node_modules/.bin/rollup -c rollup.config.js && yarn types",
 		"types": "yarn tsc ./src/index.ts --d --moduleResolution node --emitDeclarationOnly --allowSyntheticDefaultImports --target esnext --jsx react-jsx --jsxImportSource preact --outDir types",
 		"lint:check": "eslint ./src/*.ts",
@@ -36,6 +36,7 @@
 	},
 	"homepage": "https://github.com/stylify/packages/#readme",
 	"devDependencies": {
+		"autoprefixer": "^10.3",
 		"@babel/core": "^7.12",
 		"@babel/plugin-proposal-class-properties": "^7.14",
 		"@babel/plugin-proposal-object-rest-spread": "^7.14",
@@ -51,6 +52,7 @@
 		"@typescript-eslint/eslint-plugin": "^4.11",
 		"@typescript-eslint/parser": "^4.11",
 		"eslint": "^7.16",
+		"postcss-js": "^3.0",
 		"promise": "^8.1",
 		"rollup": "^2.35",
 		"rollup-plugin-banner": "^0.2",
@@ -64,6 +66,7 @@
 	"dependencies": {
 		"@stylify/autoprefixer": "^0.0",
 		"@stylify/stylify": "^0.0",
+		"@stylify/profiler": "^0.0",
 		"loader-utils": "^2.0"
 	}
 }

@@ -8,6 +8,6 @@ export default {
 		'~/../lib'
 	],
 	build: {
-		extractCSS: true
+		extractCSS: true,
 	}
 }

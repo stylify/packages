@@ -37,7 +37,8 @@ export default class MacroMatch {
 				}
 
 				possibleScreenMatch = possibleScreenMatch.replace(
-					screenRegExp, typeof screens[key] === 'function' ? screens[key](screenMatches[0]) : screens[key]
+					screenRegExp,
+					typeof screens[key] === 'function' ? screens[key](screenMatches[0]) : screens[key]
 				);
 				screenMatched = true;
 			}

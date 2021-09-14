@@ -1,5 +1,7 @@
-import { Stylify, Profiler } from '@stylify/stylify';
+import { Stylify } from '@stylify/stylify';
+import Prefixer from '@stylify/autoprefixer/esm/Prefixer';
 import { StylifyNuxtModuleConfigInterface } from '.';
+
 
 const convertObjectFromStringableForm = (
 	processedObject: string[]|number[]|Record<string, string|number|string[]|number[]>
@@ -27,12 +29,23 @@ const moduleConfig = convertObjectFromStringableForm(
 ) as Partial<StylifyNuxtModuleConfigInterface>;
 
 export default function (): void {
-	const stylify = new Stylify({
-		runtime: moduleConfig.runtime,
-		compiler: moduleConfig.compiler
-	});
+	const initStylify = () => {
+		const stylify = new Stylify({
+			runtime: moduleConfig.runtime,
+			compiler: moduleConfig.compiler
+		});
 
-	if (moduleConfig.importProfiler && !moduleConfig.compiler.mangleSelectors) {
-		new Profiler(stylify).init();
+		new Prefixer(stylify.hooks, moduleConfig.prefixesMap);
+		window.Stylify = stylify;
+		const event = new window.CustomEvent('stylify:ready', {detail: stylify});
+		document.dispatchEvent(event);
+	};
+
+	if (['complete', 'loaded', 'interactive'].includes(document.readyState)) {
+		initStylify();
+	} else {
+		document.addEventListener('DOMContentLoaded', () => {
+			initStylify();
+		});
 	}
 }

@@ -10,13 +10,12 @@ nativePreset.compiler.dev = true;
 const compiler = new Compiler(nativePreset.compiler);
 const compilationResultFromSerializedData = compiler.createResultFromSerializedData(inputJsonFile);
 const cssFromCompilationResultWithSerializedData = compilationResultFromSerializedData.generateCss();
-const compilerRegExp = compiler.classMatchRegExp;
 let compilationResult = compiler.compile(inputIndex, compilationResultFromSerializedData);
 
 
 test('Deserialize', (): void => {
 	testUtils.testCssFileToBe(cssFromCompilationResultWithSerializedData, 'from-serialized');
 	testUtils.testCssFileToBe(compilationResult.generateCss(), 'combined');
-	testUtils.testHtmlFileToBe(SelectorsRewriter.rewrite(compilationResult, compilerRegExp, inputIndex));
+	testUtils.testHtmlFileToBe(SelectorsRewriter.rewrite(compilationResult, compiler.selectorAttributes, inputIndex));
 	testUtils.testJsonFileToBe(compilationResult.serialize());
 });
