@@ -19,7 +19,7 @@ const getTypescriptConfig = () => JSON.parse(fs.readFileSync('tsconfig.json', 'u
 const getBabelConfig = () => JSON.parse(fs.readFileSync('babel.config.json', 'utf8'));
 
 const devDirectories = ['dist', 'types'];
-const extensions = ['.js', '.ts'];
+const extensions = ['.js', '.jsx', '.ts', '.tsx'];
 const createConfig = (config) => {
 	const esVersion = config.esVersion || 'es6';
 	const configs = [];
@@ -35,10 +35,6 @@ const createConfig = (config) => {
 		]);
 		babelConfig.extensions = extensions;
 		babelConfig.babelHelpers = 'bundled';
-		typescriptConfig.exclude = [
-			'./tests/**/*.ts',
-			'./tools/native-preset-generator/templates/**/*.ts'
-		];
 		const plugins = [
 			replace({
 				'process.env.NODE_ENV': JSON.stringify('production'),
@@ -199,12 +195,9 @@ devDirectories.forEach(directory => {
 	fs.mkdirSync(directory);
 });
 
-const browserExternalDependencies = ['./SelectorsRewriter', './icons/style.css'];
 const configs = createFileConfigs([
-  	{inputFile: 'index', formats: ['esm', 'lib']},
-
-	{inputFile: 'Stylify', formats:['browser'], external: [...browserExternalDependencies, ...['./Presets']]},
- 	{inputFile: 'Stylify.native.browser', outputFile: 'Stylify.native', formats:['browser'], external: browserExternalDependencies},
+  	{inputFile: 'index', formats: ['esm', 'lib'], external: ['@stylify/stylify']},
+ 	{inputFile: 'Profiler.browser', outputFile: 'profiler', formats:['browser'], external: ['@stylify/stylify']}
 ]);
 
 export default configs;

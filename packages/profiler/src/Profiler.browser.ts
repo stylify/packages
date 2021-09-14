@@ -1,4 +1,4 @@
-import { Profiler } from '.';
+import Profiler from '.';
 
 const isWindowDefined = typeof window !== 'undefined';
 
