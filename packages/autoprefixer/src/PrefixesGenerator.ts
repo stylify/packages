@@ -1,9 +1,10 @@
+import { CompilationResult } from '@stylify/stylify';
+
 const postcssJs = require('postcss-js');
 const autoprefixer = require('autoprefixer');
 
 const prefixer = postcssJs.sync([autoprefixer()]);
 
-import { CompilationResult } from '@stylify/stylify';
 
 export type PrefixesMapRecordType = Record<string, Record<string|number, []>>;
 

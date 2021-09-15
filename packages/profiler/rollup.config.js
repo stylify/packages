@@ -5,6 +5,8 @@ import { babel } from '@rollup/plugin-babel';
 import path from 'path';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 import replace from '@rollup/plugin-replace';
+import postcss from 'rollup-plugin-postcss';
+import postcssUrlPlugin from 'postcss-url';
 import typescript from "rollup-plugin-typescript2";
 
 "use strict";
@@ -16,7 +18,7 @@ const exportName = 'Stylify';
 const getTypescriptConfig = () => JSON.parse(fs.readFileSync('tsconfig.json', 'utf8'));
 const getBabelConfig = () => JSON.parse(fs.readFileSync('babel.config.json', 'utf8'));
 
-const devDirectories = ['dist', 'esm', 'lib', 'types'];
+const devDirectories = ['dist', 'types'];
 const extensions = ['.js', '.jsx', '.ts', '.tsx'];
 const createConfig = (config) => {
 	const esVersion = config.esVersion || 'es6';
@@ -24,17 +26,28 @@ const createConfig = (config) => {
 	const getPlugins = (config) => {
 		const typescriptConfig = getTypescriptConfig();
 		const babelConfig = getBabelConfig();
+		babelConfig.presets.push([
+			"@babel/preset-env", {
+				"bugfixes": true,
+				"modules": false,
+				"targets": esVersion === "es5" ? "> 0.25%, not dead, not ie 11" : ">= 0.5% and supports es6-class"
+			}
+		]);
 		babelConfig.extensions = extensions;
 		babelConfig.babelHelpers = 'bundled';
-		typescriptConfig.exclude = [
-			'./tests/**/*.ts',
-		];
 		const plugins = [
 			replace({
 				'process.env.NODE_ENV': JSON.stringify('production'),
 				preventAssignment: true,
 			}),
 			typescript(typescriptConfig),
+			postcss({
+				plugins: [
+					postcssUrlPlugin({
+						url: 'inline'
+					})
+				]
+			}),
 			babel(babelConfig),
 			nodeResolve({
 				extensions: extensions,
@@ -143,7 +156,7 @@ const createFileConfigs = (buildConfigs) => {
 					plugins: buildConfig.plugins || [],
 					external: buildConfig.external || [],
 					output: {
-						file: path.join('esm', outputFile),
+						file: path.join('dist', outputFile + '.module'),
 						format: ['esm']
 					}
 				})
@@ -157,7 +170,7 @@ const createFileConfigs = (buildConfigs) => {
 					plugins: buildConfig.plugins || [],
 					external: buildConfig.external,
 					output: {
-						file: path.join('lib', outputFile),
+						file: path.join('dist', outputFile),
 						format: ['cjs']
 					}
 				})
@@ -183,16 +196,8 @@ devDirectories.forEach(directory => {
 });
 
 const configs = createFileConfigs([
- 	{inputFile: 'index', formats: ['esm', 'lib']},
-	{inputFile: 'Prefixer', outputFile: 'Prefixer/index', formats: ['esm', 'lib'], external: [
-		'@stylify/stylify',
-		'.'
-	]},
-	{inputFile: 'PrefixesGenerator', outputFile: 'PrefixesGenerator/index',  formats: ['esm', 'lib'], external: [
-		'@stylify/stylify',
-		'postcss-js',
-		'autoprefixer'
-	]}
+  	{inputFile: 'index', formats: ['esm', 'lib'], external: ['@stylify/stylify']},
+ 	{inputFile: 'Profiler.browser', outputFile: 'profiler', formats:['browser'], external: ['@stylify/stylify']}
 ]);
 
 export default configs;

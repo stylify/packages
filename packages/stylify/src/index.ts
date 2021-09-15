@@ -9,6 +9,5 @@ export {
 export { Runtime, RuntimeConfigInterface } from './Runtime';
 export { nativePreset } from './Presets';
 export { default as HooksManager } from './HooksManager';
-export { Profiler } from './Profiler';
 export { default as SelectorsRewriter } from './SelectorsRewriter';
-export { Stylify } from './Stylify';
+export { Stylify, StylifyConfigInterface } from './Stylify';

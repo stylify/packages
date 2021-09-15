@@ -11,13 +11,14 @@
 			"dom.iterable"
 		],
 		"types": [
-			"node",
-			"jest"
+			"node"
 		],
 		"esModuleInterop": true,
 		"removeComments": true,
 		"experimentalDecorators": true,
 		"resolveJsonModule": true,
+		"jsx": "react-jsx",
+		"jsxImportSource": "preact",
 		"noEmit": true,
 		"allowJs": true
 	}

@@ -3,14 +3,18 @@ import path from 'path';
 import {
 	Compiler,
 	SelectorsRewriter,
+	HooksManager,
 	nativePreset,
-	CompilationResult
+	CompilationResult,
+	StylifyConfigInterface
 } from '@stylify/stylify';
-import { StylifyConfigInterface } from '@stylify/stylify/types/Stylify';
-
+import type { PrefixesMapRecordType } from '@stylify/autoprefixer';
+import Prefixer from '@stylify/autoprefixer/esm/Prefixer';
 const configFileName = 'stylify.config.js';
-const serializedCompilationResultPreflightFileName = 'stylify-cache.json';
+const serializedCompilationResultPreflightFileName = 'stylify-preflight.json';
 let serializedCompilationResultPreflightFilePath: string = null;
+const serializedPrefixesMapFileName = 'stylify-prefixes.json';
+let serializedPrefixesMapFilePath = null;
 
 export interface StylifyNuxtModuleConfigInterface extends StylifyConfigInterface {
 	configPath: string,
@@ -21,7 +25,8 @@ export interface StylifyNuxtModuleConfigInterface extends StylifyConfigInterface
 	generateCssPerPage: boolean,
 	embeddedCssLimit: number,
 	importStylify: boolean,
-	importProfiler: boolean
+	importProfiler: boolean,
+	prefixesMap: Partial<PrefixesMapRecordType>,
 }
 
 let moduleConfig: StylifyNuxtModuleConfigInterface = {
@@ -35,7 +40,8 @@ let moduleConfig: StylifyNuxtModuleConfigInterface = {
 	importStylify: true,
 	importProfiler: true,
 	compiler: nativePreset.compiler,
-	runtime: {}
+	runtime: {},
+	prefixesMap: {}
 };
 
 const mergeObject = (...objects): any => {
@@ -54,7 +60,7 @@ const mergeObject = (...objects): any => {
 	return newObject;
 };
 
-const mergeConfig = (config): void => {
+const mergeConfig = (config: Record<string, any>): void => {
 	moduleConfig = mergeObject(moduleConfig, config);
 };
 
@@ -84,6 +90,7 @@ const compilationResultCacheExists = (): boolean => {
 	return fs.existsSync(serializedCompilationResultPreflightFilePath);
 };
 
+let loadedCompilationResultCache: Record<string, any> = null;
 const loadCompilationResultCache = (): Record<string, any> => {
 	if (!compilationResultCacheExists()) {
 		saveCompilationResultCache({});
@@ -97,6 +104,41 @@ const saveCompilationResultCache = (data: Record<string, any>): void => {
 	fs.writeFileSync(serializedCompilationResultPreflightFilePath, JSON.stringify(data, null, 4));
 };
 
+let prefixerConfigured = false;
+const prefixesMapExists = (): boolean => {
+	return fs.existsSync(serializedPrefixesMapFilePath);
+};
+const loadPrefixesMap = (): Record<string, any> => {
+	if (!prefixesMapExists()) {
+		savePrefixesMap({});
+		return {};
+	}
+
+	return JSON.parse(fs.readFileSync(serializedPrefixesMapFilePath).toString()) as Record<string, any>;
+};
+
+const savePrefixesMap = (data: Record<string, any>): void => {
+	fs.writeFileSync(
+		serializedPrefixesMapFilePath,
+		JSON.stringify(data, null, 4)
+	);
+};
+
+let prefixesMap = {};
+const mergePrefixesMap = (data: Record<string, any>) => {
+	prefixesMap = {...prefixesMap, ...data};
+};
+
+let preflightCompilationResult: CompilationResult = null;
+
+const setPreflightCompilationResult = (compilationResult: CompilationResult): void => {
+	preflightCompilationResult = compilationResult;
+};
+
+const getPreflightCompilationResult = (): CompilationResult => {
+	return preflightCompilationResult;
+};
+
 export default function Stylify(): void {
 	const { nuxt } = this;
 	const nuxtIsInDevMode = typeof nuxt.options.dev === 'boolean' ? nuxt.options.dev : false;
@@ -104,6 +146,7 @@ export default function Stylify(): void {
 	serializedCompilationResultPreflightFilePath = path.join(
 		nuxtBuildDir, serializedCompilationResultPreflightFileName
 	);
+	serializedPrefixesMapFilePath = path.join(nuxtBuildDir, serializedPrefixesMapFileName);
 
 	moduleConfig.compiler.selectorsAttributes = ['v-bind:class', ':class'];
 	moduleConfig.compiler.dev = nuxtIsInDevMode;
@@ -123,9 +166,10 @@ export default function Stylify(): void {
 	}
 
 	const compiler = new Compiler(moduleConfig.compiler);
+	const prefixer = new Prefixer(HooksManager);
 	const cache = {};
 
-	const processTemplateParams = (params, context = null) => {
+	const processTemplateParams = (params, context = null): void => {
 		const url = context ? context.nuxt.routePath : null;
 		const isUrlCached = context ? url in cache : false;
 		let compilationResult: CompilationResult;
@@ -139,11 +183,16 @@ export default function Stylify(): void {
 			let preparedCompilationResult = null;
 
 			if (compilationResultCacheExists()) {
-				const cache = loadCompilationResultCache();
+				loadedCompilationResultCache = loadCompilationResultCache();
 				preparedCompilationResult = compiler.createResultFromSerializedData({
-					selectorsList: cache.selectorsList,
-					mangledSelectorsMap: cache.mangledSelectorsMap
+					selectorsList: loadedCompilationResultCache.selectorsList,
+					mangledSelectorsMap: loadedCompilationResultCache.mangledSelectorsMap
 				});
+			}
+
+			if (prefixesMapExists() && !prefixerConfigured) {
+				prefixerConfigured = true;
+				prefixer.setPrefixesMap(loadPrefixesMap());
 			}
 
 			compilationResult = compiler.compile(params.APP, preparedCompilationResult);
@@ -168,19 +217,27 @@ export default function Stylify(): void {
 
 		params.HEAD += metaTags;
 		params.APP = moduleConfig.compiler.mangleSelectors
-			? SelectorsRewriter.rewrite(compilationResult, compiler.classMatchRegExp, params.APP)
+			? SelectorsRewriter.rewrite(compilationResult, compiler.selectorAttributes, params.APP)
 			: params.APP;
 	};
 
 	if (moduleConfig.importStylify) {
+		moduleConfig.importProfiler = moduleConfig.importProfiler && !moduleConfig.compiler.mangleSelectors;
 		this.addPlugin({
 			ssr: false,
-			src: path.resolve(__dirname, 'plugin.js'),
+			src: path.resolve(__dirname, 'stylify-plugin.js'),
 			options: convertObjectToStringableForm(moduleConfig)
 		});
+
+		if (moduleConfig.importProfiler) {
+			this.addPlugin({
+				ssr: false,
+				src: path.resolve(__dirname, 'profiler-plugin.js')
+			});
+		}
 	}
 
-	this.extendBuild((config) => {
+	this.extendBuild((config: Record<string, any>): void => {
 		config.module.rules.push({
 			enforce: 'pre',
 			test: /\.vue$/i,
@@ -188,38 +245,40 @@ export default function Stylify(): void {
 			use: {
 				loader: path.join(__dirname, 'webpack-loader.js'),
 				options: {
-					loadCompilationResultCache: loadCompilationResultCache,
-					saveCompilationResultCache: saveCompilationResultCache,
-					Compiler: compiler
+					setPreflightCompilationResult: setPreflightCompilationResult,
+					getPreflightCompilationResult: getPreflightCompilationResult,
+					mergePrefixesMap: mergePrefixesMap,
+					compiler: compiler
 				}
 			}
 		});
 	});
 
-	nuxt.hook('build:done', () => {
-		const cache = loadCompilationResultCache();
+	nuxt.hook('build:done', (): void => {
+		const serializedPreflightCompilationResult = getPreflightCompilationResult().serialize();
 		const newSelectorsList = {};
 
-		for (const selector in cache.selectorsList) {
-			const data = cache.selectorsList[selector];
+		for (const selector in serializedPreflightCompilationResult.selectorsList) {
+			const data = serializedPreflightCompilationResult.selectorsList[selector];
 			data.processed = false;
 			newSelectorsList[selector] = data;
 		}
 
-		cache.selectorsList = newSelectorsList;
+		serializedPreflightCompilationResult.selectorsList = newSelectorsList;
 
 		if (moduleConfig.generateCssPerPage) {
-			cache.cssTree = {};
+			serializedPreflightCompilationResult.cssTree = {};
 		}
 
-		saveCompilationResultCache(cache);
+		savePrefixesMap(prefixesMap);
+		saveCompilationResultCache(serializedPreflightCompilationResult);
 	});
 
-	nuxt.hook('vue-renderer:spa:templateParams', (params) => {
+	nuxt.hook('vue-renderer:spa:templateParams', (params: Record<string, any>): void => {
 		processTemplateParams(params);
 	});
 
-	nuxt.hook('vue-renderer:ssr:templateParams', (params, context) => {
+	nuxt.hook('vue-renderer:ssr:templateParams', (params: Record<string, any>, context: Record<string, any>): void => {
 		processTemplateParams(params, context);
 	});
 

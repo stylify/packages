@@ -19,7 +19,7 @@ const getTypescriptConfig = () => JSON.parse(fs.readFileSync('tsconfig.json', 'u
 const getBabelConfig = () => JSON.parse(fs.readFileSync('babel.config.json', 'utf8'));
 
 const devDirectories = ['dist', 'types'];
-const extensions = ['.js', '.jsx', '.ts', '.tsx'];
+const extensions = ['.js', '.ts'];
 const createConfig = (config) => {
 	const esVersion = config.esVersion || 'es6';
 	const configs = [];
@@ -199,21 +199,12 @@ devDirectories.forEach(directory => {
 	fs.mkdirSync(directory);
 });
 
-const browserExternalDependencies = ['./Profiler', './SelectorsRewriter', './icons/style.css'];
+const browserExternalDependencies = ['./SelectorsRewriter', './icons/style.css'];
 const configs = createFileConfigs([
   	{inputFile: 'index', formats: ['esm', 'lib']},
 
 	{inputFile: 'Stylify', formats:['browser'], external: [...browserExternalDependencies, ...['./Presets']]},
  	{inputFile: 'Stylify.native.browser', outputFile: 'Stylify.native', formats:['browser'], external: browserExternalDependencies},
-
- 	{inputFile: 'Profiler.browser', outputFile: 'profiler', formats:['browser'], external: [
-		'./Compiler',
-		'./Stylify',
-		'./HooksManager',
-		'./SelectorsRewriter',
-		'./Runtime',
-		'./Presets'
-	 ]}
 ]);
 
 export default configs;

@@ -39,7 +39,8 @@ class NativePresetGenerator {
 			'overflow',
 			'outline',
 			'padding',
-			'scroll-margin'
+			'scroll-margin',
+			'transition'
 		];
 
 		const re = new RegExp(/^[\w-]+/, 'gm');

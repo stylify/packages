@@ -2,29 +2,23 @@ import { CompilationResult } from '.';
 
 class SelectorsRewriter {
 
-	public rewrite(compilationResult : CompilationResult, regExp: RegExp, content: string): string {
-		const classReplacementMap = {};
-		let match: string[];
+	public rewrite(compilationResult : CompilationResult, selectorsAttributes: string[], content: string): string {
 		const sortedSelectorsListKeys = Object
 			.keys(compilationResult.selectorsList)
 			.sort((a, b) => b.length - a.length);
 
-		while ((match = regExp.exec(content))) {
-			let modifiedClassMatch = match[0];
+		const joinedSelectorAttributes = selectorsAttributes.join('|');
+		sortedSelectorsListKeys.forEach((selector) => {
+			const mangledSelector = compilationResult.selectorsList[selector].mangledSelector;
+			selector = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+			const regExp = new RegExp(`(${ joinedSelectorAttributes })="([^"]+)?${selector}([^"]+)?"`, 'g');
 
-			sortedSelectorsListKeys.forEach(selector => {
-				modifiedClassMatch = modifiedClassMatch.replace(
-					new RegExp(selector.replace(/\|/g, '\\|'), 'g'),
-					compilationResult.selectorsList[selector].mangledSelector
-				);
-			});
-
-			classReplacementMap[match[0]] = modifiedClassMatch;
-		}
-
-		Object.keys(classReplacementMap).forEach(classToReplace => {
-			const classToReplaceRegex = new RegExp(classToReplace.replace(/\|/g, '\\|'), 'g');
-			content = content.replace(classToReplaceRegex, classReplacementMap[classToReplace]);
+			content = content.replace(
+				regExp,
+				(match, attribute: string, selectorsBefore = '', selectorsAfter = ''): string => {
+					return `${attribute}="${selectorsBefore as string}${mangledSelector}${selectorsAfter as string}"`;
+				}
+			);
 		});
 
 		return content;

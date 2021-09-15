@@ -7,7 +7,7 @@ import {
 	DomNodesCounterExtension,
 	CacheInfoExtension
 } from './Extensions';
-import { Stylify } from '..';
+import { Stylify } from '@stylify/stylify';
 
 declare global {
     interface Window {
@@ -125,10 +125,10 @@ class Profiler {
 			}
 		});
 
-		addProfilerExtension(BuildsAnalyzerExtension);
-		addProfilerExtension(CacheInfoExtension);
-		addProfilerExtension(ConfigurationsVisualizerExtension);
-		addProfilerExtension(DomNodesCounterExtension);
+		this.addProfilerExtension(BuildsAnalyzerExtension);
+		this.addProfilerExtension(CacheInfoExtension);
+		this.addProfilerExtension(ConfigurationsVisualizerExtension);
+		this.addProfilerExtension(DomNodesCounterExtension);
 
 		initProfilerToolbar({
 			stylify: this.stylify,
@@ -136,6 +136,10 @@ class Profiler {
 		});
 
 		return true;
+	}
+
+	public addProfilerExtension(profilerExtension: any): void {
+		addProfilerExtension(profilerExtension);
 	}
 
 	private openCodeInNewWindow = (code: string, language: string = null, windowTitle: string = null) => {
@@ -160,7 +164,5 @@ class Profiler {
 	}
 
 }
-
-export { Profiler };
 
 export default Profiler;
