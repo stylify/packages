@@ -7,11 +7,14 @@ import {
 } from '.';
 
 export interface StylifyConfigInterface {
+	dev: boolean,
 	compiler: Partial<CompilerConfigInterface>,
 	runtime: Partial<RuntimeConfigInterface>
 }
 
 class Stylify {
+
+	private dev = false;
 
 	public Compiler: Compiler = null;
 
@@ -34,6 +37,12 @@ class Stylify {
 	public configure(config: Partial<StylifyConfigInterface>): Stylify {
 		const compilerConfig: Record<string, any> = config.compiler || {};
 		const runtimeConfig: Record<string, any> = config.runtime || {};
+
+		if ('dev' in config) {
+			compilerConfig.dev = config.dev;
+			runtimeConfig.dev = config.dev;
+			this.dev = config.dev;
+		}
 
 		if (this.Compiler) {
 			this.Compiler.configure(compilerConfig);

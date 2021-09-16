@@ -17,6 +17,6 @@ compiler.configure({
 });
 let compilationResult = compiler.compile(inputIndex);
 
-test('Test components configuration', (): void => {
+test('Components', (): void => {
 	testUtils.testCssFileToBe(compilationResult.generateCss());
 });

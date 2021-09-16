@@ -1,0 +1,15 @@
+.text\:bold{
+	font-weight:bold
+}
+.text\:\$textColor{
+	color:#87CEEB
+}
+.bgc\:\$grey{
+	background-color:#eeeeee
+}
+
+@media (min-width: 640px) {
+.md\:zi\:10{
+	z-index:10
+}
+}

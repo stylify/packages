@@ -30,6 +30,7 @@ export interface StylifyNuxtModuleConfigInterface extends StylifyConfigInterface
 }
 
 let moduleConfig: StylifyNuxtModuleConfigInterface = {
+	dev: false,
 	configPath: configFileName,
 	cache: {
 		enabled: true,
@@ -141,16 +142,18 @@ const getPreflightCompilationResult = (): CompilationResult => {
 
 export default function Stylify(): void {
 	const { nuxt } = this;
-	const nuxtIsInDevMode = typeof nuxt.options.dev === 'boolean' ? nuxt.options.dev : false;
+	const nuxtIsInDevMode = typeof nuxt.options.dev === 'boolean' ? nuxt.options.dev : moduleConfig.dev;
 	const nuxtBuildDir = nuxt.options.buildDir;
 	serializedCompilationResultPreflightFilePath = path.join(
 		nuxtBuildDir, serializedCompilationResultPreflightFileName
 	);
 	serializedPrefixesMapFilePath = path.join(nuxtBuildDir, serializedPrefixesMapFileName);
 
+	moduleConfig.dev = nuxtIsInDevMode;
 	moduleConfig.compiler.selectorsAttributes = ['v-bind:class', ':class'];
-	moduleConfig.compiler.dev = nuxtIsInDevMode;
+	moduleConfig.compiler.dev = moduleConfig.dev;
 	moduleConfig.compiler.mangleSelectors = !nuxtIsInDevMode;
+	moduleConfig.runtime.dev = moduleConfig.dev;
 	moduleConfig.importProfiler = nuxtIsInDevMode;
 
 	mergeConfig(nuxt.options.stylify);
@@ -169,7 +172,7 @@ export default function Stylify(): void {
 	const prefixer = new Prefixer(HooksManager);
 	const cache = {};
 
-	const processTemplateParams = (params, context = null): void => {
+	const processTemplateParams = (params: Record<string, any>, context = null): void => {
 		const url = context ? context.nuxt.routePath : null;
 		const isUrlCached = context ? url in cache : false;
 		let compilationResult: CompilationResult;
