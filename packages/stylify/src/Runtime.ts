@@ -3,6 +3,7 @@ import { CompilationResult } from './Compiler/CompilationResult';
 import HooksManager from './HooksManager';
 
 export interface RuntimeConfigInterface {
+	dev: boolean,
 	compiler: Compiler,
 	cache: string | SerializedCompilerInterface,
 	redrawTimeout: number
@@ -13,6 +14,8 @@ class Runtime {
 	private readonly STYLIFY_STYLE_EL_ID: string = 'stylify-css';
 
 	private readonly STYLIFY_CLOAK_ATTR_NAME:string = 's-cloak';
+
+	private dev = false;
 
 	private Compiler: Compiler = null;
 
@@ -52,6 +55,8 @@ class Runtime {
 			this.updateCss(document.documentElement.outerHTML);
 		}
 
+		this.dev = 'dev' in config ? config.dev : this.dev;
+
 		this.redrawTimeout = config.redrawTimeout || this.redrawTimeout;
 
 		HooksManager.callHook('stylify:runtime:configured', {
@@ -74,7 +79,7 @@ class Runtime {
 					repaintTime: performance.now() - repaintStartTime,
 					compilerResult: this.CompilationResult,
 					content: content
-				});
+				}, this.dev);
 			}
 		}
 
@@ -107,7 +112,7 @@ class Runtime {
 
 		HooksManager.callHook('stylify:runtime:hydrated', {
 			cache: parsedData
-		});
+		}, this.dev);
 	}
 
 	private updateCss(content: string): string|null {
