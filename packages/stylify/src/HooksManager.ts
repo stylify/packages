@@ -18,7 +18,7 @@ class HooksManager {
 		}
 	}
 
-	public callHook(hook: string, hookArguments: any = null, keepHistory: boolean = false): HookReturnDataInterface
+	public callHook(hook: string, hookArguments: any = null, keepHistory = false): HookReturnDataInterface
 	{
 		const hookArgumentsWithReference: HookReturnDataInterface = {
 			data: hookArguments

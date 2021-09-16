@@ -18,7 +18,7 @@ compiler.configure({
 });
 let compilationResult = compiler.compile(inputIndex);
 
-test('Test components configuration', (): void => {
+test('Components - mangle selectors', (): void => {
 	testUtils.testCssFileToBe(compilationResult.generateCss());
 	testUtils.testHtmlFileToBe(SelectorsRewriter.rewrite(compilationResult, compiler.selectorAttributes, inputIndex));
 });

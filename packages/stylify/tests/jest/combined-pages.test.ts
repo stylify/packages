@@ -13,7 +13,7 @@ const compiler = new Compiler(nativePreset.compiler);
 let compilationResult = compiler.compile(inputIndex);
 compilationResult = compiler.compile(inputAbout, compilationResult);
 
-test('Two HTML files build with selectors rewriter', (): void => {
+test('Combined pages', (): void => {
 	testUtils.testCssFileToBe(compilationResult.generateCss());
 	testUtils.testHtmlFileToBe(SelectorsRewriter.rewrite(compilationResult, compiler.selectorAttributes, inputIndex));
 	testUtils.testHtmlFileToBe(SelectorsRewriter.rewrite(compilationResult, compiler.selectorAttributes, inputAbout), 'about');
