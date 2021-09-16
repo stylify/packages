@@ -15,8 +15,10 @@
 		"jest:test": "node --experimental-modules node_modules/.bin/jest --collectCoverage --coverageProvider=v8"
 	},
 	"files": [
-		"dist",
+		"esm",
+		"lib",
 		"types",
+		"package.json",
 		"LICENSE",
 		"README.md"
 	],
@@ -31,7 +33,7 @@
 	"bugs": {
 		"url": "https://github.com/stylify/packages/issues"
 	},
-	"homepage": "https://github.com/stylify/packages/#readme",
+	"homepage": "https://stylify.dev",
 	"devDependencies": {
 		"@babel/core": "^7.12",
 		"@babel/plugin-proposal-class-properties": "^7.14",

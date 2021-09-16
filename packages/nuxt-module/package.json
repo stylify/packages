@@ -20,6 +20,7 @@
 		"esm",
 		"lib",
 		"types",
+		"package.json",
 		"LICENSE",
 		"README.md"
 	],
@@ -34,7 +35,7 @@
 	"bugs": {
 		"url": "https://github.com/stylify/packages/issues"
 	},
-	"homepage": "https://github.com/stylify/packages/#readme",
+	"homepage": "https://stylify.dev",
 	"devDependencies": {
 		"autoprefixer": "^10.3",
 		"@babel/core": "^7.12",
