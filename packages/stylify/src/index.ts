@@ -4,7 +4,8 @@ export {
 	CompilationResult,
 	SerializedCompilerInterface,
 	MacroMatch,
-	SelectorProperties
+	SelectorProperties,
+	SerializedCompilationResultInterface
 } from './Compiler';
 export { Runtime, RuntimeConfigInterface } from './Runtime';
 export { nativePreset } from './Presets';
