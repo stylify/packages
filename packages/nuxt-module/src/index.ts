@@ -6,15 +6,15 @@ import {
 	HooksManager,
 	nativePreset,
 	CompilationResult,
-	StylifyConfigInterface
+	StylifyConfigInterface,
+	SerializedCompilationResultInterface
 } from '@stylify/stylify';
 import type { PrefixesMapRecordType } from '@stylify/autoprefixer';
 import Prefixer from '@stylify/autoprefixer/esm/Prefixer';
+
 const configFileName = 'stylify.config.js';
-const serializedCompilationResultPreflightFileName = 'stylify-preflight.json';
-let serializedCompilationResultPreflightFilePath: string = null;
-const serializedPrefixesMapFileName = 'stylify-prefixes.json';
-let serializedPrefixesMapFilePath = null;
+const stylifyCacheFileName = 'stylify-cache.json';
+let stylifyCacheFilePath: string = null;
 
 export interface StylifyNuxtModuleConfigInterface extends StylifyConfigInterface {
 	configPath: string,
@@ -27,6 +27,11 @@ export interface StylifyNuxtModuleConfigInterface extends StylifyConfigInterface
 	importStylify: boolean,
 	importProfiler: boolean,
 	prefixesMap: Partial<PrefixesMapRecordType>,
+}
+
+interface StylifyCacheFileInterface {
+	compilationResult: Partial<SerializedCompilationResultInterface>,
+	prefixesMap: Partial<PrefixesMapRecordType>
 }
 
 let moduleConfig: StylifyNuxtModuleConfigInterface = {
@@ -62,7 +67,12 @@ const mergeObject = (...objects): any => {
 };
 
 const mergeConfig = (config: Record<string, any>): void => {
-	moduleConfig = mergeObject(moduleConfig, config);
+	if ('extend' in config) {
+		moduleConfig = mergeObject(moduleConfig, config.extend);
+		delete config.extend;
+	}
+
+	moduleConfig = {...moduleConfig, ...config};
 };
 
 const convertObjectToStringableForm = (processedObject: Record<string, any>): Record<string, any> => {
@@ -87,46 +97,40 @@ const convertObjectToStringableForm = (processedObject: Record<string, any>): Re
 	return newObject;
 };
 
-const compilationResultCacheExists = (): boolean => {
-	return fs.existsSync(serializedCompilationResultPreflightFilePath);
+const stylifyCacheExists = (): boolean => {
+	return fs.existsSync(stylifyCacheFilePath);
 };
 
-let loadedCompilationResultCache: Record<string, any> = null;
-const loadCompilationResultCache = (): Record<string, any> => {
-	if (!compilationResultCacheExists()) {
-		saveCompilationResultCache({});
-		return {};
+let loadedStylifyCache: StylifyCacheFileInterface = null;
+const loadStylifyCache = (): Partial<StylifyCacheFileInterface> => {
+	if (moduleConfig.dev || !loadedStylifyCache) {
+		loadedStylifyCache = stylifyCacheExists()
+			? JSON.parse(fs.readFileSync(stylifyCacheFilePath).toString())
+			: saveStylifyCache({});
 	}
 
-	return JSON.parse(fs.readFileSync(serializedCompilationResultPreflightFilePath).toString()) as Record<string, any>;
+	return loadedStylifyCache;
 };
 
-const saveCompilationResultCache = (data: Record<string, any>): void => {
-	fs.writeFileSync(serializedCompilationResultPreflightFilePath, JSON.stringify(data, null, 4));
-};
+const saveStylifyCache = (cache: Partial<StylifyCacheFileInterface>): Partial<StylifyCacheFileInterface> => {
+	let cacheToSave: Partial<StylifyCacheFileInterface> = stylifyCacheExists()
+		? loadStylifyCache()
+		: {
+			compilationResult: {},
+			prefixesMap: {}
+		};
 
-let prefixerConfigured = false;
-const prefixesMapExists = (): boolean => {
-	return fs.existsSync(serializedPrefixesMapFilePath);
-};
-const loadPrefixesMap = (): Record<string, any> => {
-	if (!prefixesMapExists()) {
-		savePrefixesMap({});
-		return {};
-	}
-
-	return JSON.parse(fs.readFileSync(serializedPrefixesMapFilePath).toString()) as Record<string, any>;
-};
-
-const savePrefixesMap = (data: Record<string, any>): void => {
+	cacheToSave = mergeObject(cacheToSave, cache);
 	fs.writeFileSync(
-		serializedPrefixesMapFilePath,
-		JSON.stringify(data, null, 4)
+		stylifyCacheFilePath,
+		JSON.stringify(mergeObject(cacheToSave, cache), null, 4)
 	);
+
+	return cacheToSave;
 };
 
 let prefixesMap = {};
-const mergePrefixesMap = (data: Record<string, any>) => {
+const mergePrefixesMap = (data: Record<string, any>): void => {
 	prefixesMap = {...prefixesMap, ...data};
 };
 
@@ -144,10 +148,7 @@ export default function Stylify(): void {
 	const { nuxt } = this;
 	const nuxtIsInDevMode = typeof nuxt.options.dev === 'boolean' ? nuxt.options.dev : moduleConfig.dev;
 	const nuxtBuildDir = nuxt.options.buildDir;
-	serializedCompilationResultPreflightFilePath = path.join(
-		nuxtBuildDir, serializedCompilationResultPreflightFileName
-	);
-	serializedPrefixesMapFilePath = path.join(nuxtBuildDir, serializedPrefixesMapFileName);
+	stylifyCacheFilePath = path.join(nuxtBuildDir, stylifyCacheFileName);
 
 	moduleConfig.dev = nuxtIsInDevMode;
 	moduleConfig.compiler.selectorsAttributes = ['v-bind:class', ':class'];
@@ -156,7 +157,9 @@ export default function Stylify(): void {
 	moduleConfig.runtime.dev = moduleConfig.dev;
 	moduleConfig.importProfiler = nuxtIsInDevMode;
 
-	mergeConfig(nuxt.options.stylify);
+	if ('stylify' in nuxt.options) {
+		mergeConfig(nuxt.options.stylify);
+	}
 
 	const configPath = nuxt.resolver.resolveAlias(moduleConfig.configPath);
 
@@ -170,34 +173,30 @@ export default function Stylify(): void {
 
 	const compiler = new Compiler(moduleConfig.compiler);
 	const prefixer = new Prefixer(HooksManager);
-	const cache = {};
+	const routesCache = {};
+	const preflightCache = loadStylifyCache();
+	let preparedCompilationResult = null;
+
+	if (preflightCache) {
+		preparedCompilationResult = compiler.createResultFromSerializedData({
+			selectorsList: preflightCache.compilationResult.selectorsList,
+			mangledSelectorsMap: preflightCache.compilationResult.mangledSelectorsMap
+		});
+
+		prefixer.setPrefixesMap(preflightCache.prefixesMap);
+	}
 
 	const processTemplateParams = (params: Record<string, any>, context = null): void => {
 		const url = context ? context.nuxt.routePath : null;
-		const isUrlCached = context ? url in cache : false;
+		const isUrlCached = context ? url in routesCache : false;
 		let compilationResult: CompilationResult;
-		let metaTags;
+		let metaTags: string;
 
 		if (context && !nuxtIsInDevMode && isUrlCached) {
-			compilationResult = cache[url].compilationResult;
-			metaTags = cache[url].metaTags;
+			compilationResult = routesCache[url].compilationResult;
+			metaTags = routesCache[url].metaTags;
 
 		} else {
-			let preparedCompilationResult = null;
-
-			if (compilationResultCacheExists()) {
-				loadedCompilationResultCache = loadCompilationResultCache();
-				preparedCompilationResult = compiler.createResultFromSerializedData({
-					selectorsList: loadedCompilationResultCache.selectorsList,
-					mangledSelectorsMap: loadedCompilationResultCache.mangledSelectorsMap
-				});
-			}
-
-			if (prefixesMapExists() && !prefixerConfigured) {
-				prefixerConfigured = true;
-				prefixer.setPrefixesMap(loadPrefixesMap());
-			}
-
 			compilationResult = compiler.compile(params.APP, preparedCompilationResult);
 			const css: string = compilationResult.generateCss();
 			const serializedCompilatiResultHtml = `
@@ -211,7 +210,7 @@ export default function Stylify(): void {
 			`;
 
 			if (context) {
-				cache[url] = {
+				routesCache[url] = {
 					compilationResult: compilationResult,
 					metaTags: metaTags
 				};
@@ -273,8 +272,10 @@ export default function Stylify(): void {
 			serializedPreflightCompilationResult.cssTree = {};
 		}
 
-		savePrefixesMap(prefixesMap);
-		saveCompilationResultCache(serializedPreflightCompilationResult);
+		saveStylifyCache({
+			compilationResult: serializedPreflightCompilationResult,
+			prefixesMap: prefixesMap
+		});
 	});
 
 	nuxt.hook('vue-renderer:spa:templateParams', (params: Record<string, any>): void => {

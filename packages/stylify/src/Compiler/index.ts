@@ -5,4 +5,4 @@ export {
 } from './Compiler';
 export { default as MacroMatch } from './MacroMatch';
 export { default as SelectorProperties } from './SelectorProperties';
-export { CompilationResult } from './CompilationResult';
+export { CompilationResult, SerializedCompilationResultInterface } from './CompilationResult';

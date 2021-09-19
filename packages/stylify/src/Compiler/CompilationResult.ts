@@ -10,7 +10,7 @@ export interface CompilationResultConfigInterface {
 	variables: Record<string, string| number>
 }
 
-interface SerializedCompilationResultInterface {
+export interface SerializedCompilationResultInterface {
 	mangleSelectors: boolean,
 	dev: boolean,
 	selectorsList: Record<string, SelectorsListInterface>,
