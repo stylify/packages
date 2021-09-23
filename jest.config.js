@@ -1,6 +1,6 @@
 module.exports = {
 	verbose: true,
-	testRegex: 'tests/jest/.*\\.test.(js|ts|tsx|mjs)$',
+	testRegex: 'packages/[^/]+/tests/jest/.*\\.test.ts$',
 	testEnvironment: 'jest-environment-jsdom',
 	moduleFileExtensions: [
 		"js",
@@ -17,10 +17,9 @@ module.exports = {
 		"\\.(css|less|scss|sass)$": "identity-obj-proxy"
 	},
 	collectCoverageFrom: [
-		'src/**/*.ts'
+		'packages/(autoprefixer|stylify)/src/**/*.ts'
 	],
 	coveragePathIgnorePatterns: [
-		'src/(Stylify.native.browser|Stylify.browser|Runtime|Profiler.browser|Stylify).ts',
-		'src/Profiler'
+		'packages/stylify/src/(Stylify.native.browser|Stylify.browser|Runtime|Profiler.browser|Stylify).ts'
 	]
-}
+};

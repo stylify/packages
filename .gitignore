@@ -1,6 +1,7 @@
 # Root
 /node_modules/
 *.lerna_backup
+/coverage
 
 #Packages
 /packages/**/*.lerna_backup
