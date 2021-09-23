@@ -2,7 +2,7 @@ import { CompilationResult } from '.';
 
 class SelectorsRewriter {
 
-	public rewrite(compilationResult : CompilationResult, selectorsAttributes: string[], content: string): string {
+	public static rewrite(compilationResult : CompilationResult, selectorsAttributes: string[], content: string): string {
 		const sortedSelectorsListKeys = Object
 			.keys(compilationResult.selectorsList)
 			.sort((a, b) => b.length - a.length);
@@ -26,4 +26,4 @@ class SelectorsRewriter {
 
 }
 
-export default new SelectorsRewriter();
+export default SelectorsRewriter;

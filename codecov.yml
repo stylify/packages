@@ -20,6 +20,9 @@ flags:
   autoprefixer:
     paths:
       - packages/autoprefixer/
+  cli:
+    paths:
+      - packages/cli/
   stylify:
     paths:
       - packages/stylify/
