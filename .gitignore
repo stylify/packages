@@ -6,7 +6,6 @@
 #Packages
 /packages/**/*.lerna_backup
 /packages/**/node_modules
-/packages/**/coverage
 /packages/**/dist
 /packages/**/esm
 /packages/**/lib
