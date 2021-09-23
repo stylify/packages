@@ -5,7 +5,6 @@
 	"author": "Vladimír Macháček",
 	"license": "MIT",
 	"main": "index.js",
-	"type": "module",
 	"scripts": {
 		"repo:init": "yarn install && yarn link && yarn bootstrap",
 		"bootstrap": "lerna bootstrap --force-local",
@@ -44,7 +43,7 @@
 		"profiler:lint:fix": "yarn profiler:lint:check --fix",
 		"lint:check": "eslint packages/**/src/**/*.{js,ts}",
 		"lint:fix": "yarn lint:check --fix",
-		"jest:test": "lerna run --stream jest:test"
+		"jest:test": "node --experimental-modules node_modules/.bin/jest --coverage --coverageProvider v8"
 	},
 	"repository": {
 		"type": "git",
@@ -60,9 +59,19 @@
 	"devDependencies": {
 		"@typescript-eslint/eslint-plugin": "^4.11",
 		"@typescript-eslint/parser": "^4.11",
+		"@types/jest": "^26.0",
+		"babel-jest": "^26.6",
 		"eslint": "^7.16",
+		"identity-obj-proxy": "^3.0.0",
+		"jest": "^27.0",
+		"jest-environment-jsdom": "^27.0",
+		"jest-environment-node": "^27.0",
 		"lerna": "^4.0",
+		"ts-jest": "^27.0",
 		"tslib": "^2.0",
 		"typescript": "^4.1"
-	}
+	},
+	"browserslist": [
+		"> 0.10%"
+	]
 }

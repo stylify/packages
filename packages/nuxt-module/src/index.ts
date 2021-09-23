@@ -98,7 +98,7 @@ const convertObjectToStringableForm = (processedObject: Record<string, any>): Re
 };
 
 const stylifyCacheExists = (): boolean => {
-	return fs.existsSync(stylifyCacheFilePath) as boolean;
+	return fs.existsSync(stylifyCacheFilePath) === true;
 };
 
 let loadedStylifyCache: StylifyCacheFileInterface = null;
