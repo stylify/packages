@@ -10,8 +10,6 @@
 		"watch": "node --max-old-space-size=8192 node_modules/.bin/rollup -c rollup.config.js -w ./src",
 		"build": "node --max-old-space-size=8192 node_modules/.bin/rollup -c rollup.config.js && yarn types",
 		"types": "yarn tsc ./src/index.ts --d --moduleResolution node --emitDeclarationOnly --allowSyntheticDefaultImports --target esnext --jsx react-jsx --jsxImportSource preact --outDir types",
-		"lint:check": "eslint ./src/*.ts",
-		"lint:fix": "yarn lint:check --fix",
 		"plg:build": "cd playground && yarn install && yarn build",
 		"plg:dev": "cd playground && yarn install && yarn dev",
 		"plg:start": "cd playground && yarn install && yarn build && yarn start"
@@ -50,9 +48,6 @@
 		"@rollup/plugin-replace": "^2.3",
 		"rollup-plugin-typescript2": "^0.30",
 		"@types/node": "^14.14",
-		"@typescript-eslint/eslint-plugin": "^4.11",
-		"@typescript-eslint/parser": "^4.11",
-		"eslint": "^7.16",
 		"postcss-js": "^3.0",
 		"promise": "^8.1",
 		"rollup": "^2.35",
