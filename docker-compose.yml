@@ -10,10 +10,3 @@ services:
             - 82:80
             - 81:81 # Stylify nuxt module playground
         tty: true
-
-   # chrome:
-    #    container_name: stylify-chrome
-     #   working_dir: /usr/share/nginx/html
-      #  build: docker/chrome
-       # volumes:
-        #    - ./.:/usr/share/nginx/html:delegated
