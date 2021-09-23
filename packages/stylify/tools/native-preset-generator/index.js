@@ -20,7 +20,7 @@ class NativePresetGenerator {
 
 		const lists = fs.readdirSync(listsDirectoryPath);
 		lists.forEach((file) => {
-			listsFilesContent += fs.readFileSync(path.join(dirname, 'lists', file), 'utf8') + '\n';
+			listsFilesContent += `${fs.readFileSync(path.join(dirname, 'lists', file), 'utf8')} \n`;
 		});
 
 		let propertiesShortcuts = [
