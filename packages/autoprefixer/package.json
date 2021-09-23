@@ -6,7 +6,6 @@
 	"module": "esm/index.js",
 	"types": "types",
 	"scripts": {
-		"init": "yarn install",
 		"watch": "node --max-old-space-size=8192 node_modules/.bin/rollup -c rollup.config.js -w src",
 		"build": "node --max-old-space-size=8192 node_modules/.bin/rollup -c rollup.config.js && yarn types",
 		"types": "yarn tsc ./src/index.ts --d --moduleResolution node --emitDeclarationOnly --allowSyntheticDefaultImports --target esnext --jsx react-jsx --jsxImportSource preact --outDir types"
