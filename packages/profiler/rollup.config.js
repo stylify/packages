@@ -66,7 +66,7 @@ const createConfig = (config) => {
 
 		if (!isDevMode) {
 			plugins.push(
-				banner('<%= pkg.name %> v<%= pkg.version %> \n(c) 2020-' + new Date().getFullYear() + ' <%= pkg.author %>\nReleased under the MIT License.')
+				banner('<%= pkg.name %> v<%= pkg.version %> \n(c) 2021-present <%= pkg.author %>\nReleased under the MIT License.')
 			)
 		}
 
