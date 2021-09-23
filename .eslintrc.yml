@@ -18,8 +18,7 @@ parserOptions:
     project: './tsconfig.json'
 
 ignorePatterns:
-    - tools/native-preset-generator/templates/*.js
-    - src/Presets/NativePreset.ts
+    - packages/stylify/src/Presets/NativePreset.ts
 
 rules:
     # Possible errors
