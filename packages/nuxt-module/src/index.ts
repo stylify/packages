@@ -10,13 +10,14 @@ import {
 	SerializedCompilationResultInterface
 } from '@stylify/stylify';
 import type { PrefixesMapRecordType } from '@stylify/autoprefixer';
-import Prefixer from '@stylify/autoprefixer/esm/Prefixer';
+import { Prefixer } from '@stylify/autoprefixer';
 
 const configFileName = 'stylify.config.js';
 const stylifyCacheFileName = 'stylify-cache.json';
 let stylifyCacheFilePath: string = null;
 
 export interface StylifyNuxtModuleConfigInterface extends StylifyConfigInterface {
+	dev: false | boolean,
 	configPath: string,
 	cache: {
 		enabled: boolean,

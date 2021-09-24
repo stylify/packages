@@ -18,7 +18,19 @@
 		"removeComments": true,
 		"experimentalDecorators": true,
 		"resolveJsonModule": true,
+		"jsx": "react-jsx",
+		"jsxImportSource": "preact",
 		"noEmit": true,
 		"allowJs": true
+	},
+	"exclude": [
+		"./tests",
+		"packages/**/tests/**/*.ts",
+		"packages/stylify/tools/native-preset-generator/template.ts"
+	],
+	"ts-node": {
+		"compilerOptions": {
+			"module": "CommonJS"
+		}
 	}
 }
