@@ -1,5 +1,5 @@
 import { Stylify } from '@stylify/stylify';
-import Prefixer from '@stylify/autoprefixer/esm/Prefixer';
+import { Prefixer } from '@stylify/autoprefixer';
 import { StylifyNuxtModuleConfigInterface } from '.';
 
 
@@ -36,7 +36,7 @@ export default function (): void {
 		});
 
 		new Prefixer(stylify.hooks, moduleConfig.prefixesMap);
-		window.Stylify = stylify;
+		globalThis.Stylify = stylify;
 		const event = new window.CustomEvent('stylify:ready', {detail: stylify});
 		document.dispatchEvent(event);
 	};

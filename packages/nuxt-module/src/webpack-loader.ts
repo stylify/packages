@@ -1,6 +1,6 @@
 import { SelectorsRewriter } from '@stylify/stylify';
 import { getOptions } from 'loader-utils';
-import PrefixesGenerator from '@stylify/autoprefixer/esm/PrefixesGenerator';
+import { PrefixesGenerator } from '@stylify/autoprefixer';
 
 /**
  *

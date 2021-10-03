@@ -13,8 +13,11 @@ jobs:
         - name: Install packages
           run: yarn repo:init
 
+        - name: Generate types
+          run: yarn types
+
         - name: Build packages
-          run: yarn build:all
+          run: yarn build
 
         - name: Eslint
           run: yarn lint:check

@@ -19,6 +19,9 @@ parserOptions:
 
 ignorePatterns:
     - packages/stylify/src/Presets/NativePreset.ts
+    - "**/esm/*.js"
+    - "**/lib/*.js"
+    - "**/dist/*.js"
 
 rules:
     # Possible errors
