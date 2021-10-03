@@ -7,7 +7,7 @@ let extensionsConfig = {};
 const ToolbarExtension = ({ extensionName }) => {
 	const TagName = extensions[extensionName];
 	return <TagName config={extensionsConfig} />;
-}
+};
 
 class ProfilerToolbar extends Component<any> {
 
@@ -41,7 +41,7 @@ class ProfilerToolbar extends Component<any> {
 		return localStorageConfig ? JSON.parse(localStorageConfig) : null;
 	}
 
-	private updateConfigInLocalStorage  = (config: Record<string, any> = {}): void => {
+	private updateConfigInLocalStorage = (config: Record<string, any> = {}): void => {
 		localStorage.setItem(
 			this.LOCAL_STORAGE_ID, JSON.stringify(Object.assign(this.getConfigFromLocalStorage(), config))
 		);
@@ -54,7 +54,7 @@ class ProfilerToolbar extends Component<any> {
 		});
 		this.updateConfigInLocalStorage({
 			extensionsVisible: extensionsVisible
-		})
+		});
 	}
 
 	public componentDidMount = () => {
@@ -108,9 +108,9 @@ const initProfilerToolbar = (profilerConfig): void => {
 
 const addProfilerExtension = (component: any) => {
 	extensions[component.name] = component;
-}
+};
 
 export {
 	addProfilerExtension,
-	initProfilerToolbar,
+	initProfilerToolbar
 };

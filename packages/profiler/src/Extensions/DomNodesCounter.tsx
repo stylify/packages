@@ -9,7 +9,7 @@ export default class DomNodesCounterExtension extends Component<any> {
 		totalDomNodesCount: 0
 	}
 
-	constructor(config) {
+	constructor() {
 		super();
 
 		document.addEventListener('DOMContentLoaded', () => {
@@ -29,7 +29,7 @@ export default class DomNodesCounterExtension extends Component<any> {
 
 	private updateDomNodesCount = () => {
 		const count = document.getElementsByTagName('*').length - this.profilerElement.getElementsByTagName('*').length;
-		this.setState({ totalDomNodesCount: count })
+		this.setState({ totalDomNodesCount: count });
 	}
 
 	public render() {

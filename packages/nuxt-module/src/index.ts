@@ -3,7 +3,7 @@ import path from 'path';
 import {
 	Compiler,
 	SelectorsRewriter,
-	HooksManager,
+	hooksManager,
 	nativePreset,
 	CompilationResult,
 	StylifyConfigInterface,
@@ -173,7 +173,7 @@ export default function Stylify(): void {
 	}
 
 	const compiler = new Compiler(moduleConfig.compiler);
-	const prefixer = new Prefixer(HooksManager);
+	const prefixer = new Prefixer(hooksManager);
 	const routesCache = {};
 	const preflightCache = loadStylifyCache();
 	let preparedCompilationResult = null;

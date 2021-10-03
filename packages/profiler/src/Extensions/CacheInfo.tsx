@@ -1,8 +1,9 @@
 import { h, Component } from 'preact';
+import { ProfilerExtensionPropsInterface } from '..';
 
 export default class CacheInfoExtension extends Component<any> {
 
-	private Stylify = null;
+	private stylify = null;
 
 	private openCodeInNewWindow = null;
 
@@ -11,10 +12,10 @@ export default class CacheInfoExtension extends Component<any> {
 		cacheList: []
 	}
 
-	constructor(props) {
+	constructor(props: ProfilerExtensionPropsInterface) {
 		super();
 
-		this.Stylify = props.config.stylify;
+		this.stylify = props.config.stylify;
 		this.openCodeInNewWindow = props.config.openCodeInNewWindow;
 
 		props.config.stylify.hooks.addHook('stylify:runtime:hydrated', ({data}) => {
@@ -26,10 +27,10 @@ export default class CacheInfoExtension extends Component<any> {
 		});
 	}
 
-	public toggleCacheInfoVisibility = () => {
+	public toggleCacheInfoVisibility = (): void => {
 		this.setState({
 			cacheInfoVisible: !this.state.cacheInfoVisible
-		})
+		});
 	}
 
 	public convertSizeToKb(size: number, precision: number = 1): string {
@@ -37,7 +38,7 @@ export default class CacheInfoExtension extends Component<any> {
 	}
 
 	public openActualCacheInNewWindow = (): void => {
-		this.openCodeInNewWindow(this.stringifyCache(this.Stylify.Runtime.CompilationResult.serialize()), 'json');
+		this.openCodeInNewWindow(this.stringifyCache(this.stylify.runtime.CompilationResult.serialize()), 'json');
 	}
 
 	private stringifyCache = (cache: Record<string, any>): string => {

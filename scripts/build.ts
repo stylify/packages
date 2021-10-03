@@ -14,7 +14,7 @@ build.addConfigs({
 			minifyEsm: true
 		},
 		{
-			inputFile: 'Stylify.native.browser',
+			inputFile: 'stylify.native.browser',
 			outputFile: 'stylify.native',
 			formats: ['umd', 'esm'],
 			external: stylifyBrowserExternalDependencies,
