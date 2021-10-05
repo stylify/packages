@@ -1,4 +1,4 @@
-import HooksManager from '../HooksManager';
+import hooksManager from '../HooksManager';
 
 export interface SerializedCssRecordInterface {
 	selectors: string[],
@@ -46,7 +46,7 @@ class CssRecord {
 
 		const propertiesToAdd = {};
 		propertiesToAdd[property] = value;
-		const { data } = HooksManager.callHook('stylify:cssRecord:addProperty', propertiesToAdd);
+		const { data } = hooksManager.callHook('stylify:cssRecord:addProperty', propertiesToAdd);
 		this.properties = {...this.properties, ...data};
 	}
 
@@ -55,7 +55,7 @@ class CssRecord {
 			pseudoClasses = [pseudoClasses];
 		}
 
-		const { data } = HooksManager.callHook('stylify:cssRecord:addPseudoClasses', pseudoClasses);
+		const { data } = hooksManager.callHook('stylify:cssRecord:addPseudoClasses', pseudoClasses);
 		for (const pseudoClass of data) {
 			if (!this.pseudoClasses.includes(pseudoClass)) {
 				this.pseudoClasses.push(pseudoClass);
@@ -80,7 +80,7 @@ class CssRecord {
 			return;
 		}
 
-		const { data } = HooksManager.callHook('stylify:cssRecord:addSelector', selector);
+		const { data } = hooksManager.callHook('stylify:cssRecord:addSelector', selector);
 		this.selectors.push(data);
 	}
 

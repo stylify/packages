@@ -1,7 +1,7 @@
 import {
 	Compiler,
 	CompilerConfigInterface,
-	HooksManager,
+	hooksManager,
 	Runtime,
 	RuntimeConfigInterface
 } from '.';
@@ -16,21 +16,21 @@ class Stylify {
 
 	private dev = false;
 
-	public Compiler: Compiler = null;
+	public compiler: Compiler = null;
 
-	public Runtime: Runtime = null;
+	public runtime: Runtime = null;
 
 	public hooks = null;
 
 	constructor(config: Partial<StylifyConfigInterface> = {}) {
-		this.hooks = HooksManager;
+		this.hooks = hooksManager;
 
 		const { data } = this.hooks.callHook('stylify:beforeInit', config);
 
 		this.configure(data);
 
 		this.hooks.callHook('stylify:init', {
-			runtime: this.Runtime
+			runtime: this.runtime
 		});
 	}
 
@@ -44,20 +44,20 @@ class Stylify {
 			this.dev = config.dev;
 		}
 
-		if (this.Compiler) {
-			this.Compiler.configure(compilerConfig);
+		if (this.compiler) {
+			this.compiler.configure(compilerConfig);
 		} else {
-			this.Compiler = new Compiler(compilerConfig);
+			this.compiler = new Compiler(compilerConfig);
 		}
 
 		if (!('compiler' in runtimeConfig)) {
-			runtimeConfig.compiler = this.Compiler;
+			runtimeConfig.compiler = this.compiler;
 		}
 
-		if (this.Runtime) {
-			this.Runtime.configure(runtimeConfig);
+		if (this.runtime) {
+			this.runtime.configure(runtimeConfig);
 		} else {
-			this.Runtime = new Runtime(runtimeConfig);
+			this.runtime = new Runtime(runtimeConfig);
 		}
 
 		return this;

@@ -1,5 +1,3 @@
-import * as preact from 'preact';
-import htm from 'htm';
 import { addProfilerExtension, initProfilerToolbar } from './Toolbar';
 import {
 	BuildsAnalyzerExtension,
@@ -16,15 +14,18 @@ declare global {
     }
 }
 
+export interface ProfilerExtensionPropsInterface {
+	config: {
+		stylify: Stylify,
+		openCodeInNewWindow: CallableFunction
+	}
+}
+
 class Profiler {
 
 	private readonly PRISM_VERSION = '1.23.0';
 
-	private readonly PRISM_CDN_URL = 'https://cdnjs.cloudflare.com/ajax/libs/prism/' + this.PRISM_VERSION;
-
-	private readonly preact = preact;
-
-	private readonly htm = htm;
+	private readonly PRISM_CDN_URL = `https://cdnjs.cloudflare.com/ajax/libs/prism/${this.PRISM_VERSION}`;
 
 	private stylify = null;
 

@@ -1,6 +1,6 @@
 import { Compiler, SerializedCompilerInterface } from './Compiler';
 import { CompilationResult } from './Compiler/CompilationResult';
-import HooksManager from './HooksManager';
+import hooksManager from './HooksManager';
 
 export interface RuntimeConfigInterface {
 	dev: boolean,
@@ -17,9 +17,9 @@ class Runtime {
 
 	private dev = false;
 
-	private Compiler: Compiler = null;
+	private compiler: Compiler = null;
 
-	private CompilationResult: CompilationResult = null;
+	private compilationResult: CompilationResult = null;
 
 	private initialPaintCompleted = false;
 
@@ -45,7 +45,7 @@ class Runtime {
 	}
 
 	public configure(config: Partial<RuntimeConfigInterface>): Record<string, any> {
-		this.Compiler = config.compiler;
+		this.compiler = config.compiler;
 
 		if (typeof config.cache !== 'undefined' && !this.initialPaintCompleted) {
 			this.hydrate(config.cache);
@@ -59,7 +59,7 @@ class Runtime {
 
 		this.redrawTimeout = config.redrawTimeout || this.redrawTimeout;
 
-		HooksManager.callHook('stylify:runtime:configured', {
+		hooksManager.callHook('stylify:runtime:configured', {
 			config: config
 		});
 
@@ -74,10 +74,10 @@ class Runtime {
 			this.initialPaintCompleted = true;
 
 			if (css !== null) {
-				HooksManager.callHook('stylify:runtime:repainted', {
+				hooksManager.callHook('stylify:runtime:repainted', {
 					css: css,
 					repaintTime: performance.now() - repaintStartTime,
-					compilerResult: this.CompilationResult,
+					compilerResult: this.compilationResult,
 					content: content
 				}, this.dev);
 			}
@@ -102,28 +102,28 @@ class Runtime {
 		}
 
 		const parsedData = typeof data === 'string' ? JSON.parse(data) : data;
-		this.Compiler.hydrate(parsedData);
+		this.compiler.hydrate(parsedData);
 
-		if (this.CompilationResult) {
-			this.CompilationResult.hydrate(parsedData);
+		if (this.compilationResult) {
+			this.compilationResult.hydrate(parsedData);
 		} else {
-			this.CompilationResult = this.Compiler.createResultFromSerializedData(parsedData);
+			this.compilationResult = this.compiler.createResultFromSerializedData(parsedData);
 		}
 
-		HooksManager.callHook('stylify:runtime:hydrated', {
+		hooksManager.callHook('stylify:runtime:hydrated', {
 			cache: parsedData
 		}, this.dev);
 	}
 
 	private updateCss(content: string): string|null {
 		this.hydrate();
-		this.CompilationResult = this.Compiler.compile(content, this.CompilationResult);
+		this.compilationResult = this.compiler.compile(content, this.compilationResult);
 
-		if (!this.CompilationResult.changed && this.initialPaintCompleted) {
+		if (!this.compilationResult.changed && this.initialPaintCompleted) {
 			return null;
 		}
 
-		const css: string = this.CompilationResult.generateCss();
+		const css: string = this.compilationResult.generateCss();
 		this.injectCss(css);
 		return css;
 	}
@@ -170,10 +170,10 @@ class Runtime {
 					return;
 				}
 
-				HooksManager.callHook('stylify:runtime:repainted', {
+				hooksManager.callHook('stylify:runtime:repainted', {
 					css: css,
 					repaintTime: repaintTime,
-					compilerResult: this.CompilationResult,
+					compilerResult: this.compilationResult,
 					content: compilerContentQueue
 				});
 
@@ -201,7 +201,7 @@ class Runtime {
 		const elements = document.querySelectorAll('[' + this.STYLIFY_CLOAK_ATTR_NAME + ']');
 		elements.forEach((element) => {
 			element.removeAttribute(this.STYLIFY_CLOAK_ATTR_NAME);
-			HooksManager.callHook('stylify:runtime:uncloak', {
+			hooksManager.callHook('stylify:runtime:uncloak', {
 				id: element.getAttribute(this.STYLIFY_CLOAK_ATTR_NAME) || null,
 				el: element
 			});

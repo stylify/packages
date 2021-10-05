@@ -1,11 +1,11 @@
-import type { HooksManager } from '@stylify/stylify';
+import type { hooksManager as stylifyHooksManager } from '@stylify/stylify';
 import { PrefixesMapRecordType } from '.';
 
 class Prefixer {
 
 	private prefixesMap: Partial<PrefixesMapRecordType> = {};
 
-	constructor(hooksManager: typeof HooksManager, prefixesMap: Partial<PrefixesMapRecordType> = {}) {
+	constructor(hooksManager: typeof stylifyHooksManager, prefixesMap: Partial<PrefixesMapRecordType> = {}) {
 		this.setPrefixesMap(prefixesMap);
 		hooksManager.addHook('stylify:cssRecord:addProperty', (hookData) => {
 			const propertyName = Object.keys(hookData.data)[0];

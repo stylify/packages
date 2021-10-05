@@ -1,4 +1,5 @@
 import { h, Component } from 'preact';
+import { ProfilerExtensionPropsInterface } from '..';
 
 export default class BuildsAnalyzerExtension extends Component {
 
@@ -12,7 +13,7 @@ export default class BuildsAnalyzerExtension extends Component {
 		buildsListVisible: false
 	}
 
-	constructor(props) {
+	constructor(props: ProfilerExtensionPropsInterface) {
 		super();
 
 		this.openCodeInNewWindow = props.config.openCodeInNewWindow;
@@ -53,19 +54,19 @@ export default class BuildsAnalyzerExtension extends Component {
 		return time.toFixed(precision) + ' ms';
 	}
 
-	public toggleBuildsListVisibility = () => {
+	public toggleBuildsListVisibility = (): void => {
 		this.setState({
 			buildsListVisible: !this.state.buildsListVisible
-		})
+		});
 	}
 
-	public openProcessedContentInNewWindow(content) {
+	public openProcessedContentInNewWindow(content: string): void {
 		const div = document.createElement('div');
 		div.innerHTML = decodeURIComponent(content);
 		this.openCodeInNewWindow(div.innerHTML, null, 'processed selectors');
 	}
 
-	public openGeneratedCssInNewWindow = () => {
+	public openGeneratedCssInNewWindow = (): void => {
 		this.openCodeInNewWindow(this.getGeneratedCssFromPage(), 'css', 'generated css')
 	}
 

@@ -1,7 +1,7 @@
 import { CompilationResult, SelectorsListInterface } from './CompilationResult';
 import SelectorProperties from './SelectorProperties';
 import MacroMatch from './MacroMatch';
-import HooksManager from '../HooksManager';
+import hooksManager from '../HooksManager';
 
 export interface SerializedCompilerInterface {
 	selectorsList: SelectorsListInterface
@@ -20,8 +20,6 @@ export interface CompilerConfigInterface {
 }
 
 class Compiler {
-
-	private PREGENERATE_MATCH_REG_EXP = new RegExp('stylify-pregenerate:([\\S ]*\\b)', 'igm');
 
 	public classMatchRegExp: RegExp = null;
 
@@ -44,6 +42,8 @@ class Compiler {
 	public componentsSelectorsRegExp: RegExp = null;
 
 	public selectorAttributes = ['class', 's-pregenerate', 'data-s-pregenerate']
+
+	private PREGENERATE_MATCH_REG_EXP = new RegExp('stylify-pregenerate:([\\S ]*\\b)', 'igm');
 
 	constructor(config: Record<string, any> = {}) {
 		this.configure(config);
@@ -73,7 +73,7 @@ class Compiler {
 			this.addComponent(componentSelector, config.components[componentSelector]);
 		}
 
-		HooksManager.callHook('stylify:compiler:configured', {
+		hooksManager.callHook('stylify:compiler:configured', {
 			compiler: this
 		});
 

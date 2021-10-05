@@ -1,6 +1,6 @@
 import TestUtils from './TestUtils';
 import { Compiler } from '@stylify/stylify';
-import { nativePreset, HooksManager } from '@stylify/stylify';
+import { nativePreset, hooksManager } from '@stylify/stylify';
 import { Prefixer, PrefixesGenerator } from '../../src';
 
 const prefixesGenerator = new PrefixesGenerator();
@@ -17,7 +17,7 @@ const prefixesMap = prefixesGenerator.createPrefixesMap(serverCompilationResult)
 
 // In browser or SSR prefixing simulation
 const compiler = new Compiler(nativePreset.compiler);
-new Prefixer(HooksManager, prefixesMap);
+new Prefixer(hooksManager, prefixesMap);
 let compilationResult = compiler.compile(inputIndex);
 
 test('Generated css, rewritten HTML', (): void => {

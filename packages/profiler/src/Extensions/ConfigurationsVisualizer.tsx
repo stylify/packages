@@ -1,4 +1,6 @@
 import { h, render, Component } from 'preact';
+import { StylifyConfigInterface } from '@stylify/stylify';
+import { ProfilerExtensionPropsInterface } from '..';
 
 export default class ConfigurationsVisualizerExtension extends Component<any> {
 
@@ -10,15 +12,15 @@ export default class ConfigurationsVisualizerExtension extends Component<any> {
 		macrosListVisible: false,
 
 		variables: {},
-		variablesListVisible: false,
+		variablesListVisible: false
 	};
 
-	constructor(props) {
+	constructor(props: ProfilerExtensionPropsInterface) {
 		super();
 
-		this.updateCompilerConfigs(props.config.stylify.Compiler);
+		this.updateCompilerConfigs(props.config.stylify.compiler);
 
-		props.config.stylify.hooks.addHook('stylify:compiler:configured', (data) => {
+		props.config.stylify.hooks.addHook('stylify:compiler:configured', (data: StylifyConfigInterface) => {
 			this.updateCompilerConfigs(data.compiler);
 		});
 	}
@@ -28,13 +30,13 @@ export default class ConfigurationsVisualizerExtension extends Component<any> {
 			components: Compiler.components,
 			helpers: Compiler.helpers,
 			macros: Compiler.macros,
-			variables: Compiler.variables,
+			variables: Compiler.variables
 		});
 	}
 
-	private toggleDetailVisibility = (name) => {
+	private toggleDetailVisibility = (name: string) => {
 		const newState = {};
-		newState[name + 'Visible'] = !this.state[name + 'Visible'];
+		newState[`${name} Visible`] = !this.state[`${name} Visible`];
 		this.setState(newState);
 	}
 

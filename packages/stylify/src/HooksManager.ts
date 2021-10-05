@@ -49,4 +49,6 @@ class HooksManager {
 
 }
 
-export default new HooksManager();
+const hooksManager = new HooksManager();
+
+export default hooksManager;
