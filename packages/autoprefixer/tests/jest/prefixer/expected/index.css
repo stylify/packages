@@ -2,12 +2,10 @@
 	display:grid
 }
 .transition\:all__\.5s{
-	-webkit-transition:all .5s;
 	transition:all .5s
 }
 .user-select\:none{
 	-webkit-user-select:none;
-	-moz-user-select:none;
 	-ms-user-select:none;
 	user-select:none
 }

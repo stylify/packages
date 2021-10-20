@@ -1,7 +1,6 @@
 import { CompilationResult } from '@stylify/stylify';
-
-const postcssJs = require('postcss-js');
-const autoprefixer = require('autoprefixer');
+import autoprefixer from 'autoprefixer';
+import postcssJs from 'postcss-js';
 
 const prefixer = postcssJs.sync([autoprefixer()]);
 
@@ -59,6 +58,3 @@ class PrefixesGenerator {
 }
 
 export { PrefixesGenerator };
-
-export default PrefixesGenerator;
-

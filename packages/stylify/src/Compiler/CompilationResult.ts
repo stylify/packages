@@ -1,22 +1,24 @@
-import { CssRecord, SerializedCssRecordInterface } from './CssRecord';
-import MacroMatch from './MacroMatch';
-import SelectorProperties from './SelectorProperties';
+import { CssRecord, MacroMatch, SelectorProperties, SerializedCssRecordInterface } from '.';
 
 export interface CompilationResultConfigInterface {
-	dev: boolean,
-	cssTreeSortingFunction: CallableFunction,
-	selectorsList: Record<string, string>,
-	mangleSelectors: boolean,
-	variables: Record<string, string| number>
+	dev?: boolean,
+	reconfigurable?: boolean,
+	cssTreeSortingFunction?: CallableFunction,
+	selectorsList?: Record<string, SelectorsListInterface>,
+	mangleSelectors?: boolean,
+	variables?: Record<string, string| number>,
+	onPrepareCssRecord?: CallableFunction
 }
 
 export interface SerializedCompilationResultInterface {
 	mangleSelectors: boolean,
+	reconfigurable: boolean,
 	dev: boolean,
 	selectorsList: Record<string, SelectorsListInterface>,
 	mangledSelectorsMap: Record<string, string>,
 	cssTree: Record<string, Record<string, SerializedCssRecordInterface>>,
-	variables: Record<string, string | number>
+	variables?: Record<string, string | number>,
+	onPrepareCssRecord?: string
 }
 
 export interface SelectorsListInterface {
@@ -26,7 +28,9 @@ export interface SelectorsListInterface {
 
 class CompilationResult {
 
-	private matchVariableRegExp = /\$([\w-_]+)/g;
+	private readonly matchVariableRegExp = /\$([\w-_]+)/g;
+
+	public reconfigurable = true;
 
 	public changed = false
 
@@ -34,6 +38,7 @@ class CompilationResult {
 
 	public dev = false;
 
+	// Todo odebrat, použít selectors list
 	public mangledSelectorsMap: Record<string, string> = {};
 
 	public selectorsList: Record<string, SelectorsListInterface> = {};
@@ -46,7 +51,9 @@ class CompilationResult {
 
 	public lastBuildInfo: Record<string, any> = null;
 
-	public constructor(config: Partial<CompilationResultConfigInterface> = {}) {
+	public onPrepareCssRecord: CallableFunction = null;
+
+	public constructor(config: CompilationResultConfigInterface = {}) {
 		// eslint-disable-next-line @typescript-eslint/unbound-method
 		this.cssTreeSortingFunction = this.sortCssTreeMediaQueries;
 		this.cssTree = new Map();
@@ -55,16 +62,19 @@ class CompilationResult {
 		this.configure(config);
 	}
 
-	public configure(config: Partial<CompilationResultConfigInterface> = {}): void {
-		this.dev = typeof config.dev === 'undefined' ? this.dev : config.dev;
-
+	public configure(config: CompilationResultConfigInterface = {}): void {
+		if (!Object.keys(config).length) {
+			return;
+		}
+		this.dev = typeof config.dev === 'boolean' ? config.dev : this.dev;
+		this.reconfigurable = typeof config.reconfigurable === 'boolean' ? config.reconfigurable : this.reconfigurable;
 		this.selectorsList = Object.assign(this.selectorsList, 'selectorsList' in config ? config.selectorsList : {});
-		this.mangleSelectors = typeof config.mangleSelectors === 'undefined'
-			? this.mangleSelectors
-			: config.mangleSelectors;
-
+		this.mangleSelectors = typeof config.mangleSelectors === 'boolean'
+			? config.mangleSelectors
+			: this.mangleSelectors;
 		this.cssTreeSortingFunction = config.cssTreeSortingFunction || this.cssTreeSortingFunction;
-		this.variables = config.variables;
+		this.variables = {...this.variables, ...config.variables || {}};
+		this.onPrepareCssRecord = config.onPrepareCssRecord || this.onPrepareCssRecord;
 	}
 
 	private setBuildInfo = (data: Record<string, any> = null): void => {
@@ -105,9 +115,15 @@ class CompilationResult {
 			let screenCss = '';
 
 			for (const selector in screenValue) {
-				screenCss += screenValue[selector].compile({
+				// Todo negenerovat css pro selektory, které už ve stránce jsou
+				// např. profiler
+				screenCss += screenValue[selector].generateCss({
 					minimize: !this.dev
 				});
+			}
+
+			if (!screenCss) {
+				continue;
 			}
 
 			css += screenKey === '_' ? screenCss : `${newLine}@media ${screenKey} {${newLine + screenCss}}${newLine}`;
@@ -117,6 +133,7 @@ class CompilationResult {
 		this.setBuildInfo({
 			completed: true
 		});
+
 		return css.trim();
 	}
 
@@ -135,7 +152,8 @@ class CompilationResult {
 			return;
 		}
 
-		const newCssRecord = new CssRecord();
+		const newCssRecord = this.createCssRecord(new CssRecord());
+
 		newCssRecord.addPseudoClasses(macroMatch.pseudoClasses);
 		const selectorToAdd = this.mangleSelectors ? mangledSelectorId : selector;
 
@@ -174,6 +192,7 @@ class CompilationResult {
 	public bindComponentsSelectors(componentsSelectorsMap: Record<string, any>): void {
 		const processedComponents = [];
 
+		// TODO refactor. Iterovat nad mapou komponent spíše než nad celým stromem css
 		for (const [screen, selectors] of this.cssTree) {
 			Object.keys(selectors).forEach((selector: string): void => {
 				if (selector in componentsSelectorsMap) {
@@ -304,12 +323,16 @@ class CompilationResult {
 	public serialize(): SerializedCompilationResultInterface {
 		const serializedCompilationResult: SerializedCompilationResultInterface = {
 			mangleSelectors: this.mangleSelectors,
+			reconfigurable: this.reconfigurable,
 			dev: this.dev,
 			selectorsList: this.selectorsList,
 			mangledSelectorsMap: this.mangledSelectorsMap,
-			cssTree: {},
-			variables: this.variables
+			cssTree: {}
 		};
+
+		if (Object.keys(this.variables).length) {
+			serializedCompilationResult.variables = this.variables;
+		}
 
 		for (const [screen, screenSelectors] of this.cssTree) {
 			if (!Object.keys(screenSelectors).length) {
@@ -317,9 +340,13 @@ class CompilationResult {
 			}
 
 			serializedCompilationResult.cssTree[screen] = {};
-			Object.keys(screenSelectors).forEach(selector => {
+			Object.keys(screenSelectors).forEach((selector) => {
 				serializedCompilationResult.cssTree[screen][selector] = screenSelectors[selector].serialize();
 			});
+		}
+
+		if (this.onPrepareCssRecord) {
+			serializedCompilationResult.onPrepareCssRecord = this.onPrepareCssRecord.toString();
 		}
 
 		return serializedCompilationResult;
@@ -329,10 +356,11 @@ class CompilationResult {
 		const compilationResult = new CompilationResult({
 			dev: data.dev,
 			variables: data.variables,
-			mangleSelectors: data.mangleSelectors
+			mangleSelectors: data.mangleSelectors,
+			reconfigurable: data.reconfigurable,
+			selectorsList: data.selectorsList || {}
 		});
 
-		compilationResult.selectorsList = data.selectorsList || {};
 		compilationResult.mangledSelectorsMap = data.mangledSelectorsMap || {};
 
 		if ('cssTree' in data) {
@@ -344,13 +372,14 @@ class CompilationResult {
 						compilationResult.cssTree.set(screen, {});
 					}
 
-					compilationResult.cssTree.get(screen)[selector] = new CssRecord(
-						serializedSelectorData.selectors,
-						serializedSelectorData.properties,
-						serializedSelectorData.pseudoClasses
-					);
+					compilationResult.cssTree.get(screen)[selector] = CssRecord.deserialize(serializedSelectorData);
 				});
 			});
+		}
+
+		if ('onPrepareCssRecord' in data) {
+			// eslint-disable-next-line @typescript-eslint/no-implied-eval
+			compilationResult.onPrepareCssRecord = new Function(data.onPrepareCssRecord);
 		}
 
 		return compilationResult;
@@ -363,9 +392,36 @@ class CompilationResult {
 		Object.keys(data.cssTree).forEach(screen => {
 			Object.keys(data.cssTree[screen]).forEach(selector => {
 				const serializedSelectorData = data.cssTree[screen][selector];
-				this.cssTree.get(screen)[selector].hydrate(serializedSelectorData);
+				let screenData = {};
+
+				if (this.cssTree.has(screen)) {
+					screenData = this.cssTree.get(screen);
+				} else {
+					this.cssTree.set(screen, screenData);
+				}
+
+				if (selector in this.cssTree.get(screen)) {
+					this.cssTree.get(screen)[selector].hydrate(serializedSelectorData);
+				} else {
+					this.cssTree.set(screen,
+						{
+							...screenData,
+							...{
+								[selector]: CssRecord.deserialize(serializedSelectorData)
+							}
+						}
+					);
+				}
 			});
 		});
+	}
+
+	private createCssRecord(cssRecord: CssRecord): CssRecord {
+		if (this.onPrepareCssRecord) {
+			this.onPrepareCssRecord(cssRecord);
+		}
+
+		return cssRecord;
 	}
 
 	private getUniqueSelectorId(): string {

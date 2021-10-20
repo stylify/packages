@@ -1,12 +1,12 @@
-import { Compiler, SerializedCompilerInterface } from './Compiler';
-import { CompilationResult } from './Compiler/CompilationResult';
-import hooksManager from './HooksManager';
+import { CompilationResult, Compiler, CompilerConfigInterface, SerializedCompilationResultInterface } from '.';
 
 export interface RuntimeConfigInterface {
-	dev: boolean,
-	compiler: Compiler,
-	cache: string | SerializedCompilerInterface,
-	redrawTimeout: number
+	dev?: boolean,
+	compiler?: CompilerConfigInterface,
+	runtime?: {
+		cache?: string | SerializedCompilationResultInterface,
+		repaintTimeout?: number
+	}
 }
 
 class Runtime {
@@ -15,17 +15,17 @@ class Runtime {
 
 	private readonly STYLIFY_CLOAK_ATTR_NAME:string = 's-cloak';
 
-	private dev = false;
+	public dev = false;
 
-	private compiler: Compiler = null;
+	public compiler: Compiler = null;
 
-	private compilationResult: CompilationResult = null;
+	public compilationResult: CompilationResult = null;
 
 	private initialPaintCompleted = false;
 
 	private mutationObserverInitialized = false;
 
-	public redrawTimeout = 5;
+	public repaintTimeout = 5;
 
 	constructor(config: Partial<RuntimeConfigInterface> = {}) {
 		if (typeof document === 'undefined') {
@@ -34,6 +34,8 @@ class Runtime {
 
 		this.configure(config);
 		this.initialPaintCompleted = false;
+
+		this.triggerEvent('stylify:ready', this);
 
 		if (['complete', 'loaded', 'interactive'].includes(document.readyState)) {
 			this.init();
@@ -45,10 +47,11 @@ class Runtime {
 	}
 
 	public configure(config: Partial<RuntimeConfigInterface>): Record<string, any> {
-		this.compiler = config.compiler;
+		const runtimeConfig = config.runtime || {};
+		const compilerConfig = config.compiler || {};
 
-		if (typeof config.cache !== 'undefined' && !this.initialPaintCompleted) {
-			this.hydrate(config.cache);
+		if (typeof runtimeConfig.cache !== 'undefined' && !this.initialPaintCompleted) {
+			this.hydrate(runtimeConfig.cache);
 		}
 
 		if (this.initialPaintCompleted) {
@@ -56,11 +59,24 @@ class Runtime {
 		}
 
 		this.dev = 'dev' in config ? config.dev : this.dev;
+		this.repaintTimeout = runtimeConfig.repaintTimeout || this.repaintTimeout;
 
-		this.redrawTimeout = config.redrawTimeout || this.redrawTimeout;
-
-		hooksManager.callHook('stylify:runtime:configured', {
+		this.triggerEvent('stylify:runtime:configured', {
 			config: config
+		});
+
+		compilerConfig.dev = this.dev;
+
+		if (!this.compiler) {
+			this.compiler = new Compiler();
+		}
+
+		compilerConfig.ignoredElements = [...compilerConfig.ignoredElements || [], ...['stylify-runtime-ignore']];
+
+		this.compiler.configure(compilerConfig);
+
+		this.triggerEvent('stylify:compiler:configured', {
+			compiler: this
 		});
 
 		return this;
@@ -74,12 +90,12 @@ class Runtime {
 			this.initialPaintCompleted = true;
 
 			if (css !== null) {
-				hooksManager.callHook('stylify:runtime:repainted', {
+				this.triggerEvent('stylify:runtime:repainted', {
 					css: css,
 					repaintTime: performance.now() - repaintStartTime,
-					compilerResult: this.compilationResult,
+					compilationResult: this.compilationResult,
 					content: content
-				}, this.dev);
+				});
 			}
 		}
 
@@ -88,7 +104,7 @@ class Runtime {
 		}
 	}
 
-	private hydrate(data: string|Record<string, any> = null): void {
+	public hydrate(data: string|SerializedCompilationResultInterface = null): void {
 		if (!data) {
 			const cacheElements = document.querySelectorAll('.stylify-runtime-cache') || [];
 			cacheElements.forEach((cacheElement: Element) => {
@@ -107,12 +123,12 @@ class Runtime {
 		if (this.compilationResult) {
 			this.compilationResult.hydrate(parsedData);
 		} else {
-			this.compilationResult = this.compiler.createResultFromSerializedData(parsedData);
+			this.compilationResult = this.compiler.createCompilationResultFromSerializedData(parsedData);
 		}
 
-		hooksManager.callHook('stylify:runtime:hydrated', {
+		this.triggerEvent('stylify:runtime:hydrated', {
 			cache: parsedData
-		}, this.dev);
+		});
 	}
 
 	private updateCss(content: string): string|null {
@@ -142,18 +158,24 @@ class Runtime {
 			}
 
 			mutationsList.forEach((mutation) => {
-				if (mutation.target.nodeType !== Node.ELEMENT_NODE
-					|| mutation.target['id'] === this.STYLIFY_STYLE_EL_ID
+				const targetElement = mutation.target as Element;
+
+				if (!(mutation.type === 'attributes' && mutation.attributeName === 'class')
+					|| targetElement.nodeType !== Node.ELEMENT_NODE
+					|| targetElement.id === this.STYLIFY_STYLE_EL_ID
+					|| targetElement.classList.contains('stylify-ignore')
+					|| targetElement.closest('.stylify-ignore') !== null
 				) {
 					return;
 				}
 
 				compilerContentQueue += mutation.type === 'attributes' && mutation.attributeName === 'class'
-					? `class="${mutation.target['className'] as string}"`
-					: mutation.target['outerHTML'];
+					? targetElement.className
+					: targetElement.outerHTML;
 			});
 
 			if (!compilerContentQueue.trim().length) {
+				repaintStartTime = null;
 				return;
 			}
 
@@ -170,24 +192,24 @@ class Runtime {
 					return;
 				}
 
-				hooksManager.callHook('stylify:runtime:repainted', {
+				this.triggerEvent('stylify:runtime:repainted', {
 					css: css,
 					repaintTime: repaintTime,
-					compilerResult: this.compilationResult,
+					compilationResult: this.compilationResult,
 					content: compilerContentQueue
 				});
 
 				repaintStartTime = null;
 				compilerContentQueue = '';
 
-			}, this.redrawTimeout);
+			}, this.repaintTimeout);
 		});
 
 		observer.observe(targetNode, config);
 	}
 
 	public injectCss(css: string): void {
-		let el = document.querySelector('#' + this.STYLIFY_STYLE_EL_ID);
+		let el = document.querySelector(`#${this.STYLIFY_STYLE_EL_ID}`);
 
 		if (el) {
 			el.innerHTML = css;
@@ -198,14 +220,19 @@ class Runtime {
 			document.head.appendChild(el);
 		}
 
-		const elements = document.querySelectorAll('[' + this.STYLIFY_CLOAK_ATTR_NAME + ']');
+		const elements = document.querySelectorAll(`[${this.STYLIFY_CLOAK_ATTR_NAME}]`);
 		elements.forEach((element) => {
 			element.removeAttribute(this.STYLIFY_CLOAK_ATTR_NAME);
-			hooksManager.callHook('stylify:runtime:uncloak', {
+			this.triggerEvent('stylify:runtime:uncloak', {
 				id: element.getAttribute(this.STYLIFY_CLOAK_ATTR_NAME) || null,
 				el: element
 			});
 		});
+	}
+
+	private triggerEvent(eventName: string, eventData: any): void {
+		const event = new window.CustomEvent(eventName, eventData ? {detail: eventData} : null);
+		document.dispatchEvent(event);
 	}
 
 }

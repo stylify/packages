@@ -1,20 +1,19 @@
-import type { hooksManager as stylifyHooksManager } from '@stylify/stylify';
 import { PrefixesMapRecordType } from '.';
 
 class Prefixer {
 
-	private prefixesMap: Partial<PrefixesMapRecordType> = {};
+	public prefixesMap: Partial<PrefixesMapRecordType> = {};
 
-	constructor(hooksManager: typeof stylifyHooksManager, prefixesMap: Partial<PrefixesMapRecordType> = {}) {
+	constructor(prefixesMap: Partial<PrefixesMapRecordType> = {}) {
 		this.setPrefixesMap(prefixesMap);
-		hooksManager.addHook('stylify:cssRecord:addProperty', (hookData) => {
-			const propertyName = Object.keys(hookData.data)[0];
-			if (!(propertyName in this.prefixesMap)) {
-				return;
-			}
+	}
 
-			hookData.data = this.prefixesMap[propertyName][hookData.data[propertyName]] || hookData.data;
-		});
+	public prefix(propertyName: string, propertyValue: string): Record<string, any>|null {
+		if (propertyName in this.prefixesMap && propertyValue in this.prefixesMap[propertyName]) {
+			return this.prefixesMap[propertyName][propertyValue];
+		}
+
+		return null;
 	}
 
 	public setPrefixesMap(prefixesMap: Partial<PrefixesMapRecordType> = {}): void {
@@ -28,5 +27,3 @@ class Prefixer {
 }
 
 export { Prefixer };
-
-export default Prefixer;

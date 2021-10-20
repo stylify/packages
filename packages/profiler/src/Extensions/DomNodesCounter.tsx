@@ -1,4 +1,4 @@
-import { h, Component } from 'preact';
+import { Component } from 'preact';
 
 export default class DomNodesCounterExtension extends Component<any> {
 
@@ -12,11 +12,11 @@ export default class DomNodesCounterExtension extends Component<any> {
 	constructor() {
 		super();
 
-		document.addEventListener('DOMContentLoaded', () => {
+		document.addEventListener('DOMContentLoaded', (): void => {
 			this.updateDomNodesCount();
 		});
 
-		const observer = new MutationObserver(() => {
+		const observer = new MutationObserver((): void => {
 			this.updateDomNodesCount();
 		});
 
@@ -27,11 +27,12 @@ export default class DomNodesCounterExtension extends Component<any> {
 		});
 	}
 
-	private updateDomNodesCount = () => {
+	private updateDomNodesCount = (): void => {
 		const count = document.getElementsByTagName('*').length - this.profilerElement.getElementsByTagName('*').length;
 		this.setState({ totalDomNodesCount: count });
 	}
 
+	/* eslint-disable max-len */
 	public render() {
 		return (
 			<div class="profiler-extension">

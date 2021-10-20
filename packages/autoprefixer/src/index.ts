@@ -1,5 +1,2 @@
-export {
-	PrefixesMapRecordType,
-	PrefixesGenerator
-} from './PrefixesGenerator';
-export { default as Prefixer } from './Prefixer';
+export * from './PrefixesGenerator';
+export * from './Prefixer';

@@ -1,0 +1,35 @@
+{
+	"name": "@stylify/bundler",
+	"description": "Stylify CSS bundler.",
+	"version": "0.0.1",
+	"main": "lib/index.js",
+	"module": "esm/index.js",
+	"types": "types",
+	"files": [
+		"esm",
+		"lib",
+		"types",
+		"package.json",
+		"LICENSE",
+		"README.md"
+	],
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/stylify/packages.git",
+		"directory": "packages/bundler"
+	},
+	"dependencies": {
+		"@stylify/stylify": "^0.0",
+		"fast-glob": "^3.2"
+	},
+	"keywords": [],
+	"author": "Vladimír Macháček",
+	"license": "MIT",
+	"bugs": {
+		"url": "https://github.com/stylify/packages/issues"
+	},
+	"homepage": "https://stylify.dev",
+	"publishConfig": {
+		"access": "public"
+	}
+}

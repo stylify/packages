@@ -1,26 +1,33 @@
-import TestUtils from './TestUtils';
-import { Compiler } from '@stylify/stylify';
-import { nativePreset, hooksManager } from '@stylify/stylify';
+import TestUtils from '../../../../tests/TestUtils';
+import { Compiler, CssRecord } from '@stylify/stylify';
+import { nativePreset, CompilationResult } from '@stylify/stylify';
 import { Prefixer, PrefixesGenerator } from '../../src';
 
 const prefixesGenerator = new PrefixesGenerator();
 const testName = 'prefixer';
-const testUtils = new TestUtils(testName);
+const testUtils = new TestUtils('autoprefixer', testName);
 const inputIndex = testUtils.getHtmlInputFile();
 
 nativePreset.compiler.dev = true;
 
 // Prefixes server side pregeneration simulation
-const serverCompiler = new Compiler(nativePreset.compiler);
-let serverCompilationResult = serverCompiler.compile(inputIndex);
+let serverCompilationResult = new Compiler(nativePreset.compiler).compile(inputIndex);
 const prefixesMap = prefixesGenerator.createPrefixesMap(serverCompilationResult);
 
 // In browser or SSR prefixing simulation
-const compiler = new Compiler(nativePreset.compiler);
-new Prefixer(hooksManager, prefixesMap);
-let compilationResult = compiler.compile(inputIndex);
+const prefixer = new Prefixer(prefixesMap);
+let compilationResult = new Compiler(nativePreset.compiler).compile(
+	inputIndex,
+	new CompilationResult({
+		onPrepareCssRecord: (cssRecord: CssRecord): void => {
+			cssRecord.onAddProperty = (propertyName: string, propertyValue: string): Record<string, any> => {
+				return prefixer.prefix(propertyName, propertyValue);
+			}
+		}
+	})
+);
 
-test('Generated css, rewritten HTML', (): void => {
+test('Generate prefixes, prefix css', (): void => {
 	testUtils.testCssFileToBe(compilationResult.generateCss());
 	testUtils.testJsonFileToBe(prefixesMap);
 });

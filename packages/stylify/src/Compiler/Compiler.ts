@@ -1,27 +1,35 @@
 import { CompilationResult, SelectorsListInterface } from './CompilationResult';
-import SelectorProperties from './SelectorProperties';
 import MacroMatch from './MacroMatch';
-import hooksManager from '../HooksManager';
+import SelectorProperties from './SelectorProperties';
 
 export interface SerializedCompilerInterface {
 	selectorsList: SelectorsListInterface
 }
 
 export interface CompilerConfigInterface {
-	dev: boolean,
-	macros: Record<string, CallableFunction>,
-	helpers: Record<string, CallableFunction>,
-	variables: Record<string, string | number>,
-	screens: Record<string, string|CallableFunction>,
-	mangleSelectors: boolean,
-	selectorsAttributes: string[],
-	pregenerate: string[]|string,
-	components: Record<string, string|string[]>
+	dev?: boolean,
+	macros?: Record<string, CallableFunction>,
+	helpers?: Record<string, CallableFunction>,
+	variables?: Record<string, string | number>,
+	screens?: Record<string, string|CallableFunction>,
+	mangleSelectors?: boolean,
+	pregenerate?: string[]|string,
+	components?: Record<string, string|string[]>,
+	onPrepareCompilationResult?: CallableFunction,
+	contentOptionsProcessors?: Record<string, CallableFunction>,
+	ignoredElements?: string[]
+}
+
+export interface CompilerContentOptionsInterface {
+	pregenerate: string,
+	components: Record<string, any>
 }
 
 class Compiler {
 
-	public classMatchRegExp: RegExp = null;
+	public contentOptionsProcessors: Record<string, CallableFunction> = {};
+
+	public onPrepareCompilationResult: CallableFunction = null;
 
 	public mangleSelectors = false;
 
@@ -39,17 +47,21 @@ class Compiler {
 
 	public pregenerate = '';
 
-	public componentsSelectorsRegExp: RegExp = null;
+	public ignoredElements = ['head', 'script', 'style', 'stylify-ignore'];
 
-	public selectorAttributes = ['class', 's-pregenerate', 'data-s-pregenerate']
+	private ignoredElementsRegExp: RegExp = null;
 
-	private PREGENERATE_MATCH_REG_EXP = new RegExp('stylify-pregenerate:([\\S ]*\\b)', 'igm');
+	private readonly contentOptionsRegExp = new RegExp('@stylify-(\\w+)\\[([^\\[\\]]+|\\n+)\\]', 'ig');
 
-	constructor(config: Record<string, any> = {}) {
+	constructor(config: CompilerConfigInterface = {}) {
+		if (!Object.keys(config).length) {
+			return;
+		}
+
 		this.configure(config);
 	}
 
-	public configure(config: Partial<CompilerConfigInterface> = {}): Compiler {
+	public configure(config: CompilerConfigInterface): Compiler {
 		this.dev = typeof config.dev === 'undefined' ? this.dev : config.dev;
 		this.macros = Object.assign(this.macros, config.macros || {});
 
@@ -63,19 +75,21 @@ class Compiler {
 		if (typeof config.pregenerate !== 'undefined') {
 			this.pregenerate += Array.isArray(config.pregenerate) ? config.pregenerate.join(' ') : config.pregenerate;
 		}
+		this.contentOptionsProcessors = {...this.contentOptionsProcessors, ...config.contentOptionsProcessors};
+		this.ignoredElements = [...this.ignoredElements, ...config.ignoredElements || []]
+			.filter((value, index, self) => {
+				return self.indexOf(value) === index;
+			});
+		const ignoredElements = this.ignoredElements.map((element: string): string => {
+			return `<${element}[\\s\\S]*?>[\\s\\S]*?<\\/${element}>`;
+		});
 
-		this.selectorAttributes = this.selectorAttributes.concat(config.selectorsAttributes || []);
-		this.classMatchRegExp = new RegExp(
-			'(?:' + this.selectorAttributes.join('|') + ')="([^"]+)"', 'igm'
-		);
+		this.ignoredElementsRegExp = new RegExp(ignoredElements.join('|'), 'ig');
+		this.onPrepareCompilationResult = config.onPrepareCompilationResult || this.onPrepareCompilationResult;
 
 		for (const componentSelector in config.components) {
 			this.addComponent(componentSelector, config.components[componentSelector]);
 		}
-
-		hooksManager.callHook('stylify:compiler:configured', {
-			compiler: this
-		});
 
 		return this;
 	}
@@ -110,37 +124,74 @@ class Compiler {
 		return this;
 	}
 
-	// TODO cloning into the separate method on the backend
-	public compile(content: string, compilationResult: CompilationResult = null): CompilationResult {
-		this.classMatchRegExp.lastIndex = 0;
-		let classAttributeMatch;
-		let classAtributesMatchesString = '';
-		let pregenerateMatch;
+	public rewriteSelectors(compilationResult: CompilationResult, content: string): string {
+		const placeholderTextPart = '__STYLIFY_PLACEHOLDER__';
+		const contentPlaceholders: Record<string, any> = {};
 
-		if (!compilationResult) {
-			compilationResult = new CompilationResult();
+		const placeholderInserter = (matched: string) => {
+			const placeholderKey = `${placeholderTextPart}${Object.keys(contentPlaceholders).length}`;
+			contentPlaceholders[placeholderKey] = matched;
+			return placeholderKey;
+		};
+
+		content = content
+			.replace(new RegExp(this.ignoredElementsRegExp.source, 'ig'), (matched: string) => {
+				return placeholderInserter(matched);
+			})
+			.replace(new RegExp(this.contentOptionsRegExp.source, 'ig'), (matched: string) => {
+				return placeholderInserter(matched);
+			});
+
+		const sortedSelectorsListKeys = Object
+			.keys(compilationResult.selectorsList)
+			.sort((a, b) => b.length - a.length);
+
+		for (const selector of sortedSelectorsListKeys) {
+			const regExpSelector = selector.replace(/[.*+?^${}()|[\]\\]/ig, '\\$&');
+			content = content.replace(
+				new RegExp(`(?:[\\s"'{,\`]+|^)${regExpSelector}(?:[\\s"'{,\`]+|$)`, 'ig'),
+				(matched): string => {
+					return matched.replace(selector, compilationResult.selectorsList[selector].mangledSelector);
+				}
+			);
 		}
 
-		compilationResult.configure({
-			dev: this.dev,
-			mangleSelectors: this.mangleSelectors,
-			variables: this.variables
+		for (const placeholderKey in contentPlaceholders) {
+			content = content.replace(placeholderKey, contentPlaceholders[placeholderKey]);
+		}
+
+		return content;
+	}
+
+	public compile(content: string, compilationResult: CompilationResult = null): CompilationResult {
+		if (!compilationResult) {
+			compilationResult = this.prepareCompilationResult();
+		}
+
+		this.prepareCompilationResult(compilationResult);
+		const { components, pregenerate } = this.getOptionsFromContent(content);
+
+		this.configure({
+			components: components || {},
+			pregenerate: pregenerate || ''
 		});
 
-		while ((classAttributeMatch = this.classMatchRegExp.exec(content))) {
-			classAtributesMatchesString += ` ${classAttributeMatch[1] as string}`;
-		}
-
-		if (classAtributesMatchesString.length) {
-			while ((pregenerateMatch = this.PREGENERATE_MATCH_REG_EXP.exec(content))) {
-				classAtributesMatchesString += ` ${pregenerateMatch[1] as string}`;
-			}
-
-			content = classAtributesMatchesString;
-		}
-
-		content += ' ' + this.pregenerate;
+		content = `${this.pregenerate} ${content}`;
 		this.pregenerate = '';
+
+		content = content
+			.replace(this.ignoredElementsRegExp, '')
+			.replace(this.contentOptionsRegExp, '')
+			.replace(/\r\n|\r|\n|\t/ig, ' ')
+			.replace(/&amp;/ig, '&');
+
+		if (compilationResult && Object.keys(compilationResult.mangledSelectorsMap).length) {
+			content = content.replace(/s\d+/ig, (matched) => {
+				return matched in compilationResult.mangledSelectorsMap
+					? compilationResult.mangledSelectorsMap[matched]
+					: matched;
+			});
+		}
 
 		const notProcessedComponentsSelectors = Object.keys(this.components).filter((element): boolean => {
 			return this.components[element].processed === false;
@@ -149,20 +200,16 @@ class Compiler {
 		const processedComponentsSelectors = {};
 
 		if (notProcessedComponentsSelectors.length) {
-			let componentMatches;
 
 			for (const notProcessedComponentsSelector of notProcessedComponentsSelectors) {
-				const componentSelectorRegExp = new RegExp(
-					'(?:^|)(' + notProcessedComponentsSelector + ')(?:$| )', 'igm'
-				);
-
-				while ((componentMatches = componentSelectorRegExp.exec(content))) {
-					const componentSelector = componentMatches[1];
-					const componentSelectors = this.components[componentSelector].selectors;
-					content += ` ${componentSelectors.join(' ') as string}`;
-					processedComponentsSelectors[componentSelector] = componentSelectors;
-					this.components[componentSelector].processed = true;
+				if (!content.match(new RegExp(`(?:[ "'{,\`]|^)${notProcessedComponentsSelector}\\b`, 'ig'))) {
+					continue;
 				}
+
+				const componentSelectors = this.components[notProcessedComponentsSelector].selectors;
+				content += ` ${componentSelectors.join(' ') as string}`;
+				processedComponentsSelectors[notProcessedComponentsSelector] = componentSelectors;
+				this.components[notProcessedComponentsSelector].processed = true;
 			}
 
 		}
@@ -202,26 +249,32 @@ class Compiler {
 		});
 	}
 
-	public createResultFromSerializedData(data: string|Record<string, any>): CompilationResult {
+	public createCompilationResultFromSerializedData(data: string|Record<string, any>): CompilationResult {
 		return CompilationResult.deserialize(typeof data === 'string' ? JSON.parse(data) : data);
 	}
 
-	private processMacros(content: string, compilationResult: CompilationResult = null) {
-		content = content
-			.replace(/<script[\s\S]*?>[\s\S]*?<\/script>|<style[\s\S]*?>[\s\S]*?<\/style>/ig, '')
-			.replace(/\r\n|\r|\n|\t/ig, ' ')
-			.replace(/&amp;/ig, '&');
-
-		if (compilationResult && Object.keys(compilationResult.mangledSelectorsMap).length) {
-			content = content.replace(/s\d+/ig, (matched) => {
-				return matched in compilationResult.mangledSelectorsMap
-					? compilationResult.mangledSelectorsMap[matched]
-					: matched;
-			});
+	private prepareCompilationResult(compilationResult: CompilationResult = null): CompilationResult
+	{
+		if (!compilationResult) {
+			compilationResult = new CompilationResult();
 		}
 
+		compilationResult.configure({
+			dev: this.dev,
+			mangleSelectors: this.mangleSelectors,
+			variables: this.variables
+		});
+
+		if (this.onPrepareCompilationResult) {
+			this.onPrepareCompilationResult(compilationResult);
+		}
+
+		return compilationResult;
+	}
+
+	private processMacros(content: string, compilationResult: CompilationResult = null) {
 		for (const macroKey in this.macros) {
-			const macroRe = new RegExp('(?:([^.\\s]+):)?(?<!-)\\b' + macroKey, 'igm');
+			const macroRe = new RegExp(`(?:([\\w-:&|]+):)?(?<!-)\\b${macroKey}`, 'igm');
 
 			let macroMatches: string[];
 
@@ -254,6 +307,41 @@ class Compiler {
 				}
 			}
 		}
+	}
+
+	public getOptionsFromContent(content: string): CompilerContentOptionsInterface {
+		let contentOptions: CompilerContentOptionsInterface = {
+			pregenerate: '',
+			components: {}
+		};
+
+		// todo nahradit za content options reg exp
+		const regExp = new RegExp('@stylify-(\\w+)\\[([^\\[\\]]+|\\n+)\\]', 'g');
+		let optionMatch: RegExpMatchArray;
+
+		while ((optionMatch = regExp.exec(content))) {
+			const optionKey = optionMatch[1];
+
+			const optionMatchValue = optionMatch[2].replace(/\n|\t/g, ' ').replace(/(?:`|')/g, '"');
+
+			if (optionKey === 'pregenerate') {
+				contentOptions[optionKey] += ` ${optionMatchValue}`;
+
+			} else if (optionKey === 'components') {
+				contentOptions[optionKey] = {
+					...contentOptions[optionKey],
+					...JSON.parse(optionMatchValue)
+				};
+
+			} else if (optionKey in this.contentOptionsProcessors) {
+				contentOptions = {
+					...contentOptions,
+					...this.contentOptionsProcessors[optionKey](contentOptions, optionMatchValue)
+				};
+			}
+		}
+
+		return contentOptions;
 	}
 
 }

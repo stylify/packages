@@ -1,5 +1,5 @@
 const packagesToTest = [
-	'autoprefixer', 'stylify'
+	'autoprefixer', 'bundler', 'stylify'
 ];
 
 module.exports = {
@@ -19,6 +19,6 @@ module.exports = {
 		`packages/(${packagesToTest.join('|')})/src/**/*.ts`
 	],
 	coveragePathIgnorePatterns: [
-		'packages/stylify/src/(Stylify.native.browser|Stylify.browser|Runtime|Stylify).ts'
+		'packages/stylify/src/(stylify.native.browser|stylify.browser|Runtime|Stylify).ts'
 	]
 };

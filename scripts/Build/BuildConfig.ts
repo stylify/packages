@@ -1,41 +1,53 @@
 
 import fs from 'fs';
-import banner from 'rollup-plugin-banner';
 import { terser } from 'rollup-plugin-terser';
 import { babel } from '@rollup/plugin-babel';
 import path from 'path';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
+import commonjs from '@rollup/plugin-commonjs';
 import replace from '@rollup/plugin-replace';
+import json from '@rollup/plugin-json';
 import postcss from 'rollup-plugin-postcss';
 import postcssUrlPlugin from 'postcss-url';
 import typescript from 'rollup-plugin-typescript2';
+import packageJson from '../../package.json';
+import { argumentsProcessor } from '../ArgumentsProcessor';
+import { buildPlugin, RollupHooksListInterface } from './buildPlugin';
+import { typesPlugin } from './typesPlugin';
 
 export interface BuildConfigConfigurationInterface {
-	packageName: string | null,
-	inputDir: 'src' | string
-	inputFile: string | null,
-	outputFile: string | null,
+	packageName: string,
+	inputDir: string
+	inputFile: string,
+	outputFile: string,
+	outputDir: string,
 	formats: string[],
 	external: string[],
 	typescriptExclude: string[][] | string[],
 	withSuffix: boolean,
 	plugins: [],
-	minifyEsm: false | boolean
+	minifyEsm: false | boolean,
+	bannerContent: string,
+	commonJsEnabled: true | boolean,
+	nodeResolveEnabled: true | boolean,
+	hooks: RollupHooksListInterface
 }
 
 class BuildConfig {
 
 	private exportName = 'Stylify';
 
-	private isDevMode = process.env.ROLLUP_WATCH || process.env.JEST_WORKER_ID !== undefined;
+	private isDevMode = argumentsProcessor.processArguments.isDevMode
 
 	private buildFilesExtensions = ['.js', '.ts', 'tsx'];
 
 	private bannerContent = `
-		<%= pkg.name %> v<%= pkg.version %>
-		(c) 2021-present <%= pkg.author %>
-		Released under the MIT License.
-	`.trim();
+/**
+*	${packageJson.name} v${packageJson.version}
+*	(c) 2021-present ${packageJson.author}
+*	Released under the MIT License.
+*/
+	`.trim() + '\n';
 
 	private babelOldBrowsersTarget = '> 0.25%, not dead, not ie 11';
 
@@ -47,17 +59,22 @@ class BuildConfig {
 		cjs: 'lib'
 	};
 
-	private config: Record<string, any> = {
+	private config: BuildConfigConfigurationInterface = {
 		packageName: null,
 		inputDir: 'src',
 		inputFile: null,
 		outputFile: null,
+		outputDir: null,
 		formats: [],
 		external: [],
 		typescriptExclude: [],
-		withSuffix: false,
+		withSuffix: true,
 		plugins: [],
-		minifyEsm: false
+		minifyEsm: false,
+		bannerContent: this.bannerContent,
+		commonJsEnabled: true,
+		nodeResolveEnabled: true,
+		hooks: {}
 	}
 
 	constructor(config: Partial<BuildConfigConfigurationInterface>) {
@@ -87,20 +104,22 @@ class BuildConfig {
 				}
 
 				buildSuffixes.forEach((suffix: string) => {
-					const plugins = this.config.plugins || {};
+					suffix = this.config.withSuffix ? suffix : '';
+					const plugins = this.config.plugins;
 					configs.push({
 						input: path.join(
 							'packages',
 							this.config.packageName,
 							this.config.inputDir,
-							`${this.config.inputFile as string}.ts`
+							`${this.config.inputFile}.ts`
 						),
 						external: this.config.external || [],
 						output: {
 							name: this.exportName,
 							file: `${this.getOutputFilePath(outputFile, format)}${suffix}`,
 							format: format,
-							exports: format === 'umd' ? 'auto' : 'named'
+							exports: format === 'umd' ? 'auto' : 'named',
+							banner: this.config.bannerContent || ''
 						},
 						plugins: this.getPlugins({
 							terser: suffix === '.min.js',
@@ -118,7 +137,7 @@ class BuildConfig {
 		return path.join(
 			'packages',
 			this.config.packageName,
-			this.outputDirByExportMap[exportType],
+			this.config.outputDir || this.outputDirByExportMap[exportType],
 			this.convertCamelCaseIntoDashCase(outputFile)
 		);
 	}
@@ -156,23 +175,27 @@ class BuildConfig {
 		]);
 		babelConfig.extensions = this.buildFilesExtensions;
 		babelConfig.babelHelpers = 'bundled';
-
 		const plugins = [
+			typesPlugin(this.config.packageName),
+			buildPlugin({
+				hooks: this.config.hooks
+			}),
+			json(),
+			this.config.commonJsEnabled ? commonjs() : null,
+			this.config.nodeResolveEnabled ? nodeResolve({ extensions: this.buildFilesExtensions }) : null,
 			replace({
 				'process.env.NODE_ENV': JSON.stringify('production'),
 				preventAssignment: true
 			}),
 			typescript(typescriptConfig),
+			babel(babelConfig),
 			postcss({
 				plugins: [
 					postcssUrlPlugin({
-						url: 'inline'
+						url: 'inline',
+						limit: Infinity
 					})
 				]
-			}),
-			babel(babelConfig),
-			nodeResolve({
-				extensions: this.buildFilesExtensions
 			})
 		];
 
@@ -183,12 +206,6 @@ class BuildConfig {
 						comments: false
 					}
 				})
-			);
-		}
-
-		if (!this.isDevMode) {
-			plugins.push(
-				banner(this.bannerContent)
 			);
 		}
 

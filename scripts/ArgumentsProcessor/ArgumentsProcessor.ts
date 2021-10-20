@@ -1,13 +1,17 @@
 import { env } from 'process';
 
 interface ProcessArgumentsInterface {
-	selectedPackages: string[]
+	selectedPackages: string[],
+	isWatchMode: boolean,
+	isDevMode: boolean
 }
 
 class ArgumentsProcessor {
 
 	public processArguments: ProcessArgumentsInterface = {
-		selectedPackages: 'packages' in env ? env.packages.split(',') : []
+		selectedPackages: 'packages' in env ? env.packages.split(',') : [],
+		isWatchMode: !!process.env.ROLLUP_WATCH,
+		isDevMode: !!(process.env.ROLLUP_WATCH || process.env.JEST_WORKER_ID !== undefined)
 	}
 
 	public canProcessPackage(packageName: string): boolean {

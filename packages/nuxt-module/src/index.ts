@@ -1,28 +1,23 @@
+import {
+	CompilationResult,
+	Compiler,
+	RuntimeConfigInterface,
+	SerializedCompilationResultInterface,
+	nativePreset
+} from '@stylify/stylify';
+import type { CssRecord } from '@stylify/stylify';
+import { Prefixer } from '@stylify/autoprefixer/esm/prefixer';
+import type { PrefixesMapRecordType } from '@stylify/autoprefixer';
 import fs from 'fs';
 import path from 'path';
-import {
-	Compiler,
-	SelectorsRewriter,
-	hooksManager,
-	nativePreset,
-	CompilationResult,
-	StylifyConfigInterface,
-	SerializedCompilationResultInterface
-} from '@stylify/stylify';
-import type { PrefixesMapRecordType } from '@stylify/autoprefixer';
-import { Prefixer } from '@stylify/autoprefixer';
 
 const configFileName = 'stylify.config.js';
 const stylifyCacheFileName = 'stylify-cache.json';
 let stylifyCacheFilePath: string = null;
 
-export interface StylifyNuxtModuleConfigInterface extends StylifyConfigInterface {
-	dev: false | boolean,
+export interface StylifyNuxtModuleConfigInterface extends RuntimeConfigInterface {
+	dev: boolean,
 	configPath: string,
-	cache: {
-		enabled: boolean,
-		recordsLimit: number
-	},
 	generateCssPerPage: boolean,
 	embeddedCssLimit: number,
 	importStylify: boolean,
@@ -38,10 +33,6 @@ interface StylifyCacheFileInterface {
 let moduleConfig: StylifyNuxtModuleConfigInterface = {
 	dev: false,
 	configPath: configFileName,
-	cache: {
-		enabled: true,
-		recordsLimit: 100
-	},
 	generateCssPerPage: true,
 	embeddedCssLimit: 50,
 	importStylify: true,
@@ -122,6 +113,11 @@ const saveStylifyCache = (cache: Partial<StylifyCacheFileInterface>): Partial<St
 		};
 
 	cacheToSave = mergeObject(cacheToSave, cache);
+
+	if (!stylifyCacheExists()) {
+		fs.mkdirSync(path.dirname(stylifyCacheFilePath), {recursive: true});
+	}
+
 	fs.writeFileSync(
 		stylifyCacheFilePath,
 		JSON.stringify(mergeObject(cacheToSave, cache), null, 4)
@@ -152,11 +148,9 @@ export default function Stylify(): void {
 	stylifyCacheFilePath = path.join(nuxtBuildDir, stylifyCacheFileName);
 
 	moduleConfig.dev = nuxtIsInDevMode;
-	moduleConfig.compiler.selectorsAttributes = ['v-bind:class', ':class'];
 	moduleConfig.compiler.dev = moduleConfig.dev;
-	moduleConfig.compiler.mangleSelectors = !nuxtIsInDevMode;
-	moduleConfig.runtime.dev = moduleConfig.dev;
-	moduleConfig.importProfiler = nuxtIsInDevMode;
+	moduleConfig.compiler.mangleSelectors = !moduleConfig.dev;
+	moduleConfig.importProfiler = moduleConfig.dev;
 
 	if ('stylify' in nuxt.options) {
 		mergeConfig(nuxt.options.stylify);
@@ -173,19 +167,30 @@ export default function Stylify(): void {
 	}
 
 	const compiler = new Compiler(moduleConfig.compiler);
-	const prefixer = new Prefixer(hooksManager);
+	const prefixer = new Prefixer();
 	const routesCache = {};
 	const preflightCache = loadStylifyCache();
-	let preparedCompilationResult = null;
+	let preparedCompilationResult: CompilationResult = null;
 
 	if (preflightCache) {
-		preparedCompilationResult = compiler.createResultFromSerializedData({
+		preparedCompilationResult = compiler.createCompilationResultFromSerializedData({
 			selectorsList: preflightCache.compilationResult.selectorsList,
 			mangledSelectorsMap: preflightCache.compilationResult.mangledSelectorsMap
 		});
 
 		prefixer.setPrefixesMap(preflightCache.prefixesMap);
+	} else {
+		preparedCompilationResult = new CompilationResult();
 	}
+
+	preparedCompilationResult.onPrepareCssRecord = (cssRecord: CssRecord): void => {
+		cssRecord.onAddProperty = (
+			propertyName: string,
+			propertyValue: string
+		): Record<string, any> => {
+			return prefixer.prefix(propertyName, propertyValue) as Record<string, any>;
+		};
+	};
 
 	const processTemplateParams = (params: Record<string, any>, context = null): void => {
 		const url = context ? context.nuxt.routePath : null;
@@ -220,15 +225,14 @@ export default function Stylify(): void {
 
 		params.HEAD += metaTags;
 		params.APP = moduleConfig.compiler.mangleSelectors
-			? SelectorsRewriter.rewrite(compilationResult, compiler.selectorAttributes, params.APP)
+			? compiler.rewriteSelectors(compilationResult, params.APP)
 			: params.APP;
 	};
 
 	if (moduleConfig.importStylify) {
-		moduleConfig.importProfiler = moduleConfig.importProfiler && !moduleConfig.compiler.mangleSelectors;
 		this.addPlugin({
 			ssr: false,
-			src: path.resolve(__dirname, 'stylify-plugin.js'),
+			src: path.resolve(__dirname, 'runtime-plugin.js'),
 			options: convertObjectToStringableForm(moduleConfig)
 		});
 

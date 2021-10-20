@@ -10,12 +10,28 @@ interface TypesGeneratorPackageConfigInterface {
 
 export class TypesGenerator {
 
+	private packagesConfigs = {
+		stylify: null,
+		bundler: null,
+		autoprefixer: null,
+		'nuxt-module': null,
+		profiler: {
+			jsx: true
+		}
+	};
+
 	private defaultPackageConfig: TypesGeneratorPackageConfigInterface = {
 		targetFile: path.join('src', 'index.ts'),
 		jsx: false
 	}
 
-	constructor(config: Record<string, Partial<TypesGeneratorPackageConfigInterface> | null>) {
+	constructor(packageName: string = null) {
+		const config = packageName
+			? {
+				[packageName]: this.packagesConfigs[packageName]
+			}
+			: this.packagesConfigs;
+
 		for (const packageName in config) {
 			if (!argumentsProcessor.canProcessPackage(packageName)) {
 				return;
