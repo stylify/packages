@@ -9,7 +9,7 @@
 <br><br>
 
 <p align="center">
-<a href="https://https://discord.gg/NuJsk5SMDz/"><img src="https://img.shields.io/badge/chat-on%20discord-7289da.svg?sanitize=true" alt="Chat"></a>
+<a href="https://discord.gg/NuJsk5SMDz/"><img src="https://img.shields.io/badge/chat-on%20discord-7289da.svg?sanitize=true" alt="Chat"></a>
 <a href="https://github.com/stylify/packages/discussions"><img src="https://user-images.githubusercontent.com/14016808/132510133-76bb66a9-951f-4411-9236-140cac7b7472.png"></a>
 <a href="https://github.com/stylify/packages/blob/master/LICENSE"><img alt="GitHub" src="https://img.shields.io/github/license/stylify/packages"></a>
 <br>
@@ -43,7 +43,7 @@ With the Stylify, **you write HTML** and the **Stylify will generate the CSS** f
 Generated CSS from the example above looks like this:
 
 ```html
-<style id="stylify.css">
+<style id="stylify-css">
 .font-size\:16px { font-size: 16px }
 
 @media (min-width: 640px) {
