@@ -1,0 +1,196 @@
+.border-top\:1px__solid__\#444{
+	border-top:1px solid #444
+}
+.background-color\:\#333,
+.profiler-extension__button--active{
+	background-color:#333
+}
+.bottom\:0{
+	bottom:0
+}
+.color\:\#fff{
+	color:#fff
+}
+.content-visibility\:hidden{
+	content-visibility:hidden
+}
+.content-visibility\:visible{
+	content-visibility:visible
+}
+.display\:block{
+	display:block
+}
+.display\:none{
+	display:none
+}
+.font-family\:arial{
+	font-family:arial
+}
+.font-size\:12px,
+.profiler-extension__button{
+	font-size:12px
+}
+.line-height\:20px{
+	line-height:20px
+}
+.margin-left\:8px{
+	margin-left:8px
+}
+.margin\:0__8px{
+	margin:0 8px
+}
+.max-width\:800px{
+	max-width:800px
+}
+.overflow-x\:auto{
+	overflow-x:auto
+}
+.padding-top\:8px{
+	padding-top:8px
+}
+.position\:fixed{
+	position:fixed
+}
+.text-align\:left{
+	text-align:left
+}
+.visibility\:hidden{
+	visibility:hidden
+}
+.visibility\:visible{
+	visibility:visible
+}
+.width\:auto{
+	width:auto
+}
+.word-spacing\:24px{
+	word-spacing:24px
+}
+.box-sizing\:border-box,
+.profiler-extension,
+.profiler-extension__button,
+.profiler-extension__dropdown,
+.profiler-extension__link{
+	box-sizing:border-box
+}
+.border-left\:1px__solid__\#555,
+.profiler-extension{
+	border-left:1px solid #555
+}
+.align-items\:center,
+.profiler-extension,
+.profiler-extension__button{
+	align-items:center
+}
+.display\:flex,
+.profiler-extension,
+.profiler-extension__button{
+	display:flex
+}
+.min-height\:100\%,
+.profiler-extension{
+	min-height:100%
+}
+.position\:relative,
+.profiler-extension{
+	position:relative
+}
+.hover\:background\:\#333:hover,
+.profiler-extension:hover{
+	background:#333
+}
+.height\:20px,
+.profiler-extension__button{
+	height:20px
+}
+.padding\:0__8px,
+.profiler-extension__button{
+	padding:0 8px
+}
+.justify-content\:center,
+.profiler-extension__button{
+	justify-content:center
+}
+.cursor\:pointer,
+.profiler-extension__button,
+.profiler-extension__link{
+	cursor:pointer
+}
+.user-select\:none,
+.profiler-extension__button{
+	user-select:none
+}
+.position\:absolute,
+.profiler-extension__dropdown{
+	position:absolute
+}
+.bottom\:100\%,
+.profiler-extension__dropdown{
+	bottom:100%
+}
+.left\:0,
+.profiler-extension__dropdown{
+	left:0
+}
+.max-height\:50vh,
+.profiler-extension__dropdown{
+	max-height:50vh
+}
+.overflow\:auto,
+.profiler-extension__dropdown{
+	overflow:auto
+}
+.min-width\:100\%,
+.profiler-extension__dropdown{
+	min-width:100%
+}
+.background\:\#000,
+.profiler-extension__dropdown{
+	background:#000
+}
+.padding\:8px,
+.profiler-extension__dropdown{
+	padding:8px
+}
+.text-decoration\:none,
+.profiler-extension__link{
+	text-decoration:none
+}
+.color\:\#00b2e5,
+.profiler-extension__link{
+	color:#00b2e5
+}
+.margin-right\:8px,
+.profiler-extension__link,
+.profiler-extension__button-icon{
+	margin-right:8px
+}
+.white-space\:nowrap,
+.profiler-extension__link{
+	white-space:nowrap
+}
+.display\:inline-block,
+.profiler-extension__link,
+.profiler-extension__button-icon{
+	display:inline-block
+}
+.width\:12px,
+.profiler-extension__button-icon{
+	width:12px
+}
+.height\:12px,
+.profiler-extension__button-icon{
+	height:12px
+}
+.font-weight\:bold,
+.profiler-extension__button-icon{
+	font-weight:bold
+}
+.color\:\#aaa,
+.profiler-extension__button-icon{
+	color:#aaa
+}
+.line-height\:1,
+.profiler-extension__button-label{
+	line-height:1
+}

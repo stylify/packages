@@ -1,8 +1,8 @@
-import TestUtils from './TestUtils';
-import { SelectorsRewriter, Compiler, MacroMatch, SelectorProperties } from '../../src';
+import TestUtils from '../../../../tests/TestUtils';
+import { Compiler, MacroMatch, SelectorProperties } from '../../src';
 
 const testName = 'variables-and-helpers';
-const testUtils = new TestUtils(testName);
+const testUtils = new TestUtils('stylify', testName);
 const inputIndex = testUtils.getHtmlInputFile();
 
 const compiler = new Compiler({

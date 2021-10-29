@@ -1,8 +1,8 @@
-import TestUtils from './TestUtils';
-import { SelectorsRewriter, Compiler, nativePreset } from '../../src';
+import TestUtils from '../../../../tests/TestUtils';
+import { Compiler, nativePreset } from '../../src';
 
 const testName = 'components';
-const testUtils = new TestUtils(testName);
+const testUtils = new TestUtils('stylify', testName);
 const inputIndex = testUtils.getHtmlInputFile();
 
 nativePreset.compiler.dev = true;

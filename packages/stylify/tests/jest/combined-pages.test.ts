@@ -1,8 +1,8 @@
-import { SelectorsRewriter, Compiler, nativePreset } from '../../src';
-import TestUtils from './TestUtils';
+import { Compiler, nativePreset } from '../../src';
+import TestUtils from '../../../../tests/TestUtils';
 
 const testName = 'combined-pages';
-const testUtils = new TestUtils(testName);
+const testUtils = new TestUtils('stylify', testName);
 
 const inputIndex = testUtils.getInputFile('index.html');
 const inputAbout = testUtils.getInputFile('about.html');
@@ -15,6 +15,6 @@ compilationResult = compiler.compile(inputAbout, compilationResult);
 
 test('Combined pages', (): void => {
 	testUtils.testCssFileToBe(compilationResult.generateCss());
-	testUtils.testHtmlFileToBe(SelectorsRewriter.rewrite(compilationResult, compiler.selectorAttributes, inputIndex));
-	testUtils.testHtmlFileToBe(SelectorsRewriter.rewrite(compilationResult, compiler.selectorAttributes, inputAbout), 'about');
+	testUtils.testHtmlFileToBe(compiler.rewriteSelectors(compilationResult, inputIndex));
+	testUtils.testHtmlFileToBe(compiler.rewriteSelectors(compilationResult, inputAbout), 'about');
 });

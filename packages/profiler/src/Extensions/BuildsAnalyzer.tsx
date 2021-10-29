@@ -17,23 +17,26 @@ export default class BuildsAnalyzerExtension extends Component {
 		super();
 
 		this.openCodeInNewWindow = props.config.openCodeInNewWindow;
-		props.config.stylify.hooks.addHook('stylify:runtime:repainted', ({data}) => {
+		document.addEventListener('stylify:runtime:repainted', (event: any) => {
+			const { css, content, repaintTime, compilationResult } = event.detail;
 			const builds = this.state.builds;
-			const buildSize = this.state.actualSize === 0 ? data.css.length : data.css.length - this.state.actualSize;
+			const buildSize = this.state.actualSize === 0
+				? css.length
+				: css.length - this.state.actualSize;
 
 			if (buildSize === 0) {
 				return;
 			}
 
 			builds.push({
-				content: data.content,
+				content: content,
 				size: buildSize,
-				repaintTime: data.repaintTime,
-				details: data.compilerResult.lastBuildInfo
+				repaintTime: repaintTime,
+				details: compilationResult.lastBuildInfo
 			});
 
 			this.setState({
-				totalRepaintTime: this.state.totalRepaintTime + data.repaintTime,
+				totalRepaintTime: this.state.totalRepaintTime + repaintTime,
 				actualSize: this.state.actualSize + buildSize,
 				builds: builds
 			});
@@ -46,11 +49,11 @@ export default class BuildsAnalyzerExtension extends Component {
 		return stylifyCssElement ? stylifyCssElement.innerHTML : '';
 	}
 
-	public convertSizeToKb(size: number, precision: number = 1): string {
+	public convertSizeToKb(size: number, precision = 1): string {
 		return (size / 1000).toFixed(precision) + ' Kb';
 	}
 
-	public convertTimeToSeconds(time: number, precision: number = 1): string {
+	public convertTimeToSeconds(time: number, precision = 1): string {
 		return time.toFixed(precision) + ' ms';
 	}
 
@@ -67,9 +70,10 @@ export default class BuildsAnalyzerExtension extends Component {
 	}
 
 	public openGeneratedCssInNewWindow = (): void => {
-		this.openCodeInNewWindow(this.getGeneratedCssFromPage(), 'css', 'generated css')
+		this.openCodeInNewWindow(this.getGeneratedCssFromPage(), 'css', 'generated css');
 	}
 
+	/* eslint-disable max-len */
 	public render() {
 		return (
 			<div class="profiler-extension">
@@ -78,7 +82,7 @@ export default class BuildsAnalyzerExtension extends Component {
 					|<strong title="Total builds CSS size" class="margin:0__8px"><i class="sp-icon sp-icon-archive profiler-extension__button-icon"></i><span class="profiler-extension__button-label">{this.convertSizeToKb(this.state.actualSize)}</span></strong>
 					|<strong title="Total builds repaint time" class="margin-left:8px"><i class="sp-icon sp-icon-clock profiler-extension__button-icon"></i><span class="profiler-extension__button-label">{this.convertTimeToSeconds(this.state.totalRepaintTime)}</span></strong>
 				</a>
-				<div class={`display:${this.state.buildsListVisible ? 'block' : 'none'} profiler-extension__dropdown`}>
+				<div class={`${this.state.buildsListVisible ? 'display:block' : 'display:none'} profiler-extension__dropdown`}>
 					<table class="text-align:left white-space:nowrap" cellSpacing="0">
 						<thead>
 							<tr>
@@ -91,7 +95,7 @@ export default class BuildsAnalyzerExtension extends Component {
 							</tr>
 						</thead>
 						<tbody>
-							{this.state.builds.map((build, i) => {
+							{this.state.builds.map((build, i: number) => {
 								return (
 									<tr class="hover:background:#333">
 										<td class="padding:8px">{i}</td>
@@ -133,7 +137,7 @@ export default class BuildsAnalyzerExtension extends Component {
 											)}
 										</td>
 									</tr>
-								)
+								);
 							})}
 						</tbody>
 					</table>

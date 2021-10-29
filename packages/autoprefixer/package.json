@@ -32,5 +32,8 @@
 		"@stylify/stylify": "0.0",
 		"autoprefixer": "^10.3",
 		"postcss-js": "^3.0"
+	},
+	"devDependencies": {
+		"@rollup/plugin-commonjs": "^21.0.1"
 	}
 }

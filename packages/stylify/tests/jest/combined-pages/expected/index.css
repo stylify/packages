@@ -1,44 +1,44 @@
 .s0{
-	font-family:arial
-}
-.s1{
-	font-size:12px
-}
-.s2{
-	text-align:center
-}
-.s3{
-	font-size:48px
-}
-.s4{
-	background:steelblue
-}
-.s5{
-	max-width:320px
-}
-.s6{
-	margin:0 auto
-}
-.s7{
-	color:#fff
-}
-.s8{
 	font-size:123px
 }
-.s9{
+.s1{
 	line-height:123px
 }
-.s10{
+.s2{
+	color:#fff
+}
+.s3{
 	color:#888
 }
-.s11{
+.s4{
 	font-size:456px
 }
-.s12{
+.s5{
 	line-height:456px
 }
-.s13{
+.s6{
 	color:yellow
+}
+.s7{
+	font-family:arial
+}
+.s8{
+	font-size:12px
+}
+.s9{
+	text-align:center
+}
+.s10{
+	font-size:48px
+}
+.s11{
+	background:steelblue
+}
+.s12{
+	max-width:320px
+}
+.s13{
+	margin:0 auto
 }
 .s14{
 	font-size:14px

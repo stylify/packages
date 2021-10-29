@@ -1,4 +1,4 @@
-import { h, Component } from 'preact';
+import { Component } from 'preact';
 import { ProfilerExtensionPropsInterface } from '..';
 
 export default class CacheInfoExtension extends Component<any> {
@@ -18,8 +18,8 @@ export default class CacheInfoExtension extends Component<any> {
 		this.stylify = props.config.stylify;
 		this.openCodeInNewWindow = props.config.openCodeInNewWindow;
 
-		props.config.stylify.hooks.addHook('stylify:runtime:hydrated', ({data}) => {
-			this.state.cacheList.push(this.stringifyCache(data.cache));
+		document.addEventListener('stylify:runtime:hydrated', (event: any) => {
+			this.state.cacheList.push(this.stringifyCache(event.data.cache));
 
 			this.setState({
 				cacheList: this.state.cacheList
@@ -33,7 +33,7 @@ export default class CacheInfoExtension extends Component<any> {
 		});
 	}
 
-	public convertSizeToKb(size: number, precision: number = 1): string {
+	public convertSizeToKb(size: number, precision = 1): string {
 		return (size / 1000).toFixed(precision);
 	}
 
@@ -45,6 +45,7 @@ export default class CacheInfoExtension extends Component<any> {
 		return JSON.stringify(cache, null, 4);
 	}
 
+	/* eslint-disable max-len */
 	public render() {
 		return (
 			<div class="profiler-extension">
@@ -52,28 +53,28 @@ export default class CacheInfoExtension extends Component<any> {
 					<i class="sp-icon sp-icon-layers profiler-extension__button-icon"></i>
 					<strong class={`${this.state.cacheSize > 50 ? 'color:red' : '' } profiler-extension__button-label`}>{this.state.cacheList.length}</strong>
 				</a>
-				<div class={`display:${this.state.cacheInfoVisible ? 'block' : 'none'} profiler-extension__dropdown`}>
+				<div class={`${this.state.cacheInfoVisible ? 'display:block' : 'display:none'} profiler-extension__dropdown`}>
 					<table>
 						<thead>
 							<th>Id</th>
 							<th>Size</th>
 						</thead>
 						<tbody>
-							{this.state.cacheList.map((cache, i) => {
+							{this.state.cacheList.map((cache, i: number) => {
 								return (
 									<tr>
 										<td>{i}</td>
 										<td>
-											<a role="button" class="profiler-extension__link" onClick={() => {this.openCodeInNewWindow(cache, 'json')}}>Show: {this.convertSizeToKb(cache.length)} Kb</a>
+											<a role="button" class="profiler-extension__link" onClick={() => {this.openCodeInNewWindow(cache, 'json');}}>Show: {this.convertSizeToKb(cache.length)} Kb</a>
 										</td>
 									</tr>
-								)
+								);
 							})}
 						</tbody>
 					</table>
 					<hr />
 					<div class="display:flex">
-						<a role="button" class="profiler-extension__link margin-left:8px" onClick={() => {this.openActualCacheInNewWindow()}}>Dump actual cache</a>
+						<a role="button" class="profiler-extension__link margin-left:8px" onClick={() => {this.openActualCacheInNewWindow();}}>Dump actual cache</a>
 					</div>
 				</div>
 			</div>

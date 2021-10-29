@@ -1,5 +1,5 @@
-import { h, render, Component } from 'preact';
-import { StylifyConfigInterface } from '@stylify/stylify';
+import type { Compiler } from '@stylify/stylify';
+import { Component } from 'preact';
 import { ProfilerExtensionPropsInterface } from '..';
 
 export default class ConfigurationsVisualizerExtension extends Component<any> {
@@ -20,26 +20,27 @@ export default class ConfigurationsVisualizerExtension extends Component<any> {
 
 		this.updateCompilerConfigs(props.config.stylify.compiler);
 
-		props.config.stylify.hooks.addHook('stylify:compiler:configured', (data: StylifyConfigInterface) => {
-			this.updateCompilerConfigs(data.compiler);
+		document.addEventListener('stylify:compiler:configured', (event: any): void => {
+			this.updateCompilerConfigs(event.data.compiler);
 		});
 	}
 
-	private updateCompilerConfigs = (Compiler) => {
+	private updateCompilerConfigs = (compiler: Compiler): void => {
 		this.setState({
-			components: Compiler.components,
-			helpers: Compiler.helpers,
-			macros: Compiler.macros,
-			variables: Compiler.variables
+			components: compiler.components,
+			helpers: compiler.helpers,
+			macros: compiler.macros,
+			variables: compiler.variables
 		});
 	}
 
-	private toggleDetailVisibility = (name: string) => {
-		const newState = {};
-		newState[`${name} Visible`] = !this.state[`${name} Visible`];
-		this.setState(newState);
+	private toggleDetailVisibility = (name: string): void => {
+		this.setState({
+			[`${name}Visible`]: !this.state[`${name}Visible`]
+		});
 	}
 
+	/* eslint-disable max-len */
 	public render() {
 		return (
 			<>
@@ -48,7 +49,7 @@ export default class ConfigurationsVisualizerExtension extends Component<any> {
 						<i class="sp-icon sp-icon-aperture profiler-extension__button-icon"></i>
 						<strong class="profiler-extension__button-label">{Object.keys(this.state.macros).length}</strong>
 					</a>
-					<div class={`visibility:${this.state.macrosListVisible && Object.keys(this.state.macros).length ? 'visible' : 'hidden'} display:flex profiler-extension__dropdown`}>
+					<div class={`${this.state.macrosListVisible && Object.keys(this.state.macros).length ? 'visibility:visible' : 'visibility:hidden'} display:flex profiler-extension__dropdown`}>
 						<table>
 							<thead>
 								<tr>
@@ -56,14 +57,14 @@ export default class ConfigurationsVisualizerExtension extends Component<any> {
 								</tr>
 							</thead>
 							<tbody>
-								{Object.keys(this.state.macros).map((macroRegExp, i) => {
+								{Object.keys(this.state.macros).map((macroRegExp) => {
 									return (
 										<tr class="hover:background:#333">
 											<td class="padding:8px white-space:nowrap max-width:800px overflow-x:auto">
-												<pre><code>{macroRegExp}{this.state.macros[macroRegExp].toString().replaceAll(/  |\t\t/ig, ' ')}</code></pre>
+												<pre><code>{macroRegExp}{this.state.macros[macroRegExp].toString().replaceAll(/ {2}|\t\t/ig, ' ')}</code></pre>
 											</td>
 										</tr>
-									)
+									);
 								})}
 							</tbody>
 						</table>
@@ -75,7 +76,7 @@ export default class ConfigurationsVisualizerExtension extends Component<any> {
 						<i class="sp-icon sp-icon-dollar-sign profiler-extension__button-icon"></i>
 						<strong class="profiler-extension__button-label">{Object.keys(this.state.variables).length}</strong>
 					</a>
-					<div class={`visibility:${this.state.variablesListVisible && Object.keys(this.state.variables).length ? 'visible' : 'hidden'} display:flex profiler-extension__dropdown`}>
+					<div class={`${this.state.variablesListVisible && Object.keys(this.state.variables).length ? 'visibility:visible' : 'visibility:hidden'} display:flex profiler-extension__dropdown`}>
 						<table>
 							<thead>
 								<tr>
@@ -84,13 +85,13 @@ export default class ConfigurationsVisualizerExtension extends Component<any> {
 								</tr>
 							</thead>
 							<tbody>
-								{Object.keys(this.state.variables).map((variableName, i) => {
+								{Object.keys(this.state.variables).map((variableName) => {
 									return (
 										<tr class="hover:background:#333">
 											<td class="padding:8px white-space:nowrap">{variableName}</td>
 											<td class="padding:8px white-space:nowrap max-width:800px overflow-x:auto">{this.state.variables[variableName]}</td>
 										</tr>
-									)
+									);
 								})}
 							</tbody>
 						</table>
@@ -102,7 +103,7 @@ export default class ConfigurationsVisualizerExtension extends Component<any> {
 						<i class="sp-icon sp-icon-layout profiler-extension__button-icon"></i>
 						<strong class="profiler-extension__button-label">{Object.keys(this.state.components).length}</strong>
 					</a>
-					<div class={`visibility:${this.state.componentsListVisible && Object.keys(this.state.components).length ? 'visible' : 'hidden'} display:flex profiler-extension__dropdown`}>
+					<div class={`${this.state.componentsListVisible && Object.keys(this.state.components).length ? 'visibility:visible' : 'visibility:hidden'} display:flex profiler-extension__dropdown`}>
 						<table>
 							<thead>
 								<tr>
@@ -111,13 +112,13 @@ export default class ConfigurationsVisualizerExtension extends Component<any> {
 								</tr>
 							</thead>
 							<tbody>
-								{Object.keys(this.state.components).map((componentName, i) => {
+								{Object.keys(this.state.components).map((componentName) => {
 									return (
 										<tr class="hover:background:#333">
 											<td class="padding:8px white-space:nowrap">{componentName}</td>
 											<td class="padding:8px white-space:nowrap max-width:800px overflow-x:auto word-spacing:24px">{this.state.components[componentName].selectors.join(' ')}</td>
 										</tr>
-									)
+									);
 								})}
 							</tbody>
 						</table>
@@ -129,7 +130,7 @@ export default class ConfigurationsVisualizerExtension extends Component<any> {
 						<i class="sp-icon sp-icon-tool profiler-extension__button-icon"></i>
 						<strong class="profiler-extension__button-label">{Object.keys(this.state.helpers).length}</strong>
 					</a>
-					<div class={`visibility:${this.state.helpersListVisible && Object.keys(this.state.helpers).length ? 'visible' : 'hidden'} display:flex profiler-extension__dropdown`}>
+					<div class={`${this.state.helpersListVisible && Object.keys(this.state.helpers).length ? 'visibilit:visible' : 'visibility:hidden'} display:flex profiler-extension__dropdown`}>
 						<table>
 							<thead>
 								<tr>
@@ -137,14 +138,14 @@ export default class ConfigurationsVisualizerExtension extends Component<any> {
 								</tr>
 							</thead>
 							<tbody>
-								{Object.keys(this.state.helpers).map((helperName, i) => {
+								{Object.keys(this.state.helpers).map((helperName) => {
 									return (
 										<tr class="hover:background:#333">
 											<td class="padding:8px white-space:nowrap max-width:800px overflow-x:auto">
-												<pre><code>{this.state.helpers[helperName].toString().replaceAll(/  |\t\t/ig, ' ')}</code></pre>
+												<pre><code>{this.state.helpers[helperName].toString().replaceAll(/ {2}|\t\t/ig, ' ')}</code></pre>
 											</td>
 										</tr>
-									)
+									);
 								})}
 							</tbody>
 						</table>

@@ -1,9 +1,17 @@
-import hooksManager from '../HooksManager';
-
 export interface SerializedCssRecordInterface {
 	selectors: string[],
 	properties: Record<string, string | number>,
-	pseudoClasses: string[]
+	pseudoClasses?: string[],
+	onAddProperty?: string
+	scope?: string
+}
+
+export interface CssRecordConfigInterface {
+	selectors?: string|string[],
+	properties?: Record<string, string | number>,
+	pseudoClases?: string[],
+	onAddProperty?: CallableFunction
+	scope?: string
 }
 
 export interface CssRecordCompileParametersConfig {
@@ -12,25 +20,33 @@ export interface CssRecordCompileParametersConfig {
 
 class CssRecord {
 
+	public scope: string = null;
+
 	public selectors: string[] = [];
 
 	public properties: Record<string, string | number> = {};
 
 	public pseudoClasses: string[] = [];
 
-	constructor(
-		selectors: string|string[] = [],
-		properties: Record<string, string | number> = {},
-		pseudoClases: string[] = []
-	) {
-		selectors = Array.isArray(selectors) ? selectors : [selectors];
+	public onAddProperty: CallableFunction = null;
 
-		for (const selector of selectors) {
-			this.addSelector(selector);
+	constructor(config: CssRecordConfigInterface = {}) {
+		this.configure(config);
+	}
+
+	public configure(config: CssRecordConfigInterface): void {
+		if ('selectors' in config) {
+			config.selectors = Array.isArray(config.selectors) ? config.selectors : [config.selectors];
+
+			for (const selector of config.selectors) {
+				this.addSelector(selector);
+			}
 		}
 
-		this.addProperties(properties);
-		this.addPseudoClasses(pseudoClases);
+		this.scope = config.scope || null;
+		this.onAddProperty = config.onAddProperty || this.onAddProperty;
+		this.addProperties(config.properties || {});
+		this.addPseudoClasses(config.pseudoClases || []);
 	}
 
 	public addProperties(properties: Record<string, string|number>): void {
@@ -44,10 +60,21 @@ class CssRecord {
 			return;
 		}
 
-		const propertiesToAdd = {};
-		propertiesToAdd[property] = value;
-		const { data } = hooksManager.callHook('stylify:cssRecord:addProperty', propertiesToAdd);
-		this.properties = {...this.properties, ...data};
+		const onAddPropertyHook = (property: string, value: any): Record<string, any> => {
+			let properties = this.onAddProperty
+				? this.onAddProperty(property, value) as Record<string, any>|null
+				: null;
+
+			if (!properties) {
+				properties = {
+					[property]: value
+				};
+			}
+
+			return properties;
+		};
+
+		this.properties = {...this.properties, ...onAddPropertyHook(property, value)};
 	}
 
 	public addPseudoClasses(pseudoClasses: string[] | string): void {
@@ -55,8 +82,7 @@ class CssRecord {
 			pseudoClasses = [pseudoClasses];
 		}
 
-		const { data } = hooksManager.callHook('stylify:cssRecord:addPseudoClasses', pseudoClasses);
-		for (const pseudoClass of data) {
+		for (const pseudoClass of pseudoClasses) {
 			if (!this.pseudoClasses.includes(pseudoClass)) {
 				this.pseudoClasses.push(pseudoClass);
 			}
@@ -80,12 +106,13 @@ class CssRecord {
 			return;
 		}
 
-		const { data } = hooksManager.callHook('stylify:cssRecord:addSelector', selector);
-		this.selectors.push(data);
+		this.selectors.push(selector);
 	}
 
 	public getSelector(selector: string): string | null {
-		return this.hasSelector(selector) ? this.selectors[this.selectors.indexOf(selector)] : null;
+		return this.hasSelector(selector)
+			? this.selectors[this.selectors.indexOf(selector)]
+			: null;
 	}
 
 	public hasProperty(name: string): boolean {
@@ -93,14 +120,15 @@ class CssRecord {
 	}
 
 	public hasSelector(selector: string): boolean {
-		return this.selectors.indexOf(selector) > -1;
+		return this.selectors.includes(selector);
 	}
 
-	public compile(config: Partial<CssRecordCompileParametersConfig> = {}): string {
+	public generateCss(config: Partial<CssRecordCompileParametersConfig> = {}): string {
 		const minimize: boolean = 'minimize' in config ? config.minimize : false;
 		const newLine = minimize ? '' : '\n';
+		const scopePart = this.scope ? this.scope + ' ' : '';
 
-		return this.selectors.map(selector => '.' + selector).join(',' + newLine) + '{' + newLine
+		return this.selectors.map(selector => scopePart + '.' + selector).join(',' + newLine) + '{' + newLine
 			+ Object.keys(this.properties)
 				.map(property => `${(minimize ? '' : '\t') + property}:${this.properties[property]}`)
 				.join(';' + newLine)
@@ -108,13 +136,20 @@ class CssRecord {
 	}
 
 	public serialize(): SerializedCssRecordInterface {
-		const serializedObject = {
+		const serializedObject: SerializedCssRecordInterface = {
 			selectors: this.selectors.map(selector => {
 				return selector.replace(/\\([^-_a-zA-Z\d])/g, '$1');
 			}),
-			properties: this.properties,
-			pseudoClasses: []
+			properties: this.properties
 		};
+
+		if (this.onAddProperty) {
+			serializedObject.onAddProperty = this.onAddProperty.toString();
+		}
+
+		if (this.scope) {
+			serializedObject.scope = this.scope;
+		}
 
 		if (this.properties.length) {
 			serializedObject.pseudoClasses = this.pseudoClasses;
@@ -123,8 +158,15 @@ class CssRecord {
 		return serializedObject;
 	}
 
-	public static deserialize(data: Record<string, any>): CssRecord {
-		return new CssRecord(data.selectors, data.properties, data.pseudoClasses);
+	public static deserialize(data: SerializedCssRecordInterface): CssRecord {
+		// eslint-disable-next-line @typescript-eslint/no-implied-eval
+		const onAddPropertyFn = 'onAddProperty' in data ? new Function(data.onAddProperty) : null;
+		return new CssRecord({
+			...data,
+			...{
+				onAddProperty: onAddPropertyFn
+			}
+		});
 	}
 
 	public hydrate(data: Record<string, any>): void {
@@ -132,11 +174,11 @@ class CssRecord {
 			this.addSelector(selector);
 		}
 
-		if (data.pseudoClasses.length) {
+		this.addProperties(data.properties);
+
+		if ('pseudoClasses' in data) {
 			this.addPseudoClasses(data.pseudoClasses);
 		}
-
-		this.addProperties(data.properties);
 	}
 
 }

@@ -1,6 +1,5 @@
-import { SelectorsRewriter } from '@stylify/stylify';
+import { PrefixesGenerator } from '@stylify/autoprefixer/esm/prefixes-generator';
 import { getOptions } from 'loader-utils';
-import { PrefixesGenerator } from '@stylify/autoprefixer';
 
 /**
  *
@@ -21,6 +20,6 @@ export default function (source: string): string {
 	mergePrefixesMap(new PrefixesGenerator().createPrefixesMap(compilationResult));
 
 	return compiler.mangleSelectors
-		? SelectorsRewriter.rewrite(compilationResult, compiler.selectorAttributes, source)
+		? compiler.rewriteSelectors(compilationResult, source) as string
 		: source;
 }

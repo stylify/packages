@@ -1,8 +1,8 @@
-import TestUtils from './TestUtils';
-import { SelectorsRewriter, Compiler, nativePreset } from '../../src';
+import TestUtils from '../../../../tests/TestUtils';
+import { Compiler, nativePreset } from '../../src';
 
 const testName = 'components-mangle-selectors';
-const testUtils = new TestUtils(testName);
+const testUtils = new TestUtils('stylify', testName);
 const inputIndex = testUtils.getHtmlInputFile();
 
 nativePreset.compiler.dev = true;
@@ -20,5 +20,5 @@ let compilationResult = compiler.compile(inputIndex);
 
 test('Components - mangle selectors', (): void => {
 	testUtils.testCssFileToBe(compilationResult.generateCss());
-	testUtils.testHtmlFileToBe(SelectorsRewriter.rewrite(compilationResult, compiler.selectorAttributes, inputIndex));
+	testUtils.testHtmlFileToBe(compiler.rewriteSelectors(compilationResult, inputIndex));
 });

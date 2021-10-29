@@ -2,10 +2,12 @@ import fs from 'fs';
 import path from 'path';
 import { BuildConfig, BuildConfigConfigurationInterface } from '.';
 import { argumentsProcessor } from '../ArgumentsProcessor/ArgumentsProcessor';
+import { RollupHooksListInterface } from './buildPlugin';
 
 export interface BuildConfigurationInterface {
 	packageName: string,
-	typescriptExclude: string[][] | string[],
+	hooks?: RollupHooksListInterface,
+	typescriptExclude?: string[][] | string[],
 	configs: Partial<BuildConfigConfigurationInterface>[]
 }
 
@@ -15,7 +17,7 @@ class Build {
 
 	private buildConfigs = [];
 
-	public addConfigs(config: Partial<BuildConfigurationInterface>): void {
+	public addConfigs(config: BuildConfigurationInterface): void {
 		if (!argumentsProcessor.canProcessPackage(config.packageName)) {
 			return;
 		}
@@ -25,6 +27,7 @@ class Build {
 		for (const buildConfig of config.configs) {
 			buildConfig.packageName = config.packageName;
 			buildConfig.typescriptExclude = config.typescriptExclude || [];
+			buildConfig.hooks = config.hooks;
 			this.buildConfigs.push(new BuildConfig(buildConfig));
 		}
 	}
@@ -39,9 +42,13 @@ class Build {
 		return configs;
 	}
 
+	public getPackageDir(packageName: string): string {
+		return path.join(__dirname, '..', 'packages', packageName);
+	}
+
 	private prepareBuildDirectories(packageName: string) {
 		this.buildDirectories.forEach(directory => {
-			const directoryToPrepare = path.join('packages', packageName, directory);
+			const directoryToPrepare = path.join(this.getPackageDir(packageName), directory);
 			if (fs.existsSync(directoryToPrepare)) {
 				fs.rmdirSync(directoryToPrepare, { recursive: true });
 			}
