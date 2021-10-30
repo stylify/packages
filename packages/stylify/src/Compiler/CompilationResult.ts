@@ -15,7 +15,6 @@ export interface SerializedCompilationResultInterface {
 	reconfigurable: boolean,
 	dev: boolean,
 	selectorsList: Record<string, SelectorsListInterface>,
-	mangledSelectorsMap: Record<string, string>,
 	cssTree: Record<string, Record<string, SerializedCssRecordInterface>>,
 	variables?: Record<string, string | number>,
 	onPrepareCssRecord?: string
@@ -37,9 +36,6 @@ class CompilationResult {
 	public mangleSelectors = false;
 
 	public dev = false;
-
-	// Todo odebrat, použít selectors list
-	public mangledSelectorsMap: Record<string, string> = {};
 
 	public selectorsList: Record<string, SelectorsListInterface> = {};
 
@@ -185,8 +181,6 @@ class CompilationResult {
 			mangledSelector: mangledSelector,
 			processed: processed
 		};
-
-		this.mangledSelectorsMap[mangledSelector] = selector;
 	}
 
 	public bindComponentsSelectors(componentsSelectorsMap: Record<string, any>): void {
@@ -326,7 +320,6 @@ class CompilationResult {
 			reconfigurable: this.reconfigurable,
 			dev: this.dev,
 			selectorsList: this.selectorsList,
-			mangledSelectorsMap: this.mangledSelectorsMap,
 			cssTree: {}
 		};
 
@@ -361,8 +354,6 @@ class CompilationResult {
 			selectorsList: data.selectorsList || {}
 		});
 
-		compilationResult.mangledSelectorsMap = data.mangledSelectorsMap || {};
-
 		if ('cssTree' in data) {
 			Object.keys(data.cssTree).forEach((screen: string): void => {
 				Object.keys(data.cssTree[screen]).forEach((selector: string): void => {
@@ -387,7 +378,6 @@ class CompilationResult {
 
 	public hydrate(data: Required<SerializedCompilationResultInterface>): void {
 		this.selectorsList = Object.assign(this.selectorsList, data.selectorsList || {});
-		this.mangledSelectorsMap = Object.assign(this.mangledSelectorsMap, data.mangledSelectorsMap || {});
 
 		Object.keys(data.cssTree).forEach(screen => {
 			Object.keys(data.cssTree[screen]).forEach(selector => {

@@ -174,8 +174,7 @@ export default function Stylify(): void {
 
 	if (preflightCache) {
 		preparedCompilationResult = compiler.createCompilationResultFromSerializedData({
-			selectorsList: preflightCache.compilationResult.selectorsList,
-			mangledSelectorsMap: preflightCache.compilationResult.mangledSelectorsMap
+			selectorsList: preflightCache.compilationResult.selectorsList
 		});
 
 		prefixer.setPrefixesMap(preflightCache.prefixesMap);

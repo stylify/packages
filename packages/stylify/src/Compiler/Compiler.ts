@@ -185,10 +185,10 @@ class Compiler {
 			.replace(/\r\n|\r|\n|\t/ig, ' ')
 			.replace(/&amp;/ig, '&');
 
-		if (compilationResult && Object.keys(compilationResult.mangledSelectorsMap).length) {
+		if (compilationResult && Object.keys(compilationResult.selectorsList).length) {
 			content = content.replace(/s\d+/ig, (matched) => {
-				return matched in compilationResult.mangledSelectorsMap
-					? compilationResult.mangledSelectorsMap[matched]
+				return matched in compilationResult.selectorsList
+					? compilationResult.selectorsList[matched].mangledSelector
 					: matched;
 			});
 		}
