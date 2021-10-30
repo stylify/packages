@@ -9,10 +9,10 @@ import { addProfilerExtension, initProfilerToolbar } from './Toolbar';
 import type { Runtime } from '@stylify/stylify';
 
 declare global {
-    interface Window {
-        title: string;
+	interface Window {
+		title: string;
 		Stylify: Runtime
-    }
+	}
 }
 
 export interface ProfilerExtensionPropsInterface {
@@ -24,11 +24,11 @@ export interface ProfilerExtensionPropsInterface {
 
 export class Profiler {
 
+	public static readonly WINDOW_IS_DEFINED = typeof window !== 'undefined';
+
 	private readonly PRISM_VERSION = '1.23.0';
 
 	private readonly PRISM_CDN_URL = `https://cdnjs.cloudflare.com/ajax/libs/prism/${this.PRISM_VERSION}`;
-
-	public static readonly windowIsDefined = typeof window !== 'undefined';
 
 	constructor() {
 		this.init();
@@ -40,7 +40,7 @@ export class Profiler {
 		this.addProfilerExtension(ConfigurationsVisualizerExtension);
 		this.addProfilerExtension(DomNodesCounterExtension);
 
-		if (!Profiler.windowIsDefined) {
+		if (!Profiler.WINDOW_IS_DEFINED) {
 			return null;
 		}
 

@@ -3,19 +3,23 @@ import { CssRecord, MacroMatch, SelectorProperties, SerializedCssRecordInterface
 export interface CompilationResultConfigInterface {
 	dev?: boolean,
 	reconfigurable?: boolean,
-	cssTreeSortingFunction?: CallableFunction,
-	selectorsList?: Record<string, SelectorsListInterface>,
+	screensSortingFunction?: CallableFunction,
+	screensList?: Record<string, number>,
+	selectorsList?: Record<string, CssRecord>,
+	componentsList?: Record<string, string>,
 	mangleSelectors?: boolean,
 	variables?: Record<string, string| number>,
 	onPrepareCssRecord?: CallableFunction
 }
 
 export interface SerializedCompilationResultInterface {
-	mangleSelectors: boolean,
-	reconfigurable: boolean,
 	dev: boolean,
-	selectorsList: Record<string, SelectorsListInterface>,
-	cssTree: Record<string, Record<string, SerializedCssRecordInterface>>,
+	reconfigurable?: boolean,
+	screensSortingFunction?: string,
+	screensList?: Record<string, number>,
+	selectorsList: Record<string, SerializedCssRecordInterface>,
+	componentsList?: Record<string, string>
+	mangleSelectors?: boolean,
 	variables?: Record<string, string | number>,
 	onPrepareCssRecord?: string
 }
@@ -25,23 +29,29 @@ export interface SelectorsListInterface {
 	processed: boolean
 }
 
+type ScreensListType = Map<string, number|null>;
+
 class CompilationResult {
 
-	private readonly matchVariableRegExp = /\$([\w-_]+)/g;
+	private readonly MATCH_VARIABLE_REG_EXP = /\$([\w-_]+)/g;
+
+	private screensList: ScreensListType = new Map();
+
+	private screensListSorted = false;
 
 	public reconfigurable = true;
 
-	public changed = false
+	public changed = false;
 
 	public mangleSelectors = false;
 
 	public dev = false;
 
-	public selectorsList: Record<string, SelectorsListInterface> = {};
+	public selectorsList: Record<string, CssRecord> = {};
 
-	public cssTree: Map<string, Record<string, CssRecord>> = new Map();
+	public componentsList: Record<string, string> = {};
 
-	public cssTreeSortingFunction: CallableFunction = null;
+	public screensSortingFunction: CallableFunction = null;
 
 	public variables: Record<string, string | number> = {};
 
@@ -50,11 +60,8 @@ class CompilationResult {
 	public onPrepareCssRecord: CallableFunction = null;
 
 	public constructor(config: CompilationResultConfigInterface = {}) {
-		// eslint-disable-next-line @typescript-eslint/unbound-method
-		this.cssTreeSortingFunction = this.sortCssTreeMediaQueries;
-		this.cssTree = new Map();
-		this.cssTree.set('_', {});
 		this.setBuildInfo(null);
+		this.addScreen('_');
 		this.configure(config);
 	}
 
@@ -68,9 +75,38 @@ class CompilationResult {
 		this.mangleSelectors = typeof config.mangleSelectors === 'boolean'
 			? config.mangleSelectors
 			: this.mangleSelectors;
-		this.cssTreeSortingFunction = config.cssTreeSortingFunction || this.cssTreeSortingFunction;
+		this.screensSortingFunction = config.screensSortingFunction || this.screensSortingFunction;
 		this.variables = {...this.variables, ...config.variables || {}};
 		this.onPrepareCssRecord = config.onPrepareCssRecord || this.onPrepareCssRecord;
+		this.addScreens(config.screensList || {});
+	}
+
+	private getScreenById(searchId): string {
+		let searchedScreen: string = null;
+		[...this.screensList].find(([screen, screenId]) => {
+			const found = screenId === searchId;
+			if (found) {
+				searchedScreen = screen;
+			}
+			return found;
+		});
+
+		return searchedScreen;
+	}
+
+	private addScreens(screens: Record<string, number>): void {
+		for (const screen in screens) {
+			this.addScreen(screen, screens[screen]);
+		}
+	}
+
+	private addScreen(screen: string, screenId: number = this.screensList.size) {
+		if (this.screensList.has(screen)) {
+			return;
+		}
+
+		this.screensList.set(screen, screenId);
+		this.screensListSorted = false;
 	}
 
 	private setBuildInfo = (data: Record<string, any> = null): void => {
@@ -91,38 +127,43 @@ class CompilationResult {
 
 		this.lastBuildInfo.completed = 'completed' in data ? data.completed : false;
 
-		this.lastBuildInfo.processedComponents = this.lastBuildInfo.processedComponents.concat(
-			data.processedComponents || []
-		);
-		this.lastBuildInfo.processedSelectors = this.lastBuildInfo.processedSelectors.concat(
-			data.processedSelectors || []
-		);
+		this.lastBuildInfo.processedComponents = [
+			...this.lastBuildInfo.processedComponents, ...data.processedComponents || []
+		];
+		this.lastBuildInfo.processedSelectors = [
+			...this.lastBuildInfo.processedSelectors, ...data.processedSelectors || []
+		];
 	};
 
 	public generateCss(): string {
 		let css = '';
 		const newLine = this.dev ? '\n' : '';
+		const cssTree: Record<string, string> = {};
 
-		for (const [screenKey, screenValue] of this.cssTree) {
-			if (Object.keys(screenValue).length === 0) {
-				continue;
+		for (const selector in this.selectorsList) {
+			const cssRecord = this.selectorsList[selector];
+			const screen = this.getScreenById(cssRecord.screenId);
+
+			if (!(screen in cssTree)) {
+				cssTree[screen] = '';
 			}
 
-			let screenCss = '';
+			cssTree[screen] += this.selectorsList[selector].generateCss({
+				minimize: !this.dev,
+				mangleSelectors: this.mangleSelectors
+			});
+		}
 
-			for (const selector in screenValue) {
-				// Todo negenerovat css pro selektory, které už ve stránce jsou
-				// např. profiler
-				screenCss += screenValue[selector].generateCss({
-					minimize: !this.dev
-				});
-			}
+		if (!this.screensListSorted) {
+			this.screensList = this.sortCssTreeMediaQueries(this.screensList);
+		}
 
+		for (const [screen] of this.screensList) {
+			const screenCss = cssTree[screen] || null;
 			if (!screenCss) {
 				continue;
 			}
-
-			css += screenKey === '_' ? screenCss : `${newLine}@media ${screenKey} {${newLine + screenCss}}${newLine}`;
+			css += screen === '_' ? screenCss : `${newLine}@media ${screen} {${newLine}${screenCss}}${newLine}`;
 		}
 
 		this.changed = false;
@@ -134,28 +175,32 @@ class CompilationResult {
 	}
 
 	public addCssRecord(macroMatch: MacroMatch, selectorProperties: SelectorProperties): void {
-		const macroResult = selectorProperties.properties;
-		const screen = macroMatch.screen;
-		const selector = macroMatch.selector;
-		const mangledSelectorId = macroMatch.fullMatch in this.selectorsList
-			? this.selectorsList[macroMatch.fullMatch].mangledSelector
-			: this.getUniqueSelectorId();
-
-		if (!this.cssTree.has(screen)) {
-			this.cssTree.set(screen, {});
-			this.cssTree = this.cssTreeSortingFunction(this.cssTree);
-		} else if (selector in this.cssTree.get(screen)) {
+		if (macroMatch.fullMatch in this.selectorsList) {
+			this.selectorsList[macroMatch.fullMatch].shouldBeGenerated = true;
 			return;
 		}
 
-		const newCssRecord = this.createCssRecord(new CssRecord());
+		const selector = macroMatch.selector;
+		const macroResult = selectorProperties.properties;
+		const screen = macroMatch.screen;
 
-		newCssRecord.addPseudoClasses(macroMatch.pseudoClasses);
-		const selectorToAdd = this.mangleSelectors ? mangledSelectorId : selector;
+		if (!this.screensList.has(screen)) {
+			this.addScreen(screen);
+		}
+
+		const newCssRecord = this.createCssRecord(
+			new CssRecord({
+				screenId: this.screensList.get(screen),
+				selector: selector,
+				mangledSelector: this.getUniqueSelectorId(),
+				pseudoClasses: macroMatch.pseudoClasses,
+				shouldBeGenerated: true
+			})
+		);
 
 		for (const property in macroResult) {
 			const propertyValue = macroResult[property].replace(
-				this.matchVariableRegExp,
+				this.MATCH_VARIABLE_REG_EXP,
 				(match, substring): string => {
 					return String(this.variables[substring]);
 				}
@@ -163,50 +208,28 @@ class CompilationResult {
 			newCssRecord.addProperty(property, propertyValue);
 		}
 
-		this.cssTree.get(screen)[selector] = newCssRecord;
-
-		this.addSelectorIntoCssTree(screen, selector, selectorToAdd);
+		this.selectorsList[selector] = newCssRecord;
 
 		this.changed = true;
 
 		this.setBuildInfo({
 			processedSelectors: [selector]
 		});
-
-		this.addSelectorIntoList(macroMatch.fullMatch, mangledSelectorId, true);
-	}
-
-	private addSelectorIntoList(selector, mangledSelector, processed): void {
-		this.selectorsList[selector] = {
-			mangledSelector: mangledSelector,
-			processed: processed
-		};
 	}
 
 	public bindComponentsSelectors(componentsSelectorsMap: Record<string, any>): void {
 		const processedComponents = [];
 
-		// TODO refactor. Iterovat nad mapou komponent spíše než nad celým stromem css
-		for (const [screen, selectors] of this.cssTree) {
-			Object.keys(selectors).forEach((selector: string): void => {
-				if (selector in componentsSelectorsMap) {
-					componentsSelectorsMap[selector].forEach(componentSelector => {
-						if (!(componentSelector in this.selectorsList)) {
-							this.addSelectorIntoList(componentSelector, this.getUniqueSelectorId(), true);
-						}
-
-						const selectorToAdd = this.mangleSelectors
-							? this.selectorsList[componentSelector].mangledSelector
-							: componentSelector;
-
-						if (processedComponents.indexOf(componentSelector) === -1) {
-							processedComponents.push(componentSelector);
-						}
-
-						this.addSelectorIntoCssTree(screen, selector, selectorToAdd);
-					});
+		for (const componentDependencySelector in componentsSelectorsMap) {
+			for (const component of componentsSelectorsMap[componentDependencySelector]) {
+				if (!(component in this.componentsList)) {
+					this.componentsList[component] = this.getUniqueSelectorId();
 				}
-			});
+				this.selectorsList[componentDependencySelector].addComponent(
+					this.mangleSelectors ? this.componentsList[component] : component
+				);
+				processedComponents.push(component);
+			}
 		}
 
 		this.setBuildInfo({
@@ -214,14 +237,17 @@ class CompilationResult {
 		});
 	}
 
-	private sortCssTreeMediaQueries(
-		cssTree: Map<string, Record<string, CssRecord>>
-	): Map<string, Record<string, CssRecord>> {
-		const newCssTree: Map<string, Record<string, CssRecord>> = new Map();
-		newCssTree.set('_', cssTree.get('_'));
-		cssTree.delete('_');
+	private sortCssTreeMediaQueries(screensList: ScreensListType): ScreensListType {
+		this.screensListSorted = true;
+		if (this.screensSortingFunction) {
+			return this.screensSortingFunction(screensList) as ScreensListType;
+		}
 
-		let cssTreeKeysArray = [...cssTree.keys()];
+		const sortedScreens: ScreensListType = new Map();
+		sortedScreens.set('_', screensList.get('_'));
+		screensList.delete('_');
+
+		let screensListKeysArray = [...screensList.keys()];
 
 		const convertUnitToPxSize = (unit: string): number => {
 			const unitMatch = (/(\d*\.?\d+)(ch|em|ex|px|rem)/).exec(unit);
@@ -283,59 +309,59 @@ class CompilationResult {
 
 		const mapSortedKeys = (sortedKeys: string[]): void => {
 			for (const sortedKey of sortedKeys) {
-				newCssTree.set(sortedKey, cssTree.get(sortedKey));
-				cssTree.delete(sortedKey);
+				sortedScreens.set(sortedKey, screensList.get(sortedKey));
+				screensList.delete(sortedKey);
 			}
 		};
 
-		cssTreeKeysArray = separateAndSort(cssTreeKeysArray, 'min-width');
-		cssTreeKeysArray = separateAndSort(cssTreeKeysArray, 'min-height');
-		cssTreeKeysArray = separateAndSort(cssTreeKeysArray, 'max-width', true);
-		cssTreeKeysArray = separateAndSort(cssTreeKeysArray, 'max-height', true);
-		cssTreeKeysArray = separateAndSort(cssTreeKeysArray, 'min-device-width');
-		cssTreeKeysArray = separateAndSort(cssTreeKeysArray, 'min-device-height');
-		cssTreeKeysArray = separateAndSort(cssTreeKeysArray, 'max-device-width', true);
-		cssTreeKeysArray = separateAndSort(cssTreeKeysArray, 'max-device-height', true);
-		mapSortedKeys(cssTreeKeysArray);
+		screensListKeysArray = separateAndSort(screensListKeysArray, 'min-width');
+		screensListKeysArray = separateAndSort(screensListKeysArray, 'min-height');
+		screensListKeysArray = separateAndSort(screensListKeysArray, 'max-width', true);
+		screensListKeysArray = separateAndSort(screensListKeysArray, 'max-height', true);
+		screensListKeysArray = separateAndSort(screensListKeysArray, 'min-device-width');
+		screensListKeysArray = separateAndSort(screensListKeysArray, 'min-device-height');
+		screensListKeysArray = separateAndSort(screensListKeysArray, 'max-device-width', true);
+		screensListKeysArray = separateAndSort(screensListKeysArray, 'max-device-height', true);
+		mapSortedKeys(screensListKeysArray);
 
-		return newCssTree;
-	}
-
-	public addSelectorIntoCssTree(screen: string, selector: string, selectorToAdd: string): void {
-		const cssRecord = this.cssTree.get(screen)[selector];
-
-		if (cssRecord.pseudoClasses.length > 0) {
-			cssRecord.pseudoClasses.forEach((pseudoClass: string): void => {
-				cssRecord.addSelector(selectorToAdd, pseudoClass);
-			});
-			return;
-		}
-
-		cssRecord.addSelector(selectorToAdd);
+		return sortedScreens;
 	}
 
 	public serialize(): SerializedCompilationResultInterface {
 		const serializedCompilationResult: SerializedCompilationResultInterface = {
 			mangleSelectors: this.mangleSelectors,
-			reconfigurable: this.reconfigurable,
 			dev: this.dev,
-			selectorsList: this.selectorsList,
-			cssTree: {}
+			selectorsList: {}
 		};
+
+		if (!this.reconfigurable) {
+			serializedCompilationResult.reconfigurable = false;
+		}
+
+		if (this.screensList.size) {
+			serializedCompilationResult.screensList = {};
+			for (const [screen, screenId] of this.screensList) {
+				serializedCompilationResult.screensList[screen] = screenId;
+			}
+		}
+
+		if (this.screensSortingFunction) {
+			serializedCompilationResult.screensSortingFunction = this.screensSortingFunction.toString();
+		}
 
 		if (Object.keys(this.variables).length) {
 			serializedCompilationResult.variables = this.variables;
 		}
 
-		for (const [screen, screenSelectors] of this.cssTree) {
-			if (!Object.keys(screenSelectors).length) {
-				continue;
-			}
+		if (this.componentsList.length) {
+			serializedCompilationResult.componentsList = this.componentsList;
+		}
 
-			serializedCompilationResult.cssTree[screen] = {};
-			Object.keys(screenSelectors).forEach((selector) => {
-				serializedCompilationResult.cssTree[screen][selector] = screenSelectors[selector].serialize();
-			});
+		if (Object.keys(this.selectorsList).length) {
+			serializedCompilationResult.selectorsList = {};
+			for (const selector in this.selectorsList) {
+				serializedCompilationResult.selectorsList[selector] = this.selectorsList[selector].serialize();
+			}
 		}
 
 		if (this.onPrepareCssRecord) {
@@ -346,64 +372,35 @@ class CompilationResult {
 	}
 
 	public static deserialize(data: Required<SerializedCompilationResultInterface>): CompilationResult {
-		const compilationResult = new CompilationResult({
-			dev: data.dev,
-			variables: data.variables,
-			mangleSelectors: data.mangleSelectors,
-			reconfigurable: data.reconfigurable,
-			selectorsList: data.selectorsList || {}
-		});
+		const compilationResultConfig: any = {...data};
 
-		if ('cssTree' in data) {
-			Object.keys(data.cssTree).forEach((screen: string): void => {
-				Object.keys(data.cssTree[screen]).forEach((selector: string): void => {
-					const serializedSelectorData = data.cssTree[screen][selector];
-
-					if (!compilationResult.cssTree.has(screen)) {
-						compilationResult.cssTree.set(screen, {});
-					}
-
-					compilationResult.cssTree.get(screen)[selector] = CssRecord.deserialize(serializedSelectorData);
-				});
-			});
+		if ('selectorsList' in compilationResultConfig) {
+			for (const selector in data.selectorsList) {
+				compilationResultConfig.selectorsList[selector] = CssRecord.deserialize(data.selectorsList[selector]);
+			}
 		}
 
-		if ('onPrepareCssRecord' in data) {
+		if ('onPrepareCssRecord' in compilationResultConfig) {
 			// eslint-disable-next-line @typescript-eslint/no-implied-eval
-			compilationResult.onPrepareCssRecord = new Function(data.onPrepareCssRecord);
+			compilationResultConfig.onPrepareCssRecord = new Function(data.onPrepareCssRecord);
 		}
 
-		return compilationResult;
+		return new CompilationResult(compilationResultConfig);
 	}
 
 	public hydrate(data: Required<SerializedCompilationResultInterface>): void {
-		this.selectorsList = Object.assign(this.selectorsList, data.selectorsList || {});
+		this.addScreens(data.screensList || {});
 
-		Object.keys(data.cssTree).forEach(screen => {
-			Object.keys(data.cssTree[screen]).forEach(selector => {
-				const serializedSelectorData = data.cssTree[screen][selector];
-				let screenData = {};
-
-				if (this.cssTree.has(screen)) {
-					screenData = this.cssTree.get(screen);
+		if ('selectorsList' in data) {
+			for (const selector in data.selectorsList) {
+				const selectorData = data.selectorsList[selector];
+				if (selector in this.selectorsList) {
+					this.selectorsList[selector].hydrate(selectorData);
 				} else {
-					this.cssTree.set(screen, screenData);
+					this.selectorsList[selector] = CssRecord.deserialize(selectorData);
 				}
-
-				if (selector in this.cssTree.get(screen)) {
-					this.cssTree.get(screen)[selector].hydrate(serializedSelectorData);
-				} else {
-					this.cssTree.set(screen,
-						{
-							...screenData,
-							...{
-								[selector]: CssRecord.deserialize(serializedSelectorData)
-							}
-						}
-					);
-				}
-			});
-		});
+			}
+		}
 	}
 
 	private createCssRecord(cssRecord: CssRecord): CssRecord {
@@ -415,7 +412,7 @@ class CompilationResult {
 	}
 
 	private getUniqueSelectorId(): string {
-		return `s${Object.keys(this.selectorsList).length}`;
+		return `s${Object.keys(this.selectorsList).length + Object.keys(this.componentsList).length}`;
 	}
 
 }

@@ -1,4 +1,4 @@
-import { h, Component } from 'preact';
+import { Component } from 'preact';
 import { ProfilerExtensionPropsInterface } from '..';
 
 export default class BuildsAnalyzerExtension extends Component {

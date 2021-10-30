@@ -1,28 +1,48 @@
 export interface SerializedCssRecordInterface {
-	selectors: string[],
-	properties: Record<string, string | number>,
+	screenId: number,
+	selector: string,
+	mangledSelector: string,
+	properties?: Record<string, string | number>,
+	components?: string[],
 	pseudoClasses?: string[],
 	onAddProperty?: string
 	scope?: string
 }
 
 export interface CssRecordConfigInterface {
-	selectors?: string|string[],
+	screenId: number,
+	selector: string,
+	mangledSelector: string,
 	properties?: Record<string, string | number>,
-	pseudoClases?: string[],
+	components?: string[],
+	pseudoClasses?: string[],
 	onAddProperty?: CallableFunction
 	scope?: string
+	shouldBeGenerated?: boolean
 }
 
 export interface CssRecordCompileParametersConfig {
 	minimize: boolean
+	mangleSelectors?: boolean
 }
 
 class CssRecord {
 
+	private cache: string = null;
+
+	private changed = false;
+
+	public shouldBeGenerated = false;
+
+	public mangledSelector: string = null;
+
+	public selector: string = null;
+
+	public screenId: number = null;
+
 	public scope: string = null;
 
-	public selectors: string[] = [];
+	public components: string[] = [];
 
 	public properties: Record<string, string | number> = {};
 
@@ -30,33 +50,32 @@ class CssRecord {
 
 	public onAddProperty: CallableFunction = null;
 
-	constructor(config: CssRecordConfigInterface = {}) {
+	constructor(config: CssRecordConfigInterface) {
 		this.configure(config);
 	}
 
 	public configure(config: CssRecordConfigInterface): void {
-		if ('selectors' in config) {
-			config.selectors = Array.isArray(config.selectors) ? config.selectors : [config.selectors];
-
-			for (const selector of config.selectors) {
-				this.addSelector(selector);
-			}
-		}
-
+		this.screenId = config.screenId;
+		this.selector = config.selector.replace(/([^-_a-zA-Z\d])/g, '\\$1');
+		this.mangledSelector = config.mangledSelector;
 		this.scope = config.scope || null;
 		this.onAddProperty = config.onAddProperty || this.onAddProperty;
+		this.shouldBeGenerated = 'shouldBeGenerated' in config ? config.shouldBeGenerated : this.shouldBeGenerated;
+		this.addComponents(config.components || []);
 		this.addProperties(config.properties || {});
-		this.addPseudoClasses(config.pseudoClases || []);
+		this.addPseudoClasses(config.pseudoClasses || []);
+		this.changed = true;
 	}
 
 	public addProperties(properties: Record<string, string|number>): void {
 		for (const property in properties) {
+			this.changed = true;
 			this.addProperty(property, properties[property]);
 		}
 	}
 
 	public addProperty(property: string, value: string | number): void {
-		if (this.hasProperty(property)) {
+		if (property in this.properties) {
 			return;
 		}
 
@@ -74,6 +93,7 @@ class CssRecord {
 			return properties;
 		};
 
+		this.changed = true;
 		this.properties = {...this.properties, ...onAddPropertyHook(property, value)};
 	}
 
@@ -84,64 +104,76 @@ class CssRecord {
 
 		for (const pseudoClass of pseudoClasses) {
 			if (!this.pseudoClasses.includes(pseudoClass)) {
+				this.changed = true;
 				this.pseudoClasses.push(pseudoClass);
 			}
 		}
 	}
 
-	public addSelectors(selectors: Record<string, string | null>): void {
-		for (const selector in selectors) {
-			this.addSelector(selector, selectors[selector]);
+	public addComponents(selectors: string[]): void {
+		for (const selector of selectors) {
+			this.addComponent(selector);
 		}
 	}
 
-	public addSelector(selector: string, pseudoClass: string = null): void {
+	public addComponent(selector: string): void {
 		selector = selector.replace(/([^-_a-zA-Z\d])/g, '\\$1');
 
-		if (pseudoClass) {
-			selector += ':' + pseudoClass;
-		}
-
-		if (this.hasSelector(selector)) {
+		if (this.components.includes(selector)) {
 			return;
 		}
 
-		this.selectors.push(selector);
+		this.changed = true;
+		this.components.push(selector);
 	}
 
-	public getSelector(selector: string): string | null {
-		return this.hasSelector(selector)
-			? this.selectors[this.selectors.indexOf(selector)]
-			: null;
-	}
+	public generateCss(config: CssRecordCompileParametersConfig): string {
+		if (this.changed || !this.cache) {
+			const newLine = config.minimize ? '' : '\n';
+			const scopePart = this.scope ? this.scope + ' ' : '';
 
-	public hasProperty(name: string): boolean {
-		return name in this.properties;
-	}
+			const cssRecordSelector = config.mangleSelectors ? this.mangledSelector : this.selector;
+			let selectors: string[] = [];
 
-	public hasSelector(selector: string): boolean {
-		return this.selectors.includes(selector);
-	}
+			if (this.pseudoClasses.length) {
+				for (const pseudoClass of this.pseudoClasses) {
+					const pseudoClassSuffix = `:${pseudoClass}`;
+					selectors.push(`${cssRecordSelector}${pseudoClassSuffix}`);
 
-	public generateCss(config: Partial<CssRecordCompileParametersConfig> = {}): string {
-		const minimize: boolean = 'minimize' in config ? config.minimize : false;
-		const newLine = minimize ? '' : '\n';
-		const scopePart = this.scope ? this.scope + ' ' : '';
+					for (const component of this.components) {
+						selectors.push(`${component}${pseudoClassSuffix}`);
+					}
+				}
+			} else {
+				selectors = [cssRecordSelector, ...this.components];
+			}
 
-		return this.selectors.map(selector => scopePart + '.' + selector).join(',' + newLine) + '{' + newLine
-			+ Object.keys(this.properties)
-				.map(property => `${(minimize ? '' : '\t') + property}:${this.properties[property]}`)
-				.join(';' + newLine)
-			+ newLine + '}' + newLine;
+			this.cache = selectors
+				.map((selector): string => {
+					return `${scopePart}.${selector}`;
+				})
+				.join(',' + newLine) + '{' + newLine
+				+ Object.keys(this.properties)
+					.map(property => `${(config.minimize ? '' : '\t') + property}:${this.properties[property]}`)
+					.join(';' + newLine)
+				+ newLine + '}' + newLine;
+			this.changed = false;
+		}
+
+		return this.cache;
 	}
 
 	public serialize(): SerializedCssRecordInterface {
 		const serializedObject: SerializedCssRecordInterface = {
-			selectors: this.selectors.map(selector => {
-				return selector.replace(/\\([^-_a-zA-Z\d])/g, '$1');
-			}),
-			properties: this.properties
+			screenId: this.screenId,
+			selector: this.selector.replace(/\\([^-_a-zA-Z\d])/g, '$1'),
+			properties: this.properties,
+			mangledSelector: this.mangledSelector
 		};
+
+		for (const component of this.components) {
+			serializedObject.components.push(component.replace(/\\([^-_a-zA-Z\d])/g, '$1'));
+		}
 
 		if (this.onAddProperty) {
 			serializedObject.onAddProperty = this.onAddProperty.toString();
@@ -151,7 +183,7 @@ class CssRecord {
 			serializedObject.scope = this.scope;
 		}
 
-		if (this.properties.length) {
+		if (this.pseudoClasses.length) {
 			serializedObject.pseudoClasses = this.pseudoClasses;
 		}
 
@@ -159,26 +191,19 @@ class CssRecord {
 	}
 
 	public static deserialize(data: SerializedCssRecordInterface): CssRecord {
-		// eslint-disable-next-line @typescript-eslint/no-implied-eval
-		const onAddPropertyFn = 'onAddProperty' in data ? new Function(data.onAddProperty) : null;
 		return new CssRecord({
 			...data,
 			...{
-				onAddProperty: onAddPropertyFn
+				// eslint-disable-next-line @typescript-eslint/no-implied-eval
+				onAddProperty: 'onAddProperty' in data ? new Function(data.onAddProperty) : null
 			}
 		});
 	}
 
-	public hydrate(data: Record<string, any>): void {
-		for (const selector of data.selectors) {
-			this.addSelector(selector);
-		}
-
+	public hydrate(data: SerializedCssRecordInterface): void {
+		this.addComponents(data.components);
 		this.addProperties(data.properties);
-
-		if ('pseudoClasses' in data) {
-			this.addPseudoClasses(data.pseudoClasses);
-		}
+		this.addPseudoClasses(data.pseudoClasses || []);
 	}
 
 }

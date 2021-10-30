@@ -2,7 +2,7 @@
 	border-top:1px solid #444
 }
 #stylify-profiler .s1,
-#stylify-profiler .s52{
+#stylify-profiler .s56{
 	background-color:#333
 }
 #stylify-profiler .s2{
@@ -67,36 +67,36 @@
 	word-spacing:24px
 }
 #stylify-profiler .s22,
-#stylify-profiler .s54,
+#stylify-profiler .s52,
 #stylify-profiler .s53,
-#stylify-profiler .s55,
-#stylify-profiler .s56{
+#stylify-profiler .s54,
+#stylify-profiler .s55{
 	box-sizing:border-box
 }
 #stylify-profiler .s23,
-#stylify-profiler .s54{
+#stylify-profiler .s52{
 	border-left:1px solid #555
 }
 #stylify-profiler .s24,
-#stylify-profiler .s54,
+#stylify-profiler .s52,
 #stylify-profiler .s53{
 	align-items:center
 }
 #stylify-profiler .s25,
-#stylify-profiler .s54,
+#stylify-profiler .s52,
 #stylify-profiler .s53{
 	display:flex
 }
 #stylify-profiler .s26,
-#stylify-profiler .s54{
+#stylify-profiler .s52{
 	min-height:100%
 }
 #stylify-profiler .s27,
-#stylify-profiler .s54{
+#stylify-profiler .s52{
 	position:relative
 }
 #stylify-profiler .s28:hover,
-#stylify-profiler .s54:hover{
+#stylify-profiler .s52:hover{
 	background:#333
 }
 #stylify-profiler .s29,
@@ -113,7 +113,7 @@
 }
 #stylify-profiler .s32,
 #stylify-profiler .s53,
-#stylify-profiler .s56{
+#stylify-profiler .s55{
 	cursor:pointer
 }
 #stylify-profiler .s33,
@@ -121,56 +121,56 @@
 	user-select:none
 }
 #stylify-profiler .s34,
-#stylify-profiler .s55{
+#stylify-profiler .s54{
 	position:absolute
 }
 #stylify-profiler .s35,
-#stylify-profiler .s55{
+#stylify-profiler .s54{
 	bottom:100%
 }
 #stylify-profiler .s36,
-#stylify-profiler .s55{
+#stylify-profiler .s54{
 	left:0
 }
 #stylify-profiler .s37,
-#stylify-profiler .s55{
+#stylify-profiler .s54{
 	max-height:50vh
 }
 #stylify-profiler .s38,
-#stylify-profiler .s55{
+#stylify-profiler .s54{
 	overflow:auto
 }
 #stylify-profiler .s39,
-#stylify-profiler .s55{
+#stylify-profiler .s54{
 	min-width:100%
 }
 #stylify-profiler .s40,
-#stylify-profiler .s55{
+#stylify-profiler .s54{
 	background:#000
 }
 #stylify-profiler .s41,
-#stylify-profiler .s55{
+#stylify-profiler .s54{
 	padding:8px
 }
 #stylify-profiler .s42,
-#stylify-profiler .s56{
+#stylify-profiler .s55{
 	text-decoration:none
 }
 #stylify-profiler .s43,
-#stylify-profiler .s56{
+#stylify-profiler .s55{
 	color:#00b2e5
 }
 #stylify-profiler .s44,
-#stylify-profiler .s56,
+#stylify-profiler .s55,
 #stylify-profiler .s57{
 	margin-right:8px
 }
 #stylify-profiler .s45,
-#stylify-profiler .s56{
+#stylify-profiler .s55{
 	white-space:nowrap
 }
 #stylify-profiler .s46,
-#stylify-profiler .s56,
+#stylify-profiler .s55,
 #stylify-profiler .s57{
 	display:inline-block
 }
