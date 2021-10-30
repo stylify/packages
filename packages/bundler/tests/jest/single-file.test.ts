@@ -33,21 +33,13 @@ new Bundler({
 ]);
 
 new Bundler({
-	compilerConfig: {
-		...nativePreset.compiler,
-		...{
-			onPrepareCompilationResult: (compilationResult: CompilationResult): void => {
-				compilationResult.onPrepareCssRecord = (cssRecord: CssRecord) => {
-					cssRecord.scope = '#stylify-profiler';
-				};
-			}
-		},
-	},
+	compilerConfig: nativePreset.compiler,
 	verbose: false
 }).bundle([
 	{
 		outputFile: path.join(buildTmpDir, 'second.css'),
 		mangleSelectors: true,
+		scope: '#stylify-profiler',
 		files: [
 			path.join(buildTmpDir, 'second.html'),
 		]

@@ -1,6 +1,5 @@
 import 'v8-compile-cache';
 
-import type { CompilationResult, CssRecord } from '../packages/stylify/types';
 import { argumentsProcessor } from './ArgumentsProcessor';
 import { build } from './Build';
 import fse from 'fs-extra';
@@ -103,12 +102,6 @@ build.addConfigs({
 			const { Bundler } = await import(build.getPackageDir('bundler'));
 			const { nativePreset } = await import(build.getPackageDir('stylify'));
 
-			nativePreset.compiler.onPrepareCompilationResult = (compilationResult: CompilationResult): void => {
-				compilationResult.onPrepareCssRecord = (cssRecord: CssRecord): void => {
-					cssRecord.scope = '#stylify-profiler';
-				};
-			};
-
 			const bundler = new Bundler({
 				compilerConfig: nativePreset.compiler,
 				watchFiles: argumentsProcessor.processArguments.isWatchMode,
@@ -130,6 +123,7 @@ build.addConfigs({
 						profilerPackageDir, isWatchMode ? '' : 'tmp', 'src', 'assets', 'profiler.css'
 					),
 					mangleSelectors: !isWatchMode,
+					scope: '#stylify-profiler',
 					files: [
 						path.join(profilerPackageDir, isWatchMode ? '' : 'tmp', 'src', '*.tsx'),
 						path.join(profilerPackageDir, isWatchMode ? '' : 'tmp', 'src', '**', '*.tsx')

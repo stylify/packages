@@ -3,7 +3,8 @@ import {
 	CompilationResult,
 	Compiler,
 	CompilerConfigInterface,
-	CompilerContentOptionsInterface
+	CompilerContentOptionsInterface,
+	CssRecord
 } from '@stylify/stylify';
 import fs from 'fs';
 import path from 'path';
@@ -19,6 +20,7 @@ interface BundleInterface {
 	mangleSelectors?: boolean,
 	dumpCache?: boolean,
 	outputFile: string,
+	scope?: string,
 	files: string[]
 }
 
@@ -147,6 +149,12 @@ export class Bundler {
 					mangleSelectors: bundleOptions.mangleSelectors || false,
 					reconfigurable: false
 				});
+
+				if (bundleOptions.scope) {
+					compilationResult.onPrepareCssRecord = (cssRecord: CssRecord): void => {
+						cssRecord.scope = bundleOptions.scope;
+					};
+				}
 
 				if (typeof originalOnPrepareCompilationResultFunction === 'function') {
 					originalOnPrepareCompilationResultFunction(compilationResult);
