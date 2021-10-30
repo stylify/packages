@@ -51,7 +51,7 @@ class Compiler {
 
 	private ignoredElementsRegExp: RegExp = null;
 
-	private readonly contentOptionsRegExp = new RegExp('@stylify-(\\w+)\\[([^\\[\\]]+|\\n+)\\]', 'ig');
+	private readonly contentOptionsRegExp = new RegExp('@stylify-(\\w+)\\[([^\\[\\]]+|\\n+)\\]');
 
 	constructor(config: CompilerConfigInterface = {}) {
 		if (!Object.keys(config).length) {
@@ -135,10 +135,10 @@ class Compiler {
 		};
 
 		content = content
-			.replace(new RegExp(this.ignoredElementsRegExp.source, 'ig'), (matched: string) => {
+			.replace(new RegExp(this.ignoredElementsRegExp.source, 'g'), (matched: string) => {
 				return placeholderInserter(matched);
 			})
-			.replace(new RegExp(this.contentOptionsRegExp.source, 'ig'), (matched: string) => {
+			.replace(new RegExp(this.contentOptionsRegExp.source, 'g'), (matched: string) => {
 				return placeholderInserter(matched);
 			});
 
@@ -180,8 +180,8 @@ class Compiler {
 		this.pregenerate = '';
 
 		content = content
-			.replace(this.ignoredElementsRegExp, '')
-			.replace(this.contentOptionsRegExp, '')
+			.replace(new RegExp(this.ignoredElementsRegExp.source, 'g'), '')
+			.replace(new RegExp(this.contentOptionsRegExp.source, 'g'), '')
 			.replace(/\r\n|\r|\n|\t/ig, ' ')
 			.replace(/&amp;/ig, '&');
 
@@ -315,8 +315,7 @@ class Compiler {
 			components: {}
 		};
 
-		// todo nahradit za content options reg exp
-		const regExp = new RegExp('@stylify-(\\w+)\\[([^\\[\\]]+|\\n+)\\]', 'g');
+		const regExp = new RegExp(this.contentOptionsRegExp.source, 'g');
 		let optionMatch: RegExpMatchArray;
 
 		while ((optionMatch = regExp.exec(content))) {
