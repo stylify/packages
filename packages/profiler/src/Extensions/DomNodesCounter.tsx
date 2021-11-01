@@ -1,6 +1,6 @@
 import { Component } from 'preact';
 
-export default class DomNodesCounterExtension extends Component<any> {
+export class DomNodesCounterExtension extends Component<any> {
 
 	private profilerElement: HTMLElement = document.querySelector('#stylify-profiler');
 

@@ -26,7 +26,7 @@ export interface CssRecordCompileParametersConfig {
 	mangleSelectors?: boolean
 }
 
-class CssRecord {
+export class CssRecord {
 
 	private cache: string = null;
 
@@ -207,7 +207,3 @@ class CssRecord {
 	}
 
 }
-
-export { CssRecord };
-
-export default CssRecord;

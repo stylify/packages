@@ -2,7 +2,7 @@ import type { Compiler } from '@stylify/stylify';
 import { Component } from 'preact';
 import { ProfilerExtensionPropsInterface } from '..';
 
-export default class ConfigurationsVisualizerExtension extends Component<any> {
+export class ConfigurationsVisualizerExtension extends Component<any> {
 
 	public state: Record<string, any> = {
 		components: {},

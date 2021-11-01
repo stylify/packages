@@ -31,7 +31,7 @@ export interface SelectorsListInterface {
 
 type ScreensListType = Map<string, number|null>;
 
-class CompilationResult {
+export class CompilationResult {
 
 	private readonly MATCH_VARIABLE_REG_EXP = /\$([\w-_]+)/g;
 
@@ -416,7 +416,3 @@ class CompilationResult {
 	}
 
 }
-
-export { CompilationResult };
-
-export default CompilationResult;
