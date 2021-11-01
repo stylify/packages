@@ -2,9 +2,9 @@ import { PrefixesMapRecordType } from '.';
 
 class Prefixer {
 
-	public prefixesMap: Partial<PrefixesMapRecordType> = {};
+	public prefixesMap: PrefixesMapRecordType = {};
 
-	constructor(prefixesMap: Partial<PrefixesMapRecordType> = {}) {
+	constructor(prefixesMap: PrefixesMapRecordType = {}) {
 		this.setPrefixesMap(prefixesMap);
 	}
 
@@ -16,11 +16,11 @@ class Prefixer {
 		return null;
 	}
 
-	public setPrefixesMap(prefixesMap: Partial<PrefixesMapRecordType> = {}): void {
+	public setPrefixesMap(prefixesMap: PrefixesMapRecordType = {}): void {
 		this.prefixesMap = prefixesMap;
 	}
 
-	public addPrefixes(prefixesMap: Partial<PrefixesMapRecordType> = {}): void {
+	public addPrefixes(prefixesMap: PrefixesMapRecordType = {}): void {
 		this.prefixesMap = {...this.prefixesMap, ...prefixesMap};
 	}
 

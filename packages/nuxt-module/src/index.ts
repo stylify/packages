@@ -22,12 +22,12 @@ export interface StylifyNuxtModuleConfigInterface extends RuntimeConfigInterface
 	embeddedCssLimit: number,
 	importStylify: boolean,
 	importProfiler: boolean,
-	prefixesMap: Partial<PrefixesMapRecordType>,
+	prefixesMap: PrefixesMapRecordType,
 }
 
 interface StylifyCacheFileInterface {
-	compilationResult: Partial<SerializedCompilationResultInterface>,
-	prefixesMap: Partial<PrefixesMapRecordType>
+	compilationResult: SerializedCompilationResultInterface,
+	prefixesMap: PrefixesMapRecordType
 }
 
 let moduleConfig: StylifyNuxtModuleConfigInterface = {
@@ -94,7 +94,7 @@ const stylifyCacheExists = (): boolean => {
 };
 
 let loadedStylifyCache: StylifyCacheFileInterface = null;
-const loadStylifyCache = (): Partial<StylifyCacheFileInterface> => {
+const loadStylifyCache = (): StylifyCacheFileInterface => {
 	if (moduleConfig.dev || !loadedStylifyCache) {
 		loadedStylifyCache = stylifyCacheExists()
 			? JSON.parse(fs.readFileSync(stylifyCacheFilePath).toString())
@@ -104,8 +104,8 @@ const loadStylifyCache = (): Partial<StylifyCacheFileInterface> => {
 	return loadedStylifyCache;
 };
 
-const saveStylifyCache = (cache: Partial<StylifyCacheFileInterface>): Partial<StylifyCacheFileInterface> => {
-	let cacheToSave: Partial<StylifyCacheFileInterface> = stylifyCacheExists()
+const saveStylifyCache = (cache: Partial<StylifyCacheFileInterface>): StylifyCacheFileInterface => {
+	let cacheToSave: StylifyCacheFileInterface = stylifyCacheExists()
 		? loadStylifyCache()
 		: {
 			compilationResult: {},

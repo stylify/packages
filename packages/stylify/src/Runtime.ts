@@ -41,7 +41,7 @@ export class Runtime {
 
 	public repaintTimeout = 5;
 
-	constructor(config: Partial<RuntimeConfigInterface> = {}) {
+	constructor(config: RuntimeConfigInterface = {}) {
 		if (typeof document === 'undefined') {
 			return;
 		}
@@ -60,7 +60,7 @@ export class Runtime {
 		}
 	}
 
-	public configure(config: Partial<RuntimeConfigInterface>): Record<string, any> {
+	public configure(config: RuntimeConfigInterface): Record<string, any> {
 		const runtimeConfig = config.runtime || {};
 		const compilerConfig = config.compiler || {};
 

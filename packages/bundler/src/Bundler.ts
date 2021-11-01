@@ -43,7 +43,7 @@ interface BundlesBuildStatsInterface {
 
 export interface BundlerConfigInterface {
 	compilerConfig: CompilerConfigInterface,
-	verbose: boolean,
+	verbose?: boolean,
 	watchFiles?: boolean
 }
 
@@ -51,15 +51,15 @@ export class Bundler {
 
 	private bundlesBuildCache: Record<string, BundlesBuildCacheInterface> = {};
 
-	private config: Partial<BundlerConfigInterface> = {};
+	private config: BundlerConfigInterface = {
+		compilerConfig: null,
+		verbose: true,
+		watchFiles: false
+	}
 
 	public constructor(options: BundlerConfigInterface) {
 		this.config = {
-			...{
-				compilerConfig: null,
-				verbose: true,
-				watchFiles: false
-			},
+			...this.config,
 			...options
 		};
 

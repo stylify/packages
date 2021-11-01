@@ -13,11 +13,11 @@ export interface CompilationResultConfigInterface {
 }
 
 export interface SerializedCompilationResultInterface {
-	dev: boolean,
+	dev?: boolean,
 	reconfigurable?: boolean,
 	screensSortingFunction?: string,
 	screensList?: Record<string, number>,
-	selectorsList: Record<string, SerializedCssRecordInterface>,
+	selectorsList?: Record<string, SerializedCssRecordInterface>,
 	componentsList?: Record<string, string>
 	mangleSelectors?: boolean,
 	variables?: Record<string, string | number>,
