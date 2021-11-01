@@ -9,7 +9,7 @@ export type PrefixesMapRecordType = Record<string, Record<string|number, []>>;
 
 class PrefixesGenerator {
 
-	public createPrefixesMap(compilationResult: CompilationResult): Partial<PrefixesMapRecordType> {
+	public createPrefixesMap(compilationResult: CompilationResult): PrefixesMapRecordType {
 		const prefixesMap = {};
 
 		for (const selector in compilationResult.selectorsList) {
