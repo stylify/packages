@@ -41,7 +41,7 @@ interface BundlesBuildStatsInterface {
 	buildTime: string
 }
 
-export interface BundlerOptionsInterface {
+export interface BundlerConfigInterface {
 	compilerConfig: CompilerConfigInterface,
 	verbose: boolean,
 	watchFiles?: boolean
@@ -51,10 +51,10 @@ export class Bundler {
 
 	private bundlesBuildCache: Record<string, BundlesBuildCacheInterface> = {};
 
-	private options: Partial<BundlerOptionsInterface> = {};
+	private config: Partial<BundlerConfigInterface> = {};
 
-	public constructor(options: BundlerOptionsInterface) {
-		this.options = {
+	public constructor(options: BundlerConfigInterface) {
+		this.config = {
 			...{
 				compilerConfig: null,
 				verbose: true,
@@ -63,11 +63,11 @@ export class Bundler {
 			...options
 		};
 
-		if (!('contentOptionsProcessors' in this.options.compilerConfig)) {
-			this.options.compilerConfig.contentOptionsProcessors = {};
+		if (!('contentOptionsProcessors' in this.config.compilerConfig)) {
+			this.config.compilerConfig.contentOptionsProcessors = {};
 		}
 
-		this.options.compilerConfig.contentOptionsProcessors.files = (
+		this.config.compilerConfig.contentOptionsProcessors.files = (
 			contentOptions: ContentOptionsInterface,
 			optionMatchValue: string
 		): ContentOptionsInterface => {
@@ -83,13 +83,13 @@ export class Bundler {
 	public bundle(bundles: BundleInterface[]): void {
 		const startTime = performance.now();
 
-		for (const bundleOptions of bundles) {
-			this.processBundle(bundleOptions);
+		for (const bundleConfig of bundles) {
+			this.processBundle(bundleConfig);
 		}
 
-		if (this.options.watchFiles) {
+		if (this.config.watchFiles) {
 			this.log(`Waching for changes...`, 'textYellow');
-		} else if (this.options.verbose) {
+		} else if (this.config.verbose) {
 			let buildsInfo = [];
 
 			for (const bundleOutputFile in this.bundlesBuildCache) {
@@ -125,7 +125,7 @@ export class Bundler {
 			}
 
 			if (tablesData.length) {
-				if (this.options.verbose) {
+				if (this.config.verbose) {
 					// eslint-disable-next-line no-console
 					console.table(tablesData);
 				}
@@ -137,22 +137,22 @@ export class Bundler {
 		}
 	}
 
-	private processBundle(bundleOptions: BundleInterface): void {
+	private processBundle(bundleConfig: BundleInterface): void {
 		const startTime = performance.now();
-		this.log(`Processing ${bundleOptions.outputFile}.`, 'textCyan');
+		this.log(`Processing ${bundleConfig.outputFile}.`, 'textCyan');
 
-		if (!(bundleOptions.outputFile in this.bundlesBuildCache)) {
-			const originalOnPrepareCompilationResultFunction = this.options.compilerConfig.onPrepareCompilationResult;
-			const compiler = new Compiler(this.options.compilerConfig);
+		if (!(bundleConfig.outputFile in this.bundlesBuildCache)) {
+			const originalOnPrepareCompilationResultFunction = this.config.compilerConfig.onPrepareCompilationResult;
+			const compiler = new Compiler(this.config.compilerConfig);
 			compiler.onPrepareCompilationResult = (compilationResult: CompilationResult): void => {
 				compilationResult.configure({
-					mangleSelectors: bundleOptions.mangleSelectors || false,
+					mangleSelectors: bundleConfig.mangleSelectors || false,
 					reconfigurable: false
 				});
 
-				if (bundleOptions.scope) {
+				if (bundleConfig.scope) {
 					compilationResult.onPrepareCssRecord = (cssRecord: CssRecord): void => {
-						cssRecord.scope = bundleOptions.scope;
+						cssRecord.scope = bundleConfig.scope;
 					};
 				}
 
@@ -160,7 +160,7 @@ export class Bundler {
 					originalOnPrepareCompilationResultFunction(compilationResult);
 				}
 			};
-			this.bundlesBuildCache[bundleOptions.outputFile] = {
+			this.bundlesBuildCache[bundleConfig.outputFile] = {
 				compiler: compiler,
 				compilationResult: null,
 				buildTime: null,
@@ -168,72 +168,72 @@ export class Bundler {
 			};
 		}
 
-		const bundleBuildCache = this.bundlesBuildCache[bundleOptions.outputFile];
+		const bundleBuildCache = this.bundlesBuildCache[bundleConfig.outputFile];
 		const compiler = bundleBuildCache.compiler;
 
-		const filesToProcess = this.getFilesToProcess(compiler, bundleOptions.files);
+		const filesToProcess = this.getFilesToProcess(compiler, bundleConfig.files);
 
 		if (!filesToProcess.length) {
-			this.log(`No files found for ${bundleOptions.outputFile}. Skipping.`, 'textRed');
+			this.log(`No files found for ${bundleConfig.outputFile}. Skipping.`, 'textRed');
 			return;
 		}
 
-		for (const fileToProcessOptions of filesToProcess) {
-			if (!fs.existsSync(fileToProcessOptions.filePath)) {
-				this.log(`File ${fileToProcessOptions.filePath} not found. Skipping`, 'textRed');
+		for (const fileToProcessConfig of filesToProcess) {
+			if (!fs.existsSync(fileToProcessConfig.filePath)) {
+				this.log(`File ${fileToProcessConfig.filePath} not found. Skipping`, 'textRed');
 				continue;
 			}
 
-			if (!(fileToProcessOptions.filePath in bundleBuildCache)) {
-				bundleBuildCache.files.push(fileToProcessOptions.filePath);
-				if (this.options.watchFiles) {
-					fs.watchFile(fileToProcessOptions.filePath, () => {
-						this.log(`${fileToProcessOptions.filePath} changed.`, null, 2);
+			if (!(fileToProcessConfig.filePath in bundleBuildCache)) {
+				bundleBuildCache.files.push(fileToProcessConfig.filePath);
+				if (this.config.watchFiles) {
+					fs.watchFile(fileToProcessConfig.filePath, () => {
+						this.log(`${fileToProcessConfig.filePath} changed.`, null, 2);
 						this.processBundle({
-							...bundleOptions,
-							...{files: [fileToProcessOptions.filePath]}
+							...bundleConfig,
+							...{files: [fileToProcessConfig.filePath]}
 						});
 						this.log(`Waching for changes...`, 'textYellow');
 					});
 				}
 			}
 
-			if (Object.keys(fileToProcessOptions.contentOptions.components).length) {
+			if (Object.keys(fileToProcessConfig.contentOptions.components).length) {
 				compiler.configure({
-					components: fileToProcessOptions.contentOptions.components
+					components: fileToProcessConfig.contentOptions.components
 				});
 			}
 
-			if (fileToProcessOptions.contentOptions.pregenerate) {
+			if (fileToProcessConfig.contentOptions.pregenerate) {
 				bundleBuildCache.compilationResult = compiler.compile(
-					fileToProcessOptions.contentOptions.pregenerate,
+					fileToProcessConfig.contentOptions.pregenerate,
 					bundleBuildCache.compilationResult
 				);
 			}
 
 			bundleBuildCache.compilationResult = compiler.compile(
-				fileToProcessOptions.content,
+				fileToProcessConfig.content,
 				bundleBuildCache.compilationResult
 			);
 
-			if (bundleOptions.mangleSelectors) {
+			if (bundleConfig.mangleSelectors) {
 				const processedContent = compiler.rewriteSelectors(
 					bundleBuildCache.compilationResult,
-					fileToProcessOptions.content
+					fileToProcessConfig.content
 				);
-				fs.writeFileSync(fileToProcessOptions.filePath, processedContent);
+				fs.writeFileSync(fileToProcessConfig.filePath, processedContent);
 			}
 		}
 
-		const outputDir = path.dirname(bundleOptions.outputFile);
+		const outputDir = path.dirname(bundleConfig.outputFile);
 
 		if (!fs.existsSync(outputDir)) {
 			fs.mkdirSync(outputDir, {recursive: true});
 		}
 
-		fs.writeFileSync(bundleOptions.outputFile, bundleBuildCache.compilationResult.generateCss());
+		fs.writeFileSync(bundleConfig.outputFile, bundleBuildCache.compilationResult.generateCss());
 
-		if (bundleOptions.dumpCache) {
+		if (bundleConfig.dumpCache) {
 			const serializedResult = bundleBuildCache.compilationResult.serialize();
 
 			for (const selector in serializedResult.selectorsList) {
@@ -243,11 +243,11 @@ export class Bundler {
 
 			delete serializedResult.onPrepareCssRecord;
 
-			fs.writeFileSync(bundleOptions.outputFile + '.json', JSON.stringify(serializedResult));
+			fs.writeFileSync(bundleConfig.outputFile + '.json', JSON.stringify(serializedResult));
 		}
 
 		bundleBuildCache.buildTime = ((performance.now() - startTime)/1000).toFixed(2);
-		this.log(`Created ${bundleOptions.outputFile} (${bundleBuildCache.buildTime} s).`, 'textGreen');
+		this.log(`Created ${bundleConfig.outputFile} (${bundleBuildCache.buildTime} s).`, 'textGreen');
 	}
 
 	private getFilesToProcess(compiler: Compiler, filesMasks: string[]): BundleFileDataInterface[] {
@@ -283,7 +283,7 @@ export class Bundler {
 	}
 
 	private log(content: string, colorName: string = null, newLinesCount: number = null): void {
-		if (!this.options.verbose) {
+		if (!this.config.verbose) {
 			return;
 		}
 

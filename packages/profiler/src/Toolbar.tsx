@@ -86,7 +86,7 @@
 import { Component, render } from 'preact';
 import type { Runtime } from '@stylify/stylify';
 
-export interface ToolbarInitOptions {
+export interface ToolbarInitConfig {
 	stylify: Runtime
 	openCodeInNewWindow: CallableFunction
 }
@@ -99,7 +99,7 @@ const ToolbarExtension = ({ extensionName }) => {
 	return <TagName config={extensionsConfig} />;
 };
 
-const initProfilerToolbar = (profilerConfig: ToolbarInitOptions): void => {
+const initProfilerToolbar = (profilerConfig: ToolbarInitConfig): void => {
 	extensionsConfig = profilerConfig;
 
 	let profilerToolbarElement = document.querySelector(`#${ProfilerToolbar.TOOLBAR_ELEMENT_ID}`);
