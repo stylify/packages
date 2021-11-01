@@ -1,4 +1,4 @@
-export default class SelectorProperties {
+export class SelectorProperties {
 
 	public properties: Record<string, string> = {};
 

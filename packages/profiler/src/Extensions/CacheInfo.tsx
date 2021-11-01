@@ -1,7 +1,7 @@
 import { Component } from 'preact';
 import { ProfilerExtensionPropsInterface } from '..';
 
-export default class CacheInfoExtension extends Component<any> {
+export class CacheInfoExtension extends Component<any> {
 
 	private stylify = null;
 

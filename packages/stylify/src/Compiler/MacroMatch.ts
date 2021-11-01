@@ -1,4 +1,4 @@
-export default class MacroMatch {
+export class MacroMatch {
 
 	public fullMatch: string = null;
 

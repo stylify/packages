@@ -9,7 +9,7 @@ export interface RuntimeConfigInterface {
 	}
 }
 
-class Runtime {
+export class Runtime {
 
 	public static readonly STYLIFY_STYLE_EL_ID: string = 'stylify-css';
 
@@ -248,7 +248,3 @@ class Runtime {
 	}
 
 }
-
-export { Runtime };
-
-export default Runtime;

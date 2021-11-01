@@ -1,6 +1,4 @@
-import { CompilationResult, SelectorsListInterface } from './CompilationResult';
-import MacroMatch from './MacroMatch';
-import SelectorProperties from './SelectorProperties';
+import { CompilationResult, MacroMatch, SelectorProperties, SelectorsListInterface } from '.';
 
 export interface SerializedCompilerInterface {
 	selectorsList: SelectorsListInterface
@@ -30,7 +28,7 @@ export interface ComponentsInterface {
 	processed: boolean
 }
 
-class Compiler {
+export class Compiler {
 
 	private readonly CONTENT_OPTIONS_REG_EXP = new RegExp('@stylify-(\\w+)\\[([^\\[\\]]+|\\n+)\\]');
 
@@ -338,7 +336,3 @@ class Compiler {
 	}
 
 }
-
-export { Compiler };
-
-export default Compiler;

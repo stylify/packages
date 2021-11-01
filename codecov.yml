@@ -20,6 +20,9 @@ flags:
   autoprefixer:
     paths:
       - packages/autoprefixer/
+  bundler:
+    paths:
+      - packages/bundler/
   stylify:
     paths:
       - packages/stylify/
