@@ -261,23 +261,8 @@ export default function Stylify(): void {
 	});
 
 	nuxt.hook('build:done', (): void => {
-		const serializedPreflightCompilationResult = getPreflightCompilationResult().serialize();
-		const newSelectorsList = {};
-
-		for (const selector in serializedPreflightCompilationResult.selectorsList) {
-			const data = serializedPreflightCompilationResult.selectorsList[selector];
-			data.processed = false;
-			newSelectorsList[selector] = data;
-		}
-
-		serializedPreflightCompilationResult.selectorsList = newSelectorsList;
-
-		if (moduleConfig.generateCssPerPage) {
-			serializedPreflightCompilationResult.cssTree = {};
-		}
-
 		saveStylifyCache({
-			compilationResult: serializedPreflightCompilationResult,
+			compilationResult: getPreflightCompilationResult().serialize(),
 			prefixesMap: prefixesMap
 		});
 	});

@@ -25,7 +25,16 @@ export interface CompilerContentOptionsInterface {
 	components: Record<string, any>
 }
 
+export interface ComponentsInterface {
+	selectors: string[],
+	processed: boolean
+}
+
 class Compiler {
+
+	private readonly CONTENT_OPTIONS_REG_EXP = new RegExp('@stylify-(\\w+)\\[([^\\[\\]]+|\\n+)\\]');
+
+	private ignoredElementsRegExp: RegExp = null;
 
 	public contentOptionsProcessors: Record<string, CallableFunction> = {};
 
@@ -43,15 +52,11 @@ class Compiler {
 
 	public variables: Record<string, any> = {};
 
-	public components: Record<string, any> = {};
+	public components: Record<string, ComponentsInterface> = {};
 
 	public pregenerate = '';
 
 	public ignoredElements = ['head', 'script', 'style', 'stylify-ignore'];
-
-	private ignoredElementsRegExp: RegExp = null;
-
-	private readonly contentOptionsRegExp = new RegExp('@stylify-(\\w+)\\[([^\\[\\]]+|\\n+)\\]');
 
 	constructor(config: CompilerConfigInterface = {}) {
 		if (!Object.keys(config).length) {
@@ -99,16 +104,13 @@ class Compiler {
 			return;
 		}
 
-		if (typeof selectorDependencies === 'string') {
-			selectorDependencies = selectorDependencies
-				.replace(/\s/ig, ' ')
-				.split(' ')
-				.filter((selector: string): boolean => {
-					return selector.trim().length > 0;
-				});
-		} else {
-			selectorDependencies = selectorDependencies.join(' ').split(' ');
-		}
+		selectorDependencies = typeof selectorDependencies === 'string'
+			? selectorDependencies.replace(/\s/ig, ' ')
+			: selectorDependencies.join(' ');
+
+		selectorDependencies = selectorDependencies.split(' ').filter((selector: string): boolean => {
+			return selector.trim().length > 0;
+		});
 
 		this.components[selector] = {
 			selectors: selectorDependencies,
@@ -138,20 +140,27 @@ class Compiler {
 			.replace(new RegExp(this.ignoredElementsRegExp.source, 'g'), (matched: string) => {
 				return placeholderInserter(matched);
 			})
-			.replace(new RegExp(this.contentOptionsRegExp.source, 'g'), (matched: string) => {
+			.replace(new RegExp(this.CONTENT_OPTIONS_REG_EXP.source, 'g'), (matched: string) => {
 				return placeholderInserter(matched);
 			});
 
-		const sortedSelectorsListKeys = Object
-			.keys(compilationResult.selectorsList)
-			.sort((a, b) => b.length - a.length);
+		const selectorsListKeys = Object.keys(compilationResult.selectorsList);
+		const sortedSelectorsListKeys = [...selectorsListKeys, ...Object.keys(compilationResult.componentsList)]
+			.sort((a: string, b: string): number => {
+				return b.length - a.length;
+			});
 
 		for (const selector of sortedSelectorsListKeys) {
 			const regExpSelector = selector.replace(/[.*+?^${}()|[\]\\]/ig, '\\$&');
 			content = content.replace(
 				new RegExp(`(?:[\\s"'{,\`]+|^)${regExpSelector}(?:[\\s"'{,\`]+|$)`, 'ig'),
-				(matched): string => {
-					return matched.replace(selector, compilationResult.selectorsList[selector].mangledSelector);
+				(matched: string): string => {
+					return matched.replace(
+						selector,
+						selectorsListKeys.includes(selector)
+							? compilationResult.selectorsList[selector].mangledSelector
+							: compilationResult.componentsList[selector]
+					);
 				}
 			);
 		}
@@ -181,7 +190,7 @@ class Compiler {
 
 		content = content
 			.replace(new RegExp(this.ignoredElementsRegExp.source, 'g'), '')
-			.replace(new RegExp(this.contentOptionsRegExp.source, 'g'), '')
+			.replace(new RegExp(this.CONTENT_OPTIONS_REG_EXP.source, 'g'), '')
 			.replace(/\r\n|\r|\n|\t/ig, ' ')
 			.replace(/&amp;/ig, '&');
 
@@ -193,43 +202,34 @@ class Compiler {
 			});
 		}
 
-		const notProcessedComponentsSelectors = Object.keys(this.components).filter((element): boolean => {
-			return this.components[element].processed === false;
-		});
+		const selectorsComponentsMap = {};
 
-		const processedComponentsSelectors = {};
-
-		if (notProcessedComponentsSelectors.length) {
-
-			for (const notProcessedComponentsSelector of notProcessedComponentsSelectors) {
+		Object.keys(this.components)
+			.filter((element): boolean => {
+				return this.components[element].processed === false;
+			})
+			.forEach((notProcessedComponentsSelector) => {
 				if (!content.match(new RegExp(`(?:[ "'{,\`]|^)${notProcessedComponentsSelector}\\b`, 'ig'))) {
-					continue;
+					return;
 				}
 
 				const componentSelectors = this.components[notProcessedComponentsSelector].selectors;
-				content += ` ${componentSelectors.join(' ') as string}`;
-				processedComponentsSelectors[notProcessedComponentsSelector] = componentSelectors;
-				this.components[notProcessedComponentsSelector].processed = true;
-			}
+				content += ` ${componentSelectors.join(' ')}`;
 
-		}
-
-		this.processMacros(content, compilationResult);
-
-		const processedComponentsSelectorsKeys = Object.keys(processedComponentsSelectors);
-		if (processedComponentsSelectorsKeys.length) {
-			const selectorsComponentsMap = {};
-
-			processedComponentsSelectorsKeys.forEach((componentSelector) => {
-				processedComponentsSelectors[componentSelector].forEach((componentDependencySelector) => {
+				componentSelectors.forEach((componentDependencySelector: string): void => {
 					if (! (componentDependencySelector in selectorsComponentsMap)) {
 						selectorsComponentsMap[componentDependencySelector] = [];
 					}
 
-					selectorsComponentsMap[componentDependencySelector].push(componentSelector);
+					selectorsComponentsMap[componentDependencySelector].push(notProcessedComponentsSelector);
 				});
+
+				this.components[notProcessedComponentsSelector].processed = true;
 			});
 
+		this.processMacros(content, compilationResult);
+
+		if (Object.keys(selectorsComponentsMap).length) {
 			compilationResult.bindComponentsSelectors(selectorsComponentsMap);
 		}
 
@@ -280,31 +280,25 @@ class Compiler {
 
 			while ((macroMatches = macroRe.exec(content))) {
 				const fullMatch = macroMatches[0];
-				const macroIsInSelectorsList = fullMatch in compilationResult.selectorsList;
-				const macroIsProcessed = macroIsInSelectorsList && compilationResult.selectorsList[fullMatch].processed;
 
-				if (macroIsInSelectorsList && macroIsProcessed) {
-					continue;
+				if (!(fullMatch in compilationResult.selectorsList)) {
+					const macroMatch = new MacroMatch(macroMatches, this.screens);
+					const selectorProperties = new SelectorProperties();
+
+					this.macros[macroKey].call(
+						{
+							dev: this.dev,
+							variables: this.variables,
+							helpers: this.helpers
+						},
+						macroMatch,
+						selectorProperties
+					);
+
+					compilationResult.addCssRecord(macroMatch, selectorProperties);
 				}
 
-				const macroMatch = new MacroMatch(macroMatches, this.screens);
-				const selectorProperties = new SelectorProperties();
-
-				this.macros[macroKey].call(
-					{
-						dev: this.dev,
-						variables: this.variables,
-						helpers: this.helpers
-					},
-					macroMatch,
-					selectorProperties
-				);
-
-				compilationResult.addCssRecord(macroMatch, selectorProperties);
-
-				if (macroIsInSelectorsList && !macroIsProcessed) {
-					compilationResult.selectorsList[fullMatch].processed = true;
-				}
+				compilationResult.selectorsList[fullMatch].shouldBeGenerated = true;
 			}
 		}
 	}
@@ -315,7 +309,7 @@ class Compiler {
 			components: {}
 		};
 
-		const regExp = new RegExp(this.contentOptionsRegExp.source, 'g');
+		const regExp = new RegExp(this.CONTENT_OPTIONS_REG_EXP.source, 'g');
 		let optionMatch: RegExpMatchArray;
 
 		while ((optionMatch = regExp.exec(content))) {

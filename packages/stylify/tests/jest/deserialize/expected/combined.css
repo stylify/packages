@@ -21,7 +21,7 @@
 .minw1280px\|\|landscape\:color\:purple{
 	color:purple
 }
-.minw1280px\|\|landscape\:hover\:color\:purple\:hover{
+.minw1280px\|\|landscape\:hover\:color\:purple:hover{
 	color:purple
 }
 }

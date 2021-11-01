@@ -11,9 +11,23 @@ export interface RuntimeConfigInterface {
 
 class Runtime {
 
-	private readonly STYLIFY_STYLE_EL_ID: string = 'stylify-css';
+	public static readonly STYLIFY_STYLE_EL_ID: string = 'stylify-css';
 
-	private readonly STYLIFY_CLOAK_ATTR_NAME:string = 's-cloak';
+	public static readonly RUNTIME_CACHE_CLASS = 'stylify-runtime-cache';
+
+	public static readonly STYLIFY_RUNTIME_IGNORE_CLASS = 'stylify-ignore';
+
+	public static readonly STYLIFY_CLOAK_ATTR_NAME: string = 's-cloak';
+
+	public static readonly STYLIFY_READY_EVENT = 'stylify:ready';
+
+	public static readonly STYLIFY_RUNTIME_CONFIGURED_EVENT = 'stylify:runtime:configured';
+
+	public static readonly STYLIFY_COMPILER_CONFIGURED_EVENT = 'stylify:compiler:configured';
+
+	public static readonly STYLIFY_REPAINTED_EVENT = 'stylify:runtime:repainted';
+
+	public static readonly STYLIFY_UNCLOAK_EVENT = 'stylify:runtime:uncloak';
 
 	public dev = false;
 
@@ -35,7 +49,7 @@ class Runtime {
 		this.configure(config);
 		this.initialPaintCompleted = false;
 
-		this.triggerEvent('stylify:ready', this);
+		this.triggerEvent(Runtime.STYLIFY_READY_EVENT, this);
 
 		if (['complete', 'loaded', 'interactive'].includes(document.readyState)) {
 			this.init();
@@ -61,7 +75,7 @@ class Runtime {
 		this.dev = 'dev' in config ? config.dev : this.dev;
 		this.repaintTimeout = runtimeConfig.repaintTimeout || this.repaintTimeout;
 
-		this.triggerEvent('stylify:runtime:configured', {
+		this.triggerEvent(Runtime.STYLIFY_RUNTIME_CONFIGURED_EVENT, {
 			config: config
 		});
 
@@ -75,7 +89,7 @@ class Runtime {
 
 		this.compiler.configure(compilerConfig);
 
-		this.triggerEvent('stylify:compiler:configured', {
+		this.triggerEvent(Runtime.STYLIFY_COMPILER_CONFIGURED_EVENT, {
 			compiler: this
 		});
 
@@ -90,7 +104,7 @@ class Runtime {
 			this.initialPaintCompleted = true;
 
 			if (css !== null) {
-				this.triggerEvent('stylify:runtime:repainted', {
+				this.triggerEvent(Runtime.STYLIFY_REPAINTED_EVENT, {
 					css: css,
 					repaintTime: performance.now() - repaintStartTime,
 					compilationResult: this.compilationResult,
@@ -106,7 +120,7 @@ class Runtime {
 
 	public hydrate(data: string|SerializedCompilationResultInterface = null): void {
 		if (!data) {
-			const cacheElements = document.querySelectorAll('.stylify-runtime-cache') || [];
+			const cacheElements = document.querySelectorAll(`.${Runtime.RUNTIME_CACHE_CLASS}`) || [];
 			cacheElements.forEach((cacheElement: Element) => {
 				cacheElement.classList.add('processed');
 				if (cacheElement.innerHTML.trim().length > 0) {
@@ -162,16 +176,14 @@ class Runtime {
 
 				if (!(mutation.type === 'attributes' && mutation.attributeName === 'class')
 					|| targetElement.nodeType !== Node.ELEMENT_NODE
-					|| targetElement.id === this.STYLIFY_STYLE_EL_ID
-					|| targetElement.classList.contains('stylify-ignore')
-					|| targetElement.closest('.stylify-ignore') !== null
+					|| targetElement.id === Runtime.STYLIFY_STYLE_EL_ID
+					|| targetElement.classList.contains(Runtime.STYLIFY_RUNTIME_IGNORE_CLASS)
+					|| targetElement.closest(`.${Runtime.STYLIFY_RUNTIME_IGNORE_CLASS}`) !== null
 				) {
 					return;
 				}
 
-				compilerContentQueue += mutation.type === 'attributes' && mutation.attributeName === 'class'
-					? targetElement.className
-					: targetElement.outerHTML;
+				compilerContentQueue += targetElement.className;
 			});
 
 			if (!compilerContentQueue.trim().length) {
@@ -192,7 +204,7 @@ class Runtime {
 					return;
 				}
 
-				this.triggerEvent('stylify:runtime:repainted', {
+				this.triggerEvent(Runtime.STYLIFY_REPAINTED_EVENT, {
 					css: css,
 					repaintTime: repaintTime,
 					compilationResult: this.compilationResult,
@@ -209,22 +221,22 @@ class Runtime {
 	}
 
 	public injectCss(css: string): void {
-		let el = document.querySelector(`#${this.STYLIFY_STYLE_EL_ID}`);
+		let el = document.querySelector(`#${Runtime.STYLIFY_STYLE_EL_ID}`);
 
 		if (el) {
 			el.innerHTML = css;
 		} else {
 			el = document.createElement('style');
-			el.id = this.STYLIFY_STYLE_EL_ID;
+			el.id = Runtime.STYLIFY_STYLE_EL_ID;
 			el.innerHTML = css;
 			document.head.appendChild(el);
 		}
 
-		const elements = document.querySelectorAll(`[${this.STYLIFY_CLOAK_ATTR_NAME}]`);
+		const elements = document.querySelectorAll(`[${Runtime.STYLIFY_CLOAK_ATTR_NAME}]`);
 		elements.forEach((element) => {
-			element.removeAttribute(this.STYLIFY_CLOAK_ATTR_NAME);
-			this.triggerEvent('stylify:runtime:uncloak', {
-				id: element.getAttribute(this.STYLIFY_CLOAK_ATTR_NAME) || null,
+			element.removeAttribute(Runtime.STYLIFY_CLOAK_ATTR_NAME);
+			this.triggerEvent(Runtime.STYLIFY_UNCLOAK_EVENT, {
+				id: element.getAttribute(Runtime.STYLIFY_CLOAK_ATTR_NAME) || null,
 				el: element
 			});
 		});

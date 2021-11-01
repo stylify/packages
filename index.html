@@ -13,12 +13,14 @@
 </head>
 <body>
 
-	<h1 class="text-align:center">Stylify</h1>
 	<script type="module">
 		import { Runtime, nativePreset } from './packages/stylify/esm/index.js';
-		nativePreset.compiler.dev = true;
+		import { Profiler } from './packages/profiler/esm/index.js'
+
+		new Profiler();
+
+		nativePreset.dev = true;
 		new Runtime(nativePreset);
 	</script>
-	<script src='./packages/profiler/dist/profiler.js'></script>
 </body>
 </html>

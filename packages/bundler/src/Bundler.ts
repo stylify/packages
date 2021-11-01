@@ -236,11 +236,9 @@ export class Bundler {
 		if (bundleOptions.dumpCache) {
 			const serializedResult = bundleBuildCache.compilationResult.serialize();
 
-			for (const screen in serializedResult.cssTree) {
-				for (const selector in serializedResult.cssTree[screen]) {
-					delete serializedResult.cssTree[screen][selector].onAddProperty;
-					delete serializedResult.cssTree[screen][selector].scope;
-				}
+			for (const selector in serializedResult.selectorsList) {
+				delete serializedResult.selectorsList[selector].onAddProperty;
+				delete serializedResult.selectorsList[selector].scope;
 			}
 
 			delete serializedResult.onPrepareCssRecord;
