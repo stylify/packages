@@ -311,6 +311,10 @@ export class Compiler {
 		let optionMatch: RegExpMatchArray;
 
 		while ((optionMatch = regExp.exec(content))) {
+			if (typeof optionMatch[1] !== 'string' || typeof optionMatch[2] !== 'string') {
+				continue;
+			}
+
 			const optionKey = optionMatch[1];
 
 			const optionMatchValue = optionMatch[2].replace(/\n|\t/g, ' ').replace(/(?:`|')/g, '"');
