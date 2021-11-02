@@ -19,7 +19,7 @@ export class CacheInfoExtension extends Component<any> {
 		this.openCodeInNewWindow = props.config.openCodeInNewWindow;
 
 		document.addEventListener('stylify:runtime:hydrated', (event: any) => {
-			this.state.cacheList.push(this.stringifyCache(event.data.cache));
+			this.state.cacheList.push(this.stringifyCache(event.detail.cache));
 
 			this.setState({
 				cacheList: this.state.cacheList
@@ -38,7 +38,7 @@ export class CacheInfoExtension extends Component<any> {
 	}
 
 	public openActualCacheInNewWindow = (): void => {
-		this.openCodeInNewWindow(this.stringifyCache(this.stylify.runtime.CompilationResult.serialize()), 'json');
+		this.openCodeInNewWindow(this.stringifyCache(this.stylify.runtime.compilationResult.serialize()), 'json');
 	}
 
 	private stringifyCache = (cache: Record<string, any>): string => {

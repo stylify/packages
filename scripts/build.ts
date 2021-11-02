@@ -136,7 +136,7 @@ build.addConfigs({
 		{
 			inputDir: profilerInputDir,
 			inputFile: 'index',
-			formats: ['esm'],
+			formats: ['esm', 'cjs'],
 			minifyEsm: true,
 			external: ['@stylify/stylify']
 		},
