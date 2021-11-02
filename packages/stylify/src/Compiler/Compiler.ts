@@ -124,7 +124,11 @@ export class Compiler {
 		return this;
 	}
 
-	public rewriteSelectors(compilationResult: CompilationResult, content: string): string {
+	public rewriteSelectors(
+		content: string,
+		compilationResult: CompilationResult,
+		matchOnlyBetweenQuotes = true
+	): string {
 		const placeholderTextPart = '__STYLIFY_PLACEHOLDER__';
 		const contentPlaceholders: Record<string, any> = {};
 
@@ -148,19 +152,35 @@ export class Compiler {
 				return b.length - a.length;
 			});
 
-		for (const selector of sortedSelectorsListKeys) {
-			const regExpSelector = selector.replace(/[.*+?^${}()|[\]\\]/ig, '\\$&');
-			content = content.replace(
-				new RegExp(`(?:[\\s"'{,\`]+|^)${regExpSelector}(?:[\\s"'{,\`]+|$)`, 'ig'),
-				(matched: string): string => {
-					return matched.replace(
-						selector,
-						selectorsListKeys.includes(selector)
-							? compilationResult.selectorsList[selector].mangledSelector
-							: compilationResult.componentsList[selector]
-					);
-				}
-			);
+		for (let selector of sortedSelectorsListKeys) {
+			if (!content.includes(selector)) {
+				continue;
+			}
+
+			const mangledSelector = selectorsListKeys.includes(selector)
+				? compilationResult.selectorsList[selector].mangledSelector
+				: compilationResult.componentsList[selector];
+
+			selector = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+			if (!matchOnlyBetweenQuotes) {
+				content = content.replace(new RegExp(selector, 'g'), mangledSelector);
+				continue;
+			}
+
+			for (const quoteType of ['"', '\'', '`']) {
+				const regExp = new RegExp(
+					`${quoteType}([^${quoteType}]+)?${selector}([^${quoteType}]+)?${quoteType}`, 'g'
+				);
+
+				content = content.replace(
+					regExp,
+					(match, selectorsBefore = '', selectorsAfter = ''): string => {
+						return quoteType
+								+ <string>selectorsBefore + mangledSelector + <string>selectorsAfter
+							+ quoteType;
+					}
+				);
+			}
 		}
 
 		for (const placeholderKey in contentPlaceholders) {
@@ -171,11 +191,7 @@ export class Compiler {
 	}
 
 	public compile(content: string, compilationResult: CompilationResult = null): CompilationResult {
-		if (!compilationResult) {
-			compilationResult = this.prepareCompilationResult();
-		}
-
-		this.prepareCompilationResult(compilationResult);
+		compilationResult = this.prepareCompilationResult(compilationResult);
 		const { components, pregenerate } = this.getOptionsFromContent(content);
 
 		this.configure({
@@ -193,7 +209,7 @@ export class Compiler {
 			.replace(/&amp;/ig, '&');
 
 		if (compilationResult && Object.keys(compilationResult.selectorsList).length) {
-			content = content.replace(/s\d+/ig, (matched) => {
+			content = content.replace(/_\w+/ig, (matched) => {
 				return matched in compilationResult.selectorsList
 					? compilationResult.selectorsList[matched].mangledSelector
 					: matched;
@@ -204,10 +220,14 @@ export class Compiler {
 
 		Object.keys(this.components)
 			.filter((element): boolean => {
+				if (element in compilationResult.componentsList) {
+					this.components[element].processed = true;
+				}
+
 				return this.components[element].processed === false;
 			})
 			.forEach((notProcessedComponentsSelector) => {
-				if (!content.match(new RegExp(`(?:[ "'{,\`]|^)${notProcessedComponentsSelector}\\b`, 'ig'))) {
+				if (!content.match(new RegExp(`${notProcessedComponentsSelector}\\b`, 'ig'))) {
 					return;
 				}
 
@@ -248,7 +268,7 @@ export class Compiler {
 	}
 
 	public createCompilationResultFromSerializedData(data: string|Record<string, any>): CompilationResult {
-		return CompilationResult.deserialize(typeof data === 'string' ? JSON.parse(data) : data);
+		return new CompilationResult(typeof data === 'string' ? JSON.parse(data) : data);
 	}
 
 	private prepareCompilationResult(compilationResult: CompilationResult = null): CompilationResult
@@ -272,8 +292,8 @@ export class Compiler {
 
 	private processMacros(content: string, compilationResult: CompilationResult = null) {
 		for (const macroKey in this.macros) {
-			const macroRe = new RegExp(`(?:([\\w-:&|]+):)?(?<!-)\\b${macroKey}`, 'igm');
-
+			// TODO negative lookbehind, is it necessary?
+			const macroRe = new RegExp(`(?:([a-z0-9-:&|]+):)?(?<!-)\\b${macroKey}`, 'igm');
 			let macroMatches: string[];
 
 			while ((macroMatches = macroRe.exec(content))) {

@@ -25,16 +25,18 @@ if (!fs.existsSync(buildTmpDir)) {
 fse.copySync(path.join(bundleTestDir, 'input'), buildTmpDir);
 
 bundler.bundle([
- 	{
+  	{
 		outputFile: path.join(buildTmpDir, 'index.css'),
 		files: [
 			path.join(bundleTestDir, 'input', 'index.html'),
 			path.join(bundleTestDir, 'input', 'index', '**', '*.html')
 		]
 	},
-  	{
+   	{
 		outputFile: path.join(buildTmpDir, 'second.css'),
 		mangleSelectors: true,
+		cache: testUtils.getInputFile('second.css.json'),
+		dumpCache: true,
 		files: [
 			path.join(buildTmpDir, 'second.html'),
 		]

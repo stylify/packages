@@ -4,7 +4,7 @@ export default {
 		port: 81
 	},
 	components: true,
-	modules: [
+	buildModules: [
 		'~/../lib'
 	],
 	build: {

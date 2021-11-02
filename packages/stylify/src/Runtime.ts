@@ -135,7 +135,7 @@ export class Runtime {
 		this.compiler.hydrate(parsedData);
 
 		if (this.compilationResult) {
-			this.compilationResult.hydrate(parsedData);
+			this.compilationResult.configure(parsedData);
 		} else {
 			this.compilationResult = this.compiler.createCompilationResultFromSerializedData(parsedData);
 		}
@@ -174,7 +174,8 @@ export class Runtime {
 			mutationsList.forEach((mutation) => {
 				const targetElement = mutation.target as Element;
 
-				if (!(mutation.type === 'attributes' && mutation.attributeName === 'class')
+				if (!['attributes', 'childList'].includes(mutation.type)
+					|| mutation.type === 'attributes' && mutation.attributeName !== 'class'
 					|| targetElement.nodeType !== Node.ELEMENT_NODE
 					|| targetElement.id === Runtime.STYLIFY_STYLE_EL_ID
 					|| targetElement.classList.contains(Runtime.STYLIFY_RUNTIME_IGNORE_CLASS)
@@ -183,7 +184,9 @@ export class Runtime {
 					return;
 				}
 
-				compilerContentQueue += targetElement.className;
+				compilerContentQueue += mutation.type === 'attributes'
+					? targetElement.className
+					: targetElement.outerHTML;
 			});
 
 			if (!compilerContentQueue.trim().length) {

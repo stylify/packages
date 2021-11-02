@@ -19,6 +19,7 @@ interface BundleFileDataInterface {
 interface BundleInterface {
 	mangleSelectors?: boolean,
 	dumpCache?: boolean,
+	cache?: JSON | string,
 	outputFile: string,
 	scope?: string,
 	files: string[]
@@ -160,9 +161,17 @@ export class Bundler {
 					originalOnPrepareCompilationResultFunction(compilationResult);
 				}
 			};
+
+			let compilationResult = null;
+			if (bundleConfig.cache) {
+				compilationResult = compiler.createCompilationResultFromSerializedData(
+					typeof bundleConfig.cache === 'string' ? JSON.parse(bundleConfig.cache) : bundleConfig.cache
+				);
+			}
+
 			this.bundlesBuildCache[bundleConfig.outputFile] = {
 				compiler: compiler,
-				compilationResult: null,
+				compilationResult: compilationResult,
 				buildTime: null,
 				files: []
 			};
@@ -205,10 +214,9 @@ export class Bundler {
 			}
 
 			if (fileToProcessConfig.contentOptions.pregenerate) {
-				bundleBuildCache.compilationResult = compiler.compile(
-					fileToProcessConfig.contentOptions.pregenerate,
-					bundleBuildCache.compilationResult
-				);
+				compiler.configure({
+					pregenerate: fileToProcessConfig.contentOptions.pregenerate
+				});
 			}
 
 			bundleBuildCache.compilationResult = compiler.compile(
@@ -218,8 +226,8 @@ export class Bundler {
 
 			if (bundleConfig.mangleSelectors) {
 				const processedContent = compiler.rewriteSelectors(
-					bundleBuildCache.compilationResult,
-					fileToProcessConfig.content
+					fileToProcessConfig.content,
+					bundleBuildCache.compilationResult
 				);
 				fs.writeFileSync(fileToProcessConfig.filePath, processedContent);
 			}

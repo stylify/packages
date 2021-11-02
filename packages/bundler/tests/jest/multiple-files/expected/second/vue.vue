@@ -1,7 +1,7 @@
 <!-- @stylify-pregenerate[content:,,Vue,,] -->
 
 <template>
-	<div v-bind:class="{ 's8': true }"></div>
+	<div v-bind:class="{ '_uc2e88v': true }"></div>
 </template>
 
 <script>

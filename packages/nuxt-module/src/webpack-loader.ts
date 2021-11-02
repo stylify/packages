@@ -1,25 +1,28 @@
-import { PrefixesGenerator } from '@stylify/autoprefixer/esm/prefixes-generator';
+import type { CompilationResult } from '@stylify/stylify';
 import { getOptions } from 'loader-utils';
 
-/**
- *
- * @param {string} source
- * @returns {string}
- */
 export default function (source: string): string {
+	if (source.includes('<style id="stylify-css">')) {
+		return source;
+	}
+
 	const {
 		compiler,
-		getPreflightCompilationResult,
-		setPreflightCompilationResult,
-		mergePrefixesMap
+		getCompilationResult,
+		setCompilationResult
 	} = getOptions(this);
 
-	const compilationResult = compiler.compile(source, getPreflightCompilationResult());
+	const compilationResult: CompilationResult = compiler.compile(source, getCompilationResult());
+	setCompilationResult(compilationResult);
+	const css = compilationResult.generateCss();
 
-	setPreflightCompilationResult(compilationResult);
-	mergePrefixesMap(new PrefixesGenerator().createPrefixesMap(compilationResult));
+	if (compiler.mangleSelectors) {
+		source = compiler.rewriteSelectors(source, compilationResult) as string;
+	}
 
-	return compiler.mangleSelectors
-		? compiler.rewriteSelectors(compilationResult, source) as string
-		: source;
+	if (css) {
+		source += `<style id="stylify-css">${css}</style>`;
+	}
+
+	return source;
 }

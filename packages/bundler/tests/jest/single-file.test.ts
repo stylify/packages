@@ -3,7 +3,6 @@ import fs from 'fs';
 import fse from 'fs-extra';
 import { Bundler } from '../../src'
 import { nativePreset } from '@stylify/stylify';
-import type { CompilationResult, CssRecord } from '@stylify/stylify';
 import TestUtils from '../../../../tests/TestUtils';
 
 const testName = 'single-file';
@@ -38,7 +37,6 @@ new Bundler({
 }).bundle([
 	{
 		outputFile: path.join(buildTmpDir, 'second.css'),
-		mangleSelectors: true,
 		scope: '#stylify-profiler',
 		files: [
 			path.join(buildTmpDir, 'second.html'),
@@ -54,7 +52,4 @@ test('Bundler - single file', (): void => {
 test('Bundler - single file - with scope', (): void => {
 	const indexCssOutput = fs.readFileSync(path.join(buildTmpDir, 'second.css')).toString();
 	testUtils.testCssFileToBe(indexCssOutput, 'second');
-
-	const secondIndexHtmlOutput = fs.readFileSync(path.join(buildTmpDir, 'second.html')).toString();
-	testUtils.testHtmlFileToBe(secondIndexHtmlOutput, 'second');
 });
