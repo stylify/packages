@@ -1,5 +1,5 @@
 <!-- @stylify-pregenerate[content:,,vuejs__component,,] -->
 
 <template>
-	<div v-bind:class="{ 's10': true }"></div>
+	<div v-bind:class="{ '_actjmvl': true }"></div>
 </template>

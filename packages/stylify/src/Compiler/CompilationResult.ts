@@ -5,11 +5,11 @@ export interface CompilationResultConfigInterface {
 	reconfigurable?: boolean,
 	screensSortingFunction?: CallableFunction,
 	screensList?: Record<string, number>,
-	selectorsList?: Record<string, CssRecord>,
+	selectorsList?: Record<string, SerializedCssRecordInterface>,
 	componentsList?: Record<string, string>,
 	mangleSelectors?: boolean,
 	variables?: Record<string, string| number>,
-	onPrepareCssRecord?: CallableFunction
+	onPrepareCssRecord?: CallableFunction | string
 }
 
 export interface SerializedCompilationResultInterface {
@@ -71,13 +71,31 @@ export class CompilationResult {
 		}
 		this.dev = typeof config.dev === 'boolean' ? config.dev : this.dev;
 		this.reconfigurable = typeof config.reconfigurable === 'boolean' ? config.reconfigurable : this.reconfigurable;
-		this.selectorsList = Object.assign(this.selectorsList, 'selectorsList' in config ? config.selectorsList : {});
 		this.mangleSelectors = typeof config.mangleSelectors === 'boolean'
 			? config.mangleSelectors
 			: this.mangleSelectors;
 		this.screensSortingFunction = config.screensSortingFunction || this.screensSortingFunction;
 		this.variables = {...this.variables, ...config.variables || {}};
-		this.onPrepareCssRecord = config.onPrepareCssRecord || this.onPrepareCssRecord;
+		this.componentsList = {...this.componentsList, ...config.componentsList || {}};
+
+		if ('selectorsList' in config) {
+			for (const selector in config.selectorsList) {
+				const selectorData = config.selectorsList[selector];
+				if (selector in this.selectorsList) {
+					this.selectorsList[selector].configure(selectorData);
+				} else {
+					this.selectorsList[selector] = new CssRecord(selectorData);
+				}
+			}
+		}
+
+		if ('onPrepareCssRecord' in config) {
+			this.onPrepareCssRecord = typeof config.onPrepareCssRecord === 'string'
+				// eslint-disable-next-line @typescript-eslint/no-implied-eval
+				? new Function(config.onPrepareCssRecord)
+				: config.onPrepareCssRecord;
+		}
+
 		this.addScreens(config.screensList || {});
 	}
 
@@ -330,8 +348,7 @@ export class CompilationResult {
 	public serialize(): SerializedCompilationResultInterface {
 		const serializedCompilationResult: SerializedCompilationResultInterface = {
 			mangleSelectors: this.mangleSelectors,
-			dev: this.dev,
-			selectorsList: {}
+			dev: this.dev
 		};
 
 		if (!this.reconfigurable) {
@@ -353,7 +370,7 @@ export class CompilationResult {
 			serializedCompilationResult.variables = this.variables;
 		}
 
-		if (this.componentsList.length) {
+		if (Object.keys(this.componentsList).length) {
 			serializedCompilationResult.componentsList = this.componentsList;
 		}
 
@@ -371,38 +388,6 @@ export class CompilationResult {
 		return serializedCompilationResult;
 	}
 
-	public static deserialize(data: Required<SerializedCompilationResultInterface>): CompilationResult {
-		const compilationResultConfig: any = {...data};
-
-		if ('selectorsList' in compilationResultConfig) {
-			for (const selector in data.selectorsList) {
-				compilationResultConfig.selectorsList[selector] = CssRecord.deserialize(data.selectorsList[selector]);
-			}
-		}
-
-		if ('onPrepareCssRecord' in compilationResultConfig) {
-			// eslint-disable-next-line @typescript-eslint/no-implied-eval
-			compilationResultConfig.onPrepareCssRecord = new Function(data.onPrepareCssRecord);
-		}
-
-		return new CompilationResult(compilationResultConfig);
-	}
-
-	public hydrate(data: Required<SerializedCompilationResultInterface>): void {
-		this.addScreens(data.screensList || {});
-
-		if ('selectorsList' in data) {
-			for (const selector in data.selectorsList) {
-				const selectorData = data.selectorsList[selector];
-				if (selector in this.selectorsList) {
-					this.selectorsList[selector].hydrate(selectorData);
-				} else {
-					this.selectorsList[selector] = CssRecord.deserialize(selectorData);
-				}
-			}
-		}
-	}
-
 	private createCssRecord(cssRecord: CssRecord): CssRecord {
 		if (this.onPrepareCssRecord) {
 			this.onPrepareCssRecord(cssRecord);
@@ -412,7 +397,10 @@ export class CompilationResult {
 	}
 
 	private getUniqueSelectorId(): string {
-		return `s${Object.keys(this.selectorsList).length + Object.keys(this.componentsList).length}`;
+		const randomNumber = Object.keys(this.selectorsList).length
+			+ Object.keys(this.componentsList).length
+			+ Math.random() + 1;
+		return `_${randomNumber.toString(32).slice(2, 9)}`;
 	}
 
 }

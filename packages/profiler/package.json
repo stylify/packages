@@ -2,6 +2,10 @@
 	"name": "@stylify/profiler",
 	"description": "Profiler for @stylify/packages",
 	"version": "0.0.1",
+	"main": "lib/index.js",
+	"module": "esm/index.js",
+	"unpkg": "dist/prpfoler.min.js",
+	"jsdelivr": "dist/profiler.min.js",
 	"types": "types",
 	"files": [
 		"dist",

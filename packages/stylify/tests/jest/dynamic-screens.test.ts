@@ -11,6 +11,4 @@ let compilationResult = compiler.compile(inputIndex);
 
 test('Dynamic screens', (): void => {
 	testUtils.testCssFileToBe(compilationResult.generateCss());
-	testUtils.testHtmlFileToBe(compiler.rewriteSelectors(compilationResult, inputIndex));
-	testUtils.testJsonFileToBe(compilationResult.serialize());
 });

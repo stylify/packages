@@ -57,16 +57,9 @@ build.addConfigs({
 build.addConfigs({
 	packageName: 'nuxt-module',
 	configs: [
-		{inputFile: 'index', formats: ['esm', 'cjs'], external: ['@stylify/stylify', '@stylify/autoprefixer']},
-		{
-			inputFile: 'runtime-plugin',
-			formats: ['esm', 'cjs'],
-			external: ['@stylify/stylify', '@stylify/autoprefixer']
-		},
-		{inputFile: 'profiler-plugin', formats: ['esm', 'cjs'], external: ['@stylify/stylify']},
+		{inputFile: 'index', formats: ['esm', 'cjs'], external: ['@stylify/stylify']},
 		{inputFile: 'webpack-loader', formats: ['esm', 'cjs'], external: [
 			'@stylify/stylify',
-			'@stylify/autoprefixer',
 			'loader-utils'
 		]}
 	]
@@ -136,7 +129,7 @@ build.addConfigs({
 		{
 			inputDir: profilerInputDir,
 			inputFile: 'index',
-			formats: ['esm'],
+			formats: ['esm', 'cjs'],
 			minifyEsm: true,
 			external: ['@stylify/stylify']
 		},

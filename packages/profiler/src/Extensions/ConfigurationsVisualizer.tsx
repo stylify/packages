@@ -21,7 +21,7 @@ export class ConfigurationsVisualizerExtension extends Component<any> {
 		this.updateCompilerConfigs(props.config.stylify.compiler);
 
 		document.addEventListener('stylify:compiler:configured', (event: any): void => {
-			this.updateCompilerConfigs(event.data.compiler);
+			this.updateCompilerConfigs(event.detail.compiler);
 		});
 	}
 

@@ -16,7 +16,7 @@ export interface CssRecordConfigInterface {
 	properties?: Record<string, string | number>,
 	components?: string[],
 	pseudoClasses?: string[],
-	onAddProperty?: CallableFunction
+	onAddProperty?: CallableFunction | string
 	scope?: string
 	shouldBeGenerated?: boolean
 }
@@ -59,7 +59,12 @@ export class CssRecord {
 		this.selector = config.selector.replace(/([^-_a-zA-Z\d])/g, '\\$1');
 		this.mangledSelector = config.mangledSelector;
 		this.scope = config.scope || null;
-		this.onAddProperty = config.onAddProperty || this.onAddProperty;
+		if ('onAddProperty' in config) {
+			this.onAddProperty = typeof config.onAddProperty === 'string'
+				// eslint-disable-next-line @typescript-eslint/no-implied-eval
+				? new Function(config.onAddProperty)
+				: config.onAddProperty;
+		}
 		this.shouldBeGenerated = 'shouldBeGenerated' in config ? config.shouldBeGenerated : this.shouldBeGenerated;
 		this.addComponents(config.components || []);
 		this.addProperties(config.properties || {});
@@ -171,8 +176,11 @@ export class CssRecord {
 			mangledSelector: this.mangledSelector
 		};
 
-		for (const component of this.components) {
-			serializedObject.components.push(component.replace(/\\([^-_a-zA-Z\d])/g, '$1'));
+		if (this.components.length) {
+			serializedObject.components = [];
+			for (const component of this.components) {
+				serializedObject.components.push(component.replace(/\\([^-_a-zA-Z\d])/g, '$1'));
+			}
 		}
 
 		if (this.onAddProperty) {
@@ -188,22 +196,6 @@ export class CssRecord {
 		}
 
 		return serializedObject;
-	}
-
-	public static deserialize(data: SerializedCssRecordInterface): CssRecord {
-		return new CssRecord({
-			...data,
-			...{
-				// eslint-disable-next-line @typescript-eslint/no-implied-eval
-				onAddProperty: 'onAddProperty' in data ? new Function(data.onAddProperty) : null
-			}
-		});
-	}
-
-	public hydrate(data: SerializedCssRecordInterface): void {
-		this.addComponents(data.components);
-		this.addProperties(data.properties);
-		this.addPseudoClasses(data.pseudoClasses || []);
 	}
 
 }
