@@ -29,7 +29,7 @@ export class MacroMatch {
 			let screenMatched = false;
 
 			for (const key in screens) {
-				const screenRegExp = new RegExp(key, 'ig');
+				const screenRegExp = new RegExp(key, 'g');
 				const screenMatches = screenRegExp.exec(possibleScreenMatch);
 
 				if (screenMatches === null) {

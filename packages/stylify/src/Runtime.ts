@@ -1,4 +1,4 @@
-import { CompilationResult, Compiler, CompilerConfigInterface, SerializedCompilationResultInterface } from '.';
+import { CompilationResult, Compiler, CompilerConfigInterface, SerializedCompilationResultInterface } from './Compiler';
 
 export interface RuntimeConfigInterface {
 	dev?: boolean,
@@ -9,25 +9,25 @@ export interface RuntimeConfigInterface {
 	}
 }
 
+interface UpdateCssCallbackArgumentsInterface {
+	css: string|null,
+	compilationResult: CompilationResult,
+	content: string
+}
+
+type UpdateCssCallbackType = (data: UpdateCssCallbackArgumentsInterface) => void;
+
 export class Runtime {
 
-	public static readonly STYLIFY_STYLE_EL_ID: string = 'stylify-css';
+	public static readonly STYLE_EL_ID: string = 'stylify-css';
 
-	public static readonly RUNTIME_CACHE_CLASS = 'stylify-runtime-cache';
+	public static readonly CACHE_CLASS = 'stylify-runtime-cache';
 
-	public static readonly STYLIFY_RUNTIME_IGNORE_CLASS = 'stylify-ignore';
+	public static readonly IGNORE_CLASS = 'stylify-ignore';
 
-	public static readonly STYLIFY_CLOAK_ATTR_NAME: string = 's-cloak';
+	public static readonly CLOAK_CLASS: string = 's-cloak';
 
-	public static readonly STYLIFY_READY_EVENT = 'stylify:ready';
-
-	public static readonly STYLIFY_RUNTIME_CONFIGURED_EVENT = 'stylify:runtime:configured';
-
-	public static readonly STYLIFY_COMPILER_CONFIGURED_EVENT = 'stylify:compiler:configured';
-
-	public static readonly STYLIFY_REPAINTED_EVENT = 'stylify:runtime:repainted';
-
-	public static readonly STYLIFY_UNCLOAK_EVENT = 'stylify:runtime:uncloak';
+	public readonly version = '__PACKAGE__VERSION__';
 
 	public dev = false;
 
@@ -46,10 +46,14 @@ export class Runtime {
 			return;
 		}
 
+		if (typeof globalThis.Stylify === 'undefined') {
+			globalThis.Stylify = this;
+		}
+
 		this.configure(config);
 		this.initialPaintCompleted = false;
 
-		this.triggerEvent(Runtime.STYLIFY_READY_EVENT, this);
+		this.triggerEvent('stylify:ready', this);
 
 		if (['complete', 'loaded', 'interactive'].includes(document.readyState)) {
 			this.init();
@@ -75,10 +79,6 @@ export class Runtime {
 		this.dev = 'dev' in config ? config.dev : this.dev;
 		this.repaintTimeout = runtimeConfig.repaintTimeout || this.repaintTimeout;
 
-		this.triggerEvent(Runtime.STYLIFY_RUNTIME_CONFIGURED_EVENT, {
-			config: config
-		});
-
 		compilerConfig.dev = this.dev;
 
 		if (!this.compiler) {
@@ -89,8 +89,8 @@ export class Runtime {
 
 		this.compiler.configure(compilerConfig);
 
-		this.triggerEvent(Runtime.STYLIFY_COMPILER_CONFIGURED_EVENT, {
-			compiler: this
+		this.triggerEvent('stylify:configured', {
+			config: config
 		});
 
 		return this;
@@ -98,19 +98,10 @@ export class Runtime {
 
 	private init() {
 		if (!this.initialPaintCompleted) {
-			const repaintStartTime = performance.now();
 			const content = document.documentElement.outerHTML;
-			const css = this.updateCss(content);
-			this.initialPaintCompleted = true;
-
-			if (css !== null) {
-				this.triggerEvent(Runtime.STYLIFY_REPAINTED_EVENT, {
-					css: css,
-					repaintTime: performance.now() - repaintStartTime,
-					compilationResult: this.compilationResult,
-					content: content
-				});
-			}
+			this.updateCss(content, () => {
+				this.initialPaintCompleted = true;
+			});
 		}
 
 		if (!this.mutationObserverInitialized) {
@@ -120,13 +111,17 @@ export class Runtime {
 
 	public hydrate(data: string|SerializedCompilationResultInterface = null): void {
 		if (!data) {
-			const cacheElements = document.querySelectorAll(`.${Runtime.RUNTIME_CACHE_CLASS}`) || [];
+			const cacheElements = document.querySelectorAll(`.${Runtime.CACHE_CLASS}:not(.processed)`) || [];
 			cacheElements.forEach((cacheElement: Element) => {
 				cacheElement.classList.add('processed');
 				if (cacheElement.innerHTML.trim().length > 0) {
 					this.hydrate(cacheElement.innerHTML);
 				}
-				cacheElement.parentElement.removeChild(cacheElement);
+				if (this.dev) {
+					cacheElement.classList.add('processed');
+				} else {
+					cacheElement.parentElement.removeChild(cacheElement);
+				}
 			});
 			return;
 		}
@@ -139,13 +134,9 @@ export class Runtime {
 		} else {
 			this.compilationResult = this.compiler.createCompilationResultFromSerializedData(parsedData);
 		}
-
-		this.triggerEvent('stylify:runtime:hydrated', {
-			cache: parsedData
-		});
 	}
 
-	private updateCss(content: string): string|null {
+	private updateCss(content: string, callback: UpdateCssCallbackType = null): string|null {
 		this.hydrate();
 		this.compilationResult = this.compiler.compile(content, this.compilationResult);
 
@@ -155,6 +146,21 @@ export class Runtime {
 
 		const css: string = this.compilationResult.generateCss();
 		this.injectCss(css);
+
+		if (callback) {
+			callback({
+				css: css,
+				compilationResult: this.compilationResult,
+				content: content
+			});
+		}
+
+		this.triggerEvent('stylify:repainted', {
+			css: css,
+			compilationResult: this.compilationResult,
+			content: content
+		});
+
 		return css;
 	}
 
@@ -164,35 +170,31 @@ export class Runtime {
 		const config = { attributeFilter: ['class'], childList: true, subtree: true };
 		let compilerContentQueue = '';
 		let updateTimeout = null;
-		let repaintStartTime = null;
+		const ignoreSelector = `.${Runtime.IGNORE_CLASS}`;
 
 		const observer = new MutationObserver((mutationsList) => {
-			if (repaintStartTime === null) {
-				repaintStartTime = performance.now();
-			}
-
 			mutationsList.forEach((mutation) => {
-				const targetElement = mutation.target as Element;
+				let targetElement = mutation.target as Element;
 
 				if (!['attributes', 'childList'].includes(mutation.type)
 					|| mutation.type === 'attributes' && mutation.attributeName !== 'class'
 					|| targetElement.nodeType !== Node.ELEMENT_NODE
-					|| targetElement.id === Runtime.STYLIFY_STYLE_EL_ID
-					|| targetElement.classList.contains(Runtime.STYLIFY_RUNTIME_IGNORE_CLASS)
-					|| targetElement.closest(`.${Runtime.STYLIFY_RUNTIME_IGNORE_CLASS}`) !== null
+					|| targetElement.id === Runtime.STYLE_EL_ID
+					|| targetElement.classList.contains(Runtime.IGNORE_CLASS)
+					|| targetElement.closest(ignoreSelector) !== null
 				) {
 					return;
 				}
+
+				targetElement = targetElement.cloneNode(true) as Element;
+				targetElement.querySelectorAll(ignoreSelector).forEach((element) => {
+					element.remove();
+				});
 
 				compilerContentQueue += mutation.type === 'attributes'
 					? targetElement.className
 					: targetElement.outerHTML;
 			});
-
-			if (!compilerContentQueue.trim().length) {
-				repaintStartTime = null;
-				return;
-			}
 
 			if (updateTimeout) {
 				window.clearTimeout(updateTimeout);
@@ -200,21 +202,11 @@ export class Runtime {
 
 			updateTimeout = window.setTimeout(() => {
 				const css = this.updateCss(compilerContentQueue);
-				const repaintTime = performance.now() - repaintStartTime;
-				repaintStartTime = null;
 
 				if (css === null) {
 					return;
 				}
 
-				this.triggerEvent(Runtime.STYLIFY_REPAINTED_EVENT, {
-					css: css,
-					repaintTime: repaintTime,
-					compilationResult: this.compilationResult,
-					content: compilerContentQueue
-				});
-
-				repaintStartTime = null;
 				compilerContentQueue = '';
 
 			}, this.repaintTimeout);
@@ -224,24 +216,20 @@ export class Runtime {
 	}
 
 	public injectCss(css: string): void {
-		let el = document.querySelector(`#${Runtime.STYLIFY_STYLE_EL_ID}`);
+		let el = document.querySelector(`#${Runtime.STYLE_EL_ID}`);
 
 		if (el) {
 			el.innerHTML = css;
 		} else {
 			el = document.createElement('style');
-			el.id = Runtime.STYLIFY_STYLE_EL_ID;
+			el.id = Runtime.STYLE_EL_ID;
 			el.innerHTML = css;
 			document.head.appendChild(el);
 		}
 
-		const elements = document.querySelectorAll(`[${Runtime.STYLIFY_CLOAK_ATTR_NAME}]`);
+		const elements = document.querySelectorAll(`.${Runtime.CLOAK_CLASS}`);
 		elements.forEach((element) => {
-			element.removeAttribute(Runtime.STYLIFY_CLOAK_ATTR_NAME);
-			this.triggerEvent(Runtime.STYLIFY_UNCLOAK_EVENT, {
-				id: element.getAttribute(Runtime.STYLIFY_CLOAK_ATTR_NAME) || null,
-				el: element
-			});
+			element.classList.remove(Runtime.CLOAK_CLASS);
 		});
 	}
 

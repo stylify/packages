@@ -61,7 +61,7 @@ class NativePresetGenerator {
 		});
 
 		const processedPropertiesRegExpString = this.convertMapIntoRegularExpression(this.propertiesMap);
-		const propertiesRegExp = '(' + processedPropertiesRegExpString + ')\\\\b:([^ \\\'"`{}\\\\[\\\\]]+)';
+		const propertiesRegExp = '(' + processedPropertiesRegExpString + ')\\\\b:([^ \\\'"`{}\\\\[\\\\]<>]+)';
 
 		fs.writeFileSync(browserPropertiesListPath, propertiesShortcuts.join('\n'));
 

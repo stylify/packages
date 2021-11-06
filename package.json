@@ -9,7 +9,7 @@
 		"bootstrap": "lerna bootstrap --force-local",
 		"rollup:run": "node --max-old-space-size=8192 --experimental-modules node_modules/.bin/rollup --configPlugin typescript={exclude:[\\'packages/**\\']}",
 		"watch": "yarn build -w && yarn",
-		"build": "yarn types && yarn rollup:run -c scripts/build.ts",
+		"build": "yarn rollup:run -c scripts/build.ts",
 		"types": "ts-node scripts/types.ts",
 		"autoprefixer:build": "packages=autoprefixer yarn build",
 		"autoprefixer:watch": "packages=autoprefixer yarn watch",
@@ -32,7 +32,8 @@
 		"profiler:watch": "packages=profiler yarn watch",
 		"eslint:check": "eslint packages/**/src/**/*.{js,ts}",
 		"eslint:fix": "yarn eslint:check --fix",
-		"jest:test": "jest --clearCache && jest --maxWorkers 1"
+		"jest:test": "jest --clearCache && jest --maxWorkers 1",
+		"jest:test+coverage": "jest --collect-coverage --coverageProvider=v8"
 	},
 	"repository": {
 		"type": "git",

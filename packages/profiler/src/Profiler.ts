@@ -1,80 +1,58 @@
 import './profiler.scss';
-import {
-	BuildsAnalyzerExtension,
-	CacheInfoExtension,
-	ConfigurationsVisualizerExtension,
-	DomNodesCounterExtension
-} from './Extensions';
-import { addProfilerExtension, initProfilerToolbar } from './Toolbar';
-import type { Runtime } from '@stylify/stylify';
+import * as preact from 'preact';
+import { initProfilerToolbar } from '.';
 
 declare global {
 	interface Window {
 		title: string;
-		Stylify: Runtime
 	}
 }
 
-export interface ProfilerExtensionPropsInterface {
-	config: {
-		stylify: Runtime,
-		openCodeInNewWindow: CallableFunction
-	}
+export interface ProfilerConfigInterface {
+	extensions?: any[]
 }
+
+export type AddExtensionType = (extension: any) => void;
+
+export { preact };
 
 export class Profiler {
 
 	public static readonly WINDOW_IS_DEFINED = typeof window !== 'undefined';
 
-	private readonly PRISM_VERSION = '1.23.0';
+	// Dynamically added inside Toolbar.tsx
+	public addExtension: AddExtensionType = null;
 
-	private readonly PRISM_CDN_URL = `https://cdnjs.cloudflare.com/ajax/libs/prism/${this.PRISM_VERSION}`;
+	private config: ProfilerConfigInterface = {
+		extensions: []
+	};
 
-	constructor() {
+	constructor(config: ProfilerConfigInterface = {}) {
+		this.config = {
+			...this.config,
+			...config
+		};
+
 		this.init();
 	}
 
 	public init(): void {
-		this.addProfilerExtension(BuildsAnalyzerExtension);
-		this.addProfilerExtension(CacheInfoExtension);
-		this.addProfilerExtension(ConfigurationsVisualizerExtension);
-		this.addProfilerExtension(DomNodesCounterExtension);
-
 		if (!Profiler.WINDOW_IS_DEFINED) {
 			return null;
 		}
 
-		document.addEventListener('stylify:ready', (event: any) => {
-			initProfilerToolbar({
-				stylify: event.detail,
-				openCodeInNewWindow: this.openCodeInNewWindow
+		const toolbarConfig = {
+			extensions: this.config.extensions,
+			profiler: this
+		};
+
+		if (['complete', 'loaded', 'interactive'].includes(document.readyState)) {
+			initProfilerToolbar(toolbarConfig);
+		} else {
+			document.addEventListener('DOMContentLoaded', () => {
+				initProfilerToolbar(toolbarConfig);
 			});
-		});
-	}
-
-	public addProfilerExtension(profilerExtension: any): void {
-		addProfilerExtension(profilerExtension);
-	}
-
-	private openCodeInNewWindow = (code: string, language: string = null, windowTitle: string = null) => {
-		const codeWindow = window.open('');
-		language = language || 'markup';
-		codeWindow.title = 'Stylify: ' + (windowTitle || 'profiler preview');
-		if (language === 'markup') {
-			code = code.replace(/&/g, '&amp;')
-				.replace(/</g, '&lt;')
-				.replace(/>/g, '&gt;')
-				.replace(/"/g, '&quot;')
-				.replace(/'/g, '&#039;');
 		}
-
-		codeWindow.document.write(`
-			<link href="${this.PRISM_CDN_URL}/themes/prism.min.css" rel="stylesheet" />
-			<script async defer src="${this.PRISM_CDN_URL}/components/prism-core.min.js"></script>
-			<script async defer src="${this.PRISM_CDN_URL}/plugins/autoloader/prism-autoloader.min.js"></script>
-			<pre><code class="language-${language}">${code}</code></pre>
-		`);
-		codeWindow.document.close();
 	}
 
 }

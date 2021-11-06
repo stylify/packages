@@ -5,7 +5,7 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>Stylify!</title>
 	<style>
-		[s-cloak] {
+		.s-cloak {
 			visibility: hidden;
 			content-visibility: hidden;
 		}
@@ -13,28 +13,12 @@
 </head>
 <body>
 
-	<template>
-		<button class="button"></button>
-		<div class="container"></div>
-		<h1 class="title"></h1>
-	</template>
-	<script>
-		let matched;
-		let content = document.querySelector('template').innerHTML
-		const regExp =  new RegExp('"[^"]+"|\'[^\']+\'|`[^`]`', 'g');
-		while((matched = regExp.exec(content))) {
-			content = content.replace(matched[0], matched[0].replace('button', 'fuu'));
-		}
-		console.log(content);
-	</script>
-	<!-- <script type="module">
+	<script type="module">
 		import { Runtime, nativePreset } from './packages/stylify/esm/index.js';
 		import { Profiler } from './packages/profiler/esm/index.js'
 
 		new Profiler();
-
-		nativePreset.dev = true;
 		new Runtime(nativePreset);
-	</script> -->
+	</script>
 </body>
 </html>

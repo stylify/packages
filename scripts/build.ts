@@ -5,16 +5,15 @@ import { build } from './Build';
 import fse from 'fs-extra';
 import path from 'path';
 
-const stylifyBrowserExternalDependencies = ['./Presets'];
 build.addConfigs({
 	packageName: 'stylify',
 	configs: [
-		{inputFile: 'index', formats: ['esm', 'cjs'], minifyEsm: true},
+		{inputFile: 'index', outputFile: 'index', formats: ['esm', 'cjs'], minifyEsm: true},
 		{
 			inputFile: 'index',
 			outputFile: 'stylify',
 			formats: ['umd', 'esm'],
-			external: stylifyBrowserExternalDependencies,
+			external: ['./Presets'],
 			minifyEsm: true
 		},
 		{
@@ -58,6 +57,7 @@ build.addConfigs({
 	packageName: 'nuxt-module',
 	configs: [
 		{inputFile: 'index', formats: ['esm', 'cjs'], external: ['@stylify/stylify']},
+		{inputFile: 'profiler-plugin', formats: ['esm', 'cjs'], external: ['@stylify/profiler']},
 		{inputFile: 'webpack-loader', formats: ['esm', 'cjs'], external: [
 			'@stylify/stylify',
 			'loader-utils'
@@ -78,39 +78,37 @@ build.addConfigs({
 	]
 });
 
-
-let profilerAssetsBundlerInitialized = false;
 const isWatchMode = argumentsProcessor.processArguments.isWatchMode;
 const profilerInputDir = isWatchMode ? 'src' : path.join('tmp', 'src');
+let profilerBundler = null;
+
 build.addConfigs({
 	packageName: 'profiler',
 	hooks: {
-		buildStart: async (): Promise<void> => {
-			if (profilerAssetsBundlerInitialized) {
+		options: async (): Promise<void> => {
+			if (profilerBundler !== null) {
 				return;
 			}
 
-			profilerAssetsBundlerInitialized = true;
-
 			const { Bundler } = await import(build.getPackageDir('bundler'));
-			const { nativePreset } = await import(build.getPackageDir('stylify'));
+			const profilerBundlerConfigPath = path.join(build.getPackageDir('profiler'), 'stylify.config.js');
 
-			const bundler = new Bundler({
-				compilerConfig: nativePreset.compiler,
-				watchFiles: argumentsProcessor.processArguments.isWatchMode,
+			profilerBundler = new Bundler({
+				configFile: profilerBundlerConfigPath,
+				watchFiles: isWatchMode,
 				verbose: false
 			});
 
 			const profilerPackageDir = build.getPackageDir('profiler');
 
 			if (!isWatchMode) {
+				fse.rmdirSync(path.join(profilerPackageDir, 'tmp', 'src'), { recursive: true, force: true });
 				fse.copySync(
 					path.join(profilerPackageDir, 'src'),
 					path.join(profilerPackageDir, 'tmp', 'src')
 				);
 			}
-
-			bundler.bundle([
+			profilerBundler.bundle([
 				{
 					outputFile: path.join(
 						profilerPackageDir, isWatchMode ? '' : 'tmp', 'src', 'assets', 'profiler.css'
@@ -123,6 +121,10 @@ build.addConfigs({
 					]
 				}
 			]);
+			await profilerBundler.waitOnBundlesProcessed();
+		},
+		watchChange: async (): Promise<void> => {
+			await profilerBundler.waitOnBundlesProcessed();
 		}
 	},
 	configs: [

@@ -13,8 +13,6 @@ const orientationScreen = (screen: string): string => `(orientation: ${screen})`
 const nativePreset = {
 	compiler: {
 		screens: {
-			toxs: maxWidthScreen('319px'),
-			xs: minWidthScreen('320px'),
 			tosm: maxWidthScreen('639px'),
 			sm: minWidthScreen('640px'),
 			tomd: maxWidthScreen('767px'),
@@ -36,7 +34,8 @@ const nativePreset = {
 			onlyScreen: 'only screen',
 			portrait: orientationScreen('portrait'),
 			landscape: orientationScreen('landscape'),
-			dark: '(prefers-color-scheme: dark)'
+			dark: '(prefers-color-scheme: dark)',
+			light: '(prefers-color-scheme: light)'
 		},
 		macros: {
 			// eslint-disable-next-line quote-props

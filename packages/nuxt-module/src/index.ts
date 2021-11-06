@@ -17,6 +17,11 @@ export interface StylifyNuxtModuleConfigInterface {
 	}
 }
 
+export interface BundleStatsInterface {
+	resourcePath: string,
+	css: string
+}
+
 let moduleConfig: StylifyNuxtModuleConfigInterface = {
 	dev: false,
 	configPath: 'stylify.config.js',
@@ -53,6 +58,7 @@ const mergeConfig = (config: Record<string, any>): void => {
 };
 
 let compilationResult: CompilationResult = null;
+const bundlesStats = {};
 
 export default function Stylify(): void {
 	const { nuxt } = this;
@@ -77,6 +83,15 @@ export default function Stylify(): void {
 
 	moduleConfig.compiler.dev = moduleConfig.dev;
 
+	if (moduleConfig.dev) {
+		this.addPlugin({
+			ssr: false,
+			src: path.resolve(__dirname, 'profiler-plugin.js')
+		});
+	}
+
+	const compiler = new Compiler(moduleConfig.compiler);
+
 	this.extendBuild((config: Record<string, any>): void => {
 		config.module.rules.push({
 			test: moduleConfig.loader.test,
@@ -84,15 +99,68 @@ export default function Stylify(): void {
 			use: {
 				loader: path.join(__dirname, 'webpack-loader.js'),
 				options: {
-					compiler: new Compiler(moduleConfig.compiler),
+					compiler: compiler,
 					getCompilationResult: (): CompilationResult|null => {
 						return compilationResult;
 					},
 					setCompilationResult: (compilationResultFromBuild: CompilationResult): void => {
 						compilationResult = compilationResultFromBuild;
+					},
+					addBundleStats: (stats: BundleStatsInterface): void => {
+						if (stats.resourcePath in bundlesStats) {
+							return;
+						}
+						bundlesStats[stats.resourcePath] = stats;
 					}
 				}
 			}
 		});
+	});
+
+	const convertObjectToStringableForm = (processedObject: Record<string, any>): Record<string, any> => {
+		const newObject = {};
+
+		for (const key in processedObject) {
+			const processedValue = processedObject[key];
+
+			if (processedValue !== null
+				&& processedValue !== true
+				&& processedValue !== false
+				&& typeof processedValue === 'object'
+			) {
+				newObject[key] = Array.isArray(processedValue)
+					? processedValue
+					: convertObjectToStringableForm(processedValue);
+			} else if (typeof processedValue === 'function') {
+				newObject[key] = `${processedValue.toString() as string}`;
+			} else {
+				newObject[key] = processedValue;
+			}
+		}
+
+		return newObject;
+	};
+
+	const dumpProfilerInfo = (params: Record<string, any>): void => {
+		const data = convertObjectToStringableForm({
+			compilerExtension: {
+				variables: compiler.variables,
+				plainSelectors: compiler.plainSelectors,
+				macros: compiler.macros,
+				components: compiler.components,
+				helpers: compiler.helpers,
+				screens: compiler.screens
+			},
+			nuxtExtension: {
+				bundlesStats: Object.values(bundlesStats),
+				serializedCompilationResult: JSON.stringify(compilationResult.serialize())
+			}
+		});
+
+		params.HEAD += `<script class="stylify-profiler-data" type="application/json">${JSON.stringify(data)}</script>`;
+	};
+
+	nuxt.hook('vue-renderer:ssr:templateParams', (params: Record<string, any>): void => {
+		dumpProfilerInfo(params);
 	});
 }

@@ -1,26 +1,40 @@
 import { CssRecord, MacroMatch, SelectorProperties, SerializedCssRecordInterface } from '.';
 
+type ScreensListMapType = Map<string, number|null>;
+
+type OnPrepareCssRecordCallbackType = (cssRecord: CssRecord) => void;
+
+type ScreenSortingFunctionType = (screensList: ScreensListMapType) => ScreensListMapType;
+
+export type ScreensListRecordType = Record<string, number>;
+
+export type SelectorsListType = Record<string, SerializedCssRecordInterface>;
+
+export type ComponentsListType = Record<string, string>;
+
+export type VariablesType = Record<string, string | number>;
+
 export interface CompilationResultConfigInterface {
 	dev?: boolean,
 	reconfigurable?: boolean,
-	screensSortingFunction?: CallableFunction,
-	screensList?: Record<string, number>,
-	selectorsList?: Record<string, SerializedCssRecordInterface>,
-	componentsList?: Record<string, string>,
+	screensSortingFunction?: ScreenSortingFunctionType,
+	screensList?: ScreensListRecordType,
+	selectorsList?: SelectorsListType,
+	componentsList?: ComponentsListType,
 	mangleSelectors?: boolean,
-	variables?: Record<string, string| number>,
-	onPrepareCssRecord?: CallableFunction | string
+	variables?: VariablesType,
+	onPrepareCssRecord?: OnPrepareCssRecordCallbackType | string
 }
 
 export interface SerializedCompilationResultInterface {
 	dev?: boolean,
 	reconfigurable?: boolean,
 	screensSortingFunction?: string,
-	screensList?: Record<string, number>,
-	selectorsList?: Record<string, SerializedCssRecordInterface>,
-	componentsList?: Record<string, string>
+	screensList?: ScreensListRecordType,
+	selectorsList?: SelectorsListType,
+	componentsList?: ComponentsListType,
 	mangleSelectors?: boolean,
-	variables?: Record<string, string | number>,
+	variables?: VariablesType,
 	onPrepareCssRecord?: string
 }
 
@@ -29,13 +43,18 @@ export interface SelectorsListInterface {
 	processed: boolean
 }
 
-type ScreensListType = Map<string, number|null>;
+export type SelectorsComponentsMapType = Record<string, SelectorsComponentsMapInterface[]>;
+
+export interface SelectorsComponentsMapInterface {
+	component: string,
+	selectorsChain: string[]
+}
 
 export class CompilationResult {
 
 	private readonly MATCH_VARIABLE_REG_EXP = /\$([\w-_]+)/g;
 
-	private screensList: ScreensListType = new Map();
+	private screensList: ScreensListMapType = new Map();
 
 	private screensListSorted = false;
 
@@ -49,23 +68,20 @@ export class CompilationResult {
 
 	public selectorsList: Record<string, CssRecord> = {};
 
-	public componentsList: Record<string, string> = {};
+	public componentsList: ComponentsListType = {};
 
-	public screensSortingFunction: CallableFunction = null;
+	public screensSortingFunction: ScreenSortingFunctionType = null;
 
-	public variables: Record<string, string | number> = {};
+	public variables: VariablesType = {};
 
-	public lastBuildInfo: Record<string, any> = null;
+	public onPrepareCssRecord: OnPrepareCssRecordCallbackType = null;
 
-	public onPrepareCssRecord: CallableFunction = null;
-
-	public constructor(config: CompilationResultConfigInterface = {}) {
-		this.setBuildInfo(null);
+	public constructor(config: CompilationResultConfigInterface | SerializedCompilationResultInterface = {}) {
 		this.addScreen('_');
 		this.configure(config);
 	}
 
-	public configure(config: CompilationResultConfigInterface = {}): void {
+	public configure(config: CompilationResultConfigInterface | SerializedCompilationResultInterface = {}): void {
 		if (!Object.keys(config).length) {
 			return;
 		}
@@ -74,7 +90,7 @@ export class CompilationResult {
 		this.mangleSelectors = typeof config.mangleSelectors === 'boolean'
 			? config.mangleSelectors
 			: this.mangleSelectors;
-		this.screensSortingFunction = config.screensSortingFunction || this.screensSortingFunction;
+
 		this.variables = {...this.variables, ...config.variables || {}};
 		this.componentsList = {...this.componentsList, ...config.componentsList || {}};
 
@@ -89,10 +105,17 @@ export class CompilationResult {
 			}
 		}
 
+		if ('screensSortingFunction' in config) {
+			this.screensSortingFunction = typeof config.screensSortingFunction === 'string'
+				// eslint-disable-next-line @typescript-eslint/no-implied-eval
+				? new Function(config.screensSortingFunction) as ScreenSortingFunctionType
+				: config.screensSortingFunction;
+		}
+
 		if ('onPrepareCssRecord' in config) {
 			this.onPrepareCssRecord = typeof config.onPrepareCssRecord === 'string'
 				// eslint-disable-next-line @typescript-eslint/no-implied-eval
-				? new Function(config.onPrepareCssRecord)
+				? new Function(config.onPrepareCssRecord) as OnPrepareCssRecordCallbackType
 				: config.onPrepareCssRecord;
 		}
 
@@ -127,32 +150,6 @@ export class CompilationResult {
 		this.screensListSorted = false;
 	}
 
-	private setBuildInfo = (data: Record<string, any> = null): void => {
-		if (data === null
-			|| this.lastBuildInfo === null
-			|| this.changed === true && this.lastBuildInfo.completed === true
-		) {
-			this.lastBuildInfo = {
-				processedSelectors: [],
-				processedComponents: [],
-				completed: false
-			};
-		}
-
-		if (data === null || !this.dev) {
-			return;
-		}
-
-		this.lastBuildInfo.completed = 'completed' in data ? data.completed : false;
-
-		this.lastBuildInfo.processedComponents = [
-			...this.lastBuildInfo.processedComponents, ...data.processedComponents || []
-		];
-		this.lastBuildInfo.processedSelectors = [
-			...this.lastBuildInfo.processedSelectors, ...data.processedSelectors || []
-		];
-	};
-
 	public generateCss(): string {
 		let css = '';
 		const newLine = this.dev ? '\n' : '';
@@ -185,9 +182,6 @@ export class CompilationResult {
 		}
 
 		this.changed = false;
-		this.setBuildInfo({
-			completed: true
-		});
 
 		return css.trim();
 	}
@@ -219,7 +213,10 @@ export class CompilationResult {
 		for (const property in macroResult) {
 			const propertyValue = macroResult[property].replace(
 				this.MATCH_VARIABLE_REG_EXP,
-				(match, substring): string => {
+				(match, substring: string): string => {
+					if (!(substring in this.variables)) {
+						throw new Error(`Stylify: Variable "${substring}" not found. Available variables are "${Object.keys(this.variables).join(', ')}".`);
+					}
 					return String(this.variables[substring]);
 				}
 			);
@@ -229,39 +226,58 @@ export class CompilationResult {
 		this.selectorsList[selector] = newCssRecord;
 
 		this.changed = true;
-
-		this.setBuildInfo({
-			processedSelectors: [selector]
-		});
 	}
 
-	public bindComponentsSelectors(componentsSelectorsMap: Record<string, any>): void {
-		const processedComponents = [];
-
-		for (const componentDependencySelector in componentsSelectorsMap) {
-			for (const component of componentsSelectorsMap[componentDependencySelector]) {
-				if (!(component in this.componentsList)) {
-					this.componentsList[component] = this.getUniqueSelectorId();
-				}
-				this.selectorsList[componentDependencySelector].addComponent(
-					this.mangleSelectors ? this.componentsList[component] : component
-				);
-				processedComponents.push(component);
+	public bindPlainSelectorsToSelectors(plainSelectorsSelectorsMap: Record<string, string[]>): void {
+		for (const plainSelector in plainSelectorsSelectorsMap) {
+			for (const dependencySelector of plainSelectorsSelectorsMap[plainSelector]) {
+				this.selectorsList[dependencySelector].addPlainSelector(plainSelector);
 			}
 		}
-
-		this.setBuildInfo({
-			processedComponents: processedComponents
-		});
 	}
 
-	private sortCssTreeMediaQueries(screensList: ScreensListType): ScreensListType {
+	public bindComponentsToSelectors(selectorsComponentsMap: SelectorsComponentsMapType): void {
+		for (const componentDependencySelector in selectorsComponentsMap) {
+			for (const componentToBind of selectorsComponentsMap[componentDependencySelector]) {
+				if (!(componentToBind.component in this.componentsList)) {
+					this.componentsList[componentToBind.component] = this.getUniqueSelectorId();
+				}
+
+				componentToBind.selectorsChain = componentToBind.selectorsChain
+					.map((selectorsChain: string): string => {
+						return selectorsChain
+							.split(' ')
+							.map((selectorFromChain: string) => {
+								if (this.mangleSelectors) {
+									if (selectorFromChain in this.selectorsList) {
+										selectorFromChain = this.selectorsList[selectorFromChain].mangledSelector;
+									} else if (selectorFromChain in this.componentsList) {
+										selectorFromChain = this.componentsList[selectorFromChain];
+									} else {
+										throw new Error(`Stylify: selector "${selectorFromChain}" from component "${componentToBind.component}" selectorsChain list not found.`);
+									}
+								}
+
+								return selectorFromChain;
+							})
+							.join(' ');
+					});
+
+				this.selectorsList[componentDependencySelector].addComponent(
+					this.mangleSelectors ? this.componentsList[componentToBind.component] : componentToBind.component,
+					componentToBind.selectorsChain
+				);
+			}
+		}
+	}
+
+	private sortCssTreeMediaQueries(screensList: ScreensListMapType): ScreensListMapType {
 		this.screensListSorted = true;
 		if (this.screensSortingFunction) {
-			return this.screensSortingFunction(screensList) as ScreensListType;
+			return this.screensSortingFunction(screensList);
 		}
 
-		const sortedScreens: ScreensListType = new Map();
+		const sortedScreens: ScreensListMapType = new Map();
 		sortedScreens.set('_', screensList.get('_'));
 		screensList.delete('_');
 
@@ -346,16 +362,21 @@ export class CompilationResult {
 	}
 
 	public serialize(): SerializedCompilationResultInterface {
-		const serializedCompilationResult: SerializedCompilationResultInterface = {
-			mangleSelectors: this.mangleSelectors,
-			dev: this.dev
-		};
+		const serializedCompilationResult: SerializedCompilationResultInterface = {};
+
+		if (this.mangleSelectors) {
+			serializedCompilationResult.mangleSelectors = this.mangleSelectors;
+		}
+
+		if (this.dev) {
+			serializedCompilationResult.dev = this.dev;
+		}
 
 		if (!this.reconfigurable) {
 			serializedCompilationResult.reconfigurable = false;
 		}
 
-		if (this.screensList.size) {
+		if (this.screensList.size > 1) {
 			serializedCompilationResult.screensList = {};
 			for (const [screen, screenId] of this.screensList) {
 				serializedCompilationResult.screensList[screen] = screenId;
@@ -397,10 +418,7 @@ export class CompilationResult {
 	}
 
 	private getUniqueSelectorId(): string {
-		const randomNumber = Object.keys(this.selectorsList).length
-			+ Object.keys(this.componentsList).length
-			+ Math.random() + 1;
-		return `_${randomNumber.toString(32).slice(2, 9)}`;
+		return `_${(Math.random() + 1).toString(32).slice(2, 9)}`;
 	}
 
 }

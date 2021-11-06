@@ -9,11 +9,18 @@ export default function (source: string): string {
 	const {
 		compiler,
 		getCompilationResult,
-		setCompilationResult
+		setCompilationResult,
+		addBundleStats
 	} = getOptions(this);
 
-	const compilationResult: CompilationResult = compiler.compile(source, getCompilationResult());
-	setCompilationResult(compilationResult);
+	const compilationResult: CompilationResult = compiler.compile(source);
+	const completeCompilationResult = getCompilationResult();
+
+	if (completeCompilationResult) {
+		completeCompilationResult.configure(compilationResult.serialize());
+	}
+
+	setCompilationResult(completeCompilationResult ? completeCompilationResult : compilationResult);
 	const css = compilationResult.generateCss();
 
 	if (compiler.mangleSelectors) {
@@ -22,6 +29,10 @@ export default function (source: string): string {
 
 	if (css) {
 		source += `<style id="stylify-css">${css}</style>`;
+		addBundleStats({
+			resourcePath: this.resourcePath,
+			css: css
+		});
 	}
 
 	return source;

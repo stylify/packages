@@ -75,7 +75,7 @@ rules:
     line-comment-position: [error, {position: above, applyDefaultIgnorePatterns: false}]
     lines-around-comment: [warn, {beforeBlockComment: true}]
     max-depth: [error]
-    max-len: [error, 120]
+    max-len: [error, 120, {ignoreTemplateLiterals: true, ignoreRegExpLiterals: true, ignoreUrls: true}]
     max-nested-callbacks: [error, 4]
     new-cap: [error]
     no-array-constructor: [error]
@@ -102,7 +102,6 @@ rules:
     switch-colon-spacing: [error]
     unicode-bom: [error]
     wrap-regex: [error]
-    sort-imports: [error]
 
     # Typescript
     '@typescript-eslint/no-explicit-any': off
