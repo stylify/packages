@@ -1,6 +1,9 @@
 @font-face {
   font-family: 'stylify-profiler';
-  src: url('assets/icons/fonts/stylify-profiler.woff?72d9tc') format('woff');
+  src:
+    url('fonts/stylify-profiler.ttf?y8f5zi') format('truetype'),
+    url('fonts/stylify-profiler.woff?y8f5zi') format('woff'),
+    url('fonts/stylify-profiler.svg?y8f5zi#stylify-profiler') format('svg');
   font-weight: normal;
   font-style: normal;
   font-display: block;
@@ -21,20 +24,11 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-.sp-icon-activity:before {
-  content: "\e90e";
+.sp-icon-document-file-html:before {
+  content: "\e903";
 }
-.sp-icon-circle:before {
-  content: "\e90d";
-}
-.sp-icon-clock:before {
-  content: "\e90a";
-}
-.sp-icon-menu:before {
-  content: "\e90b";
-}
-.sp-icon-x:before {
-  content: "\e90c";
+.sp-icon-document-file-css:before {
+  content: "\e904";
 }
 .sp-icon-tag:before {
   content: "\e906";
@@ -59,10 +53,4 @@
 }
 .sp-icon-archive:before {
   content: "\e905";
-}
-.sp-icon-document-file-html:before {
-  content: "\e903";
-}
-.sp-icon-document-file-css:before {
-  content: "\e904";
 }

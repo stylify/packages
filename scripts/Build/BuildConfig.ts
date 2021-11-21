@@ -176,7 +176,6 @@ class BuildConfig {
 		babelConfig.extensions = this.buildFilesExtensions;
 		babelConfig.babelHelpers = 'bundled';
 		const plugins = [
-			typesPlugin(this.config.packageName),
 			buildPlugin({
 				hooks: this.config.hooks
 			}),
@@ -185,6 +184,7 @@ class BuildConfig {
 			this.config.nodeResolveEnabled ? nodeResolve({ extensions: this.buildFilesExtensions }) : null,
 			replace({
 				'process.env.NODE_ENV': JSON.stringify('production'),
+				__PACKAGE__VERSION__: packageJson.version,
 				preventAssignment: true
 			}),
 			typescript(typescriptConfig),
@@ -195,18 +195,22 @@ class BuildConfig {
 						url: 'inline',
 						limit: Infinity
 					})
-				]
+				],
+				minimize: true
 			})
 		];
 
-		if (!this.isDevMode && config.terser) {
-			plugins.push(
-				terser({
-					output: {
-						comments: false
-					}
-				})
-			);
+		if (!this.isDevMode) {
+			plugins.unshift(typesPlugin(this.config.packageName));
+			if (config.terser) {
+				plugins.push(
+					terser({
+						output: {
+							comments: false
+						}
+					})
+				);
+			}
 		}
 
 		return plugins;

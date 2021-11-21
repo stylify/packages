@@ -1,4 +1,3 @@
-export * from './BuildsAnalyzer';
-export * from './CacheInfo';
-export * from './ConfigurationsVisualizer';
-export * from './DomNodesCounter';
+export * from './RuntimeExtension';
+export * from './CompilerExtension';
+export * from './SummaryExtension';
