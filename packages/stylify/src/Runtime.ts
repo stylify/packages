@@ -64,7 +64,7 @@ export class Runtime {
 		}
 	}
 
-	public configure(config: RuntimeConfigInterface): Record<string, any> {
+	public configure(config: RuntimeConfigInterface): void {
 		const runtimeConfig = config.runtime || {};
 		const compilerConfig = config.compiler || {};
 
@@ -80,20 +80,17 @@ export class Runtime {
 		this.repaintTimeout = runtimeConfig.repaintTimeout || this.repaintTimeout;
 
 		compilerConfig.dev = this.dev;
+		compilerConfig.ignoredElements = [...compilerConfig.ignoredElements || [], ...['stylify-runtime-ignore']];
 
 		if (!this.compiler) {
 			this.compiler = new Compiler();
 		}
-
-		compilerConfig.ignoredElements = [...compilerConfig.ignoredElements || [], ...['stylify-runtime-ignore']];
 
 		this.compiler.configure(compilerConfig);
 
 		this.triggerEvent('stylify:configured', {
 			config: config
 		});
-
-		return this;
 	}
 
 	private init() {
