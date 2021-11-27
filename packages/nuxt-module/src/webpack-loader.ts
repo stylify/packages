@@ -1,38 +1,29 @@
-import type { CompilationResult } from '@stylify/stylify';
 import { getOptions } from 'loader-utils';
 
+const queryIsTemplateType = (resourceQuery: string): boolean => {
+	return resourceQuery.includes('type=template');
+};
+
+const queryIsEmpty = (resourceQuery: string): boolean => {
+	return resourceQuery.length === 0;
+};
+
 export default function (source: string): string {
-	if (source.includes('<style id="stylify-css">')) {
+	const { resourceQuery } = this;
+
+	if (!queryIsEmpty(resourceQuery) && ! queryIsTemplateType(resourceQuery)) {
 		return source;
 	}
 
 	const {
-		compiler,
-		getCompilationResult,
-		setCompilationResult,
-		addBundleStats
+		getCompiler,
+		getCompilationResult
 	} = getOptions(this);
 
-	const compilationResult: CompilationResult = compiler.compile(source);
-	const completeCompilationResult = getCompilationResult();
+	const compiler = getCompiler();
 
-	if (completeCompilationResult) {
-		completeCompilationResult.configure(compilationResult.serialize());
-	}
-
-	setCompilationResult(completeCompilationResult ? completeCompilationResult : compilationResult);
-	const css = compilationResult.generateCss();
-
-	if (compiler.mangleSelectors) {
-		source = compiler.rewriteSelectors(source, compilationResult) as string;
-	}
-
-	if (css) {
-		source += `<style id="stylify-css">${css}</style>`;
-		addBundleStats({
-			resourcePath: this.resourcePath,
-			css: css
-		});
+	if (compiler.mangleSelectors && queryIsTemplateType(resourceQuery)) {
+		source = compiler.rewriteSelectors(source, getCompilationResult()) as string;
 	}
 
 	return source;

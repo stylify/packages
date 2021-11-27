@@ -84,8 +84,5 @@
 		"tslib": "^2.0",
 		"typescript": "^4.1",
 		"v8-compile-cache": "^2.3.0"
-	},
-	"browserslist": [
-		"> 0.10%"
-	]
+	}
 }

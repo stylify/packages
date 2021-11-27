@@ -88,7 +88,7 @@ export class CompilerExtension extends Component<ProfilerExtensionPropsInterface
 			};
 		}
 
-		const profilerDataFromPage = utils.getProfilerDataFromPage('compiler');
+		const profilerDataFromPage = utils.getProfilerDataFromPage('compilerExtension');
 		if (profilerDataFromPage) {
 			variables = {
 				...variables,
@@ -173,7 +173,7 @@ export class CompilerExtension extends Component<ProfilerExtensionPropsInterface
 									{Object.keys(this.state.colorTypeVariables).sort().map((variableName) => {
 										return (
 											<tr>
-												<td class="word-break:break-word width:320px">{variableName}</td>
+												<td class="white-space:nowrap word-break:break-word width:320px">{variableName}</td>
 												<td>
 													<div
 														class="width:30px height:30px border:1px__solid__#333"
@@ -205,7 +205,7 @@ export class CompilerExtension extends Component<ProfilerExtensionPropsInterface
 									{Object.keys(this.state.unitTypeVariables).sort().map((variableName) => {
 										return (
 											<tr>
-												<td class="word-break:break-word width:200px">{variableName}</td>
+												<td class="white-space:nowrap word-break:break-word width:200px">{variableName}</td>
 												<td class="white-space:nowrap width:calc(100%__-__200px)">{this.state.unitTypeVariables[variableName]}</td>
 											</tr>
 										);
@@ -229,7 +229,7 @@ export class CompilerExtension extends Component<ProfilerExtensionPropsInterface
 									{Object.keys(this.state.otherTypeVariables).sort().map((variableName) => {
 										return (
 											<tr>
-												<td class="word-break:break-word width:320px">{variableName}</td>
+												<td class="white-space:nowrap word-break:break-word width:320px">{variableName}</td>
 												<td class="white-space:nowrap width:calc(100%__-__320px)">{this.state.otherTypeVariables[variableName]}</td>
 											</tr>
 										);
@@ -257,7 +257,7 @@ export class CompilerExtension extends Component<ProfilerExtensionPropsInterface
 								{Object.keys(this.state.screens).map((screenName) => {
 									return (
 										<tr>
-											<td class="word-break:break-word width:320px">{screenName}</td>
+											<td class="white-space:nowrap word-break:break-word width:320px">{screenName}</td>
 											<td class="white-space:nowrap width:calc(100%__-__320px)">
 												{typeof this.state.screens[screenName] === 'function' ? this.state.screens[screenName].toString() : this.state.screens[screenName]}
 											</td>
@@ -302,7 +302,7 @@ export class CompilerExtension extends Component<ProfilerExtensionPropsInterface
 								{Object.keys(this.state.plainSelectors).sort().map((plainSelector) => {
 									return (
 										<tr>
-											<td class="word-break:break-word width:320px">{plainSelector}</td>
+											<td class="white-space:nowrap word-break:break-word width:320px">{plainSelector}</td>
 											<td class="white-space:nowrap word-spacing:12px width:calc(100%__-__320px)">{this.state.plainSelectors[plainSelector].selectors.join(' ')}</td>
 										</tr>
 									);
@@ -329,7 +329,7 @@ export class CompilerExtension extends Component<ProfilerExtensionPropsInterface
 								{Object.keys(this.state.components).sort().map((componentName) => {
 									return (
 										<tr>
-											<td class="word-break:break-word width:320px">{componentName}</td>
+											<td class="white-space:nowrap word-break:break-word width:320px">{componentName}</td>
 											<td class="white-space:nowrap word-spacing:12px width:calc(100%__-__320px)">{this.state.components[componentName].selectors.join(' ')}</td>
 										</tr>
 									);

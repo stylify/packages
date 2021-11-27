@@ -8,14 +8,11 @@
 		"start": "nuxt start"
 	},
 	"dependencies": {
-		"@nuxt/components": "^1.1.1",
-		"nuxt": "^2.14.5"
+		"@nuxt/components": "^1.1",
+		"nuxt": "^2.14"
 	},
 	"devDependencies": {
-		"node-sass": "^4.14.1",
-		"sass-loader": "^10.0.2"
-	},
-	"browserslist": [
-		"> 0.01%"
-	]
+		"node-sass": "^4.14",
+		"sass-loader": "^10.0"
+	}
 }

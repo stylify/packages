@@ -196,7 +196,7 @@ export class RuntimeExtension extends Component<ProfilerExtensionPropsInterface,
 									return (
 										<tr>
 											<td class="word-break:break-word width:320px">{component}</td>
-											<td class="white-space:nowrap width:calc(100%__-__320px">
+											<td class="white-space:nowrap width:calc(100%__-__320px)">
 												<pre>{this.state.processedComponents[component]}</pre>
 											</td>
 										</tr>

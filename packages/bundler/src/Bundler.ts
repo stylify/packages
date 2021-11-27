@@ -16,8 +16,20 @@ interface BundleFileDataInterface {
 	content: string
 }
 
+export interface DumpVariablesIntoFileOptionsInterface {
+	filePath: string,
+	fileType: string,
+	variablePrefix?: string,
+	variableValueSeparator?: string,
+	afterValue?: string,
+	fileContentPrefix?: string,
+	fileContentSuffix?: string,
+}
+
 export interface BundleConfigInterface {
+	id?: string,
 	mangleSelectors?: boolean,
+	rewriteSelectorsInFiles?: boolean,
 	dumpCache?: boolean,
 	cache?: JSON | string,
 	outputFile: string,
@@ -37,6 +49,7 @@ export interface ContentOptionsInterface extends CompilerContentOptionsInterface
 }
 
 export interface BundlesBuildCacheInterface {
+	id: string | null
 	compiler: Compiler,
 	compilationResult: CompilationResult,
 	buildTime: string,
@@ -56,7 +69,11 @@ export interface BundlerConfigInterface {
 	compilerConfig: CompilerConfigInterface,
 	verbose?: boolean,
 	watchFiles?: boolean,
-	sync?: boolean
+	sync?: boolean,
+	cssVarsDirPath?: string,
+	sassVarsDirPath?: string,
+	lessVarsDirPath?: string,
+	stylusVarsDirPath?: string,
 }
 
 export interface WatchedFilesInterface {
@@ -70,7 +87,7 @@ export class Bundler {
 
 	private processedBundlesQueue: Promise<void>[] = [];
 
-	private bundles = [];
+	private bundles: BundleInterface[] = [];
 
 	private isReloadingConfiguration = false;
 
@@ -83,7 +100,11 @@ export class Bundler {
 		compilerConfig: null,
 		verbose: true,
 		sync: true,
-		watchFiles: false
+		watchFiles: false,
+		cssVarsDirPath: null,
+		sassVarsDirPath: null,
+		lessVarsDirPath: null,
+		stylusVarsDirPath: null
 	}
 
 	public constructor(config: BundlerConfigInterface) {
@@ -151,13 +172,80 @@ export class Bundler {
 			return contentOptions;
 		};
 
+		if (this.config.cssVarsDirPath) {
+			this.dumpVariablesIntoFile({
+				filePath: this.config.cssVarsDirPath,
+				fileType: 'css',
+				variablePrefix: '--',
+				variableValueSeparator: ': ',
+				afterValue: ';',
+				fileContentPrefix: ':root {\n',
+				fileContentSuffix: '\n}'
+			});
+		}
+
+		if (this.config.sassVarsDirPath) {
+			this.dumpVariablesIntoFile({
+				filePath: this.config.sassVarsDirPath,
+				fileType: 'scss',
+				variablePrefix: '$',
+				variableValueSeparator: ': ',
+				afterValue: ';'
+			});
+		}
+
+		if (this.config.lessVarsDirPath) {
+			this.dumpVariablesIntoFile({
+				filePath: this.config.lessVarsDirPath,
+				fileType: 'less',
+				variablePrefix: '@',
+				variableValueSeparator: ': '
+			});
+		}
+
+		if (this.config.stylusVarsDirPath) {
+			this.dumpVariablesIntoFile({
+				filePath: this.config.stylusVarsDirPath,
+				fileType: 'styl',
+				variablePrefix: '',
+				variableValueSeparator: ' = '
+			});
+		}
+
 		this.configurationLoadingPromise = null;
+	}
+
+	private dumpVariablesIntoFile(options: DumpVariablesIntoFileOptionsInterface): void {
+		let fileVariablesContent = options.fileContentPrefix || '';
+		const variablePrefix = options.variablePrefix || '';
+		const variableValueSeparator = options.variableValueSeparator || '';
+		const afterValue = options.afterValue || '';
+
+		for (const variable in this.config.compilerConfig.variables) {
+			const variableValue = this.config.compilerConfig.variables[variable];
+			fileVariablesContent += `${variablePrefix}${variable}${variableValueSeparator}${variableValue}${afterValue}\n`;
+		}
+
+		if (!fs.existsSync(options.filePath)) {
+			fs.mkdirSync(options.filePath);
+		}
+
+		fileVariablesContent += options.fileContentSuffix || '';
+
+		fs.writeFileSync(
+			path.join(options.filePath, `stylify-variables.${options.fileType}`),
+			fileVariablesContent
+		);
 	}
 
 	public async waitOnBundlesProcessed(): Promise<void> {
 		if (this.processedBundlesQueue.length) {
 			await Promise.all(this.processedBundlesQueue);
 		}
+	}
+
+	public findBundleCache(id: string): BundlesBuildCacheInterface | null {
+		return Object.values(this.bundlesBuildCache).find((value): boolean => value.id === id) || null;
 	}
 
 	public async bundle(bundles: BundleConfigInterface[] | BundleInterface[]): Promise<void> {
@@ -175,7 +263,10 @@ export class Bundler {
 				const bundleToProcess = {
 					...bundle,
 					...{
-						index: this.bundles.length
+						index: this.bundles.length,
+						rewriteSelectorsInFiles: 'rewriteSelectorsInFiles' in bundle
+							? bundle.rewriteSelectorsInFiles
+							: bundle.mangleSelectors
 					}
 				};
 				bundlesToProcess.push(bundleToProcess);
@@ -279,6 +370,7 @@ export class Bundler {
 				}
 
 				this.bundlesBuildCache[bundleConfig.outputFile] = {
+					id: bundleConfig.id || null,
 					compiler: compiler,
 					compilationResult: compilationResult,
 					buildTime: null,
@@ -336,7 +428,7 @@ export class Bundler {
 					bundleBuildCache.compilationResult
 				);
 
-				if (bundleConfig.mangleSelectors) {
+				if (bundleConfig.rewriteSelectorsInFiles) {
 					const processedContent = compiler.rewriteSelectors(
 						fileToProcessConfig.content,
 						bundleBuildCache.compilationResult
@@ -394,7 +486,9 @@ export class Bundler {
 
 			if (filePathsFromContent.length) {
 				filePathsFromContent = filePathsFromContent.map((fileOptionValue) => {
-					return path.join(path.dirname(filePath), fileOptionValue);
+					return fileOptionValue.startsWith(path.sep)
+						? fileOptionValue
+						: path.join(path.dirname(filePath), fileOptionValue);
 				});
 			}
 

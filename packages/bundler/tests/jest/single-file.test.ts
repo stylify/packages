@@ -37,7 +37,7 @@ new Bundler({
 }).bundle([
 	{
 		outputFile: path.join(buildTmpDir, 'second.css'),
-		scope: '#stylify-profiler',
+		scope: '#stylify-profiler ',
 		files: [
 			path.join(buildTmpDir, 'second.html'),
 		]

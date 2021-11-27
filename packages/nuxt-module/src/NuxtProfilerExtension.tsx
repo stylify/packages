@@ -37,7 +37,11 @@ export class NuxtProfilerExtension extends preact.Component<ProfilerExtensionPro
 	}
 
 	private getActualStateData(): ExpandableStateInterface {
-		const data = utils.getProfilerDataFromPage('nuxt') as ExpandableStateInterface;
+		const data = utils.getProfilerDataFromPage('nuxtExtension') as ExpandableStateInterface;
+
+		if (!data) {
+			return;
+		}
 
 		data.bundlesStats = data.bundlesStats.sort((next, previous) => {
 			return next.css.length > previous.css.length ? -1 : 0;
@@ -71,10 +75,10 @@ export class NuxtProfilerExtension extends preact.Component<ProfilerExtensionPro
 										<tr>
 											<td class="word-break:break-word width:320px">{bundleStats.resourcePath}</td>
 											<td>{`Bundle size: ${utils.convertSizeToKb(bundleStats.css.length)}`}</td>
-											<td class="white-space:nowrap width:calc(100%__-__350px)">
-												<a role="button" class="white-space:nowrap" onClick={() => this.openGeneratedCssInNewWindow(bundleStats.css)}>Show CSS</a>
+											<td>
+												<a role="button" style="white-space:nowrap" onClick={() => this.openGeneratedCssInNewWindow(bundleStats.css)}>Show CSS</a>
 												<span>&nbsp;|&nbsp;</span>
-												<a href={`data:text/plain;charset=utf-8,${encodeURIComponent(bundleStats.css)}`} download="stylify-runtime-css.css" class="white-space:nowrap">Export CSS</a>
+												<a href={`data:text/plain;charset=utf-8,${encodeURIComponent(bundleStats.css)}`} download="stylify-runtime-css.css" style="white-space:nowrap">Export CSS</a>
 											</td>
 										</tr>
 									);

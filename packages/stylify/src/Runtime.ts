@@ -227,6 +227,9 @@ export class Runtime {
 		const elements = document.querySelectorAll(`.${Runtime.CLOAK_CLASS}`);
 		elements.forEach((element) => {
 			element.classList.remove(Runtime.CLOAK_CLASS);
+			this.triggerEvent('stylify:uncloak', {
+				el: element
+			});
 		});
 	}
 

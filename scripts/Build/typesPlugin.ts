@@ -1,3 +1,4 @@
+import { argumentsProcessor } from '../ArgumentsProcessor';
 import { TypesGenerator } from '../TypesGenerator';
 
 export const typesPlugin = (packageName: string): Record<string, any> => {
@@ -7,6 +8,6 @@ export const typesPlugin = (packageName: string): Record<string, any> => {
 
 	return {
 		name: 'stylifyTypesPlugin',
-		watchChange: generateTypes
+		[argumentsProcessor.processArguments.isWatchMode ? 'watchChange' : 'buildEnd']: generateTypes
 	};
 };
