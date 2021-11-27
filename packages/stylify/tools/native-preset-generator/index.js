@@ -5,7 +5,7 @@ const dirname = path.join(process.cwd(), 'packages', 'stylify', 'tools', 'native
 
 const browserPropertiesListPath = path.join(dirname, 'tmp', 'complete-propertes-list.txt');
 const nativePresetOutputFilePath = path.join(
-	dirname, '..', '..', 'src', 'Presets', 'NativePreset.ts'
+	dirname, '..', '..', 'src', 'Presets', 'nativePreset.ts'
 );
 const nativePresetTemplateFilePath = path.join(dirname, 'template.ts');
 
@@ -31,6 +31,8 @@ class NativePresetGenerator {
 			'border-right',
 			'border-top',
 			'border-bottom',
+			'border-color',
+			'border-style',
 			'flex',
 			'font',
 			'list-style',
