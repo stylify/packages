@@ -32,7 +32,8 @@ export interface ComponentConfigInterface {
 export interface CompilerContentOptionsInterface {
 	pregenerate: string,
 	components: Record<string, any>,
-	variables: Record<string, any>
+	variables: Record<string, any>,
+	plainSelectors: Record<string, any>
 }
 
 export type OnPrepareCompilationResultCallbackType = (compilationResult: CompilationResult) => void;
@@ -344,6 +345,8 @@ export class Compiler {
 
 		this.processMacros(content, compilationResult);
 
+		// TODO opravit selectory viz compilation result
+		// TODO replace mangled selector, když je nalezen v plain selectorech
 		compilationResult.bindPlainSelectorsToSelectors(plainSelectorsSelectorsMap);
 		compilationResult.bindComponentsToSelectors(selectorsComponentsMap);
 
@@ -421,6 +424,7 @@ export class Compiler {
 		let contentOptions: CompilerContentOptionsInterface = {
 			pregenerate: '',
 			components: {},
+			plainSelectors: {},
 			variables: {}
 		};
 
@@ -439,7 +443,7 @@ export class Compiler {
 			if (optionKey === 'pregenerate') {
 				contentOptions[optionKey] += ` ${optionMatchValue}`;
 
-			} else if (['components', 'variables'].includes(optionKey)) {
+			} else if (['components', 'variables', 'plainSelectors'].includes(optionKey)) {
 				contentOptions[optionKey] = {
 					...contentOptions[optionKey],
 					...JSON.parse(optionMatchValue)
