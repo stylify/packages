@@ -1,7 +1,7 @@
 {
 	"name": "@stylify/nuxt-module",
 	"description": "Nuxt module for @stylify/stylify.",
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"main": "lib/index.js",
 	"module": "esm/index.js",
 	"types": "types",
@@ -41,12 +41,13 @@
 		"access": "public"
 	},
 	"dependencies": {
-		"@stylify/profiler": "^0.0",
-		"@stylify/bundler": "^0.0",
-		"@stylify/stylify": "^0.0",
+		"@stylify/bundler": "^0.0.2",
+		"@stylify/profiler": "^0.0.2",
+		"@stylify/stylify": "^0.0.2",
 		"loader-utils": "^2.0"
 	},
 	"devDependencies": {
 		"@rollup/plugin-commonjs": "^21.0.1"
-	}
+	},
+	"gitHead": "4f8d36a606f38dd5784427cbbe91c74110f67740"
 }

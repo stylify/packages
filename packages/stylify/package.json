@@ -1,7 +1,7 @@
 {
 	"name": "@stylify/stylify",
 	"description": "Dynamic CSS generator for rapid UI development.",
-	"version": "0.0.1",
+	"version": "0.0.2",
 	"main": "lib/index.js",
 	"module": "esm/index.js",
 	"unpkg": "dist/stylify.native.min.js",
@@ -42,5 +42,6 @@
 	"homepage": "https://stylify.dev",
 	"publishConfig": {
 		"access": "public"
-	}
+	},
+	"gitHead": "4f8d36a606f38dd5784427cbbe91c74110f67740"
 }

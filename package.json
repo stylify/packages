@@ -7,6 +7,7 @@
 	"scripts": {
 		"repo:init": "yarn install && yarn link && yarn bootstrap",
 		"repo:pack": "lerna run pack",
+		"repo:publish": "npm login && lerna publish --no-git-tag-version --no-push",
 		"bootstrap": "lerna bootstrap --force-local",
 		"rollup:run": "node --max-old-space-size=8192 --experimental-modules node_modules/.bin/rollup --configPlugin typescript={exclude:[\\'packages/**\\']}",
 		"watch": "yarn build -w && yarn",
