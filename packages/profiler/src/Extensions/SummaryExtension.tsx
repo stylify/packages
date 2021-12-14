@@ -71,7 +71,7 @@ export class SummaryExtension extends Component<ProfilerExtensionPropsInterface,
 
 	private getRuntimeVersion(): string|null {
 		const runtime = utils.getStylifyRuntime();
-		return runtime ? runtime.version as string : null;
+		return runtime && 'version' in runtime ? runtime.version as string : null;
 	}
 
 	private getCacheElementsCount = (): number => {
@@ -128,7 +128,7 @@ export class SummaryExtension extends Component<ProfilerExtensionPropsInterface,
 						<div>
 							<InlineCardTitle><span>Runtime</span></InlineCardTitle>
 							<div>
-								<HideableElement visible={this.state.runtimeVersion !== null}>
+								<HideableElement visible={typeof this.state.runtimeVersion !== null}>
 									<strong class="color:green">{`Version ${this.state.runtimeVersion}`}</strong>
 									<InlineCardButtonsWrapper>
 										<a role="button" class="white-space:nowrap" onClick={() => this.config.toggleTab('compilerExtension')}>Show Compiler config</a><span> | </span><a role="button" class="white-space:nowrap" onClick={() => this.config.toggleTab('runtimeExtension')}>Show Runtime info</a>

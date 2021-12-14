@@ -47,6 +47,10 @@ export class Profiler {
 			return null;
 		}
 
+		if (typeof globalThis.Stylify !== 'undefined') {
+			globalThis.Stylify.Profiler = this;
+		}
+
 		const toolbarConfig = {
 			extensions: this.config.extensions,
 			buttonPosition: this.config.buttonPosition,

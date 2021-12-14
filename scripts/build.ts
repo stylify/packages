@@ -19,7 +19,7 @@ build.addConfigs({
 		{
 			inputFile: 'index.browser.native',
 			outputFile: 'stylify.native',
-			formats: ['umd', 'esm'],
+			formats: ['umd'],
 			minifyEsm: true
 		}
 	]
@@ -111,10 +111,6 @@ build.addConfigs({
 					]
 				}
 			]);
-			await profilerBundler.waitOnBundlesProcessed();
-		},
-		watchChange: async (): Promise<void> => {
-			await profilerBundler.waitOnBundlesProcessed();
 		}
 	},
 	configs: [

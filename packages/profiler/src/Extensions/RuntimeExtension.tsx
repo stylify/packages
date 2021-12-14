@@ -94,9 +94,9 @@ export class RuntimeExtension extends Component<ProfilerExtensionPropsInterface,
 		}
 
 		return {
-			version: runtime.version,
+			version: runtime.version || 'Unknown',
 			dev: runtime.dev,
-			repaintTimeout: runtime.repaintTimeout,
+			repaintTimeout: runtime.repaintTimeout || 'Unknown',
 			loadedCache: loadedCache,
 			processedSelectors: processedSelectors,
 			processedComponents: processedComponents,
@@ -123,7 +123,7 @@ export class RuntimeExtension extends Component<ProfilerExtensionPropsInterface,
 							</div>
 						</div>
 					</InlineCard>
-					<InlineCard visible={this.state.version !== null}>
+					<InlineCard visible={typeof this.state.repaintTimeout !== 'undefined'}>
 						<InlineCardIcon color="#4eb539" icon="clock" />
 						<div>
 							<InlineCardTitle><span>Repaint timeout</span></InlineCardTitle>

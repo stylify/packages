@@ -61,7 +61,7 @@ export class CompilerExtension extends Component<ProfilerExtensionPropsInterface
 		let screens = {};
 		const runtime = utils.getStylifyRuntime();
 
-		if (runtime) {
+		if (runtime && 'compiler' in runtime) {
 			variables = {
 				...variables,
 				...runtime.compiler.variables
