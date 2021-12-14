@@ -2,7 +2,7 @@
 
 <p align="center">
 	<a href="https://stylify.dev" target="_blank" rel="noopener noreferrer">
-		<img src="./stylify-logo.png" height="100" alt="Stylify logo">
+		<img src="./logo.svg" height="100" alt="Stylify logo">
 	</a>
 </p>
 
@@ -18,44 +18,16 @@
 </p>
 
 ## Introduction
-Stylify is a library that generates CSS dynamically based on what you write.
 
-Imagine you want to have an element that changes font size according to screen size. Normally you would write something like this:
+Stylify is a library that generates CSS dynamically based on what you write.<br>
+Write HTML. Get CSS
 
-```html
-<style>
-.text { font-size: 16px }
-
-@media (min-width: 640px) {
- .text { font-size: 24px }
-}
-</style>
-
-<p class="text">Hello World!</p>
-```
-
-With the Stylify, **you write HTML** and the **Stylify will generate the CSS** for you.
-
-```html
-<p class="font-size:16px md:font-size:24px">Hello World!</p>
-```
-
-Generated CSS from the example above looks like this:
-
-```html
-<style id="stylify-css">
-.font-size\:16px { font-size: 16px }
-
-@media (min-width: 640px) {
- .font-size\:24px { font-size: 24px }
-}
-</style>
-```
+<img src="./stylify.gif" height="494" width="1024" alt="Stylify preview">
 
 <p align="center"><a href="https://stylify.dev"><img src="https://user-images.githubusercontent.com/14016808/132552680-ae877b45-5796-42df-b507-c0f6b9cf4706.png"></a></p>
 
 ### Want to know more?
-- Live examples and tutorials can be found in [documentation](https://stylify.dev).
+- Live examples and tutorials can be found in [documentation](https://stylify.dev/docs).
 - Information about each release can be found in [releases](https://github.com/stylify/packages/releases).
 - Have an idea? Found a bug? Feel free to create an [issue](https://github.com/stylify/packages/issues).
 
@@ -69,21 +41,26 @@ Generated CSS from the example above looks like this:
 
 | Project               | Status                                                       | Description                                                                          |
 | --------------------- | ------------------------------------------------------------ | -------------------------------------------------------------------------------------|
-| [stylify]             | [![stylify-status]][stylify-package]                         | Dynamic CSS generator, Profiler and Selectors Minifier.                              |
 | [autoprefixer]        | [![autoprefixer-status]][autoprefixer-package]               | [PostCSS Autoprefixer](https://github.com/postcss/autoprefixer) integration for SSR. |
+| [bundler]        | [![bundler-status]][autoprefixer-package]               | A flexible CSS bundler. |
 | [nuxt-module]         | [![nuxt-module-status]][nuxt-module-package]                 | Module for [Nuxt Framework](https://nuxtjs.org/).                                    |
-
-[stylify]: https://github.com/stylify/packages/stylify
-[stylify-status]: https://img.shields.io/npm/v/@stylify/stylify.svg
-[stylify-package]: https://npmjs.com/package/@stylify/stylify
+| [stylify]             | [![stylify-status]][stylify-package]                         | Dynamic CSS generator, Profiler and Selectors Minifier.                              |
 
 [autoprefixer]: https://github.com/stylify/packages/autoprefixer
 [autoprefixer-status]: https://img.shields.io/npm/v/@stylify/autoprefixer.svg
 [autoprefixer-package]: https://npmjs.com/package/@stylify/stylify
 
+[bundler]: https://github.com/stylify/packages/bundler
+[bundler-status]: https://img.shields.io/npm/v/@stylify/bundler.svg
+[bundler-package]: https://npmjs.com/package/@stylify/bundler
+
 [nuxt-module]: https://github.com/stylify/packages/nuxt-module
 [nuxt-module-status]: https://img.shields.io/npm/v/@stylify/nuxt-module.svg
 [nuxt-module-package]: https://npmjs.com/package/@stylify/nuxt-module
+
+[stylify]: https://github.com/stylify/packages/stylify
+[stylify-status]: https://img.shields.io/npm/v/@stylify/stylify.svg
+[stylify-package]: https://npmjs.com/package/@stylify/stylify
 
 ## Stay In Touch
 
