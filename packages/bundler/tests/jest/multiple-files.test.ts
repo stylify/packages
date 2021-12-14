@@ -9,9 +9,12 @@ const testName = 'multiple-files';
 const testUtils = new TestUtils('bundler', testName);
 
 nativePreset.compiler.dev = true;
+nativePreset.compiler.mangleSelectors = true;
 
 const bundleTestDir = testUtils.getTestDir();
 const buildTmpDir = path.join(testUtils.getTmpDir(), testUtils.getTestName() + '-build');
+
+nativePreset.compiler.rewriteSelectorsAreas = ['(?:^|\\s+)n:class="([^"]+)"', '(?:^|\\s+)v-bind:class="([^"]+)"'];
 
 const bundler = new Bundler({
 	compilerConfig: nativePreset.compiler,
@@ -35,7 +38,7 @@ bundler.bundle([
    	{
 		outputFile: path.join(buildTmpDir, 'second.css'),
 		mangleSelectors: true,
-		cache: testUtils.getInputFile('second.css.json'),
+		cache: fs.readFileSync(path.join(bundleTestDir, 'input', 'second.css.json')).toString(),
 		dumpCache: true,
 		files: [
 			path.join(buildTmpDir, 'second.html'),
@@ -65,4 +68,5 @@ test('Bundler - options in file', () => {
 	testUtils.testFileToBe(secondVueOutput, 'vue', path.join('second', 'vue'));
 	testUtils.testFileToBe(secondVueComponentOutput, 'vue', path.join('second', 'vuejs', 'component'));
 });
+
 

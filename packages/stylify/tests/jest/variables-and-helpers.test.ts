@@ -41,6 +41,13 @@ const compiler = new Compiler({
 		'(bgc|zi):(\\S+)': function (m: MacroMatch, p: SelectorProperties): void {
 			const property = this.helpers.shortcut(m.getCapture(0));
 			p.add(property, m.getCapture(1));
+		},
+		'fix:(\\S+)': function (m: MacroMatch, p: SelectorProperties): void {
+			p.addMultiple({
+				position: 'fixed',
+				top: m.getCapture(0),
+				left: m.getCapture(0)
+			});
 		}
 	}
 });

@@ -23,49 +23,29 @@ class NativePresetGenerator {
 			listsFilesContent += `${fs.readFileSync(path.join(dirname, 'lists', file), 'utf8')} \n`;
 		});
 
-		let propertiesShortcuts = [
-			'background',
-			'border',
-			'border-radius',
-			'border-left',
-			'border-right',
-			'border-top',
-			'border-bottom',
-			'border-color',
-			'border-style',
-			'flex',
-			'font',
-			'list-style',
-			'margin',
-			'marker',
-			'overflow',
-			'outline',
-			'padding',
-			'scroll-margin',
-			'transition'
-		];
-
 		const re = new RegExp(/^[\w-]+/, 'gm');
 		let propertyMatch;
+
+		const propertiesList = [];
 
 		while ((propertyMatch = re.exec(listsFilesContent))) {
 			let property = propertyMatch[0];
 
-			if (propertiesShortcuts.indexOf(property) > -1) {
+			if (propertiesList.indexOf(property) > -1) {
 				continue;
 			}
 
-			propertiesShortcuts.push(property);
+			propertiesList.push(property);
 		}
 
-		propertiesShortcuts.sort().forEach((property) => {
+		propertiesList.sort().forEach((property) => {
 			this.assignPropertyToPropertiesMap(property);
 		});
 
 		const processedPropertiesRegExpString = this.convertMapIntoRegularExpression(this.propertiesMap);
 		const propertiesRegExp = '(' + processedPropertiesRegExpString + ')\\\\b:([^ \\\'"`{}\\\\[\\\\]<>]+)';
 
-		fs.writeFileSync(browserPropertiesListPath, propertiesShortcuts.join('\n'));
+		fs.writeFileSync(browserPropertiesListPath, propertiesList.join('\n'));
 
 		fs.writeFileSync(
 			nativePresetOutputFilePath,

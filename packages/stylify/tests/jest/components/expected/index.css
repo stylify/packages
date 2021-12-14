@@ -12,8 +12,17 @@
 }
 .font-size\:24px,
 .button,
+.button.button--big,
 .title{
 	font-size:24px
+}
+.hover\:color\:blue:hover,
+.button:hover{
+	color:blue
+}
+.padding\:12px,
+.button.button--big{
+	padding:12px
 }
 .max-width\:800px,
 .container{

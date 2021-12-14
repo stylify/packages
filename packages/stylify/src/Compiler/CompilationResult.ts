@@ -1,4 +1,5 @@
 import { CssRecord, MacroMatch, SelectorProperties, SerializedCssRecordInterface } from '.';
+import { stringHashCode } from './stringHashCode';
 
 type ScreensListMapType = Map<string, number|null>;
 
@@ -10,9 +11,6 @@ export type ScreensListRecordType = Record<string, number>;
 
 export type SelectorsListType = Record<string, SerializedCssRecordInterface>;
 
-export type ComponentsListType = Record<string, string>;
-
-export type VariablesType = Record<string, string | number>;
 
 export interface CompilationResultConfigInterface {
 	dev?: boolean,
@@ -20,10 +18,10 @@ export interface CompilationResultConfigInterface {
 	screensSortingFunction?: ScreenSortingFunctionType,
 	screensList?: ScreensListRecordType,
 	selectorsList?: SelectorsListType,
-	componentsList?: ComponentsListType,
+	componentsList?: string[],
 	mangleSelectors?: boolean,
-	variables?: VariablesType,
-	onPrepareCssRecord?: OnPrepareCssRecordCallbackType | string
+	onPrepareCssRecord?: OnPrepareCssRecordCallbackType | string,
+	defaultCss?: string
 }
 
 export interface SerializedCompilationResultInterface {
@@ -32,14 +30,13 @@ export interface SerializedCompilationResultInterface {
 	screensSortingFunction?: string,
 	screensList?: ScreensListRecordType,
 	selectorsList?: SelectorsListType,
-	componentsList?: ComponentsListType,
+	componentsList?: string[],
 	mangleSelectors?: boolean,
-	variables?: VariablesType,
-	onPrepareCssRecord?: string
+	onPrepareCssRecord?: string,
+	defaultCss?: string
 }
 
 export interface SelectorsListInterface {
-	mangledSelector: string,
 	processed: boolean
 }
 
@@ -51,8 +48,6 @@ export interface SelectorsComponentsMapInterface {
 }
 
 export class CompilationResult {
-
-	private readonly MATCH_VARIABLE_REG_EXP = /\$([\w-_]+)/g;
 
 	private screensList: ScreensListMapType = new Map();
 
@@ -68,13 +63,13 @@ export class CompilationResult {
 
 	public selectorsList: Record<string, CssRecord> = {};
 
-	public componentsList: ComponentsListType = {};
+	public componentsList: string[] = [];
 
 	public screensSortingFunction: ScreenSortingFunctionType = null;
 
-	public variables: VariablesType = {};
-
 	public onPrepareCssRecord: OnPrepareCssRecordCallbackType = null;
+
+	public defaultCss = '';
 
 	public constructor(config: CompilationResultConfigInterface | SerializedCompilationResultInterface = {}) {
 		this.addScreen('_');
@@ -91,8 +86,7 @@ export class CompilationResult {
 			? config.mangleSelectors
 			: this.mangleSelectors;
 
-		this.variables = {...this.variables, ...config.variables || {}};
-		this.componentsList = {...this.componentsList, ...config.componentsList || {}};
+		this.defaultCss = config.defaultCss || this.defaultCss;
 
 		if ('selectorsList' in config) {
 			for (const selector in config.selectorsList) {
@@ -150,13 +144,19 @@ export class CompilationResult {
 		this.screensListSorted = false;
 	}
 
-	public generateCss(): string {
-		let css = '';
+	public generateCss(all = false): string {
+		let css = this.defaultCss;
+
 		const newLine = this.dev ? '\n' : '';
 		const cssTree: Record<string, string> = {};
 
 		for (const selector in this.selectorsList) {
 			const cssRecord = this.selectorsList[selector];
+
+			if (!all && !cssRecord.shouldBeGenerated) {
+				continue;
+			}
+
 			const screen = this.getScreenById(cssRecord.screenId);
 
 			if (!(screen in cssTree)) {
@@ -193,38 +193,26 @@ export class CompilationResult {
 		}
 
 		const selector = macroMatch.selector;
-		const macroResult = selectorProperties.properties;
 		const screen = macroMatch.screen;
 
 		if (!this.screensList.has(screen)) {
 			this.addScreen(screen);
 		}
 
-		const newCssRecord = this.createCssRecord(
-			new CssRecord({
-				screenId: this.screensList.get(screen),
-				selector: selector,
-				mangledSelector: this.getUniqueSelectorId(),
-				pseudoClasses: macroMatch.pseudoClasses,
-				shouldBeGenerated: true
-			})
-		);
+		const newCssRecord = new CssRecord({
+			screenId: this.screensList.get(screen),
+			selector: selector,
+			pseudoClasses: macroMatch.pseudoClasses,
+			shouldBeGenerated: true
+		});
 
-		for (const property in macroResult) {
-			const propertyValue = macroResult[property].replace(
-				this.MATCH_VARIABLE_REG_EXP,
-				(match, substring: string): string => {
-					if (!(substring in this.variables)) {
-						throw new Error(`Stylify: Variable "${substring}" not found. Available variables are "${Object.keys(this.variables).join(', ')}".`);
-					}
-					return String(this.variables[substring]);
-				}
-			);
-			newCssRecord.addProperty(property, propertyValue);
+		if (this.onPrepareCssRecord) {
+			this.onPrepareCssRecord(newCssRecord);
 		}
 
-		this.selectorsList[selector] = newCssRecord;
+		newCssRecord.addProperties(selectorProperties.properties);
 
+		this.selectorsList[selector] = newCssRecord;
 		this.changed = true;
 	}
 
@@ -239,8 +227,8 @@ export class CompilationResult {
 	public bindComponentsToSelectors(selectorsComponentsMap: SelectorsComponentsMapType): void {
 		for (const componentDependencySelector in selectorsComponentsMap) {
 			for (const componentToBind of selectorsComponentsMap[componentDependencySelector]) {
-				if (!(componentToBind.component in this.componentsList)) {
-					this.componentsList[componentToBind.component] = this.getUniqueSelectorId();
+				if (!this.componentsList.includes(componentToBind.component)) {
+					this.componentsList.push(componentToBind.component);
 				}
 
 				componentToBind.selectorsChain = componentToBind.selectorsChain
@@ -249,13 +237,18 @@ export class CompilationResult {
 							.split(' ')
 							.map((selectorFromChain: string) => {
 								if (this.mangleSelectors) {
-									if (selectorFromChain in this.selectorsList) {
-										selectorFromChain = this.selectorsList[selectorFromChain].mangledSelector;
-									} else if (selectorFromChain in this.componentsList) {
-										selectorFromChain = this.componentsList[selectorFromChain];
-									} else {
-										throw new Error(`Stylify: selector "${selectorFromChain}" from component "${componentToBind.component}" selectorsChain list not found.`);
+									if (!(selectorFromChain in this.selectorsList)
+										&& !this.componentsList.includes(selectorFromChain)
+									) {
+										const info = `Stylify: selector "${selectorFromChain}" from component "${componentToBind.component}" selectorsChain list not found.`;
+										if (this.dev) {
+											console.warn(info);
+										} else {
+											throw new Error(info);
+										}
 									}
+
+									selectorFromChain = stringHashCode(selectorFromChain);
 								}
 
 								return selectorFromChain;
@@ -264,7 +257,7 @@ export class CompilationResult {
 					});
 
 				this.selectorsList[componentDependencySelector].addComponent(
-					this.mangleSelectors ? this.componentsList[componentToBind.component] : componentToBind.component,
+					this.mangleSelectors ? stringHashCode(componentToBind.component) : componentToBind.component,
 					componentToBind.selectorsChain
 				);
 			}
@@ -281,7 +274,22 @@ export class CompilationResult {
 		sortedScreens.set('_', screensList.get('_'));
 		screensList.delete('_');
 
-		let screensListKeysArray = [...screensList.keys()];
+		const lightModeScreensListKeys = [];
+		const darkModeScreensListKeys = [];
+		const printScreensListKeys = [];
+		const screensListKeysArray = [...screensList.keys()].filter((screen) => {
+			if (screen.includes('(prefers-color-scheme: dark)')) {
+				darkModeScreensListKeys.push(screen);
+				return false;
+			} else if (screen.includes('(prefers-color-scheme: light)')) {
+				lightModeScreensListKeys.push(screen);
+				return false;
+			} else if (screen.includes('print')) {
+				printScreensListKeys.push(screen);
+				return false;
+			}
+			return true;
+		});
 
 		const convertUnitToPxSize = (unit: string): number => {
 			const unitMatch = (/(\d*\.?\d+)(ch|em|ex|px|rem)/).exec(unit);
@@ -348,15 +356,24 @@ export class CompilationResult {
 			}
 		};
 
-		screensListKeysArray = separateAndSort(screensListKeysArray, 'min-width');
-		screensListKeysArray = separateAndSort(screensListKeysArray, 'min-height');
-		screensListKeysArray = separateAndSort(screensListKeysArray, 'max-width', true);
-		screensListKeysArray = separateAndSort(screensListKeysArray, 'max-height', true);
-		screensListKeysArray = separateAndSort(screensListKeysArray, 'min-device-width');
-		screensListKeysArray = separateAndSort(screensListKeysArray, 'min-device-height');
-		screensListKeysArray = separateAndSort(screensListKeysArray, 'max-device-width', true);
-		screensListKeysArray = separateAndSort(screensListKeysArray, 'max-device-height', true);
-		mapSortedKeys(screensListKeysArray);
+		const sortScreensListKeys = (screensListKeys: string[]): string[] => {
+			screensListKeys = separateAndSort(screensListKeys, 'min-width');
+			screensListKeys = separateAndSort(screensListKeys, 'min-height');
+			screensListKeys = separateAndSort(screensListKeys, 'max-width', true);
+			screensListKeys = separateAndSort(screensListKeys, 'max-height', true);
+			screensListKeys = separateAndSort(screensListKeys, 'min-device-width');
+			screensListKeys = separateAndSort(screensListKeys, 'min-device-height');
+			screensListKeys = separateAndSort(screensListKeys, 'max-device-width', true);
+			screensListKeys = separateAndSort(screensListKeys, 'max-device-height', true);
+			return screensListKeys;
+		};
+
+		mapSortedKeys([
+			...sortScreensListKeys(screensListKeysArray),
+			...sortScreensListKeys(lightModeScreensListKeys),
+			...sortScreensListKeys(darkModeScreensListKeys),
+			...sortScreensListKeys(printScreensListKeys)
+		]);
 
 		return sortedScreens;
 	}
@@ -387,10 +404,6 @@ export class CompilationResult {
 			serializedCompilationResult.screensSortingFunction = this.screensSortingFunction.toString();
 		}
 
-		if (Object.keys(this.variables).length) {
-			serializedCompilationResult.variables = this.variables;
-		}
-
 		if (Object.keys(this.componentsList).length) {
 			serializedCompilationResult.componentsList = this.componentsList;
 		}
@@ -407,18 +420,6 @@ export class CompilationResult {
 		}
 
 		return serializedCompilationResult;
-	}
-
-	private createCssRecord(cssRecord: CssRecord): CssRecord {
-		if (this.onPrepareCssRecord) {
-			this.onPrepareCssRecord(cssRecord);
-		}
-
-		return cssRecord;
-	}
-
-	private getUniqueSelectorId(): string {
-		return `_${(Math.random() + 1).toString(32).slice(2, 9)}`;
 	}
 
 }

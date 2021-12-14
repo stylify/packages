@@ -58,7 +58,7 @@ export class MacroMatch {
 
 	public getCapture(index: number|string, defaultValue = ''): string {
 		return this.hasCapture(index)
-			? this.captures[index].replace(/__/g, ' ').replace(/,,/g, '\'') as string
+			? this.captures[index].replace(/__/g, ' ').replace(/\^/g, '\'') as string
 			: defaultValue;
 	}
 

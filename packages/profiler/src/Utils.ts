@@ -23,8 +23,8 @@ class Utils {
 			});
 		}
 
-		return this.profilerDataFromPage && this.profilerDataFromPage[extensionName + 'Extension']
-			? this.profilerDataFromPage[extensionName + 'Extension']
+		return this.profilerDataFromPage && this.profilerDataFromPage[extensionName]
+			? this.profilerDataFromPage[extensionName]
 			: null;
 	}
 

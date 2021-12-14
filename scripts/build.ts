@@ -54,24 +54,12 @@ build.addConfigs({
 });
 
 build.addConfigs({
-	packageName: 'nuxt-module',
-	configs: [
-		{inputFile: 'index', formats: ['esm', 'cjs'], external: ['@stylify/stylify']},
-		{inputFile: 'profiler-plugin', formats: ['esm', 'cjs'], external: ['@stylify/profiler']},
-		{inputFile: 'webpack-loader', formats: ['esm', 'cjs'], external: [
-			'@stylify/stylify',
-			'loader-utils'
-		]}
-	]
-});
-
-build.addConfigs({
 	packageName: 'bundler',
 	configs: [
 		{
 			inputFile: 'index',
 			formats: ['esm', 'cjs'],
-			external: ['glob'],
+			external: ['fast-glob'],
 			commonJsEnabled: false,
 			nodeResolveEnabled: false
 		}
@@ -102,11 +90,13 @@ build.addConfigs({
 			const profilerPackageDir = build.getPackageDir('profiler');
 
 			if (!isWatchMode) {
-				fse.rmdirSync(path.join(profilerPackageDir, 'tmp', 'src'), { recursive: true, force: true });
-				fse.copySync(
-					path.join(profilerPackageDir, 'src'),
-					path.join(profilerPackageDir, 'tmp', 'src')
-				);
+				const srcTmpDir = path.join(profilerPackageDir, 'tmp', 'src');
+
+				if (fse.existsSync(srcTmpDir)) {
+					fse.rmdirSync(srcTmpDir, { recursive: true, force: true });
+				}
+
+				fse.copySync(path.join(profilerPackageDir, 'src'), srcTmpDir);
 			}
 			profilerBundler.bundle([
 				{
@@ -114,7 +104,7 @@ build.addConfigs({
 						profilerPackageDir, isWatchMode ? '' : 'tmp', 'src', 'assets', 'profiler.css'
 					),
 					mangleSelectors: !isWatchMode,
-					scope: '#stylify-profiler',
+					scope: '#stylify-profiler ',
 					files: [
 						path.join(profilerPackageDir, isWatchMode ? '' : 'tmp', 'src', '*.tsx'),
 						path.join(profilerPackageDir, isWatchMode ? '' : 'tmp', 'src', '**', '*.tsx')
@@ -142,6 +132,18 @@ build.addConfigs({
 			formats: ['umd'],
 			external: ['@stylify/stylify']
 		}
+	]
+});
+
+build.addConfigs({
+	packageName: 'nuxt-module',
+	configs: [
+		{inputFile: 'index', formats: ['esm', 'cjs'], external: ['@stylify/bundler', '@stylify/stylify']},
+		{inputFile: 'profiler-plugin', formats: ['esm', 'cjs'], external: ['@stylify/bundler', '@stylify/profiler']},
+		{inputFile: 'webpack-loader', formats: ['esm', 'cjs'], external: [
+			'@stylify/stylify',
+			'loader-utils'
+		]}
 	]
 });
 

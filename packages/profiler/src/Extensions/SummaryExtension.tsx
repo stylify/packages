@@ -131,7 +131,7 @@ export class SummaryExtension extends Component<ProfilerExtensionPropsInterface,
 								<HideableElement visible={this.state.runtimeVersion !== null}>
 									<strong class="color:green">{`Version ${this.state.runtimeVersion}`}</strong>
 									<InlineCardButtonsWrapper>
-										<a role="button" class="white-space:nowrap" onClick={() => this.config.toggleTab('compiler')}>Show Compiler config</a><span> | </span><a role="button" class="white-space:nowrap" onClick={() => this.config.toggleTab('runtime')}>Show Runtime info</a>
+										<a role="button" class="white-space:nowrap" onClick={() => this.config.toggleTab('compilerExtension')}>Show Compiler config</a><span> | </span><a role="button" class="white-space:nowrap" onClick={() => this.config.toggleTab('runtimeExtension')}>Show Runtime info</a>
 									</InlineCardButtonsWrapper>
 								</HideableElement>
 								<HideableElement visible={this.state.runtimeVersion === null}><span>Not detected.</span></HideableElement>
@@ -156,7 +156,7 @@ export class SummaryExtension extends Component<ProfilerExtensionPropsInterface,
 							<HideableElement visible={this.state.cacheElementsCount !== 0}>
 								<strong>{this.state.cacheElementsCount}</strong>
 								<InlineCardButtonsWrapper>
-									<a role="button" class="white-space:nowrap" onClick={(): void => this.config.toggleTab('runtime')}>Show cache</a>
+									<a role="button" class="white-space:nowrap" onClick={(): void => this.config.toggleTab('runtimeExtension')}>Show cache</a>
 								</InlineCardButtonsWrapper>
 							</HideableElement>
 						</div>

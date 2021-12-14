@@ -4,17 +4,25 @@ import {
 	CompilerConfigInterface,
 	nativePreset
 } from '@stylify/stylify';
+import { Bundler } from '@stylify/bundler';
 import fs from 'fs';
 import path from 'path';
+
+export interface LoadersInterface {
+	test: RegExp,
+	include: string[]
+}
 
 export interface StylifyNuxtModuleConfigInterface {
 	dev?: boolean,
 	configPath?: string,
 	compiler?: CompilerConfigInterface,
-	loader?: {
-		test?: RegExp,
-		exclude?: any
-	}
+	cssVarsDirPath?: string,
+	sassVarsDirPath?: string,
+	lessVarsDirPath?: string,
+	stylusVarsDirPath?: string,
+	filesMasks: string[],
+	loaders?: LoadersInterface[]
 }
 
 export interface BundleStatsInterface {
@@ -22,14 +30,21 @@ export interface BundleStatsInterface {
 	css: string
 }
 
+export interface ProcessedBundleInterface {
+	css?: string,
+}
+
 let moduleConfig: StylifyNuxtModuleConfigInterface = {
 	dev: false,
 	configPath: 'stylify.config.js',
 	compiler: nativePreset.compiler,
-	loader: {
-		test: /\.vue$/i,
-		exclude: /node_modules/
-	}
+	cssVarsDirPath: null,
+	sassVarsDirPath: null,
+	lessVarsDirPath: null,
+	stylusVarsDirPath: null,
+	filesMasks: [],
+	loaders: []
+
 };
 
 const mergeObject = (...objects): any => {
@@ -37,11 +52,23 @@ const mergeObject = (...objects): any => {
 
 	for (const processedObject of objects) {
 		for (const processedObjectKey in processedObject) {
-			const processedObjectValue = processedObject[processedObjectKey];
-			newObject[processedObjectKey] = !(processedObjectKey in newObject)
-				|| !(typeof processedObjectValue !== null && typeof processedObjectValue === 'object')
-				? processedObjectValue
-				: mergeObject(newObject[processedObjectKey], processedObjectValue);
+			const newValue = processedObject[processedObjectKey];
+
+			if (processedObjectKey in newObject) {
+				if (Array.isArray(newValue)) {
+					newObject[processedObjectKey] = [
+						...newObject[processedObjectKey],
+						...newValue
+					];
+					continue;
+
+				} else if (typeof newValue === 'object' && newValue !== null) {
+					newObject[processedObjectKey] = mergeObject(newObject[processedObjectKey], newValue);
+					continue;
+				}
+			}
+
+			newObject[processedObjectKey] = newValue;
 		}
 	}
 
@@ -58,14 +85,39 @@ const mergeConfig = (config: Record<string, any>): void => {
 };
 
 let compilationResult: CompilationResult = null;
-const bundlesStats = {};
+
+const processedBundles: Record<string, ProcessedBundleInterface> = {};
 
 export default function Stylify(): void {
 	const { nuxt } = this;
+
+	const pagesDir = nuxt.resolver.resolveAlias(nuxt.options.dir.pages);
+	const layoutsDir = nuxt.resolver.resolveAlias(nuxt.options.dir.layouts);
+	const componentsDir = nuxt.resolver.resolveAlias('components');
+	const contentDir = nuxt.resolver.resolveAlias('content');
+
+	moduleConfig.filesMasks = [
+		path.join(pagesDir, '**', '*.vue'),
+		path.join(layoutsDir, '**', '*.vue'),
+		path.join(componentsDir, '**', '*.vue'),
+		path.join(contentDir, '**', '*.vue'),
+		path.join(contentDir, '**', '*.md')
+	];
+
+	moduleConfig.loaders = [
+		{
+			test: /\.vue$/i,
+			include: [pagesDir, layoutsDir, componentsDir, contentDir]
+		},
+		{
+			test: /\.md$/i,
+			include: [contentDir]
+		}
+	];
+
 	const nuxtIsInDevMode = typeof nuxt.options.dev === 'boolean' ? nuxt.options.dev : moduleConfig.dev;
 
 	moduleConfig.dev = nuxtIsInDevMode;
-	moduleConfig.compiler.mangleSelectors = !moduleConfig.dev;
 
 	if ('stylify' in nuxt.options) {
 		mergeConfig(nuxt.options.stylify);
@@ -82,6 +134,11 @@ export default function Stylify(): void {
 	}
 
 	moduleConfig.compiler.dev = moduleConfig.dev;
+	moduleConfig.compiler.mangleSelectors = true;
+	moduleConfig.compiler.rewriteSelectorsAreas = [
+		'(?:^|\\s+)(?:v-bind)?:class="([^"]+)"',
+		'(?:^|\\s+)(?:v-bind)?:class=\'([^\']+)\''
+	];
 
 	if (moduleConfig.dev) {
 		this.addPlugin({
@@ -90,31 +147,45 @@ export default function Stylify(): void {
 		});
 	}
 
-	const compiler = new Compiler(moduleConfig.compiler);
+	const getCompiler = () => new Compiler(moduleConfig.compiler);
+	const compiler = getCompiler();
 
 	this.extendBuild((config: Record<string, any>): void => {
 		config.module.rules.push({
-			test: moduleConfig.loader.test,
-			exclude: moduleConfig.loader.exclude,
+			test: /\.jsx?$/,
+			include: [
+				path.resolve('node_modules/@stylify/profiler'),
+				path.resolve('node_modules/@stylify/stylify')
+			],
 			use: {
-				loader: path.join(__dirname, 'webpack-loader.js'),
+				loader: 'babel-loader',
 				options: {
-					compiler: compiler,
-					getCompilationResult: (): CompilationResult|null => {
-						return compilationResult;
-					},
-					setCompilationResult: (compilationResultFromBuild: CompilationResult): void => {
-						compilationResult = compilationResultFromBuild;
-					},
-					addBundleStats: (stats: BundleStatsInterface): void => {
-						if (stats.resourcePath in bundlesStats) {
-							return;
-						}
-						bundlesStats[stats.resourcePath] = stats;
-					}
+					presets: [
+						['@babel/preset-env', { targets: 'defaults' }]
+					]
 				}
 			}
 		});
+
+		if (!nuxtIsInDevMode) {
+			for (const loaderConfig of moduleConfig.loaders) {
+				config.module.rules.push({
+					test: loaderConfig.test,
+					enforce: 'pre',
+					include: loaderConfig.include,
+					use: {
+						loader: path.join(__dirname, 'webpack-loader.js'),
+						options: {
+							getCompiler: getCompiler,
+							getCompilationResult: (): CompilationResult|null => {
+								return compilationResult;
+							}
+						}
+					}
+				});
+			}
+		}
+
 	});
 
 	const convertObjectToStringableForm = (processedObject: Record<string, any>): Record<string, any> => {
@@ -142,6 +213,15 @@ export default function Stylify(): void {
 	};
 
 	const dumpProfilerInfo = (params: Record<string, any>): void => {
+		const bundlesStats: BundleStatsInterface[] = [];
+
+		for (const resourcePath in processedBundles) {
+			bundlesStats.push({
+				resourcePath: resourcePath,
+				css: processedBundles[resourcePath].css
+			});
+		}
+
 		const data = convertObjectToStringableForm({
 			compilerExtension: {
 				variables: compiler.variables,
@@ -152,13 +232,70 @@ export default function Stylify(): void {
 				screens: compiler.screens
 			},
 			nuxtExtension: {
-				bundlesStats: Object.values(bundlesStats),
+				bundlesStats: bundlesStats,
 				serializedCompilationResult: JSON.stringify(compilationResult.serialize())
 			}
 		});
 
 		params.HEAD += `<script class="stylify-profiler-data" type="application/json">${JSON.stringify(data)}</script>`;
 	};
+
+	let initStyleGenerated = false;
+	const generateStylifyCssFile = async () => {
+		const assetsDir = nuxt.resolver.resolveAlias(nuxt.options.dir.assets);
+		const assetsStylifyCssPath = path.join('~', nuxt.options.dir.assets, 'stylify.css');
+		const bundleId = 'stylify';
+
+		if (!fs.existsSync(assetsDir)) {
+			fs.mkdirSync(assetsDir);
+		}
+
+		const bundler = new Bundler({
+			compilerConfig: moduleConfig.compiler,
+			cssVarsDirPath: moduleConfig.cssVarsDirPath,
+			sassVarsDirPath: moduleConfig.sassVarsDirPath,
+			lessVarsDirPath: moduleConfig.lessVarsDirPath,
+			stylusVarsDirPath: moduleConfig.stylusVarsDirPath
+		});
+
+		await bundler.bundle([
+			{
+				id: bundleId,
+				files: moduleConfig.filesMasks,
+				mangleSelectors: !nuxtIsInDevMode,
+				rewriteSelectorsInFiles: false,
+				outputFile: path.join(assetsDir, 'stylify.css')
+			}
+		]);
+
+		compilationResult = bundler.findBundleCache(bundleId).compilationResult;
+
+		processedBundles[bundleId] = {
+			css: compilationResult.generateCss()
+		};
+
+		if (!nuxt.options.css.includes(assetsStylifyCssPath)) {
+			nuxt.options.css.push(assetsStylifyCssPath);
+		}
+
+		initStyleGenerated = true;
+	};
+
+	nuxt.hook('content:file:beforeParse', async (): Promise<void> => {
+		if (!initStyleGenerated) {
+			return;
+		}
+
+		return generateStylifyCssFile();
+	});
+
+	nuxt.hook('build:before', async (): Promise<void> => {
+		return generateStylifyCssFile();
+	});
+
+	nuxt.hook('bundler:change', async (): Promise<void> => {
+		return generateStylifyCssFile();
+	});
 
 	nuxt.hook('vue-renderer:ssr:templateParams', (params: Record<string, any>): void => {
 		dumpProfilerInfo(params);

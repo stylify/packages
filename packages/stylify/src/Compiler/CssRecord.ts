@@ -1,12 +1,14 @@
+import { stringHashCode } from './stringHashCode';
+
 export interface SerializedCssRecordInterface {
 	screenId: number,
 	selector: string,
-	mangledSelector: string,
 	properties?: Record<string, string | number>,
 	plainSelectors?: string[],
 	components?: ComponentsType,
 	pseudoClasses?: string[],
 	onAddProperty?: string
+	onAfterGenerate?: string,
 	scope?: string
 }
 
@@ -14,16 +16,18 @@ export type ComponentsType = Record<string, string[]>;
 
 export type OnAddPropertyCallbackType = (property: string, value: any) => Record<string, any>|null;
 
+export type OnAfterGenerateCallbackType = (cssRecord: CssRecord) => void;
+
 export interface CssRecordConfigInterface {
-	screenId: number,
-	selector: string,
-	mangledSelector: string,
+	screenId?: number,
+	selector?: string,
 	properties?: Record<string, string | number>,
 	plainSelectors?: string[],
 	components?: ComponentsType,
 	pseudoClasses?: string[],
-	onAddProperty?: OnAddPropertyCallbackType | string
-	scope?: string
+	onAddProperty?: OnAddPropertyCallbackType | string,
+	onAfterGenerate?: OnAfterGenerateCallbackType | string,
+	scope?: string,
 	shouldBeGenerated?: boolean
 }
 
@@ -34,15 +38,15 @@ export interface CssRecordCompileParametersConfig {
 
 export class CssRecord {
 
-	public cache: string = null;
-
 	private changed = false;
+
+	public cache: string = null;
 
 	public shouldBeGenerated = false;
 
-	public mangledSelector: string = null;
-
 	public selector: string = null;
+
+	public mangledSelector: string = null;
 
 	public screenId: number = null;
 
@@ -58,14 +62,19 @@ export class CssRecord {
 
 	public onAddProperty: OnAddPropertyCallbackType = null;
 
-	constructor(config: CssRecordConfigInterface) {
+	public onAfterGenerate: OnAfterGenerateCallbackType = null;
+
+	constructor(config: CssRecordConfigInterface = {}) {
+		if (!Object.keys(config).length) {
+			return;
+		}
 		this.configure(config);
 	}
 
 	public configure(config: CssRecordConfigInterface): void {
 		this.screenId = config.screenId;
 		this.selector = config.selector.replace(/([^-_a-zA-Z\d])/g, '\\$1');
-		this.mangledSelector = config.mangledSelector;
+		this.mangledSelector = stringHashCode(this.selector);
 		this.scope = config.scope || null;
 		if ('onAddProperty' in config) {
 			this.onAddProperty = typeof config.onAddProperty === 'string'
@@ -95,7 +104,7 @@ export class CssRecord {
 		const onAddPropertyHook = (property: string, value: any): Record<string, any> => {
 			let properties = this.onAddProperty ? this.onAddProperty(property, value) : null;
 
-			if (!properties) {
+			if (!properties || typeof properties === 'undefined') {
 				properties = {
 					[property]: value
 				};
@@ -150,7 +159,8 @@ export class CssRecord {
 		if (this.changed || !this.cache) {
 			const newLine = config.minimize ? '' : '\n';
 
-			const cssRecordSelector = config.mangleSelectors ? this.mangledSelector : this.selector;
+			const cssRecordSelector = config.mangleSelectors ? stringHashCode(this.selector) : this.selector;
+
 			let plainSelectors: string[] = [];
 			let classSelectors: string[] = [];
 			const componentsSelectors: string[] = [];
@@ -170,12 +180,9 @@ export class CssRecord {
 			if (this.pseudoClasses.length) {
 				for (const pseudoClass of this.pseudoClasses) {
 					const pseudoClassSuffix = `:${pseudoClass}`;
-					plainSelectors = [
-						...plainSelectors,
-						...plainSelectors.map((selector: string): string => {
-							return `${selector}${pseudoClassSuffix}`;
-						})
-					];
+					plainSelectors = this.plainSelectors.map((selector: string): string => {
+						return `${selector}${pseudoClassSuffix}`;
+					});
 					classSelectors = [
 						...classSelectors,
 						...[`${cssRecordSelector}${pseudoClassSuffix}`],
@@ -184,12 +191,13 @@ export class CssRecord {
 						})
 					];
 				}
+
 			} else {
 				plainSelectors = this.plainSelectors;
 				classSelectors = [cssRecordSelector, ...componentsSelectors];
 			}
 
-			const scopePart = this.scope ? this.scope + ' ' : '';
+			const scopePart = this.scope ? this.scope : '';
 			const selectors = [
 				...plainSelectors.map((selector): string => {
 					return `${scopePart}${selector}`;
@@ -208,6 +216,10 @@ export class CssRecord {
 			this.changed = false;
 		}
 
+		if (this.onAfterGenerate) {
+			this.onAfterGenerate(this);
+		}
+
 		return this.cache;
 	}
 
@@ -215,8 +227,7 @@ export class CssRecord {
 		const serializedObject: SerializedCssRecordInterface = {
 			screenId: this.screenId,
 			selector: this.selector.replace(/\\([^-_a-zA-Z\d])/g, '$1'),
-			properties: this.properties,
-			mangledSelector: this.mangledSelector
+			properties: this.properties
 		};
 
 		if (Object.keys(this.components).length) {
@@ -233,6 +244,10 @@ export class CssRecord {
 
 		if (this.onAddProperty) {
 			serializedObject.onAddProperty = this.onAddProperty.toString();
+		}
+
+		if (this.onAfterGenerate) {
+			serializedObject.onAfterGenerate = this.onAfterGenerate.toString();
 		}
 
 		if (this.scope) {

@@ -1,6 +1,6 @@
 import './profiler.scss';
 import * as preact from 'preact';
-import { initProfilerToolbar } from '.';
+import { initProfilerToolbar, ProfilerToolbarConfigInterface } from '.';
 
 declare global {
 	interface Window {
@@ -9,10 +9,13 @@ declare global {
 }
 
 export interface ProfilerConfigInterface {
-	extensions?: any[]
+	extensions?: any[],
+	buttonPosition?: string
 }
 
 export type AddExtensionType = (extension: any) => void;
+
+export type ConfigureType = (config: ProfilerToolbarConfigInterface) => void;
 
 export { preact };
 
@@ -23,8 +26,11 @@ export class Profiler {
 	// Dynamically added inside Toolbar.tsx
 	public addExtension: AddExtensionType = null;
 
+	public configure: ConfigureType = null
+
 	private config: ProfilerConfigInterface = {
-		extensions: []
+		extensions: [],
+		buttonPosition: null
 	};
 
 	constructor(config: ProfilerConfigInterface = {}) {
@@ -43,6 +49,7 @@ export class Profiler {
 
 		const toolbarConfig = {
 			extensions: this.config.extensions,
+			buttonPosition: this.config.buttonPosition,
 			profiler: this
 		};
 

@@ -13,6 +13,7 @@ export interface ProfilerExtensionInterface {
 
 export interface ProfilerToolbarConfigInterface {
 	extensions: any[],
+	buttonPosition: string,
 	profiler: Profiler
 }
 
@@ -20,7 +21,8 @@ type ExpandableState = {
 	profilerVisible: boolean,
 	profilerNavigationVisible: boolean,
 	selectedTab: string|null,
-	extensions: Record<string, any>
+	extensions: Record<string, any>,
+	buttonPosition: string
 };
 
 class ProfilerToolbar extends Component<any, ExpandableState> {
@@ -38,6 +40,10 @@ class ProfilerToolbar extends Component<any, ExpandableState> {
 			this.addExtension(extension, true);
 		};
 
+		config.profiler.configure = (config: ProfilerToolbarConfigInterface) => {
+			this.configure(config);
+		};
+
 		const configFromLocalStorage = this.getConfigFromLocalStorage();
 
 		this.state = {
@@ -45,7 +51,8 @@ class ProfilerToolbar extends Component<any, ExpandableState> {
 				extensions: {},
 				profilerVisible: false,
 				profilerNavigationVisible: false,
-				selectedTab: null
+				selectedTab: null,
+				buttonPosition: config.buttonPosition || 'bottom:0; left:0'
 			},
 			...configFromLocalStorage ? configFromLocalStorage : {}
 		};
@@ -60,9 +67,23 @@ class ProfilerToolbar extends Component<any, ExpandableState> {
 
 		this.extensionsConfig = {
 			toggleTab: (extensionName: string) => {
-				return this.toggleTabVisibility(`${extensionName}Extension`);
+				return this.toggleTabVisibility(`${extensionName}`);
 			}
 		};
+	}
+
+	public configure(config: ProfilerToolbarConfigInterface): void {
+		if ('extensions' in config) {
+			for (const extension of config.extensions) {
+				this.addExtension(extension);
+			}
+		}
+
+		if ('buttonPosition' in config) {
+			this.setState({
+				buttonPosition: config.buttonPosition
+			});
+		}
 	}
 
 	public addExtension(component: any, updateState = false): void {
@@ -126,9 +147,13 @@ class ProfilerToolbar extends Component<any, ExpandableState> {
 	}
 
 	private getSelectedTabComponent(): ProfilerExtensionInterface {
-		return this.state.extensions[
-			this.state.selectedTab ? this.state.selectedTab : Object.keys(this.state.extensions)[0]
-		] as ProfilerExtensionInterface;
+		let selectedTabName = this.state.selectedTab ? this.state.selectedTab : Object.keys(this.state.extensions)[0];
+
+		if (!(selectedTabName in this.state.extensions)) {
+			selectedTabName = 'summaryextension';
+		}
+
+		return this.state.extensions[selectedTabName] as ProfilerExtensionInterface || null;
 	}
 
 	private getSelectedTabContent = () => {
@@ -147,17 +172,17 @@ class ProfilerToolbar extends Component<any, ExpandableState> {
 				<a
 					role="button"
 					class="
-						align-items:center bottom:0 left:0 display:flex background-color:$blueLogo
+						align-items:center display:flex background-color:$blueLogo
 						cursor:pointer justify-content:center padding:4px position:fixed
 						transition:background-color__0.3s
 						hover:background-color:$blueLogoHover
 					"
 					onClick={this.toggleProfilerVisibility}
+					style={this.state.buttonPosition}
 				>
-					<svg version="1.2" viewBox="0 0 50 50" width="50" height="50" class="width:40px height:40px">
-						<use href="#img1" x="0" y="0" />
-						<path fill="#000000" aria-label="S" d="M24.57 30.13Q23.64 30.13 22.91 29.91Q22.17 29.67 21.5 29.09Q21.32 28.95 21.23 28.76Q21.14 28.58 21.14 28.39Q21.14 28.09 21.35 27.87Q21.57 27.63 21.9 27.63Q22.15 27.63 22.35 27.79Q22.85 28.19 23.34 28.41Q23.84 28.62 24.57 28.62Q25.05 28.62 25.46 28.47Q25.87 28.31 26.12 28.06Q26.37 27.8 26.37 27.47Q26.37 27.07 26.13 26.8Q25.9 26.52 25.41 26.34Q24.92 26.14 24.17 26.03Q23.46 25.93 22.92 25.72Q22.38 25.49 22.01 25.16Q21.65 24.82 21.47 24.37Q21.29 23.91 21.29 23.35Q21.29 22.49 21.72 21.88Q22.17 21.28 22.92 20.96Q23.67 20.64 24.58 20.64Q25.44 20.64 26.16 20.91Q26.9 21.16 27.36 21.55Q27.74 21.86 27.74 22.25Q27.74 22.54 27.52 22.78Q27.29 23.02 26.99 23.02Q26.79 23.02 26.63 22.9Q26.42 22.71 26.07 22.56Q25.71 22.38 25.32 22.28Q24.92 22.16 24.58 22.16Q24.01 22.16 23.62 22.31Q23.24 22.45 23.04 22.7Q22.84 22.95 22.84 23.28Q22.84 23.68 23.06 23.94Q23.3 24.19 23.74 24.35Q24.17 24.49 24.78 24.61Q25.57 24.76 26.16 24.95Q26.77 25.15 27.16 25.47Q27.56 25.77 27.75 26.24Q27.95 26.71 27.95 27.38Q27.95 28.23 27.48 28.85Q27 29.47 26.23 29.8Q25.46 30.13 24.57 30.13Z" />
-						<path fill="#ffffff" aria-label="#" d="M12.04 49Q11.03 49 10.42 48.19Q9.88 47.38 10.02 46.23L17.38 3.44Q17.59 2.63 18.13 2.16Q18.67 1.68 19.41 1.68Q20.49 1.68 21.03 2.5Q21.64 3.24 21.44 4.39L14.07 47.24Q14 48.05 13.4 48.53Q12.86 49 12.04 49ZM42.8 17.77L8.87 17.77Q7.92 17.77 7.24 17.16Q6.64 16.49 6.64 15.54Q6.64 14.66 7.24 14.12Q7.92 13.58 8.87 13.58L42.8 13.58Q43.75 13.58 44.35 14.26Q44.96 14.87 44.96 15.81Q44.96 16.69 44.35 17.23Q43.75 17.77 42.8 17.77ZM29.55 49Q28.47 49 27.86 48.19Q27.32 47.38 27.52 46.23L34.89 3.44Q35.03 2.63 35.57 2.16Q36.11 1.68 36.92 1.68Q38 1.68 38.54 2.5Q39.15 3.24 38.95 4.39L31.58 47.24Q31.44 48.05 30.9 48.53Q30.36 49 29.55 49ZM40.16 36.77L6.16 36.77Q5.28 36.77 4.61 36.16Q4 35.48 4 34.6Q4 33.72 4.61 33.18Q5.28 32.64 6.16 32.64L40.16 32.64Q41.11 32.64 41.72 33.25Q42.33 33.86 42.33 34.81Q42.33 35.68 41.72 36.22Q41.11 36.77 40.16 36.77Z" />
+					<svg height="40" viewBox="0 0 123 109" fill="none" xmlns="http://www.w3.org/2000/svg">
+						<path d="M100.08 44.4334L96.048 63.7075H113.328V86.3656H91.296L86.544 108.877H63.504L68.256 86.3656H44.352L39.6 108.877H16.56L21.312 86.3656H0V63.7075H26.064L30.096 44.4334H9.216V21.7753H34.704L39.312 0H62.352L57.744 21.7753H81.648L86.256 0H109.296L104.688 21.7753H122.544V44.4334H100.08ZM77.04 44.4334H53.136L49.104 63.7075H73.008L77.04 44.4334Z" fill="white"/>
+						<path d="M59.6489 85.616C52.9609 85.616 47.5049 84.1787 43.2809 81.304C39.1156 78.3707 37.0329 74.2347 37.0329 68.896C37.0329 68.368 37.0916 67.576 37.2089 66.52H52.8729C52.6969 68.7493 53.2249 70.5093 54.4569 71.8C55.6889 73.0907 57.5662 73.736 60.0889 73.736C62.3769 73.736 64.1662 73.2373 65.4569 72.24C66.8062 71.2427 67.4809 69.8347 67.4809 68.016C67.4809 66.1387 66.6302 64.6133 64.9289 63.44C63.2862 62.2667 60.7049 60.9467 57.1849 59.48C53.7822 58.072 50.9956 56.752 48.8249 55.52C46.7129 54.2293 44.8649 52.4987 43.2809 50.328C41.6969 48.1573 40.9049 45.4293 40.9049 42.144C40.8462 38.096 41.8436 34.576 43.8969 31.584C45.9502 28.592 48.7956 26.304 52.4329 24.72C56.0702 23.136 60.2356 22.344 64.9289 22.344C69.1529 22.344 72.9076 23.0187 76.1929 24.368C79.4782 25.6587 82.0302 27.5653 83.8489 30.088C85.6676 32.552 86.5769 35.4853 86.5769 38.888C86.5769 39.768 86.5476 40.4133 86.4889 40.824H70.4729C70.5316 40.5893 70.5609 40.2373 70.5609 39.768C70.5609 38.1253 69.9742 36.8053 68.8009 35.808C67.6862 34.752 66.1316 34.224 64.1369 34.224C62.0249 34.224 60.2942 34.752 58.9449 35.808C57.6542 36.8053 57.0089 38.184 57.0089 39.944C57.0089 41.704 57.8302 43.2 59.4729 44.432C61.1156 45.6053 63.6676 46.984 67.1289 48.568C70.5902 50.152 73.4062 51.6187 75.5769 52.968C77.8062 54.3173 79.7129 56.136 81.2969 58.424C82.8809 60.6533 83.6729 63.4107 83.6729 66.696C83.6729 70.3333 82.7049 73.5893 80.7689 76.464C78.8329 79.3387 76.0462 81.5973 72.4089 83.24C68.7716 84.824 64.5182 85.616 59.6489 85.616Z" fill="black"/>
 					</svg>
 				</a>
 				<div
@@ -184,7 +209,7 @@ class ProfilerToolbar extends Component<any, ExpandableState> {
 								onClick={this.toggleProfilerNavigationVisibility}
 								class="
 									padding:4px cursor:pointer
-									display:inline-block
+									display:inline-block hover:text-decoration:none
 									transition:background-color__0.3s color:$grey1
 									hover:background-color:$grey3
 									lg:display:none
@@ -197,7 +222,7 @@ class ProfilerToolbar extends Component<any, ExpandableState> {
 							role="button"
 							onClick={this.toggleProfilerVisibility}
 							class="
-								cursor:pointer padding:4px display:inline-block
+								cursor:pointer padding:4px display:inline-block hover:text-decoration:none
 								transition:background-color__0.3s color:$grey1
 								hover:background-color:$grey3
 							"
@@ -230,7 +255,7 @@ class ProfilerToolbar extends Component<any, ExpandableState> {
 										id={extensionName}
 										role="button"
 										onClick={() => this.toggleTabVisibility(extensionName)}
-										class={`profiler__tab-button ${isTabSelected ? 'profiler__tab-button--selected' : ''}`}
+										class={`profiler__tab-button hover:text-decoration:none ${isTabSelected ? 'profiler__tab-button--selected' : ''}`}
 									>
 										{extension.icon === null
 											? ''

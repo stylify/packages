@@ -1,371 +1,586 @@
-align-content normal
-align-items normal
-align-self auto
-alignment-baseline auto
-all
-animation-delay 0s
-animation-direction normal
-animation-duration 0s
-animation-fill-mode none
-animation-iteration-count 1
-animation-name none
-animation-play-state running
-animation-timing-function ease
-appearance none
-aspect-ratio auto
-backdrop-filter none
-backface-visibility visible
-background-attachment scroll
-background-blend-mode normal
-background-clip border-box
-background-color rgba(0, 0, 0, 0)
-background-image none
-background-origin padding-box
-background-position-x 0%
-background-position-y 0%
-background-repeat-x
-background-repeat-y
-background-size auto
-baseline-shift 0px
-block-size 106px
-border-block-end-color rgb(33, 33, 33)
-border-block-end-style none
-border-block-end-width 0px
-border-block-start-color rgb(33, 33, 33)
-border-block-start-style none
-border-block-start-width 0px
-border-bottom-color rgb(33, 33, 33)
-border-bottom-left-radius 0px
-border-bottom-right-radius 0px
-border-bottom-style none
-border-bottom-width 0px
-border-collapse separate
-border-image-outset 0
-border-image-repeat stretch
-border-image-slice 100%
-border-image-source none
-border-image-width 1
-border-inline-end-color rgb(33, 33, 33)
-border-inline-end-style none
-border-inline-end-width 0px
-border-inline-start-color rgb(33, 33, 33)
-border-inline-start-style none
-border-inline-start-width 0px
-border-left-color rgb(33, 33, 33)
-border-left-style none
-border-left-width 0px
-border-right-color rgb(33, 33, 33)
-border-right-style none
-border-right-width 0px
-border-top-color rgb(33, 33, 33)
-border-top-left-radius 0px
-border-top-right-radius 0px
-border-top-style none
-border-top-width 0px
-bottom auto
-box-shadow none
-box-sizing border-box
-break-after auto
-break-before auto
-break-inside auto
-buffered-rendering auto
-caption-side top
-caret-color rgb(33, 33, 33)
-clear none
-clip auto
-clip-path none
-clip-rule nonzero
-color rgb(33, 33, 33)
-color-interpolation srgb
-color-interpolation-filters linearrgb
-color-rendering auto
-color-scheme normal
-column-count auto
-column-fill balance
-column-gap normal
-column-rule-color rgb(33, 33, 33)
-column-rule-style none
-column-rule-width 0px
-column-span none
-column-width auto
-contain none
-contain-intrinsic-size auto
-content normal
-content-visibility visible
-counter-increment none
-counter-reset none
-counter-set none
-cursor auto
-cx 0px
-cy 0px
-d none
-direction ltr
-display block
-dominant-baseline auto
-empty-cells show
-fill rgb(0, 0, 0)
-fill-opacity 1
-fill-rule nonzero
-filter none
-flex-basis auto
-flex-direction row
-flex-grow 0
-flex-shrink 1
-flex-wrap nowrap
-float none
-flood-color rgb(0, 0, 0)
-flood-opacity 1
-font-family zillaslab, palatino, "Palatino Linotype", serif
-font-feature-settings normal
-font-kerning auto
-font-optical-sizing auto
-font-size 48.832px
-font-size-adjust none
-font-stretch 100%
-font-style normal
-font-variant-caps normal
-font-variant-east-asian normal
-font-variant-ligatures normal
-font-variant-numeric normal
-font-variation-settings normal
-font-weight 700
-grid-auto-columns auto
-grid-auto-flow row
-grid-auto-rows auto
-grid-column-end auto
-grid-column-start auto
-grid-row-end auto
-grid-row-start auto
-grid-template-areas none
-grid-template-columns none
-grid-template-rows none
-height 106px
-hyphens manual
-image-orientation from-image
-image-rendering auto
-inline-size 1400px
-inset-block-end auto
-inset-block-start auto
-inset-inline-end auto
-inset-inline-start auto
-isolation auto
-justify-content normal
-justify-items normal
-justify-self auto
-left auto
-letter-spacing -0.0444444px
-lighting-color rgb(255, 255, 255)
-line-break auto
-line-height 58.5984px
-line-height-step 0px
-list-style-image none
-list-style-position outside
-list-style-type disc
-margin-block-end 0px
-margin-block-start 0px
-margin-bottom 0px
-margin-inline-end 252.5px
-margin-inline-start 252.5px
-margin-left 252.5px
-margin-right 252.5px
-margin-top 0px
-marker-end none
-marker-mid none
-marker-start none
-mask none
-mask-type luminance
-math-depth 0
-math-shift normal
-math-style normal
-max-block-size none
-max-height none
-max-inline-size 1400px
-max-width 1400px
-min-block-size 0px
-min-height 0px
-min-inline-size 0px
-min-width 0px
-mix-blend-mode normal
-object-fit fill
-object-position 50% 50%
-offset-anchor auto
-offset-distance 0px
-offset-path none
-offset-position auto
-offset-rotate auto 0deg
-opacity 1
-order 0
-orphans 2
-outline-color rgb(33, 33, 33)
-outline-offset 0px
-outline-style none
-outline-width 0px
-overflow-anchor auto
-overflow-wrap normal
-overflow-x visible
-overflow-y visible
-overscroll-behavior-block auto
-overscroll-behavior-inline auto
-overscroll-behavior-x auto
-overscroll-behavior-y auto
-padding-block-end 24px
-padding-block-start 24px
-padding-bottom 24px
-padding-inline-end 24px
-padding-inline-start 24px
-padding-left 24px
-padding-right 24px
-padding-top 24px
-page auto
-page-orientation
-paint-order normal
-perspective none
-perspective-origin 700px 53px
-pointer-events auto
-position static
-quotes auto
-r 0px
-resize none
-right auto
-rotate none
-row-gap normal
-ruby-position over
-rx auto
-ry auto
-scale none
-scroll-behavior auto
-scroll-margin-block-end 0px
-scroll-margin-block-start 0px
-scroll-margin-bottom 0px
-scroll-margin-inline-end 0px
-scroll-margin-inline-start 0px
-scroll-margin-left 0px
-scroll-margin-right 0px
-scroll-margin-top 0px
-scroll-padding-block-end auto
-scroll-padding-block-start auto
-scroll-padding-bottom auto
-scroll-padding-inline-end auto
-scroll-padding-inline-start auto
-scroll-padding-left auto
-scroll-padding-right auto
-scroll-padding-top auto
-scroll-snap-align none
-scroll-snap-stop normal
-scroll-snap-type none
-shape-image-threshold 0
-shape-margin 0px
-shape-outside none
-shape-rendering auto
-size
-speak normal
-stop-color rgb(0, 0, 0)
-stop-opacity 1
-stroke none
-stroke-dasharray none
-stroke-dashoffset 0px
-stroke-linecap butt
-stroke-linejoin miter
-stroke-miterlimit 4
-stroke-opacity 1
-stroke-width 1px
-tab-size 8
-table-layout auto
-text-align start
-text-align-last auto
-text-anchor start
-text-combine-upright none
-text-decoration-color rgb(33, 33, 33)
-text-decoration-line none
-text-decoration-skip-ink auto
-text-decoration-style solid
-text-decoration-thickness auto
-text-indent 0px
-text-justify auto
-text-orientation mixed
-text-overflow clip
-text-rendering optimizespeed
-text-shadow none
-text-size-adjust auto
-text-transform none
-text-underline-offset auto
-text-underline-position auto
-top auto
-touch-action auto
-transform none
-transform-box view-box
-transform-origin 700px 53px
-transform-style flat
-transition-delay 0s
-transition-duration 0s
-transition-property all
-transition-timing-function ease
-translate none
-unicode-bidi normal
-user-select auto
-vector-effect none
-vertical-align baseline
-visibility visible
-white-space normal
-widows 2
-width 1400px
-will-change auto
-word-break break-word
-word-spacing 0px
-writing-mode horizontal-tb
-x 0px
-y 0px
-z-index auto
-zoom 1
--webkit-app-region none
--webkit-border-horizontal-spacing 0px
--webkit-border-vertical-spacing 0px
--webkit-box-align stretch
--webkit-box-decoration-break slice
--webkit-box-direction normal
--webkit-box-flex 0
--webkit-box-ordinal-group 1
--webkit-box-orient horizontal
--webkit-box-pack start
--webkit-box-reflect none
--webkit-font-smoothing antialiased
--webkit-highlight none
--webkit-hyphenate-character auto
--webkit-line-clamp none
--webkit-locale "en"
--webkit-mask-box-image-outset 0
--webkit-mask-box-image-repeat stretch
--webkit-mask-box-image-slice 0 fill
--webkit-mask-box-image-source none
--webkit-mask-box-image-width auto
--webkit-mask-clip border-box
--webkit-mask-composite source-over
--webkit-mask-image none
--webkit-mask-origin border-box
--webkit-mask-position-x 0%
--webkit-mask-position-y 0%
+-webkit-align-content
+-webkit-align-items
+-webkit-align-self
+-webkit-animation
+-webkit-animation-delay
+-webkit-animation-direction
+-webkit-animation-duration
+-webkit-animation-fill-mode
+-webkit-animation-iteration-count
+-webkit-animation-name
+-webkit-animation-play-state
+-webkit-animation-timing-function
+-webkit-app-region
+-webkit-appearance
+-webkit-backface-visibility
+-webkit-background-clip
+-webkit-background-origin
+-webkit-background-size
+-webkit-border-after
+-webkit-border-after-color
+-webkit-border-after-style
+-webkit-border-after-width
+-webkit-border-before
+-webkit-border-before-color
+-webkit-border-before-style
+-webkit-border-before-width
+-webkit-border-bottom-left-radius
+-webkit-border-bottom-right-radius
+-webkit-border-end
+-webkit-border-end-color
+-webkit-border-end-style
+-webkit-border-end-width
+-webkit-border-horizontal-spacing
+-webkit-border-image
+-webkit-border-radius
+-webkit-border-start
+-webkit-border-start-color
+-webkit-border-start-style
+-webkit-border-start-width
+-webkit-border-top-left-radius
+-webkit-border-top-right-radius
+-webkit-border-vertical-spacing
+-webkit-box-align
+-webkit-box-decoration-break
+-webkit-box-direction
+-webkit-box-flex
+-webkit-box-ordinal-group
+-webkit-box-orient
+-webkit-box-pack
+-webkit-box-reflect
+-webkit-box-shadow
+-webkit-box-sizing
+-webkit-clip-path
+-webkit-column-break-after
+-webkit-column-break-before
+-webkit-column-break-inside
+-webkit-column-count
+-webkit-column-gap
+-webkit-column-rule
+-webkit-column-rule-color
+-webkit-column-rule-style
+-webkit-column-rule-width
+-webkit-column-span
+-webkit-column-width
+-webkit-columns
+-webkit-filter
+-webkit-flex
+-webkit-flex-basis
+-webkit-flex-direction
+-webkit-flex-flow
+-webkit-flex-grow
+-webkit-flex-shrink
+-webkit-flex-wrap
+-webkit-font-feature-settings
+-webkit-font-smoothing
+-webkit-highlight
+-webkit-hyphenate-character
+-webkit-justify-content
+-webkit-line-break
+-webkit-line-clamp
+-webkit-locale
+-webkit-logical-height
+-webkit-logical-width
+-webkit-margin-after
+-webkit-margin-before
+-webkit-margin-end
+-webkit-margin-start
+-webkit-mask
+-webkit-mask-box-image
+-webkit-mask-box-image-outset
+-webkit-mask-box-image-repeat
+-webkit-mask-box-image-slice
+-webkit-mask-box-image-source
+-webkit-mask-box-image-width
+-webkit-mask-clip
+-webkit-mask-composite
+-webkit-mask-image
+-webkit-mask-origin
+-webkit-mask-position
+-webkit-mask-position-x
+-webkit-mask-position-y
+-webkit-mask-repeat
 -webkit-mask-repeat-x
 -webkit-mask-repeat-y
--webkit-mask-size auto
+-webkit-mask-size
+-webkit-max-logical-height
+-webkit-max-logical-width
+-webkit-min-logical-height
+-webkit-min-logical-width
+-webkit-opacity
+-webkit-order
+-webkit-padding-after
+-webkit-padding-before
+-webkit-padding-end
+-webkit-padding-start
+-webkit-perspective
+-webkit-perspective-origin
 -webkit-perspective-origin-x
 -webkit-perspective-origin-y
--webkit-print-color-adjust economy
--webkit-rtl-ordering logical
--webkit-tap-highlight-color rgba(0, 0, 0, 0.18)
--webkit-text-combine none
--webkit-text-decorations-in-effect none
--webkit-text-emphasis-color rgb(33, 33, 33)
--webkit-text-emphasis-position over right
--webkit-text-emphasis-style none
--webkit-text-fill-color rgb(33, 33, 33)
--webkit-text-security none
--webkit-text-stroke-color rgb(33, 33, 33)
--webkit-text-stroke-width 0px
+-webkit-print-color-adjust
+-webkit-rtl-ordering
+-webkit-ruby-position
+-webkit-shape-image-threshold
+-webkit-shape-margin
+-webkit-shape-outside
+-webkit-tap-highlight-color
+-webkit-text-combine
+-webkit-text-decorations-in-effect
+-webkit-text-emphasis
+-webkit-text-emphasis-color
+-webkit-text-emphasis-position
+-webkit-text-emphasis-style
+-webkit-text-fill-color
+-webkit-text-orientation
+-webkit-text-security
+-webkit-text-size-adjust
+-webkit-text-stroke
+-webkit-text-stroke-color
+-webkit-text-stroke-width
+-webkit-transform
+-webkit-transform-origin
 -webkit-transform-origin-x
 -webkit-transform-origin-y
 -webkit-transform-origin-z
--webkit-user-drag auto
--webkit-user-modify read-only
--webkit-border-image none
--webkit-ruby-position before
--webkit-text-orientation vertical-right
+-webkit-transform-style
+-webkit-transition
+-webkit-transition-delay
+-webkit-transition-duration
+-webkit-transition-property
+-webkit-transition-timing-function
+-webkit-user-drag
+-webkit-user-modify
+-webkit-user-select
+-webkit-writing-mode
+accent-color
+additive-symbols
+align-content
+align-items
+align-self
+alignment-baseline
+all
+animation
+animation-delay
+animation-direction
+animation-duration
+animation-fill-mode
+animation-iteration-count
+animation-name
+animation-play-state
+animation-timeline
+animation-timing-function
+app-region
+appearance
+ascent-override
+aspect-ratio
+backdrop-filter
+backface-visibility
+background
+background-attachment
+background-blend-mode
+background-clip
+background-color
+background-image
+background-origin
+background-position
+background-position-x
+background-position-y
+background-repeat
+background-repeat-x
+background-repeat-y
+background-size
+baseline-shift
+block-size
+border
+border-block
+border-block-color
+border-block-end
+border-block-end-color
+border-block-end-style
+border-block-end-width
+border-block-start
+border-block-start-color
+border-block-start-style
+border-block-start-width
+border-block-style
+border-block-width
+border-bottom
+border-bottom-color
+border-bottom-left-radius
+border-bottom-right-radius
+border-bottom-style
+border-bottom-width
+border-collapse
+border-color
+border-end-end-radius
+border-end-start-radius
+border-image
+border-image-outset
+border-image-repeat
+border-image-slice
+border-image-source
+border-image-width
+border-inline
+border-inline-color
+border-inline-end
+border-inline-end-color
+border-inline-end-style
+border-inline-end-width
+border-inline-start
+border-inline-start-color
+border-inline-start-style
+border-inline-start-width
+border-inline-style
+border-inline-width
+border-left
+border-left-color
+border-left-style
+border-left-width
+border-radius
+border-right
+border-right-color
+border-right-style
+border-right-width
+border-spacing
+border-start-end-radius
+border-start-start-radius
+border-style
+border-top
+border-top-color
+border-top-left-radius
+border-top-right-radius
+border-top-style
+border-top-width
+border-width
+bottom
+box-shadow
+box-sizing
+break-after
+break-before
+break-inside
+buffered-rendering
+caption-side
+caret-color
+clear
+clip
+clip-path
+clip-rule
+color
+color-interpolation
+color-interpolation-filters
+color-rendering
+color-scheme
+column-count
+column-fill
+column-gap
+column-rule
+column-rule-color
+column-rule-style
+column-rule-width
+column-span
+column-width
+columns
+contain
+contain-intrinsic-block-size
+contain-intrinsic-height
+contain-intrinsic-inline-size
+contain-intrinsic-size
+contain-intrinsic-width
+content
+content-visibility
+counter-increment
+counter-reset
+counter-set
+cursor
+cx
+cy
+d
+descent-override
+direction
+display
+dominant-baseline
+empty-cells
+end
+fallback
+fill
+fill-opacity
+fill-rule
+filter
+flex
+flex-basis
+flex-direction
+flex-flow
+flex-grow
+flex-shrink
+flex-wrap
+float
+flood-color
+flood-opacity
+font
+font-display
+font-family
+font-feature-settings
+font-kerning
+font-optical-sizing
+font-size
+font-stretch
+font-style
+font-variant
+font-variant-caps
+font-variant-east-asian
+font-variant-ligatures
+font-variant-numeric
+font-variation-settings
+font-weight
+forced-color-adjust
+gap
+grid
+grid-area
+grid-auto-columns
+grid-auto-flow
+grid-auto-rows
+grid-column
+grid-column-end
+grid-column-gap
+grid-column-start
+grid-gap
+grid-row
+grid-row-end
+grid-row-gap
+grid-row-start
+grid-template
+grid-template-areas
+grid-template-columns
+grid-template-rows
+height
+hyphens
+image-orientation
+image-rendering
+inherits
+initial-value
+inline-size
+inset
+inset-block
+inset-block-end
+inset-block-start
+inset-inline
+inset-inline-end
+inset-inline-start
+isolation
+justify-content
+justify-items
+justify-self
+left
+letter-spacing
+lighting-color
+line-break
+line-gap-override
+line-height
+line-height-step
+list-style
+list-style-image
+list-style-position
+list-style-type
+margin
+margin-block
+margin-block-end
+margin-block-start
+margin-bottom
+margin-inline
+margin-inline-end
+margin-inline-start
+margin-left
+margin-right
+margin-top
+marker
+marker-end
+marker-mid
+marker-start
+mask
+mask-type
+[400 … 499]
+math-depth
+math-shift
+math-style
+max-block-size
+max-height
+max-inline-size
+max-width
+max-zoom
+min-block-size
+min-height
+min-inline-size
+min-width
+min-zoom
+mix-blend-mode
+negative
+object-fit
+object-position
+offset
+offset-anchor
+offset-distance
+offset-path
+offset-position
+offset-rotate
+opacity
+order
+orientation
+orphans
+outline
+outline-color
+outline-offset
+outline-style
+outline-width
+overflow
+overflow-anchor
+overflow-clip-margin
+overflow-wrap
+overflow-x
+overflow-y
+overscroll-behavior
+overscroll-behavior-block
+overscroll-behavior-inline
+overscroll-behavior-x
+overscroll-behavior-y
+pad
+padding
+padding-block
+padding-block-end
+padding-block-start
+padding-bottom
+padding-inline
+padding-inline-end
+padding-inline-start
+padding-left
+padding-right
+padding-top
+page
+page-break-after
+page-break-before
+page-break-inside
+page-orientation
+paint-order
+perspective
+perspective-origin
+place-content
+place-items
+place-self
+pointer-events
+position
+prefix
+quotes
+r
+range
+resize
+right
+rotate
+row-gap
+ruby-position
+rx
+ry
+scale
+scroll-behavior
+scroll-margin
+scroll-margin-block
+scroll-margin-block-end
+scroll-margin-block-start
+scroll-margin-bottom
+scroll-margin-inline
+scroll-margin-inline-end
+scroll-margin-inline-start
+scroll-margin-left
+scroll-margin-right
+scroll-margin-top
+scroll-padding
+scroll-padding-block
+scroll-padding-block-end
+scroll-padding-block-start
+scroll-padding-bottom
+scroll-padding-inline
+scroll-padding-inline-end
+scroll-padding-inline-start
+scroll-padding-left
+scroll-padding-right
+scroll-padding-top
+scroll-snap-align
+scroll-snap-stop
+scroll-snap-type
+scrollbar-gutter
+shape-image-threshold
+shape-margin
+shape-outside
+shape-rendering
+size
+size-adjust
+source
+speak
+speak-as
+src
+start
+stop-color
+stop-opacity
+stroke
+stroke-dasharray
+stroke-dashoffset
+stroke-linecap
+stroke-linejoin
+stroke-miterlimit
+stroke-opacity
+stroke-width
+suffix
+symbols
+syntax
+system
+tab-size
+table-layout
+text-align
+text-align-last
+text-anchor
+text-combine-upright
+text-decoration
+text-decoration-color
+text-decoration-line
+text-decoration-skip-ink
+text-decoration-style
+text-decoration-thickness
+text-indent
+text-justify
+text-orientation
+text-overflow
+text-rendering
+text-shadow
+text-size-adjust
+text-transform
+text-underline-offset
+text-underline-position
+top
+touch-action
+transform
+transform-box
+transform-origin
+transform-style
+transition
+transition-delay
+transition-duration
+transition-property
+transition-timing-function
+translate
+unicode-bidi
+unicode-range
+user-select
+user-zoom
+vector-effect
+vertical-align
+visibility
+white-space
+widows
+width
+will-change
+word-break
+word-spacing
+word-wrap
+writing-mode
+x
+y
+z-index
+zoom

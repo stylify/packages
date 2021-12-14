@@ -4,7 +4,7 @@ import {
 	SelectorProperties,
 	SelectorsComponentsMapType,
 	SelectorsListInterface,
-	VariablesType
+	stringHashCode
 } from '.';
 
 export type MacroCallbackType = (macroMatch: MacroMatch, selectorProperties: SelectorProperties) => void;
@@ -26,7 +26,7 @@ export interface PlainSelectorInterface {
 
 export interface ComponentConfigInterface {
 	selectors: ComponentSelectorsType
-	selectorsChain: string|string[]
+	selectorsChain: string|string[],
 }
 
 export interface CompilerContentOptionsInterface {
@@ -51,6 +51,8 @@ export type HelpersType = Record<string, CallableFunction>;
 
 export type ScreensType = Record<string, string|ScreenCallbackType>;
 
+export type VariablesType = Record<string, string|number>;
+
 export interface CompilerConfigInterface {
 	dev?: boolean,
 	macros?: MacrosType,
@@ -60,16 +62,22 @@ export interface CompilerConfigInterface {
 	plainSelectors?: Record<string, PlainSelectorDependencySelectorsType>,
 	mangleSelectors?: boolean,
 	pregenerate?: string[]|string,
-	components?: Record<string, string|string[]>,
+	components?: Record<string, ComponentSelectorsType|ComponentConfigInterface>,
 	onPrepareCompilationResult?: OnPrepareCompilationResultCallbackType,
+	onNewMacroMatch?: OnNewMacroMatchCallbackType,
 	contentOptionsProcessors?: ContentOptionsProcessorsType,
-	ignoredElements?: string[]
+	ignoredElements?: string[],
+	rewriteSelectorsAreas?: string[],
+	injectVariablesIntoCss?: boolean
 }
+
+export type OnNewMacroMatchCallbackType = MacroCallbackType;
 
 export interface ComponentsInterface {
 	selectors: string[],
 	selectorsChain: string[],
-	processed: boolean
+	processed: boolean,
+	mangledSelector: string
 }
 
 export class Compiler {
@@ -81,6 +89,8 @@ export class Compiler {
 	public contentOptionsProcessors: ContentOptionsProcessorsType = {};
 
 	public onPrepareCompilationResult: OnPrepareCompilationResultCallbackType = null;
+
+	public onNewMacroMatch: OnNewMacroMatchCallbackType = null;
 
 	public mangleSelectors = false;
 
@@ -100,7 +110,11 @@ export class Compiler {
 
 	public ignoredElements = ['code', 'head', 'pre', 'script', 'style', 'stylify-ignore'];
 
+	public rewriteSelectorsAreas = ['(?:^|\\s+)class="([^"]+)"', '(?:^|\\s+)class=\'([^\']+)\''];
+
 	public plainSelectors: Record<string, PlainSelectorInterface> = {};
+
+	public injectVariablesIntoCss = true;
 
 	constructor(config: CompilerConfigInterface = {}) {
 		if (!Object.keys(config).length) {
@@ -131,11 +145,16 @@ export class Compiler {
 			});
 
 		const ignoredElements = this.ignoredElements.map((element: string): string => {
-			return `<${element}[\\s\\S]*?>[\\s\\S]*?<\\/${element}>`;
+			return `<${element}[\\s\\S]*?>([\\s\\S]*?)<\\/${element}>`;
 		});
 
+		this.injectVariablesIntoCss = 'injectVariablesIntoCss' in config
+			? config.injectVariablesIntoCss
+			: this.injectVariablesIntoCss;
+		this.rewriteSelectorsAreas = [...this.rewriteSelectorsAreas, ...config.rewriteSelectorsAreas || []];
 		this.ignoredElementsRegExp = new RegExp(ignoredElements.join('|'), 'g');
 		this.onPrepareCompilationResult = config.onPrepareCompilationResult || this.onPrepareCompilationResult;
+		this.onNewMacroMatch = config.onNewMacroMatch || this.onNewMacroMatch;
 
 		const plainSelectors = config.plainSelectors || {};
 		for (const plainSelector in plainSelectors) {
@@ -190,7 +209,8 @@ export class Compiler {
 			selectorsChain: Array.isArray(componentConfig.selectorsChain)
 				? componentConfig.selectorsChain
 				: [componentConfig.selectorsChain],
-			processed: false
+			processed: false,
+			mangledSelector: stringHashCode(selector)
 		};
 
 		return this;
@@ -214,8 +234,12 @@ export class Compiler {
 	public rewriteSelectors(
 		content: string,
 		compilationResult: CompilationResult,
-		matchOnlyBetweenQuotes = true
+		rewriteOnlyInAreas = true
 	): string {
+		if (this.dev && !this.mangleSelectors) {
+			return content;
+		}
+
 		const placeholderTextPart = '__STYLIFY_PLACEHOLDER__';
 		const contentPlaceholders: Record<string, any> = {};
 
@@ -226,46 +250,48 @@ export class Compiler {
 		};
 
 		content = content
-			.replace(new RegExp(this.ignoredElementsRegExp.source, 'g'), (matched: string) => {
-				return placeholderInserter(matched);
+			.replace(new RegExp(this.ignoredElementsRegExp.source, 'g'), (...args): string => {
+				const matchArguments = args.filter((value) => typeof value === 'string');
+				const fullMatch: string = matchArguments[0];
+				const innerHtml: string = matchArguments[1];
+				return typeof innerHtml === 'undefined' || innerHtml.length === 0
+					? fullMatch
+					: fullMatch.replace(innerHtml, placeholderInserter(innerHtml));
 			})
 			.replace(new RegExp(this.CONTENT_OPTIONS_REG_EXP.source, 'g'), (matched: string) => {
 				return placeholderInserter(matched);
 			});
 
 		const selectorsListKeys = Object.keys(compilationResult.selectorsList);
-		const sortedSelectorsListKeys = [...selectorsListKeys, ...Object.keys(compilationResult.componentsList)]
+		const sortedSelectorsListKeys = [...selectorsListKeys, ...compilationResult.componentsList]
 			.sort((a: string, b: string): number => {
 				return b.length - a.length;
 			});
 
 		for (let selector of sortedSelectorsListKeys) {
-			if (!content.includes(selector)) {
+			const selectorIsSelector = selectorsListKeys.includes(selector);
+			const selectorIsComponent = selector in this.components;
+
+			if (!content.includes(selector) || !(selectorIsSelector || selectorIsComponent)) {
 				continue;
 			}
 
-			const mangledSelector = selectorsListKeys.includes(selector)
+			const mangledSelector = selectorIsSelector
 				? compilationResult.selectorsList[selector].mangledSelector
-				: compilationResult.componentsList[selector];
+				: this.components[selector].mangledSelector;
 
 			selector = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-			if (!matchOnlyBetweenQuotes) {
+
+			if (!rewriteOnlyInAreas) {
 				content = content.replace(new RegExp(selector, 'g'), mangledSelector);
 				continue;
 			}
 
-			for (const quoteType of ['"', '\'', '`']) {
-				const regExp = new RegExp(
-					`${quoteType}([^${quoteType}]+)?${selector}([^${quoteType}]+)?${quoteType}`, 'g'
-				);
-
-				while (regExp.exec(content)) {
-					content = content.replace(
-						regExp,
-						(match, selectorsBefore = '', selectorsAfter = ''): string => {
-							return `${quoteType}${<string>selectorsBefore}${mangledSelector}${<string>selectorsAfter}${quoteType}`;
-						}
-					);
+			for (const rewriteSelectorAreaRegExpString of this.rewriteSelectorsAreas) {
+				const regExp = new RegExp(rewriteSelectorAreaRegExpString, 'g');
+				let match: RegExpExecArray;
+				while ((match = regExp.exec(content))) {
+					content = content.replace(match[0], match[0].replace(new RegExp(selector, 'g'), mangledSelector));
 				}
 			}
 		}
@@ -290,7 +316,6 @@ export class Compiler {
 
 			plainSelectorsSelectorsMap[plainSelector] = plainSelectorData.selectors;
 			this.pregenerate += ' ' + plainSelectorData.selectors.join(' ');
-
 			this.plainSelectors[plainSelector].processed = true;
 		}
 
@@ -298,16 +323,21 @@ export class Compiler {
 		this.pregenerate = '';
 
 		content = content
-			.replace(new RegExp(this.ignoredElementsRegExp.source, 'g'), '')
+			.replace(new RegExp(this.ignoredElementsRegExp.source, 'g'), (...args): string => {
+				const matchArguments = args.filter((value) => typeof value === 'string');
+				const fullMatch: string = matchArguments[0];
+				const innerHtml: string = matchArguments[1];
+				return typeof innerHtml === 'undefined' || innerHtml.length === 0
+					? fullMatch
+					: fullMatch.replace(innerHtml, '');
+			})
 			.replace(new RegExp(this.CONTENT_OPTIONS_REG_EXP.source, 'g'), '')
 			.replace(/\r\n|\r|\n|\t/ig, ' ')
 			.replace(/&amp;/ig, '&');
 
 		if (compilationResult && Object.keys(compilationResult.selectorsList).length) {
 			content = content.replace(/_\w+/ig, (matched) => {
-				return matched in compilationResult.selectorsList
-					? compilationResult.selectorsList[matched].mangledSelector
-					: matched;
+				return matched in compilationResult.selectorsList ? stringHashCode(matched) : matched;
 			});
 		}
 
@@ -345,8 +375,6 @@ export class Compiler {
 
 		this.processMacros(content, compilationResult);
 
-		// TODO opravit selectory viz compilation result
-		// TODO replace mangled selector, když je nalezen v plain selectorech
 		compilationResult.bindPlainSelectorsToSelectors(plainSelectorsSelectorsMap);
 		compilationResult.bindComponentsToSelectors(selectorsComponentsMap);
 
@@ -376,10 +404,21 @@ export class Compiler {
 			compilationResult = new CompilationResult();
 		}
 
+		let variablesCss = '';
+
+		if (this.injectVariablesIntoCss && Object.keys(this.variables).length) {
+			const newLine = this.dev ? '\n' : '';
+			variablesCss += `html {${newLine}`;
+			for (const variable in this.variables) {
+				variablesCss += `--${variable}: ${this.variables[variable]};${newLine}`;
+			}
+			variablesCss += `}${newLine}`;
+		}
+
 		compilationResult.configure({
 			dev: this.dev,
 			mangleSelectors: this.mangleSelectors,
-			variables: this.variables
+			defaultCss: variablesCss
 		});
 
 		if (this.onPrepareCompilationResult) {
@@ -391,18 +430,48 @@ export class Compiler {
 
 	private processMacros(content: string, compilationResult: CompilationResult = null) {
 		for (const macroKey in this.macros) {
-			// TODO negative lookbehind, is it necessary?
-			const macroRe = new RegExp(`(?:([a-z0-9-:&|]+):)?(?<!-)\\b${macroKey}`, 'gm');
+			const macroRe = new RegExp(`(?:([a-z0-9-:&|]+):)?\\b${macroKey}`, 'g');
 			let macroMatches: string[];
 
 			while ((macroMatches = macroRe.exec(content))) {
-				const fullMatch = macroMatches[0];
+				const macroMatch = new MacroMatch(macroMatches, this.screens);
 
-				if (!(fullMatch in compilationResult.selectorsList)) {
-					const macroMatch = new MacroMatch(macroMatches, this.screens);
-					const selectorProperties = new SelectorProperties();
+				if (macroMatch.fullMatch in compilationResult.selectorsList) {
+					compilationResult.selectorsList[macroMatch.fullMatch].shouldBeGenerated = true;
+					continue;
+				}
 
-					this.macros[macroKey].call(
+				const selectorProperties = new SelectorProperties();
+
+				this.macros[macroKey].call(
+					{
+						dev: this.dev,
+						variables: this.variables,
+						helpers: this.helpers
+					},
+					macroMatch,
+					selectorProperties
+				);
+
+				for (const property in selectorProperties.properties) {
+					selectorProperties.properties[property] = selectorProperties.properties[property].replace(
+						/\$([\w-_]+)/g,
+						(match, substring: string): string => {
+							if (!(substring in this.variables)) {
+								const info = `Stylify: Variable "${substring}" not found. Available variables are "${Object.keys(this.variables).join(', ')}".`;
+								if (this.dev) {
+									console.warn(info);
+								} else {
+									throw new Error(info);
+								}
+							}
+							return String(this.variables[substring]);
+						}
+					);
+				}
+
+				if (this.onNewMacroMatch) {
+					this.onNewMacroMatch.call(
 						{
 							dev: this.dev,
 							variables: this.variables,
@@ -411,11 +480,9 @@ export class Compiler {
 						macroMatch,
 						selectorProperties
 					);
-
-					compilationResult.addCssRecord(macroMatch, selectorProperties);
 				}
 
-				compilationResult.selectorsList[fullMatch].shouldBeGenerated = true;
+				compilationResult.addCssRecord(macroMatch, selectorProperties);
 			}
 		}
 	}

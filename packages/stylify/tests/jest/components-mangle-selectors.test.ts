@@ -9,9 +9,6 @@ const inputIndex = testUtils.getHtmlInputFile();
 nativePreset.compiler.dev = true;
 nativePreset.compiler.mangleSelectors = true;
 const compiler = new Compiler(nativePreset.compiler);
-let compilationResult = compiler.createCompilationResultFromSerializedData(
-	testUtils.getJsonInputFile('serialized-compilation-result')
-);
 compiler.configure({
 	components: {
 		'button': 'padding:8px background-color:#000 display:inline-block font-size:24px',
@@ -20,7 +17,7 @@ compiler.configure({
 		'not-used': ['color:steelblue']
 	}
 });
-compilationResult = compiler.compile(inputIndex, compilationResult);
+let compilationResult = compiler.compile(inputIndex);
 
 test('Components - mangle selectors', (): void => {
 	testUtils.testCssFileToBe(compilationResult.generateCss());
