@@ -6,6 +6,9 @@
 	"module": "esm/index.js",
 	"unpkg": "dist/stylify.native.min.js",
 	"jsdelivr": "dist/stylify.native.min.js",
+	"scripts": {
+		"pack": "yarn pack"
+	},
 	"types": "types",
 	"files": [
 		"dist",
@@ -21,7 +24,16 @@
 		"url": "git+https://github.com/stylify/packages.git",
 		"directory": "packages/stylify"
 	},
-	"keywords": [],
+	"keywords": [
+		"stylify",
+		"css",
+		"sass",
+		"mobile-first",
+		"responsive",
+		"front-end",
+		"framework",
+		"web"
+	],
 	"author": "Vladimír Macháček",
 	"license": "MIT",
 	"bugs": {

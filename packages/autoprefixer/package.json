@@ -5,6 +5,9 @@
 	"main": "lib/index.js",
 	"module": "esm/index.js",
 	"types": "types",
+	"scripts": {
+		"pack": "yarn pack"
+	},
 	"files": [
 		"esm",
 		"lib",
@@ -18,7 +21,16 @@
 		"url": "git+https://github.com/stylify/packages.git",
 		"directory": "packages/autoprefixer"
 	},
-	"keywords": [],
+	"keywords": [
+		"stylify",
+		"css",
+		"sass",
+		"mobile-first",
+		"responsive",
+		"front-end",
+		"framework",
+		"web"
+	],
 	"author": "Vladimír Macháček",
 	"license": "MIT",
 	"bugs": {

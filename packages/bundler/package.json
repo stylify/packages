@@ -1,10 +1,13 @@
 {
 	"name": "@stylify/bundler",
-	"description": "Stylify CSS bundler.",
+	"description": "CSS bundler for @stylify/stylify.",
 	"version": "0.0.1",
 	"main": "lib/index.js",
 	"module": "esm/index.js",
 	"types": "types",
+	"scripts": {
+		"pack": "yarn pack"
+	},
 	"files": [
 		"esm",
 		"lib",
@@ -22,7 +25,16 @@
 		"@stylify/stylify": "^0.0",
 		"fast-glob": "^3.2"
 	},
-	"keywords": [],
+	"keywords": [
+		"stylify",
+		"css",
+		"sass",
+		"mobile-first",
+		"responsive",
+		"front-end",
+		"framework",
+		"web"
+	],
 	"author": "Vladimír Macháček",
 	"license": "MIT",
 	"bugs": {

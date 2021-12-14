@@ -7,6 +7,9 @@
 	"unpkg": "dist/prpfoler.min.js",
 	"jsdelivr": "dist/profiler.min.js",
 	"types": "types",
+	"scripts": {
+		"pack": "yarn pack"
+	},
 	"files": [
 		"dist",
 		"types",
@@ -19,7 +22,16 @@
 		"url": "git+https://github.com/stylify/packages.git",
 		"directory": "packages/profiler"
 	},
-	"keywords": [],
+	"keywords": [
+		"stylify",
+		"css",
+		"sass",
+		"mobile-first",
+		"responsive",
+		"front-end",
+		"framework",
+		"web"
+	],
 	"author": "Vladimír Macháček",
 	"license": "MIT",
 	"bugs": {

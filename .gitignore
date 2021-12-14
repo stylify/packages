@@ -1,6 +1,7 @@
 # Root
 /node_modules/
 *.lerna_backup
+*.tgz
 /coverage
 
 #Packages

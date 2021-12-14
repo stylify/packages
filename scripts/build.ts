@@ -19,8 +19,7 @@ build.addConfigs({
 		{
 			inputFile: 'index.browser.native',
 			outputFile: 'stylify.native',
-			formats: ['umd'],
-			minifyEsm: true
+			formats: ['umd']
 		}
 	]
 });
