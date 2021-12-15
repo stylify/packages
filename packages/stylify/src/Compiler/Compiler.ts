@@ -289,10 +289,10 @@ export class Compiler {
 
 			for (const rewriteSelectorAreaRegExpString of this.rewriteSelectorsAreas) {
 				const regExp = new RegExp(rewriteSelectorAreaRegExpString, 'g');
-				let match: RegExpExecArray;
-				while ((match = regExp.exec(content))) {
-					content = content.replace(match[0], match[0].replace(new RegExp(selector, 'g'), mangledSelector));
-				}
+				content = content.replace(regExp, (fullMatch: string, selectorMatch: string): string => {
+					const selectorReplacement = selectorMatch.replace(new RegExp(selector, 'g'), mangledSelector);
+					return fullMatch.replace(selectorMatch, selectorReplacement);
+				});
 			}
 		}
 
