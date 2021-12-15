@@ -213,6 +213,10 @@ export default function Stylify(): void {
 	};
 
 	const dumpProfilerInfo = (params: Record<string, any>): void => {
+		if (!nuxtIsInDevMode || !compilationResult) {
+			return;
+		}
+
 		const bundlesStats: BundleStatsInterface[] = [];
 
 		for (const resourcePath in processedBundles) {
