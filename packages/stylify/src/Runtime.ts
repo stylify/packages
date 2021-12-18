@@ -46,10 +46,6 @@ export class Runtime {
 			return;
 		}
 
-		if (typeof globalThis.Stylify === 'undefined') {
-			globalThis.Stylify = this;
-		}
-
 		this.configure(config);
 		this.initialPaintCompleted = false;
 
