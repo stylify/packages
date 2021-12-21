@@ -68,6 +68,7 @@ export interface CompilerConfigInterface {
 	contentOptionsProcessors?: ContentOptionsProcessorsType,
 	ignoredElements?: string[],
 	rewriteSelectorsAreas?: string[],
+	replaceVariablesByCssVariables?: boolean,
 	injectVariablesIntoCss?: boolean
 }
 
@@ -114,6 +115,8 @@ export class Compiler {
 
 	public plainSelectors: Record<string, PlainSelectorInterface> = {};
 
+	public replaceVariablesByCssVariables = false;
+
 	public injectVariablesIntoCss = true;
 
 	constructor(config: CompilerConfigInterface = {}) {
@@ -148,6 +151,9 @@ export class Compiler {
 			return `<${element}[\\s\\S]*?>([\\s\\S]*?)<\\/${element}>`;
 		});
 
+		this.replaceVariablesByCssVariables = 'replaceVariablesByCssVariables' in config
+			? config.replaceVariablesByCssVariables
+			: this.replaceVariablesByCssVariables;
 		this.injectVariablesIntoCss = 'injectVariablesIntoCss' in config
 			? config.injectVariablesIntoCss
 			: this.injectVariablesIntoCss;
@@ -465,7 +471,9 @@ export class Compiler {
 									throw new Error(info);
 								}
 							}
-							return String(this.variables[substring]);
+							return this.replaceVariablesByCssVariables
+								? `var(--${substring})`
+								: String(this.variables[substring]);
 						}
 					);
 				}
