@@ -13,7 +13,7 @@
 <a href="https://github.com/stylify/packages/discussions"><img src="https://user-images.githubusercontent.com/14016808/132510133-76bb66a9-951f-4411-9236-140cac7b7472.png"></a>
 <a href="https://github.com/stylify/packages/blob/master/LICENSE"><img alt="GitHub" src="https://img.shields.io/github/license/stylify/packages"></a>
 <br>
-<a href="https://github.com/stylify/packages/actions/workflows/tests.yaml?query=branch%3Amaster"><img alt="GitHub Workflow Status (branch)" src="https://img.shields.io/github/workflow/status/stylify/packages/tests/master"></a>
+<a href="(https://github.com/stylify/packages/actions/workflows/tests.yaml"><img alt="GitHub Workflow Status (branch)" src="https://github.com/stylify/packages/actions/workflows/tests.yaml/badge.svg"></a>
 <a href="https://codecov.io/gh/stylify/packages"><img src="https://codecov.io/gh/stylify/packages/branch/master/graph/badge.svg?token=ZJLKX877DF"/></a>
 </p>
 
@@ -42,9 +42,10 @@ Write HTML. Get CSS
 | Project               | Status                                                       | Description                                                                          |
 | --------------------- | ------------------------------------------------------------ | -------------------------------------------------------------------------------------|
 | [autoprefixer]        | [![autoprefixer-status]][autoprefixer-package]               | [PostCSS Autoprefixer](https://github.com/postcss/autoprefixer) integration for SSR. |
-| [bundler]        | [![bundler-status]][autoprefixer-package]               | A flexible CSS bundler. |
-| [nuxt-module]         | [![nuxt-module-status]][nuxt-module-package]                 | Module for [Nuxt Framework](https://nuxtjs.org/).                                    |
-| [stylify]             | [![stylify-status]][stylify-package]                         | Dynamic CSS generator, Profiler and Selectors Minifier.                              |
+| [bundler]        | [![bundler-status]][autoprefixer-package]                         | A flexible CSS bundler.                                                              |
+| [nuxt-module]         | [![nuxt-module-status]][nuxt-module-package]                 | Module for [Nuxt.js Framework](https://nuxtjs.org/).                                    |
+| [profiler]            | [![profiler-status]][profiler-package]                       | Profiler for Stylify packages.                                                       |                                                                                                                  
+| [stylify]             | [![stylify-status]][stylify-package]                         | Core package. Dynamic CSS generator and Selectors Minifier.                          |
 
 [autoprefixer]: https://github.com/stylify/packages/autoprefixer
 [autoprefixer-status]: https://img.shields.io/npm/v/@stylify/autoprefixer.svg
@@ -57,6 +58,10 @@ Write HTML. Get CSS
 [nuxt-module]: https://github.com/stylify/packages/nuxt-module
 [nuxt-module-status]: https://img.shields.io/npm/v/@stylify/nuxt-module.svg
 [nuxt-module-package]: https://npmjs.com/package/@stylify/nuxt-module
+
+[profiler]: https://github.com/stylify/packages/profiler
+[profiler-status]: https://img.shields.io/npm/v/@stylify/profiler.svg
+[profiler-package]: https://npmjs.com/package/@stylify/profiler
 
 [stylify]: https://github.com/stylify/packages/stylify
 [stylify-status]: https://img.shields.io/npm/v/@stylify/stylify.svg
