@@ -36,6 +36,7 @@ export interface BundleConfigInterface {
 	outputFile: string,
 	scope?: string,
 	files: string[],
+	compilerConfig?: CompilerConfigInterface,
 	callback?: (
 		bundleConfig: BundleConfigInterface, bundleBuildCache: BundlesBuildCacheInterface
 	) => void | Promise<void>
@@ -342,10 +343,13 @@ export class Bundler {
 			this.log(`Processing ${bundleConfig.outputFile}.`, 'textCyan');
 
 			if (!(bundleConfig.outputFile in this.bundlesBuildCache)) {
-				const originalOnPrepareCompilationResultFunction =
-					this.config.compilerConfig.onPrepareCompilationResult;
+				const bundleCompilerConfig = {
+					...this.config.compilerConfig,
+					...bundleConfig.compilerConfig
+				};
+				const originalOnPrepareCompilationResultFunction = bundleCompilerConfig.onPrepareCompilationResult;
 
-				const compiler = new Compiler(this.config.compilerConfig);
+				const compiler = new Compiler(bundleCompilerConfig);
 				compiler.onPrepareCompilationResult = (compilationResult: CompilationResult): void => {
 					compilationResult.configure({
 						mangleSelectors: bundleConfig.mangleSelectors || false,
