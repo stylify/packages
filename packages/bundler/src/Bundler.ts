@@ -228,16 +228,17 @@ export class Bundler {
 			fileVariablesContent += `${variablePrefix}${variable}${variableValueSeparator}${variableValue}${afterValue}\n`;
 		}
 
+		fileVariablesContent = fileVariablesContent.trim();
+
 		if (!fs.existsSync(options.filePath)) {
 			fs.mkdirSync(options.filePath);
 		}
 
 		fileVariablesContent += options.fileContentSuffix || '';
+		const variablesFilePath = path.join(options.filePath, `stylify-variables.${options.fileType}`);
+		fs.writeFileSync(variablesFilePath, fileVariablesContent);
 
-		fs.writeFileSync(
-			path.join(options.filePath, `stylify-variables.${options.fileType}`),
-			fileVariablesContent
-		);
+		this.log(`Variables file "${variablesFilePath}" created.`, 'textGreen');
 	}
 
 	public async waitOnBundlesProcessed(): Promise<void> {
