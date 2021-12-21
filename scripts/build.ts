@@ -59,7 +59,6 @@ build.addConfigs({
 			inputFile: 'index',
 			formats: ['esm', 'cjs'],
 			external: ['fast-glob'],
-			commonJsEnabled: false,
 			nodeResolveEnabled: false
 		}
 	]

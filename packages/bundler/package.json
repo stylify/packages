@@ -23,6 +23,7 @@
 	},
 	"dependencies": {
 		"@stylify/stylify": "^0.0.2",
+		"normalize-path": "^3.0",
 		"fast-glob": "^3.2"
 	},
 	"keywords": [

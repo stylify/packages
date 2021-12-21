@@ -7,6 +7,7 @@ import {
 	CssRecord
 } from '@stylify/stylify';
 import fs from 'fs';
+import { default as normalize } from 'normalize-path';
 import path from 'path';
 import { performance } from 'perf_hooks';
 
@@ -475,6 +476,10 @@ export class Bundler {
 	}
 
 	private getFilesToProcess(compiler: Compiler, filesMasks: string[]): BundleFileDataInterface[] {
+		filesMasks = filesMasks.map((fileMask: string): string => {
+			return normalize(fileMask) as string;
+		});
+
 		const filePaths = fg.sync(filesMasks);
 
 		let filesToProcess: BundleFileDataInterface[] = [];
