@@ -72,7 +72,7 @@ build.addConfigs({
 	packageName: 'profiler',
 	hooks: {
 		options: async (): Promise<void> => {
-			if (profilerBundler !== null) {
+			if (profilerBundler) {
 				return;
 			}
 
@@ -109,6 +109,9 @@ build.addConfigs({
 					]
 				}
 			]);
+		},
+		buildStart: async (): Promise<void> => {
+			return profilerBundler.waitOnBundlesProcessed() as Promise<void>;
 		}
 	},
 	configs: [
