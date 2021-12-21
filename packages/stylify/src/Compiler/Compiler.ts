@@ -109,7 +109,7 @@ export class Compiler {
 
 	public pregenerate = '';
 
-	public ignoredElements = ['code', 'head', 'pre', 'script', 'style', 'stylify-ignore'];
+	public ignoredElements = ['stylify-ignore', 'code', 'head', 'pre', 'script', 'style'];
 
 	public rewriteSelectorsAreas = ['(?:^|\\s+)class="([^"]+)"', '(?:^|\\s+)class=\'([^\']+)\''];
 
