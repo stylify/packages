@@ -403,9 +403,13 @@ export class Bundler {
 				if (!(fileToProcessPath in bundleBuildCache)) {
 					bundleBuildCache.files.push(fileToProcessPath);
 					if (this.config.watchFiles) {
-						if (fileToProcessPath in this.watchedFiles) {
+						const isFileInWatchedFiles = fileToProcessPath in this.watchedFiles;
+						if (isFileInWatchedFiles
+							&& !this.watchedFiles[fileToProcessPath].bundlesIndexes.includes(bundleConfig.index)
+						) {
 							this.watchedFiles[fileToProcessPath].bundlesIndexes.push(bundleConfig.index);
-						} else {
+
+						} else if (!isFileInWatchedFiles) {
 							this.watchedFiles[fileToProcessPath] = {
 								bundlesIndexes: [bundleConfig.index],
 								watcher: fs.watch(fileToProcessPath, () => {
