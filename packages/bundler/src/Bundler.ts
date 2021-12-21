@@ -346,7 +346,7 @@ export class Bundler {
 			if (!(bundleConfig.outputFile in this.bundlesBuildCache)) {
 				const bundleCompilerConfig = {
 					...this.config.compilerConfig,
-					...bundleConfig.compilerConfig
+					...bundleConfig.compilerConfig || {}
 				};
 				const originalOnPrepareCompilationResultFunction = bundleCompilerConfig.onPrepareCompilationResult;
 
