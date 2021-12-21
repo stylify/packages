@@ -464,7 +464,7 @@ export class Compiler {
 						/\$([\w-_]+)/g,
 						(match, substring: string): string => {
 							if (!(substring in this.variables)) {
-								const info = `Stylify: Variable "${substring}" not found. Available variables are "${Object.keys(this.variables).join(', ')}".`;
+								const info = `Stylify: Variable "${substring}" not found when processing "${macroMatch.fullMatch}". Available variables are "${Object.keys(this.variables).join(', ')}".`;
 								if (this.dev) {
 									console.warn(info);
 								} else {
