@@ -414,7 +414,7 @@ export class Compiler {
 
 		if (this.injectVariablesIntoCss && Object.keys(this.variables).length) {
 			const newLine = this.dev ? '\n' : '';
-			variablesCss += `html {${newLine}`;
+			variablesCss += `:root {${newLine}`;
 			for (const variable in this.variables) {
 				variablesCss += `--${variable}: ${this.variables[variable]};${newLine}`;
 			}
