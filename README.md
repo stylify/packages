@@ -27,7 +27,7 @@ Write HTML. Get CSS
 <p align="center"><a href="https://stylify.dev"><img src="https://user-images.githubusercontent.com/14016808/132552680-ae877b45-5796-42df-b507-c0f6b9cf4706.png"></a></p>
 
 ### Want to know more?
-- Live examples and tutorials can be found in [documentation](https://stylify.dev/docs).
+- Live examples and tutorials can be found in [documentation](https://stylify.dev/docs/get-started).
 - Information about each release can be found in [releases](https://github.com/stylify/packages/releases).
 - Have an idea? Found a bug? Feel free to create an [issue](https://github.com/stylify/packages/issues).
 
