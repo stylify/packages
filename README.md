@@ -19,7 +19,7 @@
 
 ## Introduction
 
-Stylify is a library that generates CSS dynamically based on what you write.<br>
+Stylify is a library that generates utility-first CSS dynamically based on what you write.<br>
 Write HTML. Get CSS
 
 <img src="https://raw.githubusercontent.com/stylify/packages/master/stylify.gif" height="494" width="1024" alt="Stylify preview">
