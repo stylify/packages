@@ -9,7 +9,7 @@
 <br><br>
 
 <p align="center">
-<a href="https://discord.gg/NuJsk5SMDz/"><img src="https://img.shields.io/badge/chat-on%20discord-7289da.svg?sanitize=true" alt="Chat"></a>
+<a href="https://discord.gg/NuJsk5SMDz"><img src="https://img.shields.io/badge/chat-on%20discord-7289da.svg?sanitize=true" alt="Chat"></a>
 <a href="https://github.com/stylify/packages/discussions"><img src="https://user-images.githubusercontent.com/14016808/132510133-76bb66a9-951f-4411-9236-140cac7b7472.png"></a>
 <a href="https://github.com/stylify/packages/blob/master/LICENSE"><img alt="GitHub" src="https://img.shields.io/github/license/stylify/packages"></a>
 <br>
@@ -41,7 +41,7 @@ The Bundler is provides a functionality to easily bundle CSS, mangle selectors a
 
 - Visit Stylify website [https://stylify.dev](https://stylify.dev).
 - Follow Stylify on [Twitter](https://twitter.com/stylify_dev).
-- Join Stylify community on [Discord](https://discord.gg/NuJsk5SMDz/).
+- Join Stylify community on [Discord](https://discord.gg/NuJsk5SMDz).
 
 ## License
 
