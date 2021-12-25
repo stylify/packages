@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { BuildConfig, BuildConfigConfigurationInterface } from '.';
+import { BuildConfig, BuildConfigConfigurationInterface } from './index';
 import { argumentsProcessor } from '../ArgumentsProcessor/ArgumentsProcessor';
 import { RollupHooksListInterface } from './buildPlugin';
 

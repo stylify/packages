@@ -1,7 +1,7 @@
 import 'v8-compile-cache';
 
 import { argumentsProcessor } from './ArgumentsProcessor';
-import { build } from './Build';
+import { build } from './Build/index';
 import fse from 'fs-extra';
 import path from 'path';
 
