@@ -3,6 +3,7 @@
 *.lerna_backup
 *.tgz
 /coverage
+/scripts/build.js
 
 #Packages
 /packages/**/*.lerna_backup
