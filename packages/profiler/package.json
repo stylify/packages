@@ -12,6 +12,8 @@
 	},
 	"files": [
 		"dist",
+		"esm",
+		"lib",
 		"types",
 		"package.json",
 		"LICENSE",
