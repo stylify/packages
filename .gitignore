@@ -13,3 +13,6 @@
 /packages/**/lib
 /packages/**/tmp
 /packages/**/types
+
+# @stylify/stylify
+/packages/stylify/**/complete-properties-list.txt

@@ -455,7 +455,7 @@ export class Compiler {
 
 	private processMacros(content: string, compilationResult: CompilationResult = null) {
 		for (const macroKey in this.macros) {
-			const macroRe = new RegExp(`(?:([a-z0-9-:&|]+):)?\\b${macroKey}`, 'g');
+			const macroRe = new RegExp(`(?:([a-z0-9-:&|]+):)?\\b${macroKey}(?=['"\`{}\\[\\]<>\\s]|$)`, 'g');
 			let macroMatches: string[];
 
 			while ((macroMatches = macroRe.exec(content))) {
