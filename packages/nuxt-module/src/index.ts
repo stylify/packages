@@ -135,7 +135,7 @@ export default function Stylify(): void {
 
 	moduleConfig.compiler.dev = moduleConfig.dev;
 	moduleConfig.compiler.mangleSelectors = true;
-	moduleConfig.compiler.rewriteSelectorsAreas = [
+	moduleConfig.compiler.selectorsAreas = [
 		'(?:^|\\s+)(?:v-bind)?:class="([^"]+)"',
 		'(?:^|\\s+)(?:v-bind)?:class=\'([^\']+)\''
 	];

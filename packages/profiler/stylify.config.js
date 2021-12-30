@@ -4,8 +4,8 @@ module.exports = {
 	compiler: {
 		...nativePreset.compiler,
 		...{
-			rewriteSelectorsAreas: [
-				'(?:^|\\s+)class=\\{`((?:.|\n)+)`\\}'
+			selectorsAreas: [
+				'(?:^|\\s+)class=\\{`((?:.|\n)+?)`\\}'
 			],
 			variables: {
 				grey1: '#374955',

@@ -67,7 +67,7 @@ export interface CompilerConfigInterface {
 	onNewMacroMatch?: OnNewMacroMatchCallbackType,
 	contentOptionsProcessors?: ContentOptionsProcessorsType,
 	ignoredElements?: string[],
-	rewriteSelectorsAreas?: string[],
+	selectorsAreas?: string[],
 	replaceVariablesByCssVariables?: boolean,
 	injectVariablesIntoCss?: boolean
 }
@@ -111,7 +111,7 @@ export class Compiler {
 
 	public ignoredElements = ['stylify-ignore', 'code', 'head', 'pre', 'script', 'style'];
 
-	public rewriteSelectorsAreas = ['(?:^|\\s+)class="([^"]+)"', '(?:^|\\s+)class=\'([^\']+)\''];
+	public selectorsAreas = ['(?:^|\\s+)class="([^"]+)"', '(?:^|\\s+)class=\'([^\']+)\''];
 
 	public plainSelectors: Record<string, PlainSelectorInterface> = {};
 
@@ -157,7 +157,7 @@ export class Compiler {
 		this.injectVariablesIntoCss = 'injectVariablesIntoCss' in config
 			? config.injectVariablesIntoCss
 			: this.injectVariablesIntoCss;
-		this.rewriteSelectorsAreas = [...this.rewriteSelectorsAreas, ...config.rewriteSelectorsAreas || []];
+		this.selectorsAreas = [...this.selectorsAreas, ...config.selectorsAreas || []];
 		this.ignoredElementsRegExp = new RegExp(ignoredElements.join('|'), 'g');
 		this.onPrepareCompilationResult = config.onPrepareCompilationResult || this.onPrepareCompilationResult;
 		this.onNewMacroMatch = config.onNewMacroMatch || this.onNewMacroMatch;
@@ -293,7 +293,7 @@ export class Compiler {
 				continue;
 			}
 
-			for (const rewriteSelectorAreaRegExpString of this.rewriteSelectorsAreas) {
+			for (const rewriteSelectorAreaRegExpString of this.selectorsAreas) {
 				const regExp = new RegExp(rewriteSelectorAreaRegExpString, 'g');
 				content = content.replace(regExp, (fullMatch: string, selectorMatch: string): string => {
 					const selectorReplacement = selectorMatch.replace(new RegExp(selector, 'g'), mangledSelector);
