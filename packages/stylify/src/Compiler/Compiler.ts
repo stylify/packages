@@ -309,9 +309,41 @@ export class Compiler {
 		return content;
 	}
 
-	public compile(content: string, compilationResult: CompilationResult = null): CompilationResult {
+	public compile(
+		content: string,
+		compilationResult: CompilationResult = null,
+		matchOnlyInAreas = true
+	): CompilationResult {
+		let contentToProcess = '';
+
 		compilationResult = this.prepareCompilationResult(compilationResult);
+		content = content
+			.replace(new RegExp(this.ignoredElementsRegExp.source, 'g'), (...args): string => {
+				const matchArguments = args.filter((value) => typeof value === 'string');
+				const fullMatch: string = matchArguments[0];
+				const innerHtml: string = matchArguments[1];
+				return typeof innerHtml === 'undefined' || innerHtml.length === 0
+					? fullMatch
+					: fullMatch.replace(innerHtml, '');
+			})
+			.replace(/\r\n|\r|\n|\t/ig, ' ')
+			.replace(/&amp;/ig, '&');
+
 		this.configure(this.getOptionsFromContent(content));
+		content = content.replace(new RegExp(this.CONTENT_OPTIONS_REG_EXP.source, 'g'), '');
+
+		if (matchOnlyInAreas) {
+			for (const selectorAreaRegExpString of this.selectorsAreas) {
+				const regExp = new RegExp(selectorAreaRegExpString, 'g');
+				let selectorAreasMatches: RegExpExecArray;
+				while ((selectorAreasMatches = regExp.exec(content))) {
+					contentToProcess += selectorAreasMatches[0];
+				}
+			}
+
+		} else {
+			contentToProcess = content;
+		}
 
 		const plainSelectorsSelectorsMap = {};
 		for (const plainSelector in this.plainSelectors) {
@@ -325,24 +357,11 @@ export class Compiler {
 			this.plainSelectors[plainSelector].processed = true;
 		}
 
-		content = `${this.pregenerate} ${content}`;
+		contentToProcess = `${this.pregenerate} ${contentToProcess}`;
 		this.pregenerate = '';
 
-		content = content
-			.replace(new RegExp(this.ignoredElementsRegExp.source, 'g'), (...args): string => {
-				const matchArguments = args.filter((value) => typeof value === 'string');
-				const fullMatch: string = matchArguments[0];
-				const innerHtml: string = matchArguments[1];
-				return typeof innerHtml === 'undefined' || innerHtml.length === 0
-					? fullMatch
-					: fullMatch.replace(innerHtml, '');
-			})
-			.replace(new RegExp(this.CONTENT_OPTIONS_REG_EXP.source, 'g'), '')
-			.replace(/\r\n|\r|\n|\t/ig, ' ')
-			.replace(/&amp;/ig, '&');
-
 		if (compilationResult && Object.keys(compilationResult.selectorsList).length) {
-			content = content.replace(/_\w+/ig, (matched) => {
+			contentToProcess = contentToProcess.replace(/_\w+/ig, (matched) => {
 				return matched in compilationResult.selectorsList ? stringHashCode(matched) : matched;
 			});
 		}
@@ -358,12 +377,12 @@ export class Compiler {
 				return this.components[element].processed === false;
 			})
 			.forEach((notProcessedComponentsSelector) => {
-				if (!content.match(new RegExp(`${notProcessedComponentsSelector}\\b`, 'g'))) {
+				if (!contentToProcess.match(new RegExp(`${notProcessedComponentsSelector}\\b`, 'g'))) {
 					return;
 				}
 
 				const { selectors, selectorsChain } = this.components[notProcessedComponentsSelector];
-				content += ` ${selectors.join(' ')}`;
+				contentToProcess += ` ${selectors.join(' ')}`;
 
 				selectors.forEach((componentDependencySelector: string): void => {
 					if (! (componentDependencySelector in selectorsComponentsMap)) {
@@ -379,7 +398,7 @@ export class Compiler {
 				this.components[notProcessedComponentsSelector].processed = true;
 			});
 
-		this.processMacros(content, compilationResult);
+		this.processMacros(contentToProcess, compilationResult);
 
 		compilationResult.bindPlainSelectorsToSelectors(plainSelectorsSelectorsMap);
 		compilationResult.bindComponentsToSelectors(selectorsComponentsMap);
