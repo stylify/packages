@@ -1,7 +1,7 @@
 const { nativePreset } = require('@stylify/stylify');
 
 module.exports = {
-	compilerConfig: {
+	compiler: {
 		...nativePreset.compiler,
 		...{
 			rewriteSelectorsAreas: [

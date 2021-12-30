@@ -20,7 +20,7 @@ if (!fs.existsSync(buildTmpDir)) {
 fse.copySync(path.join(bundleTestDir, 'input'), buildTmpDir);
 
 new Bundler({
-	compilerConfig: nativePreset.compiler,
+	compiler: nativePreset.compiler,
 	verbose: false
 }).bundle([
    	{
@@ -32,7 +32,7 @@ new Bundler({
 ]);
 
 new Bundler({
-	compilerConfig: nativePreset.compiler,
+	compiler: nativePreset.compiler,
 	verbose: false
 }).bundle([
 	{

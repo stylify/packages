@@ -17,7 +17,7 @@ const buildTmpDir = path.join(testUtils.getTmpDir(), testUtils.getTestName() + '
 nativePreset.compiler.rewriteSelectorsAreas = ['(?:^|\\s+)n:class="([^"]+)"', '(?:^|\\s+)v-bind:class="([^"]+)"'];
 
 const bundler = new Bundler({
-	compilerConfig: nativePreset.compiler,
+	compiler: nativePreset.compiler,
 	verbose: false
 });
 

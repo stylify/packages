@@ -36,7 +36,7 @@ export interface BundleConfigInterface {
 	outputFile: string,
 	scope?: string,
 	files: string[],
-	compilerConfig?: CompilerConfigInterface,
+	compiler?: CompilerConfigInterface,
 	callback?: (
 		bundleConfig: BundleConfigInterface, bundleBuildCache: BundlesBuildCacheInterface
 	) => void | Promise<void>
@@ -68,7 +68,7 @@ export interface BundlesBuildStatsInterface {
 
 export interface BundlerConfigInterface {
 	configFile?: string,
-	compilerConfig: CompilerConfigInterface,
+	compiler: CompilerConfigInterface,
 	verbose?: boolean,
 	watchFiles?: boolean,
 	sync?: boolean,
@@ -99,7 +99,7 @@ export class Bundler {
 
 	private config: BundlerConfigInterface = {
 		configFile: null,
-		compilerConfig: null,
+		compiler: null,
 		verbose: true,
 		sync: true,
 		watchFiles: false,
@@ -158,11 +158,11 @@ export class Bundler {
 			}
 		}
 
-		if (!('contentOptionsProcessors' in this.config.compilerConfig)) {
-			this.config.compilerConfig.contentOptionsProcessors = {};
+		if (!('contentOptionsProcessors' in this.config.compiler)) {
+			this.config.compiler.contentOptionsProcessors = {};
 		}
 
-		this.config.compilerConfig.contentOptionsProcessors.files = (
+		this.config.compiler.contentOptionsProcessors.files = (
 			contentOptions: ContentOptionsInterface,
 			optionMatchValue: string
 		): ContentOptionsInterface => {
@@ -223,8 +223,8 @@ export class Bundler {
 		const variableValueSeparator = options.variableValueSeparator || '';
 		const afterValue = options.afterValue || '';
 
-		for (const variable in this.config.compilerConfig.variables) {
-			const variableValue = this.config.compilerConfig.variables[variable];
+		for (const variable in this.config.compiler.variables) {
+			const variableValue = this.config.compiler.variables[variable];
 			fileVariablesContent += `${variablePrefix}${variable}${variableValueSeparator}${variableValue}${afterValue}\n`;
 		}
 
@@ -345,8 +345,8 @@ export class Bundler {
 
 			if (!(bundleConfig.outputFile in this.bundlesBuildCache)) {
 				const bundleCompilerConfig = {
-					...this.config.compilerConfig,
-					...bundleConfig.compilerConfig || {}
+					...this.config.compiler,
+					...bundleConfig.compiler || {}
 				};
 				const originalOnPrepareCompilationResultFunction = bundleCompilerConfig.onPrepareCompilationResult;
 

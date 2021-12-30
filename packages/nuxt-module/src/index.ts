@@ -255,7 +255,7 @@ export default function Stylify(): void {
 		}
 
 		const bundler = new Bundler({
-			compilerConfig: moduleConfig.compiler,
+			compiler: moduleConfig.compiler,
 			cssVarsDirPath: moduleConfig.cssVarsDirPath,
 			sassVarsDirPath: moduleConfig.sassVarsDirPath,
 			lessVarsDirPath: moduleConfig.lessVarsDirPath,

@@ -3,7 +3,7 @@ import path from "path";
 import { Bundler } from "../esm";
 
 const bundler = new Bundler({
-	compilerConfig: nativePreset.compiler,
+	compiler: nativePreset.compiler,
 	watchFiles: false
 });
 
