@@ -167,12 +167,17 @@ export class CssRecord {
 
 			for (const componentSelector in this.components) {
 				const selectorsChain = this.components[componentSelector];
+				if (selectorsChain.length === 1 && (/^\s*$/gm).test(selectorsChain[0])) {
+					selectorsChain.pop();
+				}
+
 				if (!selectorsChain.length) {
 					componentsSelectors.push(componentSelector);
 					continue;
 				}
 
-				for (const chainedSelectors of selectorsChain) {
+				for (let chainedSelectors of selectorsChain) {
+					chainedSelectors = chainedSelectors.replace(/\s\s+/g, ' ');
 					componentsSelectors.push([...chainedSelectors.split(' '), componentSelector].join('.'));
 				}
 			}
