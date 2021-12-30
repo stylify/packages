@@ -24,12 +24,12 @@ if (!fs.existsSync(buildTmpDir)) {
 fse.copySync(path.join(bundleTestDir, 'input'), buildTmpDir);
 
 new Bundler({
-	compilerConfig: nativePreset.compiler,
+	compiler: nativePreset.compiler,
 	verbose: false
 }).bundle([
    	{
 		outputFile: path.join(buildTmpDir, 'index.css'),
-		compilerConfig: {
+		compiler: {
 			replaceVariablesByCssVariables: true
 		},
 		files: [
@@ -38,7 +38,7 @@ new Bundler({
 	},
 	{
 		outputFile: path.join(buildTmpDir, 'second.css'),
-		compilerConfig: {
+		compiler: {
 			injectVariablesIntoCss: false
 		},
 		files: [

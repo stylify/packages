@@ -14,10 +14,10 @@ nativePreset.compiler.mangleSelectors = true;
 const bundleTestDir = testUtils.getTestDir();
 const buildTmpDir = path.join(testUtils.getTmpDir(), testUtils.getTestName() + '-build');
 
-nativePreset.compiler.rewriteSelectorsAreas = ['(?:^|\\s+)n:class="([^"]+)"', '(?:^|\\s+)v-bind:class="([^"]+)"'];
+nativePreset.compiler.selectorsAreas = ['(?:^|\\s+)n:class="([^"]+)"', '(?:^|\\s+)v-bind:class="([^"]+)"'];
 
 const bundler = new Bundler({
-	compilerConfig: nativePreset.compiler,
+	compiler: nativePreset.compiler,
 	verbose: false
 });
 

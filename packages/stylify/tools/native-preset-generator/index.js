@@ -3,7 +3,7 @@ const fs = require('fs');
 
 const dirname = path.join(process.cwd(), 'packages', 'stylify', 'tools', 'native-preset-generator');
 
-const browserPropertiesListPath = path.join(dirname, 'tmp', 'complete-propertes-list.txt');
+const browserPropertiesListPath = path.join(dirname, 'lists', 'complete-properties-list.txt');
 const nativePresetOutputFilePath = path.join(
 	dirname, '..', '..', 'src', 'Presets', 'nativePreset.ts'
 );
@@ -43,7 +43,7 @@ class NativePresetGenerator {
 		});
 
 		const processedPropertiesRegExpString = this.convertMapIntoRegularExpression(this.propertiesMap);
-		const propertiesRegExp = '(' + processedPropertiesRegExpString + ')\\\\b:([^ \\\'"`{}\\\\[\\\\]<>]+)';
+		const propertiesRegExp = '(' + processedPropertiesRegExpString + ')\\\\b:(\\\\S+?)';
 
 		fs.writeFileSync(browserPropertiesListPath, propertiesList.join('\n'));
 

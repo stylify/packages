@@ -135,7 +135,7 @@ export default function Stylify(): void {
 
 	moduleConfig.compiler.dev = moduleConfig.dev;
 	moduleConfig.compiler.mangleSelectors = true;
-	moduleConfig.compiler.rewriteSelectorsAreas = [
+	moduleConfig.compiler.selectorsAreas = [
 		'(?:^|\\s+)(?:v-bind)?:class="([^"]+)"',
 		'(?:^|\\s+)(?:v-bind)?:class=\'([^\']+)\''
 	];
@@ -255,7 +255,7 @@ export default function Stylify(): void {
 		}
 
 		const bundler = new Bundler({
-			compilerConfig: moduleConfig.compiler,
+			compiler: moduleConfig.compiler,
 			cssVarsDirPath: moduleConfig.cssVarsDirPath,
 			sassVarsDirPath: moduleConfig.sassVarsDirPath,
 			lessVarsDirPath: moduleConfig.lessVarsDirPath,
