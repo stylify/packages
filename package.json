@@ -1,6 +1,6 @@
 {
 	"name": "@stylify/packages",
-	"version": "0.0.1",
+	"version": "0.0.4",
 	"description": "Stylify monorepo",
 	"author": "Vladimír Macháček",
 	"license": "MIT",
