@@ -197,21 +197,43 @@ export class Compiler {
 
 	public addComponent(
 		selector: string,
-		componentConfig: ComponentSelectorsType|ComponentConfigInterface
+		config: ComponentSelectorsType|ComponentConfigInterface
 	): Compiler {
-		if (selector in this.components) {
+		if (selector.includes(',')) {
+			selector.split(',').forEach((selector) => {
+				this.addComponent(selector.trim(), config);
+			});
 			return;
 		}
 
-		if (typeof componentConfig === 'string' || Array.isArray(componentConfig)) {
-			componentConfig = {
-				selectors: componentConfig,
-				selectorsChain: []
-			};
+		const selectorIsComponent = selector in this.components;
+
+		if (selectorIsComponent && this.components[selector].processed === true) {
+			const info = `You are trying to configure component "${selector}" that has already been processed.`;
+			if (this.dev) {
+				console.warn(info);
+			} else {
+				throw new Error(info);
+			}
+			return;
 		}
 
+		const configIsArray = Array.isArray(config);
+		const componentConfig = typeof config === 'string' || configIsArray
+			? {
+				selectors: this.convertStringOrStringArrayToFilteredArray([
+					...configIsArray ? config: [config],
+					...selectorIsComponent ? this.components[selector].selectors : []
+				]),
+				selectorsChain: selectorIsComponent ? this.components[selector].selectorsChain : []
+			}
+			: config;
+
 		this.components[selector] = {
-			selectors: this.convertStringOrStringArrayToFilteredArray(componentConfig.selectors),
+			selectors: this.convertStringOrStringArrayToFilteredArray([
+				...Array.isArray(componentConfig.selectors) ? componentConfig.selectors : [componentConfig.selectors],
+				...selectorIsComponent ? this.components[selector].selectors : []
+			]),
 			selectorsChain: Array.isArray(componentConfig.selectorsChain)
 				? componentConfig.selectorsChain
 				: [componentConfig.selectorsChain],
