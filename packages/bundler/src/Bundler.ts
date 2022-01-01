@@ -430,7 +430,7 @@ export class Bundler {
 									}
 
 									this.watchedFiles[fileToProcessPath].processing = true;
-									this.log(`${fileToProcessPath} changed.`, null, 2);
+									this.log(`"${fileToProcessPath}" changed.`, null, 2);
 									const bundlesIndexes = this.watchedFiles[fileToProcessPath].bundlesIndexes;
 
 									for (const bundleToProcessIndex of bundlesIndexes) {
