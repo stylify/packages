@@ -341,8 +341,17 @@ export class Bundler {
 
 	private processBundle(bundleConfig: BundleInterface): void {
 		this.processedBundlesQueue.push(new Promise((resolve): void => {
+			if (!('files' in bundleConfig)) {
+				this.log(`No files defined for "${bundleConfig.outputFile}". Skipping.`, 'textRed');
+				return;
+			}
+
 			const startTime = performance.now();
-			this.log(`Processing ${bundleConfig.outputFile}.`, 'textCyan');
+			this.log(`Processing "${bundleConfig.outputFile}".`, 'textCyan');
+
+			if (!Array.isArray(bundleConfig.files)) {
+				bundleConfig.files = [bundleConfig.files];
+			}
 
 			if (!(bundleConfig.outputFile in this.bundlesBuildCache)) {
 				const bundleCompilerConfig = {
@@ -391,14 +400,14 @@ export class Bundler {
 			const filesToProcess = this.getFilesToProcess(compiler, bundleConfig.files);
 
 			if (!filesToProcess.length) {
-				this.log(`No files found for ${bundleConfig.outputFile}. Skipping.`, 'textRed');
+				this.log(`No files found for "${bundleConfig.outputFile}". Skipping.`, 'textRed');
 				return;
 			}
 
 			for (const fileToProcessConfig of filesToProcess) {
 				const fileToProcessPath = fileToProcessConfig.filePath;
 				if (!fs.existsSync(fileToProcessPath)) {
-					this.log(`File ${fileToProcessPath} not found. Skipping`, 'textRed');
+					this.log(`File "${fileToProcessPath}" not found. Skipping`, 'textRed');
 					continue;
 				}
 
