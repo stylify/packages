@@ -11,6 +11,7 @@ import postcss from 'rollup-plugin-postcss';
 import postcssUrlPlugin from 'postcss-url';
 import typescript from 'rollup-plugin-typescript2';
 import packageJson from '../../package.json';
+import lernaJson from '../../lerna.json';
 import { argumentsProcessor } from '../ArgumentsProcessor';
 import { buildPlugin, RollupHooksListInterface } from './buildPlugin';
 import { typesPlugin } from './typesPlugin';
@@ -43,7 +44,7 @@ class BuildConfig {
 
 	private bannerContent = `
 /**
-*	${packageJson.name} v${packageJson.version}
+*	${packageJson.name} v${lernaJson.version}
 *	(c) 2021-present ${packageJson.author}
 *	Released under the MIT License.
 */
@@ -184,7 +185,7 @@ class BuildConfig {
 			this.config.nodeResolveEnabled ? nodeResolve({ extensions: this.buildFilesExtensions }) : null,
 			replace({
 				'process.env.NODE_ENV': JSON.stringify('production'),
-				__PACKAGE__VERSION__: packageJson.version,
+				__PACKAGE__VERSION__: lernaJson.version,
 				preventAssignment: true
 			}),
 			typescript(typescriptConfig),
