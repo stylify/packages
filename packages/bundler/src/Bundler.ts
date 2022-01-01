@@ -80,6 +80,7 @@ export interface BundlerConfigInterface {
 
 export interface WatchedFilesInterface {
 	watcher: fs.FSWatcher,
+	processing: boolean,
 	bundlesIndexes: number[]
 }
 
@@ -413,7 +414,13 @@ export class Bundler {
 						} else if (!isFileInWatchedFiles) {
 							this.watchedFiles[fileToProcessPath] = {
 								bundlesIndexes: [bundleConfig.index],
+								processing: false,
 								watcher: fs.watch(fileToProcessPath, () => {
+									if (this.watchedFiles[fileToProcessPath].processing) {
+										return;
+									}
+
+									this.watchedFiles[fileToProcessPath].processing = true;
 									this.log(`${fileToProcessPath} changed.`, null, 2);
 									const bundlesIndexes = this.watchedFiles[fileToProcessPath].bundlesIndexes;
 
@@ -424,7 +431,12 @@ export class Bundler {
 										});
 									}
 
-									this.log(`Waching for changes...`, 'textYellow');
+									this.waitOnBundlesProcessed().finally(() => {
+										setTimeout(() => {
+											this.watchedFiles[fileToProcessPath].processing = false;
+											this.log(`Watching for changes...`, 'textYellow');
+										}, 500);
+									});
 								})
 							};
 						}
