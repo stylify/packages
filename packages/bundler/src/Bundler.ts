@@ -490,7 +490,7 @@ export class Bundler {
 			}
 
 			bundleBuildCache.buildTime = ((performance.now() - startTime)/1000).toFixed(2);
-			this.log(`Created ${bundleConfig.outputFile} (${bundleBuildCache.buildTime} s).`, 'textGreen');
+			this.log(`Created "${bundleConfig.outputFile}" (${bundleBuildCache.buildTime} s).`, 'textGreen');
 			const callbackPossiblePromise = bundleConfig.callback
 				? bundleConfig.callback(bundleConfig, bundleBuildCache)
 				: null;
