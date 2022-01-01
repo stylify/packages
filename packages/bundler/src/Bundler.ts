@@ -321,7 +321,7 @@ export class Bundler {
 			for (const buildInfo of buildsInfo) {
 				tablesData.push({
 					Name: buildInfo.name,
-					'Build size (Kb)': buildInfo.size.toFixed(2),
+					'Build size (KB)': buildInfo.size.toFixed(2),
 					'Build time (s)': buildInfo.buildTime
 				});
 			}
