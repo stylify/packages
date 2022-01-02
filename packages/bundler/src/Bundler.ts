@@ -42,10 +42,6 @@ export interface BundleConfigInterface {
 	) => void | Promise<void>
 }
 
-interface BundleInterface extends BundleConfigInterface {
-	index: number
-}
-
 export interface ContentOptionsInterface extends CompilerContentOptionsInterface {
 	files: string[]
 }
@@ -76,21 +72,22 @@ export interface BundlerConfigInterface {
 	sassVarsDirPath?: string,
 	lessVarsDirPath?: string,
 	stylusVarsDirPath?: string,
+	bundles?: BundleConfigInterface[]
 }
 
 export interface WatchedFilesInterface {
 	watcher: fs.FSWatcher,
 	processing: boolean,
-	bundlesIndexes: number[]
+	bundlesIndexes: string[]
 }
 
 export class Bundler {
 
+	private readonly WATCH_FILE_DOUBLE_TRIGGER_BLOCK_TIMEOUT = 500;
+
 	private bundlesBuildCache: BundlesBuildCacheType = {};
 
 	private processedBundlesQueue: Promise<void>[] = [];
-
-	private bundles: BundleInterface[] = [];
 
 	private isReloadingConfiguration = false;
 
@@ -98,72 +95,89 @@ export class Bundler {
 
 	private configurationLoadingPromise: Promise<void> = null;
 
-	private config: BundlerConfigInterface = {
-		configFile: null,
-		compiler: null,
-		verbose: true,
-		sync: true,
-		watchFiles: false,
-		cssVarsDirPath: null,
-		sassVarsDirPath: null,
-		lessVarsDirPath: null,
-		stylusVarsDirPath: null
-	}
+	private configFile: string = null;
+
+	private configFileWatcherInitialized = false;
+
+	private compilerConfig: CompilerConfigInterface = null;
+
+	private verbose = true;
+
+	private sync = true;
+
+	private watchFiles = false;
+
+	private cssVarsDirPath: string = null;
+
+	private sassVarsDirPath: string = null;
+
+	private lessVarsDirPath: string = null;
+
+	private stylusVarsDirPath: string = null;
+
+	private bundles: Record<string, BundleConfigInterface> = {};
 
 	public constructor(config: BundlerConfigInterface) {
 		this.configurationLoadingPromise = this.configure(config);
 	}
 
-	public async configure(config: BundlerConfigInterface): Promise<void> {
-		this.config = {
-			...this.config,
-			...config
+	private mergeConfigs(config: BundlerConfigInterface) {
+		this.configFile = config.configFile || this.configFile;
+
+		this.compilerConfig = {
+			...this.compilerConfig,
+			...config.compiler || {}
 		};
 
-		if (this.config.configFile) {
-			if (!fs.existsSync(this.config.configFile)) {
-				this.log(`Configuration file "${this.config.configFile}" not found.`, 'textRed');
+		if ('verbose' in config) {
+			this.verbose = config.verbose;
+		}
+
+		if ('sync' in config) {
+			this.sync = config.sync;
+		}
+
+		if ('watchFiles' in config) {
+			this.watchFiles = config.watchFiles;
+		}
+
+		this.cssVarsDirPath = config.cssVarsDirPath || this.cssVarsDirPath;
+		this.sassVarsDirPath = config.sassVarsDirPath || this.sassVarsDirPath;
+		this.lessVarsDirPath = config.lessVarsDirPath || this.lessVarsDirPath;
+		this.stylusVarsDirPath = config.stylusVarsDirPath || this.stylusVarsDirPath;
+
+		if ('bundles' in config) {
+			this.addBundles(config.bundles);
+		}
+	}
+
+	private async loadFileConfig(): Promise<void> {
+		if (![typeof require, typeof require.cache].includes('undefined')) {
+			delete require.cache[this.configFile];
+		}
+		const fileConfig = await import(this.configFile);
+		this.mergeConfigs(fileConfig);
+	}
+
+	public async configure(config: BundlerConfigInterface): Promise<void> {
+		if ('configFile' in config && !this.configFile) {
+			this.configFile = config.configFile;
+
+			if (!fs.existsSync(this.configFile)) {
+				this.log(`Configuration file "${this.configFile}" not found.`, 'textRed');
 				return;
 			}
 
-			const loadFileConfig = async (): Promise<void> => {
-				const fileConfig = await import(this.config.configFile);
-
-				this.config = {
-					...this.config,
-					...fileConfig
-				};
-			};
-
-			await loadFileConfig();
-
-			if (this.config.watchFiles && !this.isReloadingConfiguration) {
-				fs.watchFile(this.config.configFile, () => {
-					this.configurationLoadingPromise = new Promise((resolveConfigurationLoading) => {
-						this.isReloadingConfiguration = true;
-						this.bundlesBuildCache = {};
-						this.processedBundlesQueue = [];
-						for (const watchedFile in this.watchedFiles) {
-							this.watchedFiles[watchedFile].watcher.close();
-						}
-						loadFileConfig().finally(() => {
-							resolveConfigurationLoading();
-							this.configurationLoadingPromise = null;
-							this.log('Configuration reloaded.', 'textGreen');
-							this.bundle(this.bundles).finally(() => {
-								this.isReloadingConfiguration = false;
-							});
-						});
-					});
-				});
-			}
+			await this.loadFileConfig();
 		}
 
-		if (!('contentOptionsProcessors' in this.config.compiler)) {
-			this.config.compiler.contentOptionsProcessors = {};
+		this.mergeConfigs(config);
+
+		if (!('contentOptionsProcessors' in this.compilerConfig)) {
+			this.compilerConfig.contentOptionsProcessors = {};
 		}
 
-		this.config.compiler.contentOptionsProcessors.files = (
+		this.compilerConfig.contentOptionsProcessors.files = (
 			contentOptions: ContentOptionsInterface,
 			optionMatchValue: string
 		): ContentOptionsInterface => {
@@ -175,9 +189,9 @@ export class Bundler {
 			return contentOptions;
 		};
 
-		if (this.config.cssVarsDirPath) {
+		if (this.cssVarsDirPath) {
 			this.dumpVariablesIntoFile({
-				filePath: this.config.cssVarsDirPath,
+				filePath: this.cssVarsDirPath,
 				fileType: 'css',
 				variablePrefix: '--',
 				variableValueSeparator: ': ',
@@ -187,9 +201,9 @@ export class Bundler {
 			});
 		}
 
-		if (this.config.sassVarsDirPath) {
+		if (this.sassVarsDirPath) {
 			this.dumpVariablesIntoFile({
-				filePath: this.config.sassVarsDirPath,
+				filePath: this.sassVarsDirPath,
 				fileType: 'scss',
 				variablePrefix: '$',
 				variableValueSeparator: ': ',
@@ -197,18 +211,18 @@ export class Bundler {
 			});
 		}
 
-		if (this.config.lessVarsDirPath) {
+		if (this.lessVarsDirPath) {
 			this.dumpVariablesIntoFile({
-				filePath: this.config.lessVarsDirPath,
+				filePath: this.lessVarsDirPath,
 				fileType: 'less',
 				variablePrefix: '@',
 				variableValueSeparator: ': '
 			});
 		}
 
-		if (this.config.stylusVarsDirPath) {
+		if (this.stylusVarsDirPath) {
 			this.dumpVariablesIntoFile({
-				filePath: this.config.stylusVarsDirPath,
+				filePath: this.stylusVarsDirPath,
 				fileType: 'styl',
 				variablePrefix: '',
 				variableValueSeparator: ' = '
@@ -224,8 +238,8 @@ export class Bundler {
 		const variableValueSeparator = options.variableValueSeparator || '';
 		const afterValue = options.afterValue || '';
 
-		for (const variable in this.config.compiler.variables) {
-			const variableValue = this.config.compiler.variables[variable];
+		for (const variable in this.compilerConfig.variables) {
+			const variableValue = this.compilerConfig.variables[variable];
 			fileVariablesContent += `${variablePrefix}${variable}${variableValueSeparator}${variableValue}${afterValue}\n`;
 		}
 
@@ -252,46 +266,78 @@ export class Bundler {
 		return Object.values(this.bundlesBuildCache).find((value): boolean => value.id === id) || null;
 	}
 
-	public async bundle(bundles: BundleConfigInterface[] | BundleInterface[]): Promise<void> {
+	private addBundles(bundles: BundleConfigInterface[]) {
+		for (const bundle of bundles) {
+			const bundleToProcess = {
+				...bundle.outputFile in this.bundles ? this.bundles[bundle.outputFile] : {},
+				...bundle,
+				...{
+					rewriteSelectorsInFiles: 'rewriteSelectorsInFiles' in bundle
+						? bundle.rewriteSelectorsInFiles
+						: bundle.mangleSelectors
+				}
+			};
+			this.bundles[bundle.outputFile] = bundleToProcess;
+		}
+	}
+
+	public async bundle(bundles: BundleConfigInterface[] = null): Promise<void> {
 		if (this.configurationLoadingPromise instanceof Promise) {
 			await this.configurationLoadingPromise;
 		}
 
-		let bundlesToProcess: BundleInterface[] = [];
+		if (this.watchFiles && !this.configFileWatcherInitialized) {
+			this.configFileWatcherInitialized = true;
+			this.log(`Watching config file "${this.configFile}" for changes...`, 'textYellow');
 
-		if (this.isReloadingConfiguration) {
-			bundlesToProcess = bundles as BundleInterface[];
+			fs.watch(this.configFile, () => {
+				if (this.isReloadingConfiguration) {
+					return;
+				}
+				this.configurationLoadingPromise = new Promise((resolveConfigurationLoading) => {
+					this.isReloadingConfiguration = true;
+					this.bundlesBuildCache = {};
+					this.processedBundlesQueue = [];
 
-		} else {
-			for (const bundle of bundles) {
-				const bundleToProcess = {
-					...bundle,
-					...{
-						index: this.bundles.length,
-						rewriteSelectorsInFiles: 'rewriteSelectorsInFiles' in bundle
-							? bundle.rewriteSelectorsInFiles
-							: bundle.mangleSelectors
+					for (const watchedFile in this.watchedFiles) {
+						this.watchedFiles[watchedFile].watcher.close();
 					}
-				};
-				bundlesToProcess.push(bundleToProcess);
-				this.bundles.push(bundleToProcess);
-			}
+
+					this.watchedFiles = {};
+
+					this.loadFileConfig().finally(() => {
+						setTimeout(() => {
+							resolveConfigurationLoading();
+							this.configurationLoadingPromise = null;
+							this.log('Configuration reloaded.', 'textGreen', null, 2);
+							this.bundle().finally(() => {
+								this.isReloadingConfiguration = false;
+							});
+						}, this.WATCH_FILE_DOUBLE_TRIGGER_BLOCK_TIMEOUT);
+					});
+				});
+			});
+		}
+
+		if (bundles) {
+			this.addBundles(bundles);
 		}
 
 		const startTime = performance.now();
 
-		for (const bundleConfig of bundlesToProcess) {
+		for (const bundleConfig of Object.values(this.bundles)) {
 			this.processBundle(bundleConfig);
 		}
 
-		if (this.config.sync) {
+		if (this.sync) {
 			await Promise.all(this.processedBundlesQueue);
 			this.processedBundlesQueue = [];
 		}
 
-		if (this.config.watchFiles) {
+		if (this.watchFiles) {
 			this.log(`Waching for changes...`, 'textYellow');
-		} else if (this.config.verbose) {
+
+		} else if (this.verbose) {
 			let buildsInfo = [];
 
 			for (const bundleOutputFile in this.bundlesBuildCache) {
@@ -327,7 +373,7 @@ export class Bundler {
 			}
 
 			if (tablesData.length) {
-				if (this.config.verbose) {
+				if (this.verbose) {
 					// eslint-disable-next-line no-console
 					console.table(tablesData);
 				}
@@ -339,7 +385,7 @@ export class Bundler {
 		}
 	}
 
-	private processBundle(bundleConfig: BundleInterface): void {
+	private processBundle(bundleConfig: BundleConfigInterface): void {
 		this.processedBundlesQueue.push(new Promise((resolve): void => {
 			if (!('files' in bundleConfig)) {
 				this.log(`No files defined for "${bundleConfig.outputFile}". Skipping.`, 'textRed');
@@ -355,7 +401,7 @@ export class Bundler {
 
 			if (!(bundleConfig.outputFile in this.bundlesBuildCache)) {
 				const bundleCompilerConfig = {
-					...this.config.compiler,
+					...this.compilerConfig,
 					...bundleConfig.compiler || {}
 				};
 				const originalOnPrepareCompilationResultFunction = bundleCompilerConfig.onPrepareCompilationResult;
@@ -413,16 +459,16 @@ export class Bundler {
 
 				if (!(fileToProcessPath in bundleBuildCache)) {
 					bundleBuildCache.files.push(fileToProcessPath);
-					if (this.config.watchFiles) {
+					if (this.watchFiles) {
 						const isFileInWatchedFiles = fileToProcessPath in this.watchedFiles;
 						if (isFileInWatchedFiles
-							&& !this.watchedFiles[fileToProcessPath].bundlesIndexes.includes(bundleConfig.index)
+							&& !this.watchedFiles[fileToProcessPath].bundlesIndexes.includes(bundleConfig.outputFile)
 						) {
-							this.watchedFiles[fileToProcessPath].bundlesIndexes.push(bundleConfig.index);
+							this.watchedFiles[fileToProcessPath].bundlesIndexes.push(bundleConfig.outputFile);
 
 						} else if (!isFileInWatchedFiles) {
 							this.watchedFiles[fileToProcessPath] = {
-								bundlesIndexes: [bundleConfig.index],
+								bundlesIndexes: [bundleConfig.outputFile],
 								processing: false,
 								watcher: fs.watch(fileToProcessPath, () => {
 									if (this.watchedFiles[fileToProcessPath].processing) {
@@ -444,7 +490,7 @@ export class Bundler {
 										setTimeout(() => {
 											this.watchedFiles[fileToProcessPath].processing = false;
 											this.log(`Watching for changes...`, 'textYellow');
-										}, 500);
+										}, this.WATCH_FILE_DOUBLE_TRIGGER_BLOCK_TIMEOUT);
 									});
 								})
 							};
@@ -543,8 +589,13 @@ export class Bundler {
 		return filesToProcess;
 	}
 
-	private log(content: string, colorName: string = null, newLinesCount: number = null): void {
-		if (!this.config.verbose) {
+	private log(
+		content: string,
+		colorName: string = null,
+		newLinesBeforeCount: number = null,
+		newLinesAfterCount: number = null
+	): void {
+		if (!this.verbose) {
 			return;
 		}
 
@@ -557,11 +608,15 @@ export class Bundler {
 			textYellow: '\x1b[33m'
 		};
 
-		if (newLinesCount) {
-			while (newLinesCount --) {
+		const logEmptyLines = (count) => {
+			while (count --) {
 				// eslint-disable-next-line no-console
 				console.log();
 			}
+		};
+
+		if (newLinesBeforeCount) {
+			logEmptyLines(newLinesBeforeCount);
 		}
 
 		const logTime = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '');
@@ -572,6 +627,10 @@ export class Bundler {
 			`[${logTime}] @stylify/bundler: ${content}`,
 			colors.reset
 		);
+
+		if (newLinesAfterCount) {
+			logEmptyLines(newLinesAfterCount);
+		}
 	}
 
 }
