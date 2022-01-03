@@ -41,9 +41,9 @@
 		"access": "public"
 	},
 	"dependencies": {
-		"@stylify/bundler": "^0.0.5",
-		"@stylify/profiler": "^0.0.5",
-		"@stylify/stylify": "^0.0.5",
+		"@stylify/bundler": "^0.0",
+		"@stylify/profiler": "^0.0",
+		"@stylify/stylify": "^0.0",
 		"loader-utils": "^2.0"
 	},
 	"devDependencies": {

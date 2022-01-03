@@ -22,7 +22,7 @@
 		"directory": "packages/bundler"
 	},
 	"dependencies": {
-		"@stylify/stylify": "^0.0.5",
+		"@stylify/stylify": "^0.0",
 		"fast-glob": "^3.2",
 		"normalize-path": "^3.0"
 	},
