@@ -286,7 +286,7 @@ export class Bundler {
 			await this.configurationLoadingPromise;
 		}
 
-		if (this.watchFiles && !this.configFileWatcherInitialized) {
+		if (this.configFile && this.watchFiles && !this.configFileWatcherInitialized) {
 			this.configFileWatcherInitialized = true;
 			this.log(`Watching config file "${this.configFile}" for changes...`, 'textYellow');
 
