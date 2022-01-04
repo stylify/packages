@@ -23,7 +23,7 @@
 
 The Bundler is provides a functionality to easily bundle CSS, mangle selectors and integrate Stylify into various tools.
 
-<img src="https://raw.githubusercontent.com/stylify/packages/master/packages/bundler/bundler.png" width="862" height="476" alt="Stylify Bundler preview">
+<img src="https://raw.githubusercontent.com/stylify/packages/master/packages/bundler/bundler.png" alt="Stylify Bundler preview">
 
 <p align="center"><a href="https://stylify.dev"><img src="https://user-images.githubusercontent.com/14016808/132552680-ae877b45-5796-42df-b507-c0f6b9cf4706.png"></a></p>
 
