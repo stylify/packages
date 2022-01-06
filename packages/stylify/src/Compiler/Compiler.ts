@@ -359,7 +359,11 @@ export class Compiler {
 				const regExp = new RegExp(selectorAreaRegExpString, 'g');
 				let selectorAreasMatches: RegExpExecArray;
 				while ((selectorAreasMatches = regExp.exec(content))) {
-					contentToProcess += selectorAreasMatches[0];
+					if (contentToProcess.includes(selectorAreasMatches[1])) {
+						continue;
+					}
+
+					contentToProcess += ' ' + selectorAreasMatches[1];
 				}
 			}
 
@@ -477,7 +481,7 @@ export class Compiler {
 
 	private processMacros(content: string, compilationResult: CompilationResult = null) {
 		for (const macroKey in this.macros) {
-			const macroRe = new RegExp(`(?:([a-z0-9-:&|]+):)?\\b${macroKey}(?=['"\`{}\\[\\]<>\\s]|$)`, 'g');
+			const macroRe = new RegExp(`(?:([a-z0-9-:&|]+):)?${macroKey}(?=['"\`{}\\[\\]<>\\s]|$)`, 'g');
 			let macroMatches: string[];
 
 			while ((macroMatches = macroRe.exec(content))) {
