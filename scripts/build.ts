@@ -144,4 +144,15 @@ build.addConfigs({
 	]
 });
 
+build.addConfigs({
+	packageName: 'webpack-plugin',
+	configs: [
+		{
+			inputFile: 'index',
+			formats: ['esm', 'cjs'],
+			external: ['@stylify/bundler', '@stylify/stylify']
+		}
+	]
+});
+
 export default build.getConfigs();

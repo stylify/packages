@@ -1,4 +1,6 @@
 # Root
+.idea
+/.idea
 /node_modules/
 *.lerna_backup
 *.tgz

@@ -1,0 +1,53 @@
+{
+	"name": "@stylify/webpack-plugin",
+	"description": "Webpack plugin for @stylify/stylify.",
+	"version": "0.0.1",
+	"main": "lib/index.js",
+	"module": "esm/index.js",
+	"types": "types",
+	"scripts": {
+		"pack": "yarn pack"
+	},
+	"files": [
+		"esm",
+		"lib",
+		"types",
+		"package.json",
+		"LICENSE",
+		"README.md"
+	],
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/stylify/packages.git",
+		"directory": "packages/webpack-plugin"
+	},
+	"keywords": [
+		"stylify",
+		"css",
+		"sass",
+		"mobile-first",
+		"responsive",
+		"front-end",
+		"framework",
+		"web"
+	],
+	"author": "Vladimír Macháček",
+	"license": "MIT",
+	"bugs": {
+		"url": "https://github.com/stylify/packages/issues"
+	},
+	"homepage": "https://stylify.dev",
+	"publishConfig": {
+		"access": "public"
+	},
+	"dependencies": {
+		"@stylify/bundler": "^0.0",
+		"@stylify/stylify": "^0.0"
+	},
+	"gitHead": "4f8d36a606f38dd5784427cbbe91c74110f67740",
+	"devDependencies": {
+		"webpack": "^5.66",
+		"css-loader": "^6.5",
+		"style-loader": "^3.3"
+	}
+}

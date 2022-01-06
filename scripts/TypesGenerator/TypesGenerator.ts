@@ -15,6 +15,7 @@ export class TypesGenerator {
 		bundler: null,
 		autoprefixer: null,
 		'nuxt-module': null,
+		'webpack-plugin': null,
 		profiler: {
 			jsx: true
 		}

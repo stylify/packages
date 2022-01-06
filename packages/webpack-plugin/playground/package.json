@@ -1,0 +1,14 @@
+{
+	"name": "stylify-webpack",
+	"private": true,
+	"scripts": {
+		"build": "webpack build",
+		"watch": "webpack watch"
+	},
+	"devDependencies": {
+		"webpack": "^5.65",
+		"webpack-cli": "^4.9",
+		"css-loader": "^6.5",
+		"style-loader": "^3.3"
+	}
+}

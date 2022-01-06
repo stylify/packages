@@ -91,6 +91,10 @@ export default class TestUtils {
 		this.testFileToBe(actualContent, 'css', expectedFileName);
 	}
 
+	public testJsFileToBe(actualContent: any, expectedFileName: string = 'index') {
+		this.testFileToBe(actualContent, 'js', expectedFileName);
+	}
+
 	public testHtmlFileToBe(actualContent: any, expectedFileName: string = 'index') {
 		this.testFileToBe(actualContent, 'html', expectedFileName);
 	}
