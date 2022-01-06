@@ -202,9 +202,9 @@ class BuildConfig {
 		];
 
 		if (!this.isDevMode) {
-			if (!plugins.includes(typesPlugin)) {
-				plugins.unshift(typesPlugin(this.config.packageName));
-			}
+			// if (!plugins.includes(typesPlugin)) {
+			// plugins.unshift(typesPlugin(this.config.packageName));
+			// }
 
 			if (config.terser) {
 				plugins.push(
