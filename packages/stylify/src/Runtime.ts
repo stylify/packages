@@ -184,9 +184,13 @@ export class Runtime {
 					element.remove();
 				});
 
-				compilerContentQueue += mutation.type === 'attributes'
+				const mutationContent = mutation.type === 'attributes'
 					? targetElement.className
 					: targetElement.outerHTML;
+
+				if (!compilerContentQueue.includes(mutationContent)) {
+					compilerContentQueue += mutationContent;
+				}
 			});
 
 			if (updateTimeout) {

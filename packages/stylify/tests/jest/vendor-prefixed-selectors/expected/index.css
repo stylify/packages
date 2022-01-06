@@ -1,0 +1,33 @@
+.-webkit-box-orient\:vertical{
+	-webkit-box-orient:vertical
+}
+.-webkit-line-clamp\:3{
+	-webkit-line-clamp:3
+}
+.-apple-pay-button-type\:plain{
+	-apple-pay-button-type:plain
+}
+.hover\:-moz-user-select\:auto:hover{
+	-moz-user-select:auto
+}
+
+@media (min-width: 450px) {
+.minw450px\:-webkit-box-orient\:vertical{
+	-webkit-box-orient:vertical
+}
+}
+
+@media (min-width: 768px) {
+.md\:-apple-trailing-word\:auto{
+	-apple-trailing-word:auto
+}
+.md\:hover\:-moz-user-modify\:read-only:hover{
+	-moz-user-modify:read-only
+}
+}
+
+@media (max-width: 480px) {
+.maxw480px\:hover\:-webkit-line-clamp\:3:hover{
+	-webkit-line-clamp:3
+}
+}

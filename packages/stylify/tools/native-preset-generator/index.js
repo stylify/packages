@@ -43,7 +43,7 @@ class NativePresetGenerator {
 		});
 
 		const processedPropertiesRegExpString = this.convertMapIntoRegularExpression(this.propertiesMap);
-		const propertiesRegExp = '(' + processedPropertiesRegExpString + ')\\\\b:(\\\\S+?)';
+		const propertiesRegExp = '(' + processedPropertiesRegExpString + '):(\\\\S+?)';
 
 		fs.writeFileSync(browserPropertiesListPath, propertiesList.join('\n'));
 
