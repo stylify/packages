@@ -1,3 +1,7 @@
+.hover\:color\:blue:hover,
+.button:hover{
+	color:blue
+}
 .padding\:8px,
 .button{
 	padding:8px
@@ -15,10 +19,6 @@
 .button.button--big,
 .title{
 	font-size:24px
-}
-.hover\:color\:blue:hover,
-.button:hover{
-	color:blue
 }
 .padding\:12px,
 .button.button--big{

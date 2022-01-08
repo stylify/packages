@@ -1,3 +1,7 @@
+#stylify-profiler .hover\:background\:\#333:hover,
+#stylify-profiler .profiler-extension:hover{
+	background:#333
+}
 #stylify-profiler .border-top\:1px__solid__\#444{
 	border-top:1px solid #444
 }
@@ -94,10 +98,6 @@
 #stylify-profiler .position\:relative,
 #stylify-profiler .profiler-extension{
 	position:relative
-}
-#stylify-profiler .hover\:background\:\#333:hover,
-#stylify-profiler .profiler-extension:hover{
-	background:#333
 }
 #stylify-profiler .height\:20px,
 #stylify-profiler .profiler-extension__button{

@@ -1,3 +1,7 @@
+a:hover,
+.hover\:color\:red:hover{
+	color:red
+}
 *,
 .box-sizing\:border-box{
 	box-sizing:border-box
@@ -10,10 +14,6 @@ article h1,
 ::selection,
 .color\:\#fff{
 	color:#fff
-}
-a:hover,
-.hover\:color\:red:hover{
-	color:red
 }
 h2:hover,
 .color\:green{
