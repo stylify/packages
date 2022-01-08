@@ -1,3 +1,6 @@
+.hover\:-moz-user-select\:auto:hover{
+	-moz-user-select:auto
+}
 .-webkit-box-orient\:vertical{
 	-webkit-box-orient:vertical
 }
@@ -6,9 +9,6 @@
 }
 .-apple-pay-button-type\:plain{
 	-apple-pay-button-type:plain
-}
-.hover\:-moz-user-select\:auto:hover{
-	-moz-user-select:auto
 }
 
 @media (min-width: 450px) {

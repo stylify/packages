@@ -50,7 +50,7 @@ class BuildConfig {
 */
 	`.trim() + '\n';
 
-	private babelOldBrowsersTarget = '> 0.25%, not dead, not ie 11';
+	private babelOldBrowsersTarget = '>= 0.1%, not dead, not ie 11';
 
 	private babelModernBrowsersTarget = '>= 0.5% and supports es6-class';
 
@@ -89,12 +89,12 @@ class BuildConfig {
 		this.config.formats.forEach((format: string) => {
 			const esVersions = ['es6'];
 
-			if (format === 'umd') {
+			if (['umd', 'esm'].includes(format)) {
 				esVersions.push('es5');
+			}
 
-				if (this.isDevMode) {
-					return;
-				}
+			if (format=== 'umd' && this.isDevMode) {
+				return;
 			}
 
 			esVersions.forEach((esVersion) => {
@@ -103,6 +103,8 @@ class BuildConfig {
 				if (!this.isDevMode && (format === 'umd' || format === 'esm' && this.config.minifyEsm)) {
 					buildSuffixes.push('.min.js');
 				}
+
+				const esSuffix = esVersion === 'es5' && ['umd', 'esm'].includes(format) ? '.es5' : '';
 
 				buildSuffixes.forEach((suffix: string) => {
 					suffix = this.config.withSuffix ? suffix : '';
@@ -117,7 +119,7 @@ class BuildConfig {
 						external: this.config.external || [],
 						output: {
 							name: this.exportName,
-							file: `${this.getOutputFilePath(outputFile, format)}${suffix}`,
+							file: `${this.getOutputFilePath(outputFile, format)}${esSuffix}${suffix}`,
 							format: format,
 							exports: format === 'umd' ? 'auto' : 'named',
 							banner: this.config.bannerContent || ''
@@ -167,11 +169,12 @@ class BuildConfig {
 		});
 
 		const babelConfig = this.getBabelConfig();
+		delete babelConfig.include;
 		babelConfig.presets.push([
 			'@babel/preset-env', {
 				bugfixes: true,
 				modules: false,
-				target: config.esVersion === 'es5' ? this.babelOldBrowsersTarget : this.babelModernBrowsersTarget
+				targets: config.esVersion === 'es5' ? this.babelOldBrowsersTarget : this.babelModernBrowsersTarget
 			}
 		]);
 		babelConfig.extensions = this.buildFilesExtensions;
