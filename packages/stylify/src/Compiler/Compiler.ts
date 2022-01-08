@@ -480,51 +480,30 @@ export class Compiler {
 	}
 
 	private processMacros(content: string, compilationResult: CompilationResult = null) {
-		for (const macroKey in this.macros) {
-			const macroRe = new RegExp(`(?:([a-z0-9-:&|]+):)?${macroKey}(?=['"\`{}\\[\\]<>\\s]|$)`, 'g');
-			let macroMatches: string[];
+		const regExpEndPart = `(?=['"\`{}\\[\\]<>\\s]|$)`;
+		const regExpGenerators = [
+			// Match with media query and without pseudo class
+			(macroKey: string): RegExp => new RegExp(`(?:([a-z0-9-:&|]+):)${macroKey}${regExpEndPart}`, 'g'),
+			// Match without media query and without pseudo class
+			// () - empty pseudo class and media query match
+			(macroKey: string): RegExp => new RegExp(`()${macroKey}${regExpEndPart}`, 'g')
+		];
 
-			while ((macroMatches = macroRe.exec(content))) {
-				const macroMatch = new MacroMatch(macroMatches, this.screens);
+		for (const regExpGenerator of regExpGenerators) {
+			for (const macroKey in this.macros) {
 
-				if (macroMatch.fullMatch in compilationResult.selectorsList) {
-					compilationResult.selectorsList[macroMatch.fullMatch].shouldBeGenerated = true;
-					continue;
-				}
+				content = content.replace(regExpGenerator(macroKey), (...args) => {
+					const macroMatches = args.slice(0, args.length - 2);
+					const macroMatch = new MacroMatch(macroMatches, this.screens);
 
-				const selectorProperties = new SelectorProperties();
+					if (macroMatch.fullMatch in compilationResult.selectorsList) {
+						compilationResult.selectorsList[macroMatch.fullMatch].shouldBeGenerated = true;
+						return '';
+					}
 
-				this.macros[macroKey].call(
-					{
-						dev: this.dev,
-						variables: this.variables,
-						helpers: this.helpers
-					},
-					macroMatch,
-					selectorProperties
-				);
+					const selectorProperties = new SelectorProperties();
 
-				for (const property in selectorProperties.properties) {
-					selectorProperties.properties[property] = selectorProperties.properties[property].replace(
-						/\$([\w-_]+)/g,
-						(match, substring: string): string => {
-							if (!(substring in this.variables)) {
-								const info = `Stylify: Variable "${substring}" not found when processing "${macroMatch.fullMatch}". Available variables are "${Object.keys(this.variables).join(', ')}".`;
-								if (this.dev) {
-									console.warn(info);
-								} else {
-									throw new Error(info);
-								}
-							}
-							return this.replaceVariablesByCssVariables
-								? `var(--${substring})`
-								: String(this.variables[substring]);
-						}
-					);
-				}
-
-				if (this.onNewMacroMatch) {
-					this.onNewMacroMatch.call(
+					this.macros[macroKey].call(
 						{
 							dev: this.dev,
 							variables: this.variables,
@@ -533,9 +512,42 @@ export class Compiler {
 						macroMatch,
 						selectorProperties
 					);
-				}
 
-				compilationResult.addCssRecord(macroMatch, selectorProperties);
+					for (const property in selectorProperties.properties) {
+						selectorProperties.properties[property] = selectorProperties.properties[property].replace(
+							/\$([\w-_]+)/g,
+							(match, substring: string): string => {
+								if (!(substring in this.variables)) {
+									const info = `Stylify: Variable "${substring}" not found when processing "${macroMatch.fullMatch}". Available variables are "${Object.keys(this.variables).join(', ')}".`;
+									if (this.dev) {
+										console.warn(info);
+									} else {
+										throw new Error(info);
+									}
+								}
+								return this.replaceVariablesByCssVariables
+									? `var(--${substring})`
+									: String(this.variables[substring]);
+							}
+						);
+					}
+
+					if (this.onNewMacroMatch) {
+						this.onNewMacroMatch.call(
+							{
+								dev: this.dev,
+								variables: this.variables,
+								helpers: this.helpers
+							},
+							macroMatch,
+							selectorProperties
+						);
+					}
+
+					compilationResult.addCssRecord(macroMatch, selectorProperties);
+
+					return '';
+				});
 			}
 		}
 	}
