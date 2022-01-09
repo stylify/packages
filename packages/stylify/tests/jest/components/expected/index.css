@@ -24,6 +24,10 @@
 .button.button--big{
 	padding:12px
 }
+.padding\:4px,
+.container__wrapper{
+	padding:4px
+}
 .max-width\:800px,
 .container{
 	max-width:800px

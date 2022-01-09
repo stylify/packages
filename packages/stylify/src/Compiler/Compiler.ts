@@ -359,10 +359,6 @@ export class Compiler {
 				const regExp = new RegExp(selectorAreaRegExpString, 'g');
 				let selectorAreasMatches: RegExpExecArray;
 				while ((selectorAreasMatches = regExp.exec(content))) {
-					if (contentToProcess.includes(selectorAreasMatches[1])) {
-						continue;
-					}
-
 					contentToProcess += ' ' + selectorAreasMatches[1];
 				}
 			}
@@ -403,7 +399,7 @@ export class Compiler {
 				return this.components[element].processed === false;
 			})
 			.forEach((notProcessedComponentsSelector) => {
-				if (!contentToProcess.match(new RegExp(`${notProcessedComponentsSelector}\\b`, 'g'))) {
+				if (!contentToProcess.match(new RegExp(`${notProcessedComponentsSelector}`, 'g'))) {
 					return;
 				}
 
