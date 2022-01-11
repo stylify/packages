@@ -71,7 +71,7 @@ Write HTML. Get CSS
 
 - Visit Stylify website [https://stylify.dev](https://stylify.dev).
 - Follow Stylify on [Twitter](https://twitter.com/stylify_dev).
-- Join Stylify community on [Discord](https://https://discord.gg/NuJsk5SMDz).
+- Join Stylify community on [Discord](https://discord.gg/NuJsk5SMDz).
 
 ## License
 
