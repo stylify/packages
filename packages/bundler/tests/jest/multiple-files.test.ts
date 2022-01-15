@@ -30,6 +30,9 @@ fse.copySync(path.join(bundleTestDir, 'input'), buildTmpDir);
 bundler.bundle([
   	{
 		outputFile: path.join(buildTmpDir, 'index.css'),
+		compiler: {
+			mangleSelectors: false
+		},
 		files: [
 			path.join(bundleTestDir, 'input', 'index.html'),
 			path.join(bundleTestDir, 'input', 'index', '**', '*.html')
@@ -37,7 +40,6 @@ bundler.bundle([
 	},
    	{
 		outputFile: path.join(buildTmpDir, 'second.css'),
-		mangleSelectors: true,
 		cache: fs.readFileSync(path.join(bundleTestDir, 'input', 'second.css.json')).toString(),
 		dumpCache: true,
 		files: [

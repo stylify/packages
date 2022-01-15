@@ -266,7 +266,6 @@ export default function Stylify(): void {
 			{
 				id: bundleId,
 				files: moduleConfig.filesMasks,
-				mangleSelectors: !nuxtIsInDevMode,
 				rewriteSelectorsInFiles: false,
 				outputFile: path.join(assetsDir, 'stylify.css')
 			}
