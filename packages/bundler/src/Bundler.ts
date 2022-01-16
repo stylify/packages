@@ -27,21 +27,6 @@ export interface DumpVariablesIntoFileOptionsInterface {
 	fileContentSuffix?: string,
 }
 
-export interface BundleConfigInterface {
-	id?: string,
-	mangleSelectors?: boolean,
-	rewriteSelectorsInFiles?: boolean,
-	dumpCache?: boolean,
-	cache?: JSON | string,
-	outputFile: string,
-	scope?: string,
-	files: string[],
-	compiler?: CompilerConfigInterface,
-	callback?: (
-		bundleConfig: BundleConfigInterface, bundleBuildCache: BundlesBuildCacheInterface
-	) => void | Promise<void>
-}
-
 export interface ContentOptionsInterface extends CompilerContentOptionsInterface {
 	files: string[]
 }
@@ -62,7 +47,51 @@ export interface BundlesBuildStatsInterface {
 	buildTime: string
 }
 
-export interface BundlerConfigInterface {
+export interface OnBeforeInputFileRewrittenCallbackDataInterface {
+	content: string
+	filePath: string
+}
+
+export interface OnBeforeCssFileCreatedCallbackDataInterface {
+	content: string,
+	filePath: string
+}
+
+export interface OnBundleProcessedCallbackDataInterface {
+	bundleConfig: BundleConfigInterface,
+	bundleBuildCache: BundlesBuildCacheInterface
+}
+
+export type OnBeforeInputFileRewrittenCallbackType = (
+	data: OnBeforeInputFileRewrittenCallbackDataInterface
+) => Promise<void> | void;
+
+export type OnBeforeCssFileCreatedCallbackType = (
+	data: OnBeforeCssFileCreatedCallbackDataInterface
+) => Promise<void> | void;
+
+export type OnBundleProcessedCallbackType = (
+	data: OnBundleProcessedCallbackDataInterface
+) => Promise<void> | void;
+
+interface BundleHooksInterface {
+	onBeforeInputFileRewritten?: OnBeforeInputFileRewrittenCallbackType
+	onBeforeCssFileCreated?: OnBeforeCssFileCreatedCallbackType,
+	onBundleProcessed?: OnBundleProcessedCallbackType
+}
+
+export interface BundleConfigInterface extends BundleHooksInterface {
+	id?: string,
+	rewriteSelectorsInFiles?: boolean,
+	dumpCache?: boolean,
+	cache?: JSON | string,
+	outputFile: string,
+	scope?: string,
+	files: string[],
+	compiler?: CompilerConfigInterface
+}
+
+export interface BundlerConfigInterface extends BundleHooksInterface {
 	configFile?: string,
 	compiler: CompilerConfigInterface,
 	verbose?: boolean,
@@ -72,7 +101,7 @@ export interface BundlerConfigInterface {
 	sassVarsDirPath?: string,
 	lessVarsDirPath?: string,
 	stylusVarsDirPath?: string,
-	bundles?: BundleConfigInterface[]
+	bundles?: BundleConfigInterface[],
 }
 
 export interface WatchedFilesInterface {
@@ -117,6 +146,12 @@ export class Bundler {
 
 	private bundles: Record<string, BundleConfigInterface> = {};
 
+	private onBeforeInputFileRewritten: OnBeforeInputFileRewrittenCallbackType = null;
+
+	private onBeforeCssFileCreated: OnBeforeCssFileCreatedCallbackType = null;
+
+	private onBundleProcessed: OnBundleProcessedCallbackType = null;
+
 	public constructor(config: BundlerConfigInterface) {
 		this.configurationLoadingPromise = this.configure(config);
 	}
@@ -140,6 +175,10 @@ export class Bundler {
 		if ('watchFiles' in config) {
 			this.watchFiles = config.watchFiles;
 		}
+
+		this.onBeforeInputFileRewritten = config.onBeforeInputFileRewritten || this.onBeforeInputFileRewritten;
+		this.onBeforeCssFileCreated = config.onBeforeCssFileCreated || this.onBeforeCssFileCreated;
+		this.onBundleProcessed = config.onBundleProcessed || this.onBundleProcessed;
 
 		this.cssVarsDirPath = config.cssVarsDirPath || this.cssVarsDirPath;
 		this.sassVarsDirPath = config.sassVarsDirPath || this.sassVarsDirPath;
@@ -268,13 +307,17 @@ export class Bundler {
 
 	private addBundles(bundles: BundleConfigInterface[]) {
 		for (const bundle of bundles) {
+			const mangleSelectors = 'compiler' in bundle
+				? bundle.compiler.mangleSelectors
+				: this.compilerConfig.mangleSelectors;
+
 			const bundleToProcess = {
 				...bundle.outputFile in this.bundles ? this.bundles[bundle.outputFile] : {},
 				...bundle,
 				...{
 					rewriteSelectorsInFiles: 'rewriteSelectorsInFiles' in bundle
 						? bundle.rewriteSelectorsInFiles
-						: bundle.mangleSelectors
+						: mangleSelectors
 				}
 			};
 			this.bundles[bundle.outputFile] = bundleToProcess;
@@ -386,7 +429,7 @@ export class Bundler {
 	}
 
 	private processBundle(bundleConfig: BundleConfigInterface): void {
-		this.processedBundlesQueue.push(new Promise((resolve): void => {
+		const bundleRunner = async (): Promise<void> => {
 			if (!('files' in bundleConfig)) {
 				this.log(`No files defined for "${bundleConfig.outputFile}". Skipping.`, 'textRed');
 				return;
@@ -404,12 +447,13 @@ export class Bundler {
 					...this.compilerConfig,
 					...bundleConfig.compiler || {}
 				};
+
 				const originalOnPrepareCompilationResultFunction = bundleCompilerConfig.onPrepareCompilationResult;
 
 				const compiler = new Compiler(bundleCompilerConfig);
 				compiler.onPrepareCompilationResult = (compilationResult: CompilationResult): void => {
 					compilationResult.configure({
-						mangleSelectors: bundleConfig.mangleSelectors || false,
+						mangleSelectors: bundleCompilerConfig.mangleSelectors,
 						reconfigurable: false
 					});
 
@@ -449,6 +493,8 @@ export class Bundler {
 				this.log(`No files found for "${bundleConfig.outputFile}". Skipping.`, 'textRed');
 				return;
 			}
+
+			const filesToProcessPromises = [];
 
 			for (const fileToProcessConfig of filesToProcess) {
 				const fileToProcessPath = fileToProcessConfig.filePath;
@@ -510,9 +556,21 @@ export class Bundler {
 						fileToProcessConfig.content,
 						bundleBuildCache.compilationResult
 					);
-					fs.writeFileSync(fileToProcessConfig.filePath, processedContent);
+
+					const onBeforeInputFileRewrittenHook = async (): Promise<void> => {
+						const hookData = await this.callBundleHook(bundleConfig, 'onBeforeInputFileRewritten', {
+							content: processedContent,
+							filePath: fileToProcessConfig.filePath
+						});
+
+						fs.writeFileSync(hookData.filePath, hookData.content);
+					};
+
+					filesToProcessPromises.push(onBeforeInputFileRewrittenHook());
 				}
 			}
+
+			await Promise.all(filesToProcessPromises);
 
 			const outputDir = path.dirname(bundleConfig.outputFile);
 
@@ -520,7 +578,12 @@ export class Bundler {
 				fs.mkdirSync(outputDir, {recursive: true});
 			}
 
-			fs.writeFileSync(bundleConfig.outputFile, bundleBuildCache.compilationResult.generateCss());
+			const hookData = await this.callBundleHook(bundleConfig, 'onBeforeCssFileCreated', {
+				content: bundleBuildCache.compilationResult.generateCss(),
+				filePath: bundleConfig.outputFile
+			}) as OnBeforeCssFileCreatedCallbackDataInterface;
+
+			fs.writeFileSync(hookData.filePath, hookData.content);
 
 			if (bundleConfig.dumpCache) {
 				const serializedResult = bundleBuildCache.compilationResult.serialize();
@@ -537,18 +600,35 @@ export class Bundler {
 
 			bundleBuildCache.buildTime = ((performance.now() - startTime)/1000).toFixed(2);
 			this.log(`Created "${bundleConfig.outputFile}" (${bundleBuildCache.buildTime} s).`, 'textGreen');
-			const callbackPossiblePromise = bundleConfig.callback
-				? bundleConfig.callback(bundleConfig, bundleBuildCache)
-				: null;
 
-			if (callbackPossiblePromise instanceof Promise) {
-				callbackPossiblePromise.finally(() => {
-					resolve();
-				});
-			} else {
-				resolve();
-			}
-		}));
+			await this.callBundleHook(bundleConfig, 'onBundleProcessed', {
+				bundleConfig: bundleConfig,
+				bundleBuildCache: bundleBuildCache
+			});
+		};
+
+		this.processedBundlesQueue.push(bundleRunner());
+	}
+
+	private async callBundleHook(
+		bundleConfig: BundleConfigInterface,
+		hookName: string,
+		hookData: Record<string, any>
+	): Promise<Record<string, any>> {
+		let hookCallbackPossiblePromise = null;
+
+		if (typeof bundleConfig[hookName] === 'function') {
+			hookCallbackPossiblePromise = bundleConfig[hookName](hookData);
+
+		} else if (typeof this[hookName] === 'function') {
+			hookCallbackPossiblePromise = this[hookName](hookData);
+		}
+
+		if (hookCallbackPossiblePromise instanceof Promise) {
+			await hookCallbackPossiblePromise;
+		}
+
+		return hookData;
 	}
 
 	private getFilesToProcess(compiler: Compiler, filesMasks: string[]): BundleFileDataInterface[] {
