@@ -416,10 +416,8 @@ export class Bundler {
 			}
 
 			if (tablesData.length) {
-				if (this.verbose) {
-					// eslint-disable-next-line no-console
-					console.table(tablesData);
-				}
+				// eslint-disable-next-line no-console
+				console.table(tablesData);
 			} else {
 				this.log('No bundle was processed.', 'textRed');
 			}
