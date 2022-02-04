@@ -22,7 +22,8 @@ export interface StylifyNuxtModuleConfigInterface {
 	lessVarsDirPath?: string,
 	stylusVarsDirPath?: string,
 	filesMasks: string[],
-	loaders?: LoadersInterface[]
+	loaders?: LoadersInterface[],
+	extend?: Partial<StylifyNuxtModuleConfigInterface>,
 }
 
 export interface BundleStatsInterface {
@@ -147,8 +148,19 @@ export default function Stylify(): void {
 		});
 	}
 
-	const getCompiler = () => new Compiler(moduleConfig.compiler);
-	const compiler = getCompiler();
+	const bundleId = 'stylify';
+	const bundler = new Bundler({
+		compiler: moduleConfig.compiler,
+		cssVarsDirPath: moduleConfig.cssVarsDirPath,
+		sassVarsDirPath: moduleConfig.sassVarsDirPath,
+		lessVarsDirPath: moduleConfig.lessVarsDirPath,
+		stylusVarsDirPath: moduleConfig.stylusVarsDirPath
+	});
+
+	const getCompiler = (): Compiler|null => {
+		const cache = bundler.findBundleCache(bundleId);
+		return cache ? cache.compiler : null;
+	};
 
 	this.extendBuild((config: Record<string, any>): void => {
 		config.module.rules.push({
@@ -217,6 +229,7 @@ export default function Stylify(): void {
 			return;
 		}
 
+		const compiler = getCompiler();
 		const bundlesStats: BundleStatsInterface[] = [];
 
 		for (const resourcePath in processedBundles) {
@@ -248,19 +261,10 @@ export default function Stylify(): void {
 	const generateStylifyCssFile = async () => {
 		const assetsDir = nuxt.resolver.resolveAlias(nuxt.options.dir.assets);
 		const assetsStylifyCssPath = path.join('~', nuxt.options.dir.assets, 'stylify.css');
-		const bundleId = 'stylify';
 
 		if (!fs.existsSync(assetsDir)) {
-			fs.mkdirSync(assetsDir);
+			fs.mkdirSync(assetsDir, { recursive: true });
 		}
-
-		const bundler = new Bundler({
-			compiler: moduleConfig.compiler,
-			cssVarsDirPath: moduleConfig.cssVarsDirPath,
-			sassVarsDirPath: moduleConfig.sassVarsDirPath,
-			lessVarsDirPath: moduleConfig.lessVarsDirPath,
-			stylusVarsDirPath: moduleConfig.stylusVarsDirPath
-		});
 
 		await bundler.bundle([
 			{
@@ -300,7 +304,8 @@ export default function Stylify(): void {
 		return generateStylifyCssFile();
 	});
 
-	nuxt.hook('vue-renderer:ssr:templateParams', (params: Record<string, any>): void => {
+	nuxt.hook('vue-renderer:ssr:templateParams', async (params: Record<string, any>): Promise<void> => {
+		await bundler.waitOnBundlesProcessed();
 		dumpProfilerInfo(params);
 	});
 }
