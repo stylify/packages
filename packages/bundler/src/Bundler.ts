@@ -128,7 +128,7 @@ export class Bundler {
 
 	private configFileWatcherInitialized = false;
 
-	private compilerConfig: CompilerConfigInterface = null;
+	private compilerConfig: CompilerConfigInterface = {};
 
 	private verbose = true;
 
@@ -285,7 +285,7 @@ export class Bundler {
 		fileVariablesContent = fileVariablesContent.trim();
 
 		if (!fs.existsSync(options.filePath)) {
-			fs.mkdirSync(options.filePath);
+			fs.mkdirSync(options.filePath, { recursive: true });
 		}
 
 		fileVariablesContent += options.fileContentSuffix || '';
@@ -573,7 +573,7 @@ export class Bundler {
 			const outputDir = path.dirname(bundleConfig.outputFile);
 
 			if (!fs.existsSync(outputDir)) {
-				fs.mkdirSync(outputDir, {recursive: true});
+				fs.mkdirSync(outputDir, { recursive: true });
 			}
 
 			const hookData = await this.callBundleHook(bundleConfig, 'onBeforeCssFileCreated', {

@@ -219,6 +219,17 @@ export class CompilationResult {
 	public bindPlainSelectorsToSelectors(plainSelectorsSelectorsMap: Record<string, string[]>): void {
 		for (const plainSelector in plainSelectorsSelectorsMap) {
 			for (const dependencySelector of plainSelectorsSelectorsMap[plainSelector]) {
+				if (!(dependencySelector in this.selectorsList)) {
+					const info = `Selector "${dependencySelector}" for plainSelector "${plainSelector}" was not matched and therefore not added.`;
+
+					if (this.dev) {
+						console.warn(info);
+					} else {
+						throw new Error(info);
+					}
+					continue;
+				}
+
 				this.selectorsList[dependencySelector].addPlainSelector(plainSelector);
 			}
 		}
@@ -227,6 +238,18 @@ export class CompilationResult {
 	public bindComponentsToSelectors(selectorsComponentsMap: SelectorsComponentsMapType): void {
 		for (const componentDependencySelector in selectorsComponentsMap) {
 			for (const componentToBind of selectorsComponentsMap[componentDependencySelector]) {
+				if (!(componentDependencySelector in this.selectorsList)) {
+					const info = `Selector "${componentDependencySelector}" for component "${componentToBind.component}" was not matched and therefore not added.`;
+
+					if (this.dev) {
+						console.warn(info);
+					} else {
+						throw new Error(info);
+					}
+
+					continue;
+				}
+
 				if (!this.componentsList.includes(componentToBind.component)) {
 					this.componentsList.push(componentToBind.component);
 				}
