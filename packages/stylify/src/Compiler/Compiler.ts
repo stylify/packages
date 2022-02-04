@@ -572,10 +572,14 @@ export class Compiler {
 				contentOptions[optionKey] += ` ${optionMatchValue}`;
 
 			} else if (['components', 'variables', 'plainSelectors'].includes(optionKey)) {
-				contentOptions[optionKey] = {
-					...contentOptions[optionKey],
-					...JSON.parse(optionMatchValue)
-				};
+				try {
+					contentOptions[optionKey] = {
+						...contentOptions[optionKey],
+						...JSON.parse(optionMatchValue)
+					};
+				} catch (error) {
+					console.error(error);
+				}
 
 			} else if (optionKey in this.contentOptionsProcessors) {
 				contentOptions = {
