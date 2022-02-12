@@ -18,7 +18,7 @@ if (!fs.existsSync(buildTmpDir)) {
 
 fse.copySync(path.join(bundleTestDir, 'input'), buildTmpDir);
 
-new Bundler({
+const bundler = new Bundler({
 	compiler: nativePreset.compiler,
 	verbose: false,
 	onBeforeCssFileCreated: (data) => {
@@ -29,8 +29,17 @@ new Bundler({
 	onBundleProcessed: (data) => {
 		const filePathInfo = path.parse(data.bundleConfig.outputFile);
 		fs.writeFileSync(path.join(filePathInfo.dir, filePathInfo.name + '.txt'), '')
+	},
+	onFileToProcessOpened: (data) => {
+		const regExp = new RegExp('{% extends "(\\S+)" %}', 'g');
+		let match: RegExpMatchArray;
+
+		while (match = regExp.exec(data.content)) {
+			data.filePathsFromContent.push(match[1]);
+		}
 	}
-}).bundle([
+});
+bundler.bundle([
    	{
 		outputFile: path.join(buildTmpDir, 'index.css'),
 		files: [
@@ -49,6 +58,7 @@ new Bundler({
 		outputFile: path.join(buildTmpDir, 'second.css'),
 		files: [
 			path.join(buildTmpDir, 'second.html'),
+			path.join(buildTmpDir, 'default.twig'),
 		],
 		onBundleProcessed: (data) => {
 			const filePathInfo = path.parse(data.bundleConfig.outputFile);
@@ -57,7 +67,9 @@ new Bundler({
 	}
 ]);
 
-test('Bundler - single file', (): void => {
+test('Bundler - single file', async (): Promise<void> => {
+	await bundler.waitOnBundlesProcessed();
+
 	const indexCssOutput = fs.readFileSync(path.join(buildTmpDir, 'index.scss')).toString();
 	const secondCssOutput = fs.readFileSync(path.join(buildTmpDir, 'second.scss')).toString();
 	const indexHtmlOutput = fs.readFileSync(path.join(buildTmpDir, 'index.html')).toString();

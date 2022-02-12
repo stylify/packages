@@ -62,6 +62,13 @@ export interface OnBundleProcessedCallbackDataInterface {
 	bundleBuildCache: BundlesBuildCacheInterface
 }
 
+export interface OnFileToProcessOpenedCallbackDataInterface {
+	path: string,
+	content: string,
+	filePathsFromContent: string[],
+	contentOptions: ContentOptionsInterface
+}
+
 export type OnBeforeInputFileRewrittenCallbackType = (
 	data: OnBeforeInputFileRewrittenCallbackDataInterface
 ) => Promise<void> | void;
@@ -74,15 +81,21 @@ export type OnBundleProcessedCallbackType = (
 	data: OnBundleProcessedCallbackDataInterface
 ) => Promise<void> | void;
 
+export type OnFileToProcessOpenedCallbackType = (
+	data: OnFileToProcessOpenedCallbackDataInterface
+) => Promise<void> | void;
+
 interface BundleHooksInterface {
 	onBeforeInputFileRewritten?: OnBeforeInputFileRewrittenCallbackType
 	onBeforeCssFileCreated?: OnBeforeCssFileCreatedCallbackType,
-	onBundleProcessed?: OnBundleProcessedCallbackType
+	onBundleProcessed?: OnBundleProcessedCallbackType,
+	onFileToProcessOpened?: OnFileToProcessOpenedCallbackType
 }
 
 export interface BundleConfigInterface extends BundleHooksInterface {
 	id?: string,
 	rewriteSelectorsInFiles?: boolean,
+	filesBaseDir?: string,
 	dumpCache?: boolean,
 	cache?: JSON | string,
 	outputFile: string,
@@ -94,6 +107,7 @@ export interface BundleConfigInterface extends BundleHooksInterface {
 export interface BundlerConfigInterface extends BundleHooksInterface {
 	configFile?: string,
 	compiler: CompilerConfigInterface,
+	filesBaseDir?: string,
 	verbose?: boolean,
 	watchFiles?: boolean,
 	sync?: boolean,
@@ -130,6 +144,8 @@ export class Bundler {
 
 	private compilerConfig: CompilerConfigInterface = {};
 
+	private filesBaseDir: string = null;
+
 	private verbose = true;
 
 	private sync = true;
@@ -151,6 +167,8 @@ export class Bundler {
 	private onBeforeCssFileCreated: OnBeforeCssFileCreatedCallbackType = null;
 
 	private onBundleProcessed: OnBundleProcessedCallbackType = null;
+
+	private onFileToProcessOpened: OnFileToProcessOpenedCallbackType = null;
 
 	public constructor(config: BundlerConfigInterface) {
 		this.configurationLoadingPromise = this.configure(config);
@@ -176,9 +194,12 @@ export class Bundler {
 			this.watchFiles = config.watchFiles;
 		}
 
+		this.filesBaseDir = config.filesBaseDir || this.filesBaseDir;
+
 		this.onBeforeInputFileRewritten = config.onBeforeInputFileRewritten || this.onBeforeInputFileRewritten;
 		this.onBeforeCssFileCreated = config.onBeforeCssFileCreated || this.onBeforeCssFileCreated;
 		this.onBundleProcessed = config.onBundleProcessed || this.onBundleProcessed;
+		this.onFileToProcessOpened = config.onFileToProcessOpened || this.onFileToProcessOpened;
 
 		this.cssVarsDirPath = config.cssVarsDirPath || this.cssVarsDirPath;
 		this.sassVarsDirPath = config.sassVarsDirPath || this.sassVarsDirPath;
@@ -317,7 +338,8 @@ export class Bundler {
 				...{
 					rewriteSelectorsInFiles: 'rewriteSelectorsInFiles' in bundle
 						? bundle.rewriteSelectorsInFiles
-						: mangleSelectors
+						: mangleSelectors,
+					filesBaseDir: 'filesBaseDir' in bundle ? bundle.filesBaseDir : this.filesBaseDir
 				}
 			};
 			this.bundles[bundle.outputFile] = bundleToProcess;
@@ -485,7 +507,7 @@ export class Bundler {
 			const bundleBuildCache = this.bundlesBuildCache[bundleConfig.outputFile];
 			const compiler = bundleBuildCache.compiler;
 
-			const filesToProcess = this.getFilesToProcess(compiler, bundleConfig.files);
+			const filesToProcess = await this.getFilesToProcess(bundleConfig, compiler, bundleConfig.files);
 
 			if (!filesToProcess.length) {
 				this.log(`No files found for "${bundleConfig.outputFile}". Skipping.`, 'textRed');
@@ -496,10 +518,6 @@ export class Bundler {
 
 			for (const fileToProcessConfig of filesToProcess) {
 				const fileToProcessPath = fileToProcessConfig.filePath;
-				if (!fs.existsSync(fileToProcessPath)) {
-					this.log(`File "${fileToProcessPath}" not found. Skipping`, 'textRed');
-					continue;
-				}
 
 				if (!(fileToProcessPath in bundleBuildCache)) {
 					bundleBuildCache.files.push(fileToProcessPath);
@@ -629,42 +647,94 @@ export class Bundler {
 		return hookData;
 	}
 
-	private getFilesToProcess(compiler: Compiler, filesMasks: string[]): BundleFileDataInterface[] {
+	private async getFilesToProcess(
+		bundleConfig: BundleConfigInterface,
+		compiler: Compiler,
+		filesMasks: string[] = []
+	): Promise<BundleFileDataInterface[]> {
 		filesMasks = filesMasks.map((fileMask: string): string => {
 			return normalize(fileMask) as string;
 		});
 
+		const filesBaseDir = typeof bundleConfig.filesBaseDir === 'string'
+			? normalize(bundleConfig.filesBaseDir)
+			: null;
+
 		const filePaths = fg.sync(filesMasks);
 
 		let filesToProcess: BundleFileDataInterface[] = [];
+		const processedFilePaths: Promise<void>[] = [];
 
 		for (const filePath of filePaths) {
-			const fileContent = fs.readFileSync(filePath).toString();
-			const contentOptionsFromFiles = compiler.getOptionsFromContent(fileContent) as ContentOptionsInterface;
-			let filePathsFromContent = contentOptionsFromFiles.files || [];
+			const processFilePath = async (filePath: string) => {
+				const fileContent = fs.readFileSync(filePath).toString();
+				const contentOptions = compiler.getOptionsFromContent(fileContent) as ContentOptionsInterface;
 
-			if (filePathsFromContent.length) {
-				filePathsFromContent = filePathsFromContent.map((fileOptionValue) => {
-					return fileOptionValue.startsWith(path.sep)
-						? fileOptionValue
-						: path.join(path.dirname(filePath), fileOptionValue);
-				});
-			}
+				const hookData = await this.callBundleHook(bundleConfig, 'onFileToProcessOpened', {
+					path: filePath,
+					content: fileContent,
+					contentOptions: contentOptions,
+					filePathsFromContent: contentOptions.files || []
+				}) as OnFileToProcessOpenedCallbackDataInterface;
 
-			filesToProcess.push({
-				filePath: filePath,
-				contentOptions: contentOptionsFromFiles,
-				content: fileContent
-			});
+				if (hookData.filePathsFromContent.length) {
+					hookData.filePathsFromContent = hookData.filePathsFromContent.map((fileOptionValue) => {
+						let filePathToReturn = path.join(path.dirname(filePath), fileOptionValue);
 
-			if (filePathsFromContent.length) {
-				filesToProcess = [
-					...filesToProcess, ...this.getFilesToProcess(compiler, filePathsFromContent)
-				];
-			}
+						if (fileOptionValue.startsWith(path.sep)) {
+							filePathToReturn = filesBaseDir
+								? path.join(filesBaseDir, fileOptionValue)
+								: fileOptionValue;
+						}
+
+						return normalize(filePathToReturn) as string;
+					});
+				}
+
+				if (this.checkIfFileExists(hookData.path)) {
+					filesToProcess.push({
+						filePath: hookData.path,
+						contentOptions: hookData.contentOptions,
+						content: hookData.content
+					});
+				}
+
+				if (hookData.filePathsFromContent.length) {
+					const nestedFilePaths = await this.getFilesToProcess(
+						bundleConfig, compiler, this.clearFilePaths(hookData.filePathsFromContent)
+					);
+					filesToProcess = [...filesToProcess, ...nestedFilePaths];
+				}
+			};
+
+			processedFilePaths.push(processFilePath(filePath));
 		}
 
+		await Promise.all(processedFilePaths);
+
 		return filesToProcess;
+	}
+
+	private checkIfFileExists(filePath: string): boolean {
+		const exists = fs.existsSync(filePath);
+
+		if (!exists) {
+			this.log(`File "${filePath}" not found. Skipping.`, 'textRed');
+		}
+
+		return exists;
+	}
+
+	private clearFilePaths(filePaths: string[]): string[] {
+		const clearedFilePaths: string[] = [];
+		for (const filePath of filePaths) {
+			if (!this.checkIfFileExists(filePath)) {
+				continue;
+			}
+			clearedFilePaths.push(filePath);
+		}
+
+		return clearedFilePaths;
 	}
 
 	private log(

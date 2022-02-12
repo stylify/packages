@@ -18,6 +18,7 @@ nativePreset.compiler.selectorsAreas = ['(?:^|\\s+)n:class="([^"]+)"', '(?:^|\\s
 
 const bundler = new Bundler({
 	compiler: nativePreset.compiler,
+	filesBaseDir: bundleTestDir,
 	verbose: false
 });
 
@@ -28,7 +29,7 @@ if (!fs.existsSync(buildTmpDir)) {
 fse.copySync(path.join(bundleTestDir, 'input'), buildTmpDir);
 
 bundler.bundle([
-  	{
+	{
 		outputFile: path.join(buildTmpDir, 'index.css'),
 		compiler: {
 			mangleSelectors: false
@@ -38,10 +39,11 @@ bundler.bundle([
 			path.join(bundleTestDir, 'input', 'index', '**', '*.html')
 		]
 	},
-   	{
+	{
 		outputFile: path.join(buildTmpDir, 'second.css'),
 		cache: fs.readFileSync(path.join(bundleTestDir, 'input', 'second.css.json')).toString(),
 		dumpCache: true,
+		filesBaseDir: buildTmpDir,
 		files: [
 			path.join(buildTmpDir, 'second.html'),
 		]
@@ -53,11 +55,13 @@ test('Bundler - recursive', () => {
 	testUtils.testCssFileToBe(indexCssOutput);
 });
 
-test('Bundler - options in file', () => {
+test('Bundler - options in file', async () => {
 	const secondCssOutput = fs.readFileSync(path.join(buildTmpDir, 'second.css')).toString();
 
 	const secondIndexHtmlOutput = fs.readFileSync(path.join(buildTmpDir, 'second.html')).toString();
- 	const secondNetteOutput = fs.readFileSync(path.join(buildTmpDir, 'second', 'nette.latte')).toString();
+
+	const secondHtmlHtmlOutput = fs.readFileSync(path.join(buildTmpDir, 'second', 'html.html')).toString();
+	const secondNetteOutput = fs.readFileSync(path.join(buildTmpDir, 'second', 'nette.latte')).toString();
 	const secondSymfonyOutput = fs.readFileSync(path.join(buildTmpDir, 'second', 'symfony.twig')).toString();
 	const secondVueOutput = fs.readFileSync(path.join(buildTmpDir, 'second', 'vue.vue')).toString();
 	const secondVueComponentOutput = fs.readFileSync(path.join(buildTmpDir, 'second', 'vuejs', 'component.vue')).toString();
@@ -65,10 +69,10 @@ test('Bundler - options in file', () => {
 	testUtils.testCssFileToBe(secondCssOutput, 'second');
 
 	testUtils.testHtmlFileToBe(secondIndexHtmlOutput, 'second');
-   	testUtils.testFileToBe(secondNetteOutput, 'latte', path.join('second', 'nette'));
+
+	testUtils.testHtmlFileToBe(secondHtmlHtmlOutput, path.join('second', 'html'));
+ 	testUtils.testFileToBe(secondNetteOutput, 'latte', path.join('second', 'nette'));
 	testUtils.testFileToBe(secondSymfonyOutput, 'twig', path.join('second', 'symfony'));
 	testUtils.testFileToBe(secondVueOutput, 'vue', path.join('second', 'vue'));
 	testUtils.testFileToBe(secondVueComponentOutput, 'vue', path.join('second', 'vuejs', 'component'));
 });
-
-
