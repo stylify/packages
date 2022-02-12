@@ -1,9 +1,9 @@
 export default {
-	sassVarsDirPath: './',
+	sassVarsDirPath: './assets',
 	extend: {
 		compiler: {
 			components: {
-				button: 'test'
+				button: 'color:blue'
 			}
 		},
 		loaders: [
