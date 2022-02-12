@@ -149,13 +149,17 @@ export default function Stylify(): void {
 	}
 
 	const bundleId = 'stylify';
-	const bundler = new Bundler({
-		compiler: moduleConfig.compiler,
-		cssVarsDirPath: moduleConfig.cssVarsDirPath,
-		sassVarsDirPath: moduleConfig.sassVarsDirPath,
-		lessVarsDirPath: moduleConfig.lessVarsDirPath,
-		stylusVarsDirPath: moduleConfig.stylusVarsDirPath
-	});
+	const createBundlerInstance = (): Bundler => {
+		return new Bundler({
+			compiler: moduleConfig.compiler,
+			cssVarsDirPath: moduleConfig.cssVarsDirPath,
+			sassVarsDirPath: moduleConfig.sassVarsDirPath,
+			lessVarsDirPath: moduleConfig.lessVarsDirPath,
+			stylusVarsDirPath: moduleConfig.stylusVarsDirPath
+		});
+	};
+
+	let bundler = createBundlerInstance();
 
 	const getCompiler = (): Compiler|null => {
 		const cache = bundler.findBundleCache(bundleId);
@@ -264,6 +268,10 @@ export default function Stylify(): void {
 
 		if (!fs.existsSync(assetsDir)) {
 			fs.mkdirSync(assetsDir, { recursive: true });
+		}
+
+		if (nuxtIsInDevMode) {
+			bundler = createBundlerInstance();
 		}
 
 		await bundler.bundle([
