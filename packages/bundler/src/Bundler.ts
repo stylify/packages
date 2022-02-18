@@ -174,6 +174,34 @@ export class Bundler {
 		this.configurationLoadingPromise = this.configure(config);
 	}
 
+	private mergeObjects(...objects): Record<string, any> {
+		const newObject = {};
+
+		for (const processedObject of objects) {
+			for (const processedObjectKey in processedObject) {
+				const newValue = processedObject[processedObjectKey];
+
+				if (processedObjectKey in newObject) {
+					if (Array.isArray(newValue)) {
+						newObject[processedObjectKey] = [
+							...newObject[processedObjectKey],
+							...newValue
+						];
+						continue;
+
+					} else if (typeof newValue === 'object' && newValue !== null) {
+						newObject[processedObjectKey] = this.mergeObjects(newObject[processedObjectKey], newValue);
+						continue;
+					}
+				}
+
+				newObject[processedObjectKey] = newValue;
+			}
+		}
+
+		return newObject;
+	}
+
 	private mergeConfigs(config: BundlerConfigInterface) {
 		this.configFile = config.configFile || this.configFile;
 
@@ -463,11 +491,7 @@ export class Bundler {
 			}
 
 			if (!(bundleConfig.outputFile in this.bundlesBuildCache)) {
-				const bundleCompilerConfig = {
-					...this.compilerConfig,
-					...bundleConfig.compiler || {}
-				};
-
+				const bundleCompilerConfig = this.mergeObjects(this.compilerConfig, bundleConfig.compiler);
 				const originalOnPrepareCompilationResultFunction = bundleCompilerConfig.onPrepareCompilationResult;
 
 				const compiler = new Compiler(bundleCompilerConfig);

@@ -30,13 +30,21 @@ new Bundler({
    	{
 		outputFile: path.join(buildTmpDir, 'index.css'),
 		compiler: {
-			replaceVariablesByCssVariables: true
+			replaceVariablesByCssVariables: true,
+			components: {
+				button: 'background:blue color:white'
+			},
+			macros: {
+				'm:(\\S+?)': function (macroMatch, cssProperties): void {
+					cssProperties.add('margin', macroMatch.getCapture(0));
+				},
+			},
 		},
 		files: [
 			path.join(buildTmpDir, 'index.html'),
 		]
 	},
-	{
+ 	{
 		outputFile: path.join(buildTmpDir, 'second.css'),
 		compiler: {
 			injectVariablesIntoCss: false
