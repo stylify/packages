@@ -12,5 +12,3 @@ const cssProperties = Object.keys(new Option().style)
 		return self.indexOf(item) === index;
 	})
 	.sort();
-
-console.log(cssProperties);

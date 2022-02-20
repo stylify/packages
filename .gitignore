@@ -4,6 +4,10 @@
 *.tgz
 /coverage
 /scripts/build.js
+lerna-debug.log
+**/yarn-error.log
+.idea
+/.idea
 
 #Packages
 /packages/**/*.lerna_backup
@@ -16,3 +20,12 @@
 
 # @stylify/stylify
 /packages/stylify/**/complete-properties-list.txt
+
+# @stylify/nuxt
+/packages/nuxt/.nuxt
+/packages/nuxt/.output
+/packages/nuxt/.output
+/packages/nuxt/playground/assets
+/packages/nuxt/playground/.nuxt
+/packages/nuxt/playground/.output
+/packages/nuxt/playground/workspaces

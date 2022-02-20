@@ -1,6 +1,12 @@
 name: Tests
 
-on: [push, pull_request]
+on:
+    push:
+        branches:
+            - '*'
+    pull_request:
+        branches-ignore:
+            - master
 
 jobs:
   tests:
@@ -17,7 +23,7 @@ jobs:
           run: yarn types
 
         - name: Build packages
-          run: yarn build
+          run: yarn build:all
 
         - name: Eslint
           run: yarn eslint:check

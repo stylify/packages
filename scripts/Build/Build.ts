@@ -15,6 +15,8 @@ class Build {
 
 	private buildDirectories = ['dist', 'esm', 'lib'];
 
+	private packageNamesToBuild: string[] = [];
+
 	private buildConfigs = [];
 
 	public addConfigs(config: BuildConfigurationInterface): void {
@@ -30,6 +32,12 @@ class Build {
 			buildConfig.hooks = config.hooks;
 			this.buildConfigs.push(new BuildConfig(buildConfig));
 		}
+
+		this.packageNamesToBuild.push(config.packageName);
+	}
+
+	public getPackageNamesToBuild(): string[] {
+		return this.packageNamesToBuild;
 	}
 
 	public getConfigs(): Record<string, any>[] {

@@ -2,7 +2,7 @@ version: '3'
 services:
     server:
         container_name: stylify
-        build: docker/server
+        build: .
         working_dir: /usr/share/nginx/html
         volumes:
             - ./.:/usr/share/nginx/html:delegated

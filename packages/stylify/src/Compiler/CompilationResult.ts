@@ -87,6 +87,7 @@ export class CompilationResult {
 			: this.mangleSelectors;
 
 		this.defaultCss = config.defaultCss || this.defaultCss;
+		this.componentsList = config.componentsList || [];
 
 		if ('selectorsList' in config) {
 			for (const selector in config.selectorsList) {

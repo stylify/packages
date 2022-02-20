@@ -21,6 +21,8 @@
 
 ## @stylify/nuxt-module introduction
 
+**Note:** *This plugin is for Nuxt 2 and older versions. For Nuxt 3 and newer versions see [@stylify/nuxt](https://github.com/stylify/packages/tree/master/packages/nuxt)*.
+
 The Nuxt module is a package for symplifing the Stylify integration into the Nuxt.js.<br>
 It automatically bundles CSS, mangles selectors and also provides a Stylify Profiler extension for easier development.
 
@@ -34,9 +36,11 @@ It automatically bundles CSS, mangles selectors and also provides a Stylify Prof
 - Have an idea? Found a bug? Feel free to create an [issue](https://github.com/stylify/packages/issues).
 
 #### Compatibility
-| Environment | Version                                                                                                                                                          | Note                                                                                                          |
-|-------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------|
-| Node        | >= 14                                                                                                                                                            | In case Stylify will be used during an application build or in an SSR application.                            |
+| Environment | Version |
+|-------------|---------|
+| Node        | >= 14   |
+| Nuxt.js     | v2      |
+
 
 ## Stay In Touch
 

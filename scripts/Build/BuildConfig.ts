@@ -31,14 +31,15 @@ export interface BuildConfigConfigurationInterface {
 	bannerContent: string,
 	commonJsEnabled: true | boolean,
 	nodeResolveEnabled: true | boolean,
-	hooks: RollupHooksListInterface
+	hooks: RollupHooksListInterface,
+	onlyEs6Version: false | boolean
 }
 
 class BuildConfig {
 
 	private exportName = 'Stylify';
 
-	private isDevMode = argumentsProcessor.processArguments.isDevMode
+	private isDevMode = argumentsProcessor.processArguments.isDevMode;
 
 	private buildFilesExtensions = ['.js', '.ts', 'tsx'];
 
@@ -75,8 +76,9 @@ class BuildConfig {
 		bannerContent: this.bannerContent,
 		commonJsEnabled: true,
 		nodeResolveEnabled: true,
+		onlyEs6Version: false,
 		hooks: {}
-	}
+	};
 
 	constructor(config: Partial<BuildConfigConfigurationInterface>) {
 		this.config = {...this.config, ...config};
@@ -89,7 +91,7 @@ class BuildConfig {
 		this.config.formats.forEach((format: string) => {
 			const esVersions = ['es6'];
 
-			if (['umd', 'esm'].includes(format)) {
+			if (['umd', 'esm'].includes(format) && !this.config.onlyEs6Version) {
 				esVersions.push('es5');
 			}
 
@@ -121,6 +123,7 @@ class BuildConfig {
 							name: this.exportName,
 							file: `${this.getOutputFilePath(outputFile, format)}${esSuffix}${suffix}`,
 							format: format,
+							sourcemap: false,
 							exports: format === 'umd' ? 'auto' : 'named',
 							banner: this.config.bannerContent || ''
 						},
@@ -184,7 +187,7 @@ class BuildConfig {
 				hooks: this.config.hooks
 			}),
 			json(),
-			this.config.commonJsEnabled ? commonjs() : null,
+			this.config.commonJsEnabled ? commonjs({ sourceMap: false }) : null,
 			this.config.nodeResolveEnabled ? nodeResolve({ extensions: this.buildFilesExtensions }) : null,
 			replace({
 				'process.env.NODE_ENV': JSON.stringify('production'),
