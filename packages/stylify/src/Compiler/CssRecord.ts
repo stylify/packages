@@ -74,6 +74,9 @@ export class CssRecord {
 	public configure(config: CssRecordConfigInterface): void {
 		this.screenId = config.screenId;
 		this.selector = config.selector.replace(/([^-_a-zA-Z\d])/g, '\\$1');
+		if ((/^\d/gm).test(this.selector[0])) {
+			this.selector = '\\3' + this.selector;
+		}
 		this.mangledSelector = stringHashCode(this.selector);
 		this.scope = config.scope || null;
 		if ('onAddProperty' in config) {

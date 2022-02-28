@@ -8,8 +8,8 @@
 }
 }
 
-@media (min-width: 1024px) and (max-width: 1280) {
-.minw1024px\&\&maxw1280\:color\:green{
+@media (min-width: 1024px) and (max-width: 1280px) {
+.minw1024px\&\&maxw1280px\:color\:green{
 	color:green
 }
 }
@@ -20,5 +20,17 @@
 }
 .minw1280px\|\|landscape\:hover\:color\:purple:hover{
 	color:purple
+}
+}
+
+@media (min-width: 1920px) {
+.\33xl\:color\:skyblue{
+	color:skyblue
+}
+}
+
+@media (max-width: 1919px) {
+.to3xl\:color\:green{
+	color:green
 }
 }
