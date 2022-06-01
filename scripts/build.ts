@@ -59,7 +59,8 @@ build.addConfigs({
 			inputFile: 'index',
 			formats: ['esm', 'cjs'],
 			external: ['fast-glob'],
-			nodeResolveEnabled: false
+			nodeResolveEnabled: false,
+			onlyEs6Version: true
 		}
 	]
 });
@@ -135,13 +136,46 @@ build.addConfigs({
 build.addConfigs({
 	packageName: 'nuxt-module',
 	configs: [
-		{inputFile: 'index', formats: ['esm', 'cjs'], external: ['@stylify/bundler', '@stylify/stylify']},
-		{inputFile: 'profiler-plugin', formats: ['esm', 'cjs'], external: ['@stylify/bundler', '@stylify/profiler']},
-		{inputFile: 'webpack-loader', formats: ['esm', 'cjs'], external: [
+		{inputFile: 'index', onlyEs6Version: true, formats: ['esm', 'cjs'], external: [
+			'@stylify/bundler', '@stylify/stylify'
+		]},
+		{inputFile: 'profiler-plugin', onlyEs6Version: true, formats: ['esm', 'cjs'], external: [
+			'@stylify/bundler', '@stylify/profiler'
+		]},
+		{inputFile: 'webpack-loader', onlyEs6Version: true, formats: ['esm', 'cjs'], external: [
 			'@stylify/stylify',
 			'loader-utils'
 		]}
 	]
 });
+
+build.addConfigs({
+	packageName: 'unplugin',
+	configs: [
+		{inputFile: 'index', formats: ['esm', 'cjs'], onlyEs6Version: true, external: [
+			'@stylify/bundler',
+			'@stylify/stylify',
+			'unplugin'
+		]}
+	]
+});
+
+build.addConfigs({
+	packageName: 'nuxt',
+	configs: [
+		{inputFile: 'module', formats: ['esm', 'cjs'], onlyEs6Version: true, external: [
+			'@stylify/bundler', '@stylify/stylify', '@stylify/unplugin', '@nuxt/kit', '../package.json'
+		]},
+		{
+			inputFile: 'runtime/plugins/profiler-plugin.client',
+			outputFile: 'runtime/plugins/profiler-plugin.client.mjs',
+			onlyEs6Version: true,
+			withSuffix: false, formats: ['esm', 'cjs'],
+			external: ['@stylify/bundler', '@stylify/profiler']
+		}
+	]
+});
+
+export const packageNamesToBuild = build.getPackageNamesToBuild();
 
 export default build.getConfigs();

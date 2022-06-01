@@ -14,10 +14,12 @@ export class TypesGenerator {
 		stylify: null,
 		bundler: null,
 		autoprefixer: null,
+		nuxt: null,
 		'nuxt-module': null,
 		profiler: {
 			jsx: true
-		}
+		},
+		unplugin: null
 	};
 
 	private defaultPackageConfig: TypesGeneratorPackageConfigInterface = {

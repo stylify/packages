@@ -26,7 +26,7 @@ export class Profiler {
 	// Dynamically added inside Toolbar.tsx
 	public addExtension: AddExtensionType = null;
 
-	public configure: ConfigureType = null
+	public configure: ConfigureType = null;
 
 	private config: ProfilerConfigInterface = {
 		extensions: [],

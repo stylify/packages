@@ -1,0 +1,64 @@
+{
+	"name": "@stylify/unplugin",
+	"description": "Universal plugin for Rollup.js, Vite.js and Webpack for easier Stylify integration.",
+	"version": "0.0.12",
+	"main": "lib/index.js",
+	"module": "esm/index.js",
+	"scripts": {
+		"pack": "yarn pack"
+	},
+	"types": "types",
+	"files": [
+		"esm",
+		"lib",
+		"types",
+		"package.json",
+		"LICENSE",
+		"README.md"
+	],
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/stylify/packages.git",
+		"directory": "packages/unplugin"
+	},
+	"keywords": [
+		"stylify",
+		"css",
+		"utility-first",
+		"sass",
+		"mobile-first",
+		"responsive",
+		"front-end",
+		"framework",
+		"web",
+		"webpack",
+		"rollup.js",
+		"vite.js"
+	],
+	"dependencies": {
+		"@stylify/bundler": "^0.0.12",
+		"@stylify/stylify": "^0.0.12",
+		"unplugin": "^0.6"
+	},
+	"devDependencies": {
+		"@rollup/plugin-node-resolve": "13.3",
+		"css-loader": "^6.5",
+		"fast-glob": "^3.2",
+		"postcss": "^8.2",
+		"rollup": "^2.74",
+		"rollup-plugin-postcss": "^4.0",
+		"rollup-plugin-import-css": "3.0.3",
+		"style-loader": "^3.3",
+		"vite": "^2.8",
+		"webpack": "^5.66"
+	},
+	"author": "Vladimír Macháček",
+	"license": "MIT",
+	"bugs": {
+		"url": "https://github.com/stylify/packages/issues"
+	},
+	"homepage": "https://stylify.dev",
+	"publishConfig": {
+		"access": "public"
+	}
+}

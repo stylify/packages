@@ -1,0 +1,49 @@
+{
+	"name": "@stylify/nuxt",
+	"description": "Module for Nuxt v3+ for easier Stylify integration.",
+	"version": "0.0.12",
+	"license": "MIT",
+	"type": "module",
+	"main": "lib/module.js",
+	"module": "esm/module.js",
+	"types": "./types/types.d.ts",
+	"files": [
+		"esm",
+		"lib",
+		"types",
+		"package.json",
+		"LICENSE",
+		"README.md"
+	],
+	"keywords": [
+		"stylify",
+		"nuxtjs",
+		"nuxt",
+		"css",
+		"utility-first",
+		"sass",
+		"mobile-first",
+		"responsive",
+		"front-end",
+		"framework",
+		"web"
+	],
+	"scripts": {
+		"dev": "nuxi dev playground",
+		"build": "nuxi build playground",
+		"start": "nuxi start playground"
+	},
+	"dependencies": {
+		"@nuxt/kit": "npm:@nuxt/kit-edge@latest",
+		"@stylify/bundler": "^0.0.12",
+		"@stylify/profiler": "^0.0.12",
+		"@stylify/stylify": "^0.0.12",
+		"@stylify/unplugin": "^0.0.12"
+	},
+	"devDependencies": {
+		"@nuxt/module-builder": "latest",
+		"@nuxtjs/eslint-config-typescript": "latest",
+		"eslint": "latest",
+		"nuxt": "npm:nuxt3@latest"
+	}
+}

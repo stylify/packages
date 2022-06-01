@@ -1,6 +1,6 @@
 {
 	"name": "@stylify/nuxt-module",
-	"description": "Nuxt module for @stylify/stylify.",
+	"description": "Module for Nuxt v2 for easier Stylify integration.",
 	"version": "0.0.12",
 	"main": "lib/index.js",
 	"module": "esm/index.js",
@@ -23,6 +23,8 @@
 	},
 	"keywords": [
 		"stylify",
+		"nuxtjs",
+		"nuxt",
 		"css",
 		"sass",
 		"mobile-first",

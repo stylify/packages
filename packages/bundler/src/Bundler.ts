@@ -128,8 +128,6 @@ export class Bundler {
 
 	private readonly WATCH_FILE_DOUBLE_TRIGGER_BLOCK_TIMEOUT = 500;
 
-	private bundlesBuildCache: BundlesBuildCacheType = {};
-
 	private processedBundlesQueue: Promise<void>[] = [];
 
 	private isReloadingConfiguration = false;
@@ -146,7 +144,7 @@ export class Bundler {
 
 	private filesBaseDir: string = null;
 
-	private verbose = true;
+	private verbose = false;
 
 	private sync = true;
 
@@ -169,6 +167,8 @@ export class Bundler {
 	private onBundleProcessed: OnBundleProcessedCallbackType = null;
 
 	private onFileToProcessOpened: OnFileToProcessOpenedCallbackType = null;
+
+	public bundlesBuildCache: BundlesBuildCacheType = {};
 
 	public constructor(config: BundlerConfigInterface) {
 		this.configurationLoadingPromise = this.configure(config);
@@ -202,7 +202,7 @@ export class Bundler {
 		return newObject;
 	}
 
-	private mergeConfigs(config: BundlerConfigInterface) {
+	private mergeConfigs(config: Partial<BundlerConfigInterface>) {
 		this.configFile = config.configFile || this.configFile;
 
 		this.compilerConfig = {
@@ -243,7 +243,7 @@ export class Bundler {
 		if (![typeof require, typeof require.cache].includes('undefined')) {
 			delete require.cache[this.configFile];
 		}
-		const fileConfig = await import(this.configFile);
+		const fileConfig: Partial<BundlerConfigInterface> = await import(this.configFile);
 		this.mergeConfigs(fileConfig);
 	}
 

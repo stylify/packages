@@ -19,7 +19,12 @@ class Utils {
 	public getProfilerDataFromPage(extensionName: string): Record<string, any>|null {
 		if (!this.profilerDataFromPage) {
 			document.querySelectorAll('.stylify-profiler-data').forEach((element) => {
-				this.profilerDataFromPage = {...this.profilerDataFromPage, ...JSON.parse(element.innerHTML)};
+				try {
+					this.profilerDataFromPage = {...this.profilerDataFromPage, ...JSON.parse(element.innerHTML)};
+				} catch (e) {
+					// eslint-disable-next-line no-console
+					console.log(e);
+				}
 			});
 		}
 
@@ -65,7 +70,7 @@ class Utils {
 			<pre><code class="language-${language}">${code}</code></pre>
 		`);
 		codeWindow.document.close();
-	}
+	};
 
 }
 
