@@ -1,7 +1,7 @@
 {
 	"name": "@stylify/autoprefixer",
 	"description": "Autoprefixer browser/ssr integration for @stylify/stylify.",
-	"version": "0.0.12",
+	"version": "0.0.13",
 	"main": "lib/index.js",
 	"module": "esm/index.js",
 	"types": "types",
@@ -41,12 +41,12 @@
 		"access": "public"
 	},
 	"dependencies": {
-		"@stylify/stylify": "^0.0.12",
+		"@stylify/stylify": "^0.0.13",
 		"autoprefixer": "^10.3",
 		"postcss-js": "^3.0"
 	},
 	"devDependencies": {
 		"@rollup/plugin-commonjs": "^21.0.1"
 	},
-	"gitHead": "4f8d36a606f38dd5784427cbbe91c74110f67740"
+	"gitHead": "5623d95bd53fa0a425378082f65bb3e8c640862d"
 }

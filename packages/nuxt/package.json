@@ -1,7 +1,7 @@
 {
 	"name": "@stylify/nuxt",
 	"description": "Module for Nuxt v3+ for easier Stylify integration.",
-	"version": "0.0.12",
+	"version": "0.0.13",
 	"license": "MIT",
 	"type": "module",
 	"main": "lib/module.js",
@@ -35,15 +35,16 @@
 	},
 	"dependencies": {
 		"@nuxt/kit": "npm:@nuxt/kit-edge@latest",
-		"@stylify/bundler": "^0.0.12",
-		"@stylify/profiler": "^0.0.12",
-		"@stylify/stylify": "^0.0.12",
-		"@stylify/unplugin": "^0.0.12"
+		"@stylify/bundler": "^0.0.13",
+		"@stylify/profiler": "^0.0.13",
+		"@stylify/stylify": "^0.0.13",
+		"@stylify/unplugin": "^0.0.13"
 	},
 	"devDependencies": {
 		"@nuxt/module-builder": "latest",
 		"@nuxtjs/eslint-config-typescript": "latest",
 		"eslint": "latest",
 		"nuxt": "npm:nuxt3@latest"
-	}
+	},
+	"gitHead": "5623d95bd53fa0a425378082f65bb3e8c640862d"
 }
