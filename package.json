@@ -6,7 +6,7 @@
 	"scripts": {
 		"repo:init": "yarn install && yarn link && yarn bootstrap && yarn types",
 		"repo:pack": "lerna run pack",
-		"repo:publish": "yarn lerna:patch && yarn types && yarn build && npm login && lerna publish --no-git-tag-version --no-push",
+		"repo:publish": "yarn lerna:patch && yarn types && yarn build:all && npm login && lerna publish --no-git-tag-version --no-push",
 		"lerna:patch": "lerna version patch --no-push --no-git-tag-version --yes",
 		"bootstrap": "lerna bootstrap --force-local",
 		"rollup:run": "node --max-old-space-size=8192 --experimental-modules node_modules/rollup/dist/bin/rollup",

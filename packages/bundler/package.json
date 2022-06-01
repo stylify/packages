@@ -1,7 +1,7 @@
 {
 	"name": "@stylify/bundler",
 	"description": "CSS bundler for @stylify/stylify.",
-	"version": "0.0.12",
+	"version": "0.0.13",
 	"main": "lib/index.js",
 	"module": "esm/index.js",
 	"types": "types",
@@ -22,7 +22,7 @@
 		"directory": "packages/bundler"
 	},
 	"dependencies": {
-		"@stylify/stylify": "^0.0.12",
+		"@stylify/stylify": "^0.0.13",
 		"fast-glob": "^3.2",
 		"normalize-path": "^3.0"
 	},
@@ -45,5 +45,5 @@
 	"publishConfig": {
 		"access": "public"
 	},
-	"gitHead": "4f8d36a606f38dd5784427cbbe91c74110f67740"
+	"gitHead": "5623d95bd53fa0a425378082f65bb3e8c640862d"
 }

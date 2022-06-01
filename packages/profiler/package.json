@@ -1,7 +1,7 @@
 {
 	"name": "@stylify/profiler",
 	"description": "Profiler for @stylify/packages",
-	"version": "0.0.12",
+	"version": "0.0.13",
 	"main": "lib/index.js",
 	"module": "esm/index.js",
 	"unpkg": "dist/prpfoler.min.js",
@@ -41,7 +41,7 @@
 	},
 	"homepage": "https://stylify.dev",
 	"devDependencies": {
-		"@stylify/stylify": "^0.0.12"
+		"@stylify/stylify": "^0.0.13"
 	},
-	"gitHead": "4f8d36a606f38dd5784427cbbe91c74110f67740"
+	"gitHead": "5623d95bd53fa0a425378082f65bb3e8c640862d"
 }
