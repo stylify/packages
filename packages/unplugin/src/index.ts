@@ -12,7 +12,7 @@ export interface UnpluginConfigInterface {
 
 export const defineConfig = (config: UnpluginConfigInterface): UnpluginConfigInterface => config;
 
-export const StylifyUnplugin = createUnplugin((config: UnpluginConfigInterface) => {
+export const unplugin = createUnplugin((config: UnpluginConfigInterface) => {
 
 	const pluginName = 'stylify';
 
@@ -111,16 +111,9 @@ export const StylifyUnplugin = createUnplugin((config: UnpluginConfigInterface) 
 
 			const selectors = {};
 			const components: Record<string, ComponentsInterface> = {};
-			const ignoredElements = [];
 
 			const bundlesBuildCache: BundlesBuildCacheInterface[] = Object.values(bundler.bundlesBuildCache);
 			for (const bundleBuildCache of bundlesBuildCache) {
-				for (const ignoredElement of bundleBuildCache.compiler.ignoredElements) {
-					if (!ignoredElement.includes(ignoredElement)) {
-						ignoredElements.push(ignoredElement);
-					}
-				}
-
 				for (const selector in bundleBuildCache.compilationResult.selectorsList) {
 					if (!(selector in selectors)) {
 						selectors[selector] = {selector: selector};
@@ -181,3 +174,8 @@ export const StylifyUnplugin = createUnplugin((config: UnpluginConfigInterface) 
 		}
 	};
 });
+
+export const vitePlugin = unplugin.vite;
+export const rollupPlugin = unplugin.rollup;
+export const webpackPlugin = unplugin.webpack;
+export const esbuildPlugin = unplugin.esbuild;

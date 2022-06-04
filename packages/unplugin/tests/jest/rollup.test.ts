@@ -5,7 +5,7 @@
 import path from 'path';
 import fs from 'fs';
 import fse from 'fs-extra';
-import { StylifyUnplugin } from '../../src';
+import { rollupPlugin } from '../../src';
 import type { MacroMatch, SelectorProperties } from '@stylify/stylify';
 import TestUtils from '../../../../tests/TestUtils';
 import { rollup } from 'rollup';
@@ -27,7 +27,7 @@ async function build() {
 	const bundle = await rollup({
 		input: path.join(buildTmpDir, 'index.js'),
 		plugins: [
-			StylifyUnplugin.rollup({
+			rollupPlugin({
 				transformIncludeFilter(id) {
 					return id.endsWith('html');
 				},
