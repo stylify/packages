@@ -17,11 +17,6 @@ import {
 	requireModule
 } from '@nuxt/kit';
 
-export interface LoadersInterface {
-	test: RegExp,
-	include: string[]
-}
-
 export interface StylifyNuxtModuleConfigInterface {
 	dev?: boolean,
 	configPath?: string,
@@ -31,7 +26,6 @@ export interface StylifyNuxtModuleConfigInterface {
 	lessVarsDirPath?: string,
 	stylusVarsDirPath?: string,
 	filesMasks: string[],
-	loaders?: LoadersInterface[],
 	extend?: Partial<StylifyNuxtModuleConfigInterface>,
 }
 
@@ -116,16 +110,6 @@ export default defineNuxtModule<StylifyNuxtModuleConfigInterface>({
 				path.join(nuxt.options.rootDir, componentsDir, '**', '*.vue'),
 				path.join(nuxt.options.rootDir, contentDir, '**', '*.vue'),
 				path.join(nuxt.options.rootDir, contentDir, '**', '*.md')
-			],
-			loaders: [
-				{
-					test: /\.vue$/i,
-					include: [pagesDir, layoutsDir, componentsDir, contentDir]
-				},
-				{
-					test: /\.md$/i,
-					include: [contentDir]
-				}
 			],
 			extend: {}
 		};
@@ -271,11 +255,11 @@ export default defineNuxtModule<StylifyNuxtModuleConfigInterface>({
 			fs.writeFileSync(path.join(nuxt.options.rootDir, assetsDir, stylifyJsonFileName), JSON.stringify(data));
 		};
 
-		const pluginConfig = {
+		const getPluginConfig = () => ({
 			transformIncludeFilter: (id: string): boolean => {
-				return transformIncludeFilterExtensions.includes(path.extname(id))
-					&& transformIncludeFilterDirectories.includes(path.dirname(id));
+				return transformIncludeFilterExtensions.includes(path.extname(id));
 			},
+			dev: nuxtIsInDevMode,
 			bundles: [
 				{
 					id: bundleId,
@@ -305,16 +289,30 @@ export default defineNuxtModule<StylifyNuxtModuleConfigInterface>({
 					compiler: moduleConfig.compiler
 				}
 			}
-		};
+		});
+
+		/**
+		 * This is here, because the Nittro hook content:file:parseBefore
+		 * doesn't work when added in nittro:init hook to Nittro instance and can be called only,
+		 * within the Nittro plugin that cannot be a function for some reason. Therefore the Rollup plugin
+		 * is added into the Nittro build process and mangles classes in compiled markdown files
+		 * that have json format ¯\_(ツ)_/¯
+		 */
+		nuxt.hook('nitro:config', (nitroConfig) => {
+			const pluginConfig = getPluginConfig();
+			pluginConfig.extend.bundler.compiler.selectorsAreas.push('"className":\\[([^\\]]+)\\]');
+			pluginConfig.dev = nuxtIsInDevMode;
+			nitroConfig.rollupConfig.plugins.unshift(StylifyUnplugin.rollup(pluginConfig));
+		});
 
 		extendWebpackConfig((config) => {
-			const plugin = StylifyUnplugin.webpack(pluginConfig);
+			const plugin = StylifyUnplugin.webpack(getPluginConfig());
 			config.plugins = config.plugins || [];
 			config.plugins.push(plugin);
 		});
 
 		extendViteConfig((config) => {
-			const plugin = StylifyUnplugin.vite(pluginConfig);
+			const plugin = StylifyUnplugin.vite(getPluginConfig());
 			config.plugins = config.plugins || [];
 			config.plugins.push(plugin);
 		});
