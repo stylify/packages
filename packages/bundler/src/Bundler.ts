@@ -595,7 +595,7 @@ export class Bundler {
 
 				bundleBuildCache.compilationResult = compiler.compile(
 					fileToProcessConfig.content,
-					this.watchFiles ? null : bundleBuildCache.compilationResult
+					bundleBuildCache.compilationResult
 				);
 
 				if (bundleConfig.rewriteSelectorsInFiles) {
