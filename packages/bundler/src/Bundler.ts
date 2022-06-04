@@ -534,6 +534,10 @@ export class Bundler {
 			const bundleBuildCache = this.bundlesBuildCache[bundleConfig.outputFile];
 			const compiler = bundleBuildCache.compiler;
 
+			if (this.watchFiles) {
+				compiler.components = {};
+			}
+
 			const filesToProcess = await this.getFilesToProcess(bundleConfig, compiler, bundleConfig.files);
 
 			if (!filesToProcess.length) {
@@ -591,7 +595,7 @@ export class Bundler {
 
 				bundleBuildCache.compilationResult = compiler.compile(
 					fileToProcessConfig.content,
-					bundleBuildCache.compilationResult
+					this.watchFiles ? null : bundleBuildCache.compilationResult
 				);
 
 				if (bundleConfig.rewriteSelectorsInFiles) {
