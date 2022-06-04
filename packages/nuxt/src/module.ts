@@ -6,7 +6,7 @@ import {
 	CompilerConfigInterface,
 	nativePreset
 } from '@stylify/stylify';
-import { StylifyUnplugin, defineConfig as defineUnpluginConfig, UnpluginConfigInterface } from '@stylify/unplugin';
+import { unplugin, defineConfig as defineUnpluginConfig, UnpluginConfigInterface } from '@stylify/unplugin';
 import { BundlesBuildCacheInterface } from '@stylify/bundler';
 import {
 	defineNuxtModule,
@@ -304,17 +304,17 @@ export default defineNuxtModule<NuxtModuleConfigInterface>({
 			const pluginConfig = getPluginConfig();
 			pluginConfig.extend.bundler.compiler.selectorsAreas.push('"className":\\[([^\\]]+)\\]');
 			pluginConfig.dev = nuxtIsInDevMode;
-			nitroConfig.rollupConfig.plugins.unshift(StylifyUnplugin.rollup(pluginConfig));
+			nitroConfig.rollupConfig.plugins.unshift(unplugin.rollup(pluginConfig));
 		});
 
 		extendWebpackConfig((config) => {
-			const plugin = StylifyUnplugin.webpack(getPluginConfig());
+			const plugin = unplugin.webpack(getPluginConfig());
 			config.plugins = config.plugins || [];
 			config.plugins.push(plugin);
 		});
 
 		extendViteConfig((config) => {
-			const plugin = StylifyUnplugin.vite(getPluginConfig());
+			const plugin = unplugin.vite(getPluginConfig());
 			config.plugins = config.plugins || [];
 			config.plugins.push(plugin);
 		});
