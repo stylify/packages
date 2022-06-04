@@ -2,26 +2,28 @@ import { BundleConfigInterface, BundlerConfigInterface, Bundler, BundlesBuildCac
 import { nativePreset, CompilationResult, Compiler, ComponentsInterface } from '@stylify/stylify';
 import { createUnplugin } from 'unplugin';
 
-export interface StylifyUnpluginConfigInterface {
+export interface UnpluginConfigInterface {
 	bundles: BundleConfigInterface[];
 	dev?: boolean;
 	bundler?: BundlerConfigInterface;
 	transformIncludeFilter?: (id: string) => boolean;
-	extend?: Partial<StylifyUnpluginConfigInterface>;
+	extend?: Partial<UnpluginConfigInterface>;
 }
 
-export const StylifyUnplugin = createUnplugin((config: StylifyUnpluginConfigInterface) => {
+export const defineConfig = (config: UnpluginConfigInterface): UnpluginConfigInterface => config;
+
+export const StylifyUnplugin = createUnplugin((config: UnpluginConfigInterface) => {
 
 	const pluginName = 'stylify';
 
-	let pluginConfig: StylifyUnpluginConfigInterface = {
+	let pluginConfig: UnpluginConfigInterface = defineConfig({
 		dev: null,
 		bundles: [],
 		bundler: {
 			compiler: nativePreset.compiler
 		},
 		transformIncludeFilter: null
-	};
+	});
 
 	const mergeObject = (...objects): any => {
 		const newObject = {};

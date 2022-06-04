@@ -1,4 +1,6 @@
-export default {
+import { defineConfig } from '@stylify/unplugin';
+
+export default defineConfig({
 	extend: {
 		compiler: {
 			variables: {
@@ -9,4 +11,4 @@ export default {
 			}
 		}
 	}
-};
+});

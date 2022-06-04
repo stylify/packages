@@ -124,6 +124,8 @@ export interface WatchedFilesInterface {
 	bundlesIndexes: string[]
 }
 
+export const defineConfig = (config: BundlerConfigInterface): BundlerConfigInterface => config;
+
 export class Bundler {
 
 	private readonly WATCH_FILE_DOUBLE_TRIGGER_BLOCK_TIMEOUT = 500;
@@ -595,7 +597,7 @@ export class Bundler {
 
 				bundleBuildCache.compilationResult = compiler.compile(
 					fileToProcessConfig.content,
-					this.watchFiles ? null : bundleBuildCache.compilationResult
+					bundleBuildCache.compilationResult
 				);
 
 				if (bundleConfig.rewriteSelectorsInFiles) {

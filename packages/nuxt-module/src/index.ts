@@ -89,6 +89,8 @@ let compilationResult: CompilationResult = null;
 
 const processedBundles: Record<string, ProcessedBundleInterface> = {};
 
+export const defineConfig = (config: StylifyNuxtModuleConfigInterface): StylifyNuxtModuleConfigInterface => config;
+
 export default function Stylify(): void {
 	const { nuxt } = this;
 

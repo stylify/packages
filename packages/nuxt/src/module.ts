@@ -6,7 +6,7 @@ import {
 	CompilerConfigInterface,
 	nativePreset
 } from '@stylify/stylify';
-import { StylifyUnplugin } from '@stylify/unplugin';
+import { StylifyUnplugin, defineConfig as defineUnpluginConfig, UnpluginConfigInterface } from '@stylify/unplugin';
 import { BundlesBuildCacheInterface } from '@stylify/bundler';
 import {
 	defineNuxtModule,
@@ -17,7 +17,7 @@ import {
 	requireModule
 } from '@nuxt/kit';
 
-export interface StylifyNuxtModuleConfigInterface {
+export interface NuxtModuleConfigInterface {
 	dev?: boolean,
 	configPath?: string,
 	compiler?: CompilerConfigInterface,
@@ -26,7 +26,7 @@ export interface StylifyNuxtModuleConfigInterface {
 	lessVarsDirPath?: string,
 	stylusVarsDirPath?: string,
 	filesMasks: string[],
-	extend?: Partial<StylifyNuxtModuleConfigInterface>,
+	extend?: Partial<NuxtModuleConfigInterface>,
 }
 
 export interface ProcessedBundleInterface {
@@ -67,9 +67,9 @@ const mergeObject = (...objects): any => {
 };
 
 const mergeConfig = (
-	actualConfig: StylifyNuxtModuleConfigInterface,
-	config:StylifyNuxtModuleConfigInterface
-): StylifyNuxtModuleConfigInterface => {
+	actualConfig: NuxtModuleConfigInterface,
+	config:NuxtModuleConfigInterface
+): NuxtModuleConfigInterface => {
 	if ('extend' in config) {
 		actualConfig = mergeObject(actualConfig, config.extend);
 		delete config.extend;
@@ -83,7 +83,9 @@ const processedBundles: Record<string, ProcessedBundleInterface> = {};
 const stylifyCssFileName = 'stylify.css';
 const stylifyJsonFileName = 'stylify.json';
 
-export default defineNuxtModule<StylifyNuxtModuleConfigInterface>({
+export const defineConfig = (config: NuxtModuleConfigInterface): NuxtModuleConfigInterface => config;
+
+export default defineNuxtModule<NuxtModuleConfigInterface>({
 	meta: {
 		name,
 		version,
@@ -255,7 +257,7 @@ export default defineNuxtModule<StylifyNuxtModuleConfigInterface>({
 			fs.writeFileSync(path.join(nuxt.options.rootDir, assetsDir, stylifyJsonFileName), JSON.stringify(data));
 		};
 
-		const getPluginConfig = () => ({
+		const getPluginConfig = (): UnpluginConfigInterface => defineUnpluginConfig({
 			transformIncludeFilter: (id: string): boolean => {
 				return transformIncludeFilterExtensions.includes(path.extname(id));
 			},
