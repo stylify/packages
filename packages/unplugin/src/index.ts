@@ -52,6 +52,11 @@ export const StylifyUnplugin = createUnplugin((config: StylifyUnpluginConfigInte
 	};
 
 	const getBundler = (): Bundler => {
+		if (pluginConfig.dev === null && typeof process.env['NODE_ENV'] !== 'undefined') {
+			pluginConfig.dev = process.env['NODE_ENV'] !== 'test';
+			pluginConfig.bundler.compiler.mangleSelectors = !pluginConfig.dev;
+		}
+
 		if (pluginConfig.dev || !bundler) {
 			const bundlerConfig = {
 				...pluginConfig.bundler,
@@ -127,27 +132,21 @@ export const StylifyUnplugin = createUnplugin((config: StylifyUnpluginConfigInte
 				}
 			}
 
-			const rewrittenCode = new Compiler({
-				ignoredElements: ignoredElements,
-				components: components
-			}).rewriteSelectors(
+			return new Compiler(bundler.compilerConfig).rewriteSelectors(
 				code,
 				new CompilationResult({
 					selectorsList: selectors,
 					componentsList: Object.keys(components)
 				})
 			);
-			return rewrittenCode;
 		},
 		rollup: {
 			async options(): Promise<void> {
-				if (pluginConfig.dev === null && typeof process['NODE_ENV'] !== 'undefined') {
-					pluginConfig.dev = process['NODE_ENV'] !== 'test';
+				if (pluginConfig.dev !== null) {
+					pluginConfig.bundler.compiler.mangleSelectors = !pluginConfig.dev;
 				}
 
-				pluginConfig.bundler.watchFiles = pluginConfig.dev;
-				pluginConfig.bundler.compiler.mangleSelectors = !pluginConfig.dev;
-
+				pluginConfig.bundler.watchFiles = process.env.ROLLUP_WATCH === 'true';
 				return runBundlerOrWait();
 			}
 		},
@@ -155,14 +154,11 @@ export const StylifyUnplugin = createUnplugin((config: StylifyUnpluginConfigInte
 			configResolved(config): void {
 				if (pluginConfig.dev === null) {
 					pluginConfig.dev = !config.isProduction;
+					pluginConfig.bundler.compiler.mangleSelectors = !pluginConfig.dev;
+					pluginConfig.bundler.watchFiles = pluginConfig.dev;
+				} else if (pluginConfig.dev === true) {
+					pluginConfig.bundler.watchFiles = true;
 				}
-
-				pluginConfig.bundler.watchFiles = pluginConfig.dev;
-				pluginConfig.bundler.compiler.mangleSelectors = !pluginConfig.dev;
-				pluginConfig.bundles = pluginConfig.bundles.map((bundle) => {
-					bundle.rewriteSelectorsInFiles = false;
-					return bundle;
-				});
 			}
 		},
 		webpack(compiler) {
