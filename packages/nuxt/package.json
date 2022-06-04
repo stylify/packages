@@ -41,6 +41,7 @@
 		"@stylify/unplugin": "^0.0.13"
 	},
 	"devDependencies": {
+		"@nuxt/content": "^2.0.1",
 		"@nuxt/module-builder": "latest",
 		"@nuxtjs/eslint-config-typescript": "latest",
 		"eslint": "latest",

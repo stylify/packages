@@ -1,7 +1,7 @@
 export default {
 	server: {
 		host: '0.0.0.0',
-		port: 81
+		port: 3000
 	},
 	components: true,
 	buildModules: [

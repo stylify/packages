@@ -140,7 +140,10 @@ export class Bundler {
 
 	private configFileWatcherInitialized = false;
 
-	private compilerConfig: CompilerConfigInterface = {};
+	/**
+	 * @internal
+	 */
+	public compilerConfig: CompilerConfigInterface = {};
 
 	private filesBaseDir: string = null;
 
