@@ -1,7 +1,7 @@
 {
 	"name": "@stylify/nuxt-module",
 	"description": "Module for Nuxt v2 for easier Stylify integration.",
-	"version": "0.0.14",
+	"version": "0.0.15",
 	"main": "lib/index.js",
 	"module": "esm/index.js",
 	"types": "types",
@@ -43,9 +43,9 @@
 		"access": "public"
 	},
 	"dependencies": {
-		"@stylify/bundler": "^0.0.14",
-		"@stylify/profiler": "^0.0.14",
-		"@stylify/stylify": "^0.0.14",
+		"@stylify/bundler": "^0.0.15",
+		"@stylify/profiler": "^0.0.15",
+		"@stylify/stylify": "^0.0.15",
 		"loader-utils": "^2.0"
 	},
 	"devDependencies": {

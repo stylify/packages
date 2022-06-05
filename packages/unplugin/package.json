@@ -1,7 +1,7 @@
 {
 	"name": "@stylify/unplugin",
 	"description": "Universal plugin for Rollup.js, Vite.js and Webpack for easier Stylify integration.",
-	"version": "0.0.14",
+	"version": "0.0.15",
 	"main": "lib/index.js",
 	"module": "esm/index.js",
 	"scripts": {
@@ -36,8 +36,8 @@
 		"vite.js"
 	],
 	"dependencies": {
-		"@stylify/bundler": "^0.0.14",
-		"@stylify/stylify": "^0.0.14",
+		"@stylify/bundler": "^0.0.15",
+		"@stylify/stylify": "^0.0.15",
 		"unplugin": "^0.6"
 	},
 	"devDependencies": {
