@@ -66,7 +66,7 @@ export interface CompilerConfigInterface {
 	onPrepareCompilationResult?: OnPrepareCompilationResultCallbackType,
 	onNewMacroMatch?: OnNewMacroMatchCallbackType,
 	contentOptionsProcessors?: ContentOptionsProcessorsType,
-	ignoredElements?: string[],
+	ignoredAreas?: RegExp[],
 	selectorsAreas?: string[],
 	replaceVariablesByCssVariables?: boolean,
 	injectVariablesIntoCss?: boolean
@@ -85,7 +85,16 @@ export class Compiler {
 
 	private readonly CONTENT_OPTIONS_REG_EXP = new RegExp('@stylify-(\\w+)\\[([^\\[\\]]+|\\n+)\\]');
 
-	private ignoredElementsRegExp: RegExp = null;
+	private ignoredAreasRegExpString: string = null;
+
+	public ignoredAreas = [
+		/<stylify-ignore[\s]*?>([\s\S]*?)<\/stylify-ignore>/,
+		/<code[\s]*?>([\s\S]*?)<\/code>/,
+		/<head[\s]*?>([\s\S]*?)<\/head>/,
+		/<pre[\s]*?>([\s\S]*?)<\/pre>/,
+		/<script[\s]*?>([\s\S]*?)<\/script>/,
+		/<style[\s]*?>([\s\S]*?)<\/style>/
+	];
 
 	public contentOptionsProcessors: ContentOptionsProcessorsType = {};
 
@@ -108,8 +117,6 @@ export class Compiler {
 	public components: Record<string, ComponentsInterface> = {};
 
 	public pregenerate = '';
-
-	public ignoredElements = ['stylify-ignore', 'code', 'head', 'pre', 'script', 'style'];
 
 	public selectorsAreas = ['(?:^|\\s+)class="([^"]+)"', '(?:^|\\s+)class=\'([^\']+)\''];
 
@@ -142,14 +149,14 @@ export class Compiler {
 			this.pregenerate += Array.isArray(config.pregenerate) ? config.pregenerate.join(' ') : config.pregenerate;
 		}
 		this.contentOptionsProcessors = {...this.contentOptionsProcessors, ...config.contentOptionsProcessors};
-		this.ignoredElements = [...this.ignoredElements, ...config.ignoredElements || []]
-			.filter((value, index, self) => {
-				return self.indexOf(value) === index;
+		const ignoredAreasRegExpStrings: string[] = [];
+		this.ignoredAreas = [...this.ignoredAreas, ...config.ignoredAreas || []]
+			.filter((ignoredAreaRegExp, index, self) => {
+				const isUnique = self.indexOf(ignoredAreaRegExp) === index;
+				if (isUnique) ignoredAreasRegExpStrings.push(ignoredAreaRegExp.source);
+				return isUnique;
 			});
-
-		const ignoredElements = this.ignoredElements.map((element: string): string => {
-			return `<${element}[\\s\\S]*?>([\\s\\S]*?)<\\/${element}>`;
-		});
+		this.ignoredAreasRegExpString = ignoredAreasRegExpStrings.join('|');
 
 		this.replaceVariablesByCssVariables = 'replaceVariablesByCssVariables' in config
 			? config.replaceVariablesByCssVariables
@@ -158,7 +165,6 @@ export class Compiler {
 			? config.injectVariablesIntoCss
 			: this.injectVariablesIntoCss;
 		this.selectorsAreas = [...this.selectorsAreas, ...config.selectorsAreas || []];
-		this.ignoredElementsRegExp = new RegExp(ignoredElements.join('|'), 'g');
 		this.onPrepareCompilationResult = config.onPrepareCompilationResult || this.onPrepareCompilationResult;
 		this.onNewMacroMatch = config.onNewMacroMatch || this.onNewMacroMatch;
 
@@ -278,7 +284,7 @@ export class Compiler {
 		};
 
 		content = content
-			.replace(new RegExp(this.ignoredElementsRegExp.source, 'g'), (...args): string => {
+			.replace(new RegExp(this.ignoredAreasRegExpString, 'g'), (...args): string => {
 				const matchArguments = args.filter((value) => typeof value === 'string');
 				const fullMatch: string = matchArguments[0];
 				const innerHtml: string = matchArguments[1];
@@ -340,7 +346,7 @@ export class Compiler {
 
 		compilationResult = this.prepareCompilationResult(compilationResult);
 		content = content
-			.replace(new RegExp(this.ignoredElementsRegExp.source, 'g'), (...args): string => {
+			.replace(new RegExp(this.ignoredAreasRegExpString, 'g'), (...args): string => {
 				const matchArguments = args.filter((value) => typeof value === 'string');
 				const fullMatch: string = matchArguments[0];
 				const innerHtml: string = matchArguments[1];

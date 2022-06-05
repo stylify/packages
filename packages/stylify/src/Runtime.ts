@@ -76,7 +76,10 @@ export class Runtime {
 		this.repaintTimeout = runtimeConfig.repaintTimeout || this.repaintTimeout;
 
 		compilerConfig.dev = this.dev;
-		compilerConfig.ignoredElements = [...compilerConfig.ignoredElements || [], ...['stylify-runtime-ignore']];
+		compilerConfig.ignoredAreas = [
+			...compilerConfig.ignoredAreas || [],
+			...[/<stylify-runtime-ignore[\s]*?>([\s\S]*?)<\/stylify-runtime-ignore>/]
+		];
 
 		if (!this.compiler) {
 			this.compiler = new Compiler();
