@@ -83,7 +83,7 @@ export interface ComponentsInterface {
 
 export class Compiler {
 
-	private readonly CONTENT_OPTIONS_REG_EXP = new RegExp('@stylify-(\\w+)\\[([^\\[\\]]+|\\n+)\\]');
+	private readonly contentOptionsRegExp = /@stylify-(\w+)([\s\S]+?)\/@stylify-\w+/;
 
 	private ignoredAreasRegExpString: string = null;
 
@@ -292,7 +292,7 @@ export class Compiler {
 					? fullMatch
 					: fullMatch.replace(innerHtml, placeholderInserter(innerHtml));
 			})
-			.replace(new RegExp(this.CONTENT_OPTIONS_REG_EXP.source, 'g'), (matched: string) => {
+			.replace(new RegExp(this.contentOptionsRegExp.source, 'g'), (matched: string) => {
 				return placeholderInserter(matched);
 			});
 
@@ -358,7 +358,7 @@ export class Compiler {
 			.replace(/&amp;/ig, '&');
 
 		this.configure(this.getOptionsFromContent(content));
-		content = content.replace(new RegExp(this.CONTENT_OPTIONS_REG_EXP.source, 'g'), '');
+		content = content.replace(new RegExp(this.contentOptionsRegExp.source, 'g'), '');
 
 		if (matchOnlyInAreas) {
 			for (const selectorAreaRegExpString of this.selectorsAreas) {
@@ -562,7 +562,7 @@ export class Compiler {
 			variables: {}
 		};
 
-		const regExp = new RegExp(this.CONTENT_OPTIONS_REG_EXP.source, 'g');
+		const regExp = new RegExp(this.contentOptionsRegExp.source, 'g');
 		let optionMatch: RegExpMatchArray;
 
 		while ((optionMatch = regExp.exec(content))) {
@@ -571,27 +571,27 @@ export class Compiler {
 			}
 
 			const optionKey = optionMatch[1];
-
 			const optionMatchValue = optionMatch[2].replace(/\n|\t/g, ' ').replace(/(?:`|')/g, '"');
 
-			if (optionKey === 'pregenerate') {
-				contentOptions[optionKey] += ` ${optionMatchValue}`;
+			try {
+				if (optionKey === 'pregenerate') {
+					contentOptions[optionKey] += ` ${optionMatchValue}`;
 
-			} else if (['components', 'variables', 'plainSelectors'].includes(optionKey)) {
-				try {
+				} else if (['components', 'variables', 'plainSelectors'].includes(optionKey)) {
 					contentOptions[optionKey] = {
 						...contentOptions[optionKey],
-						...JSON.parse(optionMatchValue)
+						// eslint-disable-next-line @typescript-eslint/no-implied-eval
+						...new Function(`return {${optionMatchValue}}`)()
 					};
-				} catch (error) {
-					console.error(error);
+				} else if (optionKey in this.contentOptionsProcessors) {
+					contentOptions = {
+						...contentOptions,
+						...this.contentOptionsProcessors[optionKey](contentOptions, optionMatchValue)
+					};
 				}
 
-			} else if (optionKey in this.contentOptionsProcessors) {
-				contentOptions = {
-					...contentOptions,
-					...this.contentOptionsProcessors[optionKey](contentOptions, optionMatchValue)
-				};
+			} catch (error) {
+				console.error(error);
 			}
 		}
 
