@@ -11,7 +11,6 @@ export type ScreensListRecordType = Record<string, number>;
 
 export type SelectorsListType = Record<string, SerializedCssRecordInterface>;
 
-
 export interface CompilationResultConfigInterface {
 	dev?: boolean,
 	reconfigurable?: boolean,
@@ -87,7 +86,7 @@ export class CompilationResult {
 			: this.mangleSelectors;
 
 		this.defaultCss = config.defaultCss || this.defaultCss;
-		this.componentsList = config.componentsList || [];
+		this.componentsList = [...this.componentsList, ...config.componentsList || []];
 
 		if ('selectorsList' in config) {
 			for (const selector in config.selectorsList) {
