@@ -1,7 +1,7 @@
 {
 	"name": "@stylify/autoprefixer",
 	"description": "Autoprefixer browser/ssr integration for @stylify/stylify.",
-	"version": "0.0.13",
+	"version": "0.0.14",
 	"main": "lib/index.js",
 	"module": "esm/index.js",
 	"types": "types",
@@ -41,7 +41,7 @@
 		"access": "public"
 	},
 	"dependencies": {
-		"@stylify/stylify": "^0.0.13",
+		"@stylify/stylify": "^0.0.14",
 		"autoprefixer": "^10.3",
 		"postcss-js": "^3.0"
 	},
