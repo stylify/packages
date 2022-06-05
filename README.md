@@ -22,7 +22,7 @@
 Stylify is a library that generates utility-first CSS dynamically based on what you write.<br>
 Write HTML. Get CSS
 
-<img src="https://raw.githubusercontent.com/stylify/packages/master/stylify.gif" height="494" width="1024" alt="Stylify preview">
+<img src="https://raw.githubusercontent.com/stylify/packages/master/stylify.gif?v2" height="494" width="1024" alt="Stylify preview">
 
 <p align="center"><a href="https://stylify.dev"><img src="https://user-images.githubusercontent.com/14016808/132552680-ae877b45-5796-42df-b507-c0f6b9cf4706.png"></a></p>
 
@@ -42,10 +42,12 @@ Write HTML. Get CSS
 | Project               | Status                                                       | Description                                                                          |
 | --------------------- | ------------------------------------------------------------ | -------------------------------------------------------------------------------------|
 | [autoprefixer]        | [![autoprefixer-status]][autoprefixer-package]               | [PostCSS Autoprefixer](https://github.com/postcss/autoprefixer) integration for SSR. |
-| [bundler]        | [![bundler-status]][autoprefixer-package]                         | A flexible CSS bundler.                                                              |
-| [nuxt-module]         | [![nuxt-module-status]][nuxt-module-package]                 | Module for [Nuxt.js Framework](https://nuxtjs.org/).                                    |
+| [bundler]             | [![bundler-status]][autoprefixer-package]                    | A flexible CSS bundler.                                                              |
+| [nuxt]                | [![nuxt-status]][nuxt-package]                               | Module for [Nuxt.js Framework](https://nuxtjs.org/) v3+.                             |
+| [nuxt-module]         | [![nuxt-module-status]][nuxt-module-package]                 | Module for [Nuxt.js Framework](https://nuxtjs.org/) v2 < v3.                         |
 | [profiler]            | [![profiler-status]][profiler-package]                       | Profiler for Stylify packages.                                                       |
-| [stylify]             | [![stylify-status]][stylify-package]                         | Core package. Dynamic CSS generator and Selectors Minifier.                          |
+| [stylify]             | [![stylify-status]][stylify-package]                         | Core package. Generates CSS and minifies selectors.                                  |
+| [unplugin]            | [![unplugin-status]][unplugin-package]                       | Universal plugin for Vite, Webpack, Rollup and Esbuildn.                             |
 
 [autoprefixer]: https://github.com/stylify/packages/autoprefixer
 [autoprefixer-status]: https://img.shields.io/npm/v/@stylify/autoprefixer.svg
@@ -54,6 +56,10 @@ Write HTML. Get CSS
 [bundler]: https://github.com/stylify/packages/bundler
 [bundler-status]: https://img.shields.io/npm/v/@stylify/bundler.svg
 [bundler-package]: https://npmjs.com/package/@stylify/bundler
+
+[nuxt]: https://github.com/stylify/packages/nuxt
+[nuxt-status]: https://img.shields.io/npm/v/@stylify/nuxt.svg
+[nuxt-package]: https://npmjs.com/package/@stylify/nuxt
 
 [nuxt-module]: https://github.com/stylify/packages/nuxt-module
 [nuxt-module-status]: https://img.shields.io/npm/v/@stylify/nuxt-module.svg
@@ -66,6 +72,10 @@ Write HTML. Get CSS
 [stylify]: https://github.com/stylify/packages/stylify
 [stylify-status]: https://img.shields.io/npm/v/@stylify/stylify.svg
 [stylify-package]: https://npmjs.com/package/@stylify/stylify
+
+[unplugin]: https://github.com/unplugin/packages/unplugin
+[unplugin-status]: https://img.shields.io/npm/v/@unplugin/unplugin.svg
+[unplugin-package]: https://npmjs.com/package/@unplugin/unplugin
 
 ## Stay In Touch
 
