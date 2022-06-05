@@ -73,9 +73,9 @@ Write HTML. Get CSS
 [stylify-status]: https://img.shields.io/npm/v/@stylify/stylify.svg
 [stylify-package]: https://npmjs.com/package/@stylify/stylify
 
-[unplugin]: https://github.com/unplugin/packages/unplugin
-[unplugin-status]: https://img.shields.io/npm/v/@unplugin/unplugin.svg
-[unplugin-package]: https://npmjs.com/package/@unplugin/unplugin
+[unplugin]: https://github.com/stylify/packages/unplugin
+[unplugin-status]: https://img.shields.io/npm/v/@stylify/unplugin.svg
+[unplugin-package]: https://npmjs.com/package/@stylify/unplugin
 
 ## Stay In Touch
 
