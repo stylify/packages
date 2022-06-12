@@ -20,7 +20,6 @@ export type ComponentSelectorsType = string|string[];
 export type PlainSelectorDependencySelectorsType = string|string[];
 
 export interface PlainSelectorInterface {
-	processed: boolean,
 	selectors: string[]
 }
 
@@ -77,7 +76,6 @@ export type OnNewMacroMatchCallbackType = MacroCallbackType;
 export interface ComponentsInterface {
 	selectors: string[],
 	selectorsChain: string[],
-	processed: boolean,
 	mangledSelector: string
 }
 
@@ -195,7 +193,6 @@ export class Compiler {
 			}
 
 			this.plainSelectors[selector] = {
-				processed: false,
 				selectors: dependencySelectors
 			};
 		}
@@ -212,16 +209,11 @@ export class Compiler {
 			return;
 		}
 
-		const selectorIsComponent = selector in this.components;
+		const componentAlreadyDefined = selector in this.components;
 
-		if (selectorIsComponent && this.components[selector].processed === true) {
-			const info = `You are trying to configure component "${selector}" that has already been processed.`;
-			if (this.dev) {
-				console.warn(info);
-			} else {
-				throw new Error(info);
-			}
-			return;
+		if (componentAlreadyDefined && this.dev) {
+			const info = `You are configuring component "${selector}" that has already been configured.`;
+			console.warn(info);
 		}
 
 		const configIsArray = Array.isArray(config);
@@ -229,21 +221,20 @@ export class Compiler {
 			? {
 				selectors: this.convertStringOrStringArrayToFilteredArray([
 					...configIsArray ? config: [config],
-					...selectorIsComponent ? this.components[selector].selectors : []
+					...componentAlreadyDefined ? this.components[selector].selectors : []
 				]),
-				selectorsChain: selectorIsComponent ? this.components[selector].selectorsChain : []
+				selectorsChain: componentAlreadyDefined ? this.components[selector].selectorsChain : []
 			}
 			: config;
 
 		this.components[selector] = {
 			selectors: this.convertStringOrStringArrayToFilteredArray([
 				...Array.isArray(componentConfig.selectors) ? componentConfig.selectors : [componentConfig.selectors],
-				...selectorIsComponent ? this.components[selector].selectors : []
+				...componentAlreadyDefined ? this.components[selector].selectors : []
 			]),
 			selectorsChain: Array.isArray(componentConfig.selectorsChain)
 				? componentConfig.selectorsChain
 				: [componentConfig.selectorsChain],
-			processed: false,
 			mangledSelector: stringHashCode(selector)
 		};
 
@@ -376,13 +367,8 @@ export class Compiler {
 		const plainSelectorsSelectorsMap = {};
 		for (const plainSelector in this.plainSelectors) {
 			const plainSelectorData = this.plainSelectors[plainSelector];
-			if (plainSelectorData.processed) {
-				continue;
-			}
-
 			plainSelectorsSelectorsMap[plainSelector] = plainSelectorData.selectors;
 			this.pregenerate += ' ' + plainSelectorData.selectors.join(' ');
-			this.plainSelectors[plainSelector].processed = true;
 		}
 
 		contentToProcess = `${this.pregenerate} ${contentToProcess}`;
@@ -396,35 +382,25 @@ export class Compiler {
 
 		const selectorsComponentsMap: SelectorsComponentsMapType = {};
 
-		Object.keys(this.components)
-			.filter((element): boolean => {
-				if (element in compilationResult.componentsList) {
-					this.components[element].processed = true;
+		Object.keys(this.components).forEach((componentsSelector) => {
+			if (!contentToProcess.match(new RegExp(`${componentsSelector}`, 'g'))) {
+				return;
+			}
+
+			const { selectors, selectorsChain } = this.components[componentsSelector];
+			contentToProcess += ` ${selectors.join(' ')}`;
+
+			selectors.forEach((componentDependencySelector: string): void => {
+				if (! (componentDependencySelector in selectorsComponentsMap)) {
+					selectorsComponentsMap[componentDependencySelector] = [];
 				}
 
-				return this.components[element].processed === false;
-			})
-			.forEach((notProcessedComponentsSelector) => {
-				if (!contentToProcess.match(new RegExp(`${notProcessedComponentsSelector}`, 'g'))) {
-					return;
-				}
-
-				const { selectors, selectorsChain } = this.components[notProcessedComponentsSelector];
-				contentToProcess += ` ${selectors.join(' ')}`;
-
-				selectors.forEach((componentDependencySelector: string): void => {
-					if (! (componentDependencySelector in selectorsComponentsMap)) {
-						selectorsComponentsMap[componentDependencySelector] = [];
-					}
-
-					selectorsComponentsMap[componentDependencySelector].push({
-						component: notProcessedComponentsSelector,
-						selectorsChain: selectorsChain
-					});
+				selectorsComponentsMap[componentDependencySelector].push({
+					component: componentsSelector,
+					selectorsChain: selectorsChain
 				});
-
-				this.components[notProcessedComponentsSelector].processed = true;
 			});
+		});
 
 		this.processMacros(contentToProcess, compilationResult);
 
@@ -432,19 +408,6 @@ export class Compiler {
 		compilationResult.bindComponentsToSelectors(selectorsComponentsMap);
 
 		return compilationResult;
-	}
-
-	public hydrate(data: Required<SerializedCompilerInterface>): void {
-		Object.keys(this.components).forEach(selector => {
-			for (const componentSelector of this.components[selector].selectors) {
-				if (! (componentSelector in data.selectorsList && data.selectorsList[componentSelector].processed)) {
-					continue;
-				}
-
-				this.components[selector].processed = true;
-				break;
-			}
-		});
 	}
 
 	public createCompilationResultFromSerializedData(data: string|Record<string, any>): CompilationResult {
@@ -591,7 +554,9 @@ export class Compiler {
 				}
 
 			} catch (error) {
-				console.error(error);
+				if (this.dev) {
+					console.error(error);
+				}
 			}
 		}
 
