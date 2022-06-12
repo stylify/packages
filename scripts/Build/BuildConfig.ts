@@ -14,7 +14,6 @@ import packageJson from '../../package.json';
 import lernaJson from '../../lerna.json';
 import { argumentsProcessor } from '../ArgumentsProcessor';
 import { buildPlugin, RollupHooksListInterface } from './buildPlugin';
-import { typesPlugin } from './typesPlugin';
 
 export interface BuildConfigConfigurationInterface {
 	packageName: string,
