@@ -123,7 +123,6 @@ export class Runtime {
 		}
 
 		const parsedData = typeof data === 'string' ? JSON.parse(data) : data;
-		this.compiler.hydrate(parsedData);
 
 		if (this.compilationResult) {
 			this.compilationResult.configure(parsedData);
