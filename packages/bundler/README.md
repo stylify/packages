@@ -21,7 +21,7 @@
 
 ## @stylify/bundler introduction
 
-The Bundler is provides a functionality to easily bundle CSS, mangle selectors and integrate Stylify into various tools.
+The Bundler provides a functionality to easily bundle CSS, mangle selectors and integrate Stylify into various tools.
 
 <img src="https://raw.githubusercontent.com/stylify/packages/master/packages/bundler/bundler.png" alt="Stylify Bundler preview">
 
