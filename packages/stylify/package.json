@@ -1,29 +1,7 @@
 {
 	"name": "@stylify/stylify",
-	"description": "Dynamic CSS generator for rapid UI development.",
 	"version": "0.0.16",
-	"main": "lib/index.js",
-	"module": "esm/index.js",
-	"unpkg": "dist/stylify.native.min.js",
-	"jsdelivr": "dist/stylify.native.min.js",
-	"scripts": {
-		"pack": "yarn pack"
-	},
-	"types": "types",
-	"files": [
-		"dist",
-		"esm",
-		"lib",
-		"types",
-		"package.json",
-		"LICENSE",
-		"README.md"
-	],
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/stylify/packages.git",
-		"directory": "packages/stylify"
-	},
+	"description": "Dynamic CSS generator for rapid UI development.",
 	"keywords": [
 		"stylify",
 		"css",
@@ -34,12 +12,44 @@
 		"framework",
 		"web"
 	],
-	"author": "Vladimír Macháček",
-	"license": "MIT",
+	"homepage": "https://stylify.dev",
 	"bugs": {
 		"url": "https://github.com/stylify/packages/issues"
 	},
-	"homepage": "https://stylify.dev",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/stylify/packages.git",
+		"directory": "packages/stylify"
+	},
+	"license": "MIT",
+	"author": "Vladimír Macháček",
+	"exports": {
+		".": {
+			"import": "./esm/index.mjs",
+			"require": "./lib/index.cjs",
+			"types": "./types/*"
+		},
+		"./dist/*": "./dist/*",
+		"./types/*": "./types/*",
+		"./package.json": "./package.json"
+	},
+	"main": "lib/index.cjs",
+	"jsdelivr": "dist/stylify.native.min.js",
+	"unpkg": "dist/stylify.native.min.js",
+	"module": "esm/index.mjs",
+	"types": "types",
+	"files": [
+		"dist",
+		"esm",
+		"lib",
+		"types",
+		"package.json",
+		"LICENSE",
+		"README.md"
+	],
+	"scripts": {
+		"pack": "yarn pack"
+	},
 	"publishConfig": {
 		"access": "public"
 	},

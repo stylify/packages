@@ -88,7 +88,6 @@ export const defineConfig = (config: NuxtModuleConfigInterface): NuxtModuleConfi
 export default defineNuxtModule<NuxtModuleConfigInterface>({
 	meta: {
 		name,
-		version,
 		configKey: 'stylify'
 	},
 	defaults: (nuxt) => {

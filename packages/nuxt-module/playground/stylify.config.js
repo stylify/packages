@@ -1,4 +1,6 @@
-export default {
+import { defineConfig } from '../esm';
+
+export default defineConfig({
 	sassVarsDirPath: './assets',
 	extend: {
 		compiler: {
@@ -10,4 +12,4 @@ export default {
 			{ test: /\.md/}
 		]
 	}
-};
+});

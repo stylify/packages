@@ -5,11 +5,13 @@ import {
 	InlineCardIcon,
 	InlineCardTitle,
 	InlineCardsWrapper,
-	utils
+	utils,
+	preact
 } from '..';
-import { Component } from 'preact';
 import { JSXInternal } from 'preact/src/jsx';
 import type { ProfilerExtensionPropsInterface } from '..';
+
+const { h } = preact;
 
 interface ExpandableStateInterface {
 	recommendedDomNodesCount: number,
@@ -20,7 +22,7 @@ interface ExpandableStateInterface {
 	runtimeVersion: string
 }
 
-export class SummaryExtension extends Component<ProfilerExtensionPropsInterface, ExpandableStateInterface> {
+export class SummaryExtension extends preact.Component<ProfilerExtensionPropsInterface, ExpandableStateInterface> {
 
 	public static title = 'Summary';
 
@@ -107,7 +109,7 @@ export class SummaryExtension extends Component<ProfilerExtensionPropsInterface,
 	/* eslint-disable max-len */
 	public render(): JSXInternal.Element {
 		return (
-			<>
+			<preact.Fragment>
 				<InlineCardsWrapper>
 					<InlineCard>
 						<InlineCardIcon icon="document-file-css" color="#2a74b8" />
@@ -129,7 +131,6 @@ export class SummaryExtension extends Component<ProfilerExtensionPropsInterface,
 							<InlineCardTitle><span>Runtime</span></InlineCardTitle>
 							<div>
 								<HideableElement visible={typeof this.state.runtimeVersion !== null}>
-									<strong class="color:green">{`Version ${this.state.runtimeVersion}`}</strong>
 									<InlineCardButtonsWrapper>
 										<a role="button" class="white-space:nowrap" onClick={() => this.config.toggleTab('compilerExtension')}>Show Compiler config</a><span> | </span><a role="button" class="white-space:nowrap" onClick={() => this.config.toggleTab('runtimeExtension')}>Show Runtime info</a>
 									</InlineCardButtonsWrapper>
@@ -162,7 +163,7 @@ export class SummaryExtension extends Component<ProfilerExtensionPropsInterface,
 						</div>
 					</InlineCard>
 				</InlineCardsWrapper>
-			</>
+			</preact.Fragment>
 		);
 	}
 

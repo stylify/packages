@@ -1,6 +1,7 @@
 import { CompilerExtension, RuntimeExtension, SummaryExtension } from './Extensions';
-import { Component, h, render } from 'preact';
-import type { Profiler } from '.';
+import { Profiler, preact } from '.';
+
+const { h } = preact;
 
 export interface ProfilerExtensionPropsInterface {
 	toggleTab: (extensionName: string) => void
@@ -25,11 +26,11 @@ type ExpandableState = {
 	buttonPosition: string
 };
 
-class ProfilerToolbar extends Component<any, ExpandableState> {
+class ProfilerToolbar extends preact.Component<any, ExpandableState> {
 
 	public static readonly TOOLBAR_ELEMENT_ID = 'stylify-profiler';
 
-	private readonly LOCAL_STORAGE_ID = 'stylify-profiler'
+	private readonly LOCAL_STORAGE_ID = 'stylify-profiler';
 
 	private extensionsConfig: ProfilerExtensionPropsInterface = null;
 
@@ -311,5 +312,5 @@ export const initProfilerToolbar = (config: ProfilerToolbarConfigInterface): voi
 		document.body.append(profilerToolbarElement);
 	}
 
-	render(<ProfilerToolbar config={config} />, profilerToolbarElement, profilerToolbarElement);
+	preact.render(preact.h(ProfilerToolbar, {config: config}), profilerToolbarElement, profilerToolbarElement);
 };

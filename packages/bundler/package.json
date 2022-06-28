@@ -1,31 +1,7 @@
 {
 	"name": "@stylify/bundler",
-	"description": "CSS bundler for @stylify/stylify.",
 	"version": "0.0.16",
-	"main": "lib/index.js",
-	"module": "esm/index.js",
-	"types": "types",
-	"scripts": {
-		"pack": "yarn pack"
-	},
-	"files": [
-		"esm",
-		"lib",
-		"types",
-		"package.json",
-		"LICENSE",
-		"README.md"
-	],
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/stylify/packages.git",
-		"directory": "packages/bundler"
-	},
-	"dependencies": {
-		"@stylify/stylify": "^0.0.16",
-		"fast-glob": "^3.2",
-		"normalize-path": "^3.0"
-	},
+	"description": "CSS bundler for @stylify/stylify.",
 	"keywords": [
 		"stylify",
 		"css",
@@ -36,12 +12,45 @@
 		"framework",
 		"web"
 	],
-	"author": "Vladimír Macháček",
-	"license": "MIT",
+	"homepage": "https://stylify.dev",
 	"bugs": {
 		"url": "https://github.com/stylify/packages/issues"
 	},
-	"homepage": "https://stylify.dev",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/stylify/packages.git",
+		"directory": "packages/bundler"
+	},
+	"license": "MIT",
+	"author": "Vladimír Macháček",
+	"exports": {
+		".": {
+			"import": "./esm/index.mjs",
+			"require": "./lib/index.cjs",
+			"types": "./types/*"
+		},
+		"./types/*": "./types/*",
+		"./package.json": "./package.json"
+	},
+	"main": "lib/index.cjs",
+	"module": "esm/index.mjs",
+	"types": "types",
+	"files": [
+		"esm",
+		"lib",
+		"types",
+		"package.json",
+		"LICENSE",
+		"README.md"
+	],
+	"scripts": {
+		"pack": "yarn pack"
+	},
+	"dependencies": {
+		"@stylify/stylify": "^0.0.16",
+		"fast-glob": "^3.2",
+		"normalize-path": "^3.0"
+	},
 	"publishConfig": {
 		"access": "public"
 	},

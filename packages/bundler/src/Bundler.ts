@@ -106,7 +106,7 @@ export interface BundleConfigInterface extends BundleHooksInterface {
 
 export interface BundlerConfigInterface extends BundleHooksInterface {
 	configFile?: string,
-	compiler: CompilerConfigInterface,
+	compiler?: CompilerConfigInterface,
 	filesBaseDir?: string,
 	verbose?: boolean,
 	watchFiles?: boolean,

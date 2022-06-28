@@ -1,26 +1,7 @@
 {
 	"name": "@stylify/nuxt-module",
-	"description": "Module for Nuxt v2 for easier Stylify integration.",
 	"version": "0.0.16",
-	"main": "lib/index.js",
-	"module": "esm/index.js",
-	"types": "types",
-	"scripts": {
-		"pack": "yarn pack"
-	},
-	"files": [
-		"esm",
-		"lib",
-		"types",
-		"package.json",
-		"LICENSE",
-		"README.md"
-	],
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/stylify/packages.git",
-		"directory": "packages/nuxt-module"
-	},
+	"description": "Module for Nuxt v2 for easier Stylify integration.",
 	"keywords": [
 		"stylify",
 		"nuxtjs",
@@ -33,14 +14,39 @@
 		"framework",
 		"web"
 	],
-	"author": "Vladimír Macháček",
-	"license": "MIT",
+	"homepage": "https://stylify.dev",
 	"bugs": {
 		"url": "https://github.com/stylify/packages/issues"
 	},
-	"homepage": "https://stylify.dev",
-	"publishConfig": {
-		"access": "public"
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/stylify/packages.git",
+		"directory": "packages/nuxt-module"
+	},
+	"license": "MIT",
+	"author": "Vladimír Macháček",
+	"exports": {
+		".": {
+			"import": "./esm/index.mjs",
+			"require": "./lib/index.cjs",
+			"types": "./types/*"
+		},
+		"./types/*": "./types/*",
+		"./package.json": "./package.json"
+	},
+	"main": "lib/index.cjs",
+	"module": "esm/index.mjs",
+	"types": "types",
+	"files": [
+		"esm",
+		"lib",
+		"types",
+		"package.json",
+		"LICENSE",
+		"README.md"
+	],
+	"scripts": {
+		"pack": "yarn pack"
 	},
 	"dependencies": {
 		"@stylify/bundler": "^0.0.16",
@@ -50,6 +56,9 @@
 	},
 	"devDependencies": {
 		"@rollup/plugin-commonjs": "^21.0.1"
+	},
+	"publishConfig": {
+		"access": "public"
 	},
 	"gitHead": "5623d95bd53fa0a425378082f65bb3e8c640862d"
 }

@@ -1,181 +1,188 @@
-import 'v8-compile-cache';
 
-import { argumentsProcessor } from './ArgumentsProcessor';
-import { build } from './Build/index';
+/* eslint-disable no-console */
+/* eslint-disable @typescript-eslint/no-floating-promises */
+
 import fse from 'fs-extra';
 import path from 'path';
+import { BundleConfigInterface, BundlerConfigInterface } from '../packages/bundler/src';
+import { getPackageDir, runBuild, bundle, bundleSync, isWatchMode } from './helpers';
 
-build.addConfigs({
-	packageName: 'stylify',
-	configs: [
-		{inputFile: 'index', outputFile: 'index', formats: ['esm', 'cjs'], minifyEsm: true},
-		{
-			inputFile: 'index',
-			outputFile: 'stylify',
-			formats: ['umd', 'esm'],
-			external: ['./Presets'],
-			minifyEsm: true
-		},
-		{
-			inputFile: 'index.browser.native',
-			outputFile: 'stylify.native',
-			formats: ['umd']
-		}
-	]
-});
-
-build.addConfigs({
-	packageName: 'autoprefixer',
-	configs: [
-		{inputFile: 'index', formats: ['esm', 'cjs'], external: ['@stylify/stylify', 'postcss-js', 'autoprefixer']},
-		{
-			inputFile: 'Prefixer',
-			outputFile: 'Prefixer/index',
-			commonJsEnabled: false,
-			formats: ['esm', 'cjs'],
-			external: [
-				'@stylify/stylify',
-				'.'
-			]
-		},
-		{
-			inputFile: 'PrefixesGenerator',
-			outputFile: 'PrefixesGenerator/index',
-			commonJsEnabled: false,
-			formats: ['esm', 'cjs'],
-			external: [
-				'@stylify/stylify',
-				'postcss-js',
-				'autoprefixer'
-			]
-		}
-	]
-});
-
-build.addConfigs({
-	packageName: 'bundler',
-	configs: [
-		{
-			inputFile: 'index',
-			formats: ['esm', 'cjs'],
-			external: ['fast-glob'],
-			nodeResolveEnabled: false,
-			onlyEs6Version: true
-		}
-	]
-});
-
-const isWatchMode = argumentsProcessor.processArguments.isWatchMode;
 const profilerInputDir = isWatchMode ? 'src' : path.join('tmp', 'src');
-let profilerBundler = null;
 
-build.addConfigs({
-	packageName: 'profiler',
-	hooks: {
-		options: async (): Promise<void> => {
-			if (profilerBundler) {
-				return;
+runBuild(async () => {
+
+	await bundleSync({
+		package: 'stylify',
+		bundles: [
+			{
+				entryPoints: [path.join('src', 'index')],
+				outfile: 'index',
+				formats: ['esm', 'esm-browser', 'cjs']
+			},
+			{
+				entryPoints: [path.join('src', 'index')],
+				outfile: 'stylify',
+				formats: 'iife',
+				external: ['./Presets']
+			},
+			{
+				entryPoints: [path.join('src', 'index.browser.native')],
+				outfile: 'stylify.native',
+				formats: 'iife'
 			}
+		]
+	});
 
-			const { Bundler } = await import(build.getPackageDir('bundler'));
-			const profilerBundlerConfigPath = path.join(build.getPackageDir('profiler'), 'stylify.config.js');
+	await bundleSync({
+		package: 'autoprefixer',
+		bundles: [
+			{
+				entryPoints: [path.join('src', 'index')],
+				external: ['@stylify/stylify', 'postcss-js', 'autoprefixer'],
+				outfile: 'index',
+				formats: ['esm', 'cjs']
+			},
+			{
+				entryPoints: [path.join('src', 'Prefixer')],
+				bundle: false,
+				outfile: 'prefixer',
+				formats: ['esm', 'cjs', 'iife']
+			}
+		]
+	});
 
-			profilerBundler = new Bundler({
-				configFile: profilerBundlerConfigPath,
-				watchFiles: isWatchMode,
-				verbose: false
-			});
+	await bundleSync({
+		package: 'bundler',
+		bundles: [
+			{
+				entryPoints: [path.join('src', 'index')],
+				outfile: 'index',
+				platform: 'node',
+				external: ['@stylify/stylify', 'fast-glob', 'normalize-path'],
+				formats: ['esm', 'cjs']
+			}
+		]
+	});
 
-			const profilerPackageDir = build.getPackageDir('profiler');
+	await Promise.all([
+		bundle({
+			package: 'unplugin',
+			bundles: [
+				{
+					entryPoints: [path.join('src', 'index')],
+					outfile: 'index',
+					platform: 'node',
+					external: ['@stylify/bundler', '@stylify/stylify', 'unplugin'],
+					formats: ['esm', 'cjs']
+				}
+			]
+		}),
 
-			if (!isWatchMode) {
-				const srcTmpDir = path.join(profilerPackageDir, 'tmp', 'src');
+		bundle({
+			package: 'profiler',
+			beforeBundle: async () => {
+				const { Bundler } = await import(getPackageDir('bundler'));
+				const profilerPackageDir = getPackageDir('profiler');
+				const profilerBundlerConfigPath = path.join(getPackageDir('profiler'), 'stylify.config.js');
 
-				if (fse.existsSync(srcTmpDir)) {
-					fse.rmdirSync(srcTmpDir, { recursive: true, force: true });
+				const bundlerConfig: BundlerConfigInterface = {
+					configFile: profilerBundlerConfigPath,
+					watchFiles: isWatchMode,
+					verbose: false
+				};
+
+				const profilerBundler = new Bundler(bundlerConfig);
+
+				if (!isWatchMode) {
+					const srcTmpDir = path.join(profilerPackageDir, 'tmp', 'src');
+
+					if (fse.existsSync(srcTmpDir)) {
+						fse.rmdirSync(srcTmpDir, { recursive: true, force: true });
+					}
+
+					fse.copySync(path.join(profilerPackageDir, 'src'), srcTmpDir);
 				}
 
-				fse.copySync(path.join(profilerPackageDir, 'src'), srcTmpDir);
-			}
-			profilerBundler.bundle([
-				{
+				const bundleConfig: BundleConfigInterface = {
 					outputFile: path.join(
 						profilerPackageDir, isWatchMode ? '' : 'tmp', 'src', 'assets', 'profiler.css'
 					),
-					mangleSelectors: !isWatchMode,
+					compiler: {
+						mangleSelectors: !isWatchMode
+					},
 					scope: '#stylify-profiler ',
 					files: [
 						path.join(profilerPackageDir, isWatchMode ? '' : 'tmp', 'src', '*.tsx'),
 						path.join(profilerPackageDir, isWatchMode ? '' : 'tmp', 'src', '**', '*.tsx')
 					]
+				};
+				await profilerBundler.bundle([bundleConfig]);
+
+				await profilerBundler.waitOnBundlesProcessed();
+			},
+			bundles: [
+				{
+					entryPoints: [path.join(profilerInputDir, 'index')],
+					outfile: 'index',
+					formats: ['esm', 'esm-browser', 'cjs'],
+					external: ['@stylify/stylify']
+				},
+				{
+					entryPoints: [path.join(profilerInputDir, 'index.browser')],
+					outfile: 'profiler',
+					formats: ['iife'],
+					external: ['@stylify/stylify']
 				}
-			]);
-		},
-		buildStart: async (): Promise<void> => {
-			return profilerBundler.waitOnBundlesProcessed() as Promise<void>;
-		}
-	},
-	configs: [
-		{
-			inputDir: profilerInputDir,
-			inputFile: 'index',
-			formats: ['esm', 'cjs'],
-			minifyEsm: true,
-			external: ['@stylify/stylify']
-		},
-		{
-			inputDir: profilerInputDir,
-			inputFile: 'index.browser',
-			outputFile: 'profiler',
-			formats: ['umd'],
-			external: ['@stylify/stylify']
-		}
-	]
+			]
+		})
+	]);
+
+	bundle({
+		package: 'nuxt',
+		bundles: [
+			{
+				entryPoints: [path.join('src', 'module')],
+				outfile: 'module',
+				platform: 'node',
+				minify: false,
+				external: ['@stylify/bundler', '@stylify/stylify', '@stylify/unplugin', '@nuxt/kit'],
+				formats: ['esm', 'cjs']
+			},
+			{
+				entryPoints: [path.join('src', 'runtime', 'plugins', 'profiler-plugin.client')],
+				outfile: path.join('runtime', 'plugins', 'profiler-plugin.client'),
+				platform: 'node',
+				minify: false,
+				external: ['@stylify/bundler', '@stylify/stylify', '@stylify/unplugin', '@nuxt/kit'],
+				formats: ['esm', 'cjs']
+			}
+		]
+	});
+
+	bundle({
+		package: 'nuxt-module',
+		bundles: [
+			{
+				entryPoints: [path.join('src', 'index')],
+				outfile: 'index',
+				platform: 'node',
+				external: ['@stylify/bundler', '@stylify/stylify'],
+				formats: ['esm', 'cjs']
+			},
+			{
+				entryPoints: [path.join('src', 'profiler-plugin')],
+				outfile: 'profiler-plugin',
+				platform: 'node',
+				external: ['@stylify/bundler', '@stylify/profiler'],
+				formats: ['esm', 'cjs']
+			},
+			{
+				entryPoints: [path.join('src', 'webpack-loader')],
+				outfile: 'webpack-loader',
+				external: ['@stylify/stylify', 'loader-utils'],
+				formats: ['esm', 'cjs']
+			}
+		]
+	});
+
 });
-
-build.addConfigs({
-	packageName: 'nuxt-module',
-	configs: [
-		{inputFile: 'index', onlyEs6Version: true, formats: ['esm', 'cjs'], external: [
-			'@stylify/bundler', '@stylify/stylify'
-		]},
-		{inputFile: 'profiler-plugin', onlyEs6Version: true, formats: ['esm', 'cjs'], external: [
-			'@stylify/bundler', '@stylify/profiler'
-		]},
-		{inputFile: 'webpack-loader', onlyEs6Version: true, formats: ['esm', 'cjs'], external: [
-			'@stylify/stylify',
-			'loader-utils'
-		]}
-	]
-});
-
-build.addConfigs({
-	packageName: 'unplugin',
-	configs: [
-		{inputFile: 'index', formats: ['esm', 'cjs'], onlyEs6Version: true, external: [
-			'@stylify/bundler',
-			'@stylify/stylify',
-			'unplugin'
-		]}
-	]
-});
-
-build.addConfigs({
-	packageName: 'nuxt',
-	configs: [
-		{inputFile: 'module', formats: ['esm', 'cjs'], onlyEs6Version: true, external: [
-			'@stylify/bundler', '@stylify/stylify', '@stylify/unplugin', '@nuxt/kit', '../package.json'
-		]},
-		{
-			inputFile: 'runtime/plugins/profiler-plugin.client',
-			outputFile: 'runtime/plugins/profiler-plugin.client.mjs',
-			onlyEs6Version: true,
-			withSuffix: false, formats: ['esm', 'cjs'],
-			external: ['@stylify/bundler', '@stylify/profiler']
-		}
-	]
-});
-
-export const packageNamesToBuild = build.getPackageNamesToBuild();
-
-export default build.getConfigs();

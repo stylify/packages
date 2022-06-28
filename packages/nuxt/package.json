@@ -1,20 +1,7 @@
 {
 	"name": "@stylify/nuxt",
-	"description": "Module for Nuxt v3+ for easier Stylify integration.",
 	"version": "0.0.16",
-	"license": "MIT",
-	"type": "module",
-	"main": "lib/module.js",
-	"module": "esm/module.js",
-	"types": "./types/types.d.ts",
-	"files": [
-		"esm",
-		"lib",
-		"types",
-		"package.json",
-		"LICENSE",
-		"README.md"
-	],
+	"description": "Module for Nuxt v3+ for easier Stylify integration.",
 	"keywords": [
 		"stylify",
 		"nuxtjs",
@@ -28,9 +15,31 @@
 		"framework",
 		"web"
 	],
+	"license": "MIT",
+	"type": "module",
+	"exports": {
+		".": {
+			"import": "./esm/module.mjs",
+			"require": "./lib/module.cjs",
+			"types": "./types/*"
+		},
+		"./types/*": "./types/*",
+		"./package.json": "./package.json"
+	},
+	"main": "lib/module.cjs",
+	"module": "esm/module.mjs",
+	"types": "types",
+	"files": [
+		"esm",
+		"lib",
+		"types",
+		"package.json",
+		"LICENSE",
+		"README.md"
+	],
 	"scripts": {
-		"dev": "nuxi dev playground",
 		"build": "nuxi build playground",
+		"dev": "nuxi dev playground",
 		"start": "nuxi start playground"
 	},
 	"dependencies": {

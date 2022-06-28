@@ -1,26 +1,7 @@
 {
 	"name": "@stylify/unplugin",
-	"description": "Universal plugin for Rollup.js, Vite.js and Webpack for easier Stylify integration.",
 	"version": "0.0.16",
-	"main": "lib/index.js",
-	"module": "esm/index.js",
-	"scripts": {
-		"pack": "yarn pack"
-	},
-	"types": "types",
-	"files": [
-		"esm",
-		"lib",
-		"types",
-		"package.json",
-		"LICENSE",
-		"README.md"
-	],
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/stylify/packages.git",
-		"directory": "packages/unplugin"
-	},
+	"description": "Universal plugin for Rollup.js, Vite.js and Webpack for easier Stylify integration.",
 	"keywords": [
 		"stylify",
 		"css",
@@ -35,6 +16,40 @@
 		"rollup.js",
 		"vite.js"
 	],
+	"homepage": "https://stylify.dev",
+	"bugs": {
+		"url": "https://github.com/stylify/packages/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/stylify/packages.git",
+		"directory": "packages/unplugin"
+	},
+	"license": "MIT",
+	"author": "Vladimír Macháček",
+	"exports": {
+		".": {
+			"import": "./esm/index.mjs",
+			"require": "./lib/index.cjs",
+			"types": "./types/*"
+		},
+		"./types/*": "./types/*",
+		"./package.json": "./package.json"
+	},
+	"main": "lib/index.js",
+	"module": "esm/index.js",
+	"types": "types",
+	"files": [
+		"esm",
+		"lib",
+		"types",
+		"package.json",
+		"LICENSE",
+		"README.md"
+	],
+	"scripts": {
+		"pack": "yarn pack"
+	},
 	"dependencies": {
 		"@stylify/bundler": "^0.0.16",
 		"@stylify/stylify": "^0.0.16",
@@ -52,12 +67,6 @@
 		"vite": "^2.8",
 		"webpack": "^5.66"
 	},
-	"author": "Vladimír Macháček",
-	"license": "MIT",
-	"bugs": {
-		"url": "https://github.com/stylify/packages/issues"
-	},
-	"homepage": "https://stylify.dev",
 	"publishConfig": {
 		"access": "public"
 	},

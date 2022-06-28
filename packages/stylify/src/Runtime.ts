@@ -27,8 +27,6 @@ export class Runtime {
 
 	public static readonly CLOAK_CLASS: string = 's-cloak';
 
-	public readonly version = '__PACKAGE__VERSION__';
-
 	public dev = false;
 
 	public compiler: Compiler = null;

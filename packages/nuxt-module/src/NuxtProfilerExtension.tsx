@@ -3,10 +3,12 @@ import {
 	CardTitle,
 	ProfilerExtensionPropsInterface,
 	TableWrapper,
-	preact,
-	utils
+	utils,
+	preact
 } from '@stylify/profiler';
 import { BundleStatsInterface } from '.';
+
+const { h } = preact;
 
 interface ExpandableStateInterface {
 	bundlesStats: BundleStatsInterface[];
@@ -57,7 +59,7 @@ export class NuxtProfilerExtension extends preact.Component<ProfilerExtensionPro
 	/* eslint-disable max-len */
 	public render(): any {
 		return (
-			<>
+			<preact.Fragment>
 				<Card>
 					<CardTitle><span>{`Builds (${this.state.bundlesStats.length})`}</span></CardTitle>
 					<TableWrapper>
@@ -94,7 +96,7 @@ export class NuxtProfilerExtension extends preact.Component<ProfilerExtensionPro
 						{JSON.stringify(JSON.parse(this.state.serializedCompilationResult), null, 2)}
 					</pre>
 				</Card>
-			</>
+			</preact.Fragment>
 		);
 	}
 
