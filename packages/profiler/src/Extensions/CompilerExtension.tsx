@@ -178,9 +178,9 @@ export class CompilerExtension extends preact.Component<ProfilerExtensionPropsIn
 												<td>
 													<div
 														class="width:30px height:30px border:1px__solid__#333"
-														/* <stylify-ignore> */
+														/* stylify-ignore */
 														style={`background-color:${this.state.colorTypeVariables[variableName]}`}
-														/* </stylify-ignore> */
+														/* /stylify-ignore */
 													></div>
 												</td>
 												<td class="white-space:nowrap width:calc(100%__-__350px)">{this.state.colorTypeVariables[variableName]}</td>

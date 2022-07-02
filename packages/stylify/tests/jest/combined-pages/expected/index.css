@@ -49,3 +49,15 @@
 ._v12su6{
 	color:darkred
 }
+
+@media (min-width: 123px) {
+._bbjh7{
+	font-size:64px
+}
+}
+
+@media (max-width: 1250px) {
+._i9e8r0{
+	font-size:84px
+}
+}

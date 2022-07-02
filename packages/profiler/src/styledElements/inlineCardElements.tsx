@@ -26,9 +26,9 @@ export interface InlineCardIconPropsInterface extends PropsInterface {
 export const InlineCardIcon = (props: InlineCardIconPropsInterface): JSXInternal.Element => {
 	return <i
 		class={`profiler__card-icon sp-icon sp-icon-${props.icon}`}
-		/* <stylify-ignore> */
+		/* stylify-ignore */
 		style={`background-color:${props.color}`}
-		/* </stylify-ignore> */
+		/* /stylify-ignore */
 	></i>;
 };
 

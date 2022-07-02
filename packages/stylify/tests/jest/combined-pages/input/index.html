@@ -1,5 +1,12 @@
-<!-- @stylify-pregenerate font-size:123px line-height:123px color:#fff color:#888 /@stylify-pregenerate -->
-<!-- @stylify-pregenerate font-size:456px line-height:456px color:yellow /@stylify-pregenerate  -->
+<!-- stylify-pregenerate font-size:123px line-height:123px color:#fff color:#888 /stylify-pregenerate -->
+<!--
+stylify-screens
+	'testScreen': '(min-width: 123px)',
+	'dynamic\\w+': (screen) => `(max-width: ${screen.replace('dynamic', '')})`
+/stylify-screens
+
+stylify-pregenerate font-size:456px line-height:456px color:yellow /stylify-pregenerate
+-->
 
 <!DOCTYPE html>
 <html lang="en">
@@ -15,8 +22,10 @@
 		background:steelblue
 		max-width:320px
 		margin:0__auto
-		color:#fff"
-	>
+		color:#fff
+		testScreen:font-size:64px
+		dynamic1250px:font-size:84px
+	">
 		Index Page
 	</div>
 </body>

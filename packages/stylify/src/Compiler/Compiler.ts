@@ -33,6 +33,7 @@ export interface CompilerContentOptionsInterface {
 	components: Record<string, any>,
 	variables: Record<string, any>,
 	plainSelectors: Record<string, any>
+	screens: Record<string, any>
 }
 
 export type OnPrepareCompilationResultCallbackType = (compilationResult: CompilationResult) => void;
@@ -81,12 +82,12 @@ export interface ComponentsInterface {
 
 export class Compiler {
 
-	private readonly contentOptionsRegExp = /@stylify-(\w+)([\s\S]+?)\/@stylify-\w+/;
+	private readonly contentOptionsRegExp = /stylify-([a-zA-Z-_0-9]+)\s([\s\S]+?)\s\/stylify-[a-zA-Z-_0-9]+/;
 
 	private ignoredAreasRegExpString: string = null;
 
 	public ignoredAreas = [
-		/<stylify-ignore[\s]*?>([\s\S]*?)<\/stylify-ignore>/,
+		/stylify-ignore([\s\S]*?)\/stylify-ignore/,
 		/<code[\s]*?>([\s\S]*?)<\/code>/,
 		/<head[\s]*?>([\s\S]*?)<\/head>/,
 		/<pre[\s]*?>([\s\S]*?)<\/pre>/,
@@ -336,11 +337,13 @@ export class Compiler {
 		let contentToProcess = '';
 
 		compilationResult = this.prepareCompilationResult(compilationResult);
+
 		content = content
 			.replace(new RegExp(this.ignoredAreasRegExpString, 'g'), (...args): string => {
 				const matchArguments = args.filter((value) => typeof value === 'string');
 				const fullMatch: string = matchArguments[0];
 				const innerHtml: string = matchArguments[1];
+
 				return typeof innerHtml === 'undefined' || innerHtml.length === 0
 					? fullMatch
 					: fullMatch.replace(innerHtml, '');
@@ -349,6 +352,7 @@ export class Compiler {
 			.replace(/&amp;/ig, '&');
 
 		this.configure(this.getOptionsFromContent(content));
+
 		content = content.replace(new RegExp(this.contentOptionsRegExp.source, 'g'), '');
 
 		if (matchOnlyInAreas) {
@@ -448,7 +452,7 @@ export class Compiler {
 		const regExpEndPart = `(?=['"\`{}\\[\\]<>\\s]|$)`;
 		const regExpGenerators = [
 			// Match with media query and without pseudo class
-			(macroKey: string): RegExp => new RegExp(`(?:([a-z0-9-:&|]+):)${macroKey}${regExpEndPart}`, 'g'),
+			(macroKey: string): RegExp => new RegExp(`(?:([a-zA-Z0-9-:&|]+):)${macroKey}${regExpEndPart}`, 'g'),
 			// Match without media query and without pseudo class
 			// () - empty pseudo class and media query match
 			(macroKey: string): RegExp => new RegExp(`()${macroKey}${regExpEndPart}`, 'g')
@@ -522,6 +526,7 @@ export class Compiler {
 			pregenerate: '',
 			components: {},
 			plainSelectors: {},
+			screens: {},
 			variables: {}
 		};
 
@@ -534,13 +539,13 @@ export class Compiler {
 			}
 
 			const optionKey = optionMatch[1];
-			const optionMatchValue = optionMatch[2].replace(/\n|\t/g, ' ').replace(/(?:`|')/g, '"');
+			const optionMatchValue = optionMatch[2].replace(/\n|\t/g, ' ');
 
 			try {
 				if (optionKey === 'pregenerate') {
 					contentOptions[optionKey] += ` ${optionMatchValue}`;
 
-				} else if (['components', 'variables', 'plainSelectors'].includes(optionKey)) {
+				} else if (['components', 'variables', 'plainSelectors', 'screens'].includes(optionKey)) {
 					contentOptions[optionKey] = {
 						...contentOptions[optionKey],
 						// eslint-disable-next-line @typescript-eslint/no-implied-eval
