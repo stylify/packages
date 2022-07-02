@@ -32,6 +32,7 @@ interface BuildConfigConfigurationInterface {
 }
 
 export const isWatchMode = 'watch' in env;
+export const generateTypes = !('typesDisabled' in env);
 export const isDevMode = 'dev' in env;
 const selectedPackages = 'packages' in env ? env.packages.split(',') : [];
 
@@ -171,7 +172,7 @@ const runEsbuild = async (config: BuildConfigConfigurationInterface): Promise<Bu
 	const typesDirsString = path.join(packageDir, 'src', '**', '*.ts') + ' ' + path.join(packageDir, 'src', '*.ts');
 	const typesOutputDir = path.join(packageDir, 'types');
 
-	if (!mergedConfig.watch) {
+	if (!mergedConfig.watch && generateTypes) {
 		typescriptTypesBuilds.push(new Promise((resolve) => {
 			const tscCommand = [
 				`yarn tsc ${typesDirsString}`,

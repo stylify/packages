@@ -146,7 +146,7 @@ export const unplugin = createUnplugin((config: UnpluginConfigInterface) => {
 			}
 		},
 		vite: {
-			configResolved(config): void {
+			async configResolved(config): Promise<void> {
 				if (pluginConfig.dev === null) {
 					pluginConfig.dev = !config.isProduction;
 					pluginConfig.bundler.compiler.mangleSelectors = !pluginConfig.dev;
@@ -154,6 +154,8 @@ export const unplugin = createUnplugin((config: UnpluginConfigInterface) => {
 				} else if (pluginConfig.dev === true) {
 					pluginConfig.bundler.watchFiles = true;
 				}
+
+				return runBundlerOrWait();
 			}
 		},
 		webpack(compiler) {

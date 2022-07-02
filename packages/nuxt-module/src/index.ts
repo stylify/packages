@@ -35,9 +35,11 @@ export interface ProcessedBundleInterface {
 	css?: string,
 }
 
+const filesSuffix = (/lib\/?$/).test(__dirname) ? 'cjs' : 'mjs';
+
 let moduleConfig: StylifyNuxtModuleConfigInterface = {
 	dev: false,
-	configPath: 'stylify.config.js',
+	configPath: null,
 	compiler: nativePreset.compiler,
 	cssVarsDirPath: null,
 	sassVarsDirPath: null,
@@ -126,13 +128,42 @@ export default function Stylify(): void {
 		mergeConfig(nuxt.options.stylify);
 	}
 
-	const configPath = nuxt.resolver.resolveAlias(moduleConfig.configPath);
+	let configFileExists = false;
 
-	if (fs.existsSync(configPath)) {
-		mergeConfig(nuxt.resolver.requireModule(configPath));
+	if (moduleConfig.configPath) {
+		moduleConfig.configPath = nuxt.resolver.resolveAlias(moduleConfig.configPath);
+		configFileExists = fs.existsSync(moduleConfig.configPath);
+
+		if (!configFileExists) {
+			console.error(`Stylify: Given config "${moduleConfig.configPath}" was not found. Skipping.`);
+		}
+
+	} else {
+		const jsConfigPath: string = nuxt.resolver.resolveAlias('stylify.config.js');
+		configFileExists = fs.existsSync(jsConfigPath);
+
+		if (configFileExists) {
+			moduleConfig.configPath = jsConfigPath;
+
+		} else {
+			const tsConfigPath: string = nuxt.resolver.resolveAlias('stylify.config.ts');
+			configFileExists = fs.existsSync(tsConfigPath);
+
+			if (configFileExists) {
+				moduleConfig.configPath = tsConfigPath;
+			}
+		}
+	}
+
+	if (configFileExists) {
+		const configFromFile: Partial<StylifyNuxtModuleConfigInterface> = nuxt.resolver.requireModule(
+			moduleConfig.configPath
+		);
+
+		mergeConfig(configFromFile);
 
 		if (nuxtIsInDevMode) {
-			nuxt.options.watch.push(configPath);
+			nuxt.options.watch.push(moduleConfig.configPath);
 		}
 	}
 
@@ -146,7 +177,7 @@ export default function Stylify(): void {
 	if (moduleConfig.dev) {
 		this.addPlugin({
 			ssr: false,
-			src: path.resolve(__dirname, `profiler-plugin.${(/lib\/?$/).test(__dirname) ? 'cjs' : 'esm'}`)
+			src: path.resolve(__dirname, `profiler-plugin.${filesSuffix}`)
 		});
 	}
 
@@ -192,7 +223,7 @@ export default function Stylify(): void {
 					enforce: 'pre',
 					include: loaderConfig.include,
 					use: {
-						loader: path.join(__dirname, 'webpack-loader.js'),
+						loader: path.join(__dirname, `webpack-loader.${filesSuffix}`),
 						options: {
 							getCompiler: getCompiler,
 							getCompilationResult: (): CompilationResult|null => {

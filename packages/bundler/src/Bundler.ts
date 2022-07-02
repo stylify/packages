@@ -1,4 +1,4 @@
-import * as fg from 'fast-glob';
+import FastGlob from 'fast-glob';
 import {
 	CompilationResult,
 	Compiler,
@@ -689,7 +689,7 @@ export class Bundler {
 			? normalize(bundleConfig.filesBaseDir)
 			: null;
 
-		const filePaths = fg.sync(filesMasks);
+		const filePaths = FastGlob.sync(filesMasks);
 
 		let filesToProcess: BundleFileDataInterface[] = [];
 		const processedFilePaths: Promise<void>[] = [];
