@@ -6,18 +6,19 @@ import {
 	InlineCardIcon,
 	InlineCardTitle,
 	InlineCardsWrapper,
-	utils
+	utils,
+	preact
 } from '..';
 import type {
 	CssRecord,
 	SerializedCompilationResultInterface
 } from '@stylify/stylify';
-import { Component } from 'preact';
 import { JSXInternal } from 'preact/src/jsx';
 import type { ProfilerExtensionPropsInterface } from '..';
 
+const { h } = preact;
+
 interface ExpandableStateInterface {
-	version: number,
 	dev: boolean,
 	repaintTimeout: number,
 	loadedCache: string[],
@@ -27,7 +28,7 @@ interface ExpandableStateInterface {
 	cache: SerializedCompilationResultInterface
 }
 
-export class RuntimeExtension extends Component<ProfilerExtensionPropsInterface, ExpandableStateInterface> {
+export class RuntimeExtension extends preact.Component<ProfilerExtensionPropsInterface, ExpandableStateInterface> {
 
 	public static title = 'Runtime';
 
@@ -43,7 +44,6 @@ export class RuntimeExtension extends Component<ProfilerExtensionPropsInterface,
 		this.state = {
 			...{
 				// Runtime
-				version: null,
 				dev: false,
 				repaintTimeout: 0,
 				loadedCache: [],
@@ -94,7 +94,6 @@ export class RuntimeExtension extends Component<ProfilerExtensionPropsInterface,
 		}
 
 		return {
-			version: runtime.version || 'Unknown',
 			dev: runtime.dev,
 			repaintTimeout: runtime.repaintTimeout || 'Unknown',
 			loadedCache: loadedCache,
@@ -107,22 +106,8 @@ export class RuntimeExtension extends Component<ProfilerExtensionPropsInterface,
 	/* eslint-disable max-len */
 	public render(): JSXInternal.Element {
 		return (
-			<>
+			<preact.Fragment>
 				<InlineCardsWrapper>
-					<InlineCard>
-						<InlineCardIcon color="#4eb539" icon="activity" />
-						<div>
-							<InlineCardTitle><span>Runtime</span></InlineCardTitle>
-							<div>
-								<HideableElement visible={this.state.version !== null}>
-									<strong>{`Version ${this.state.version}`}</strong>
-								</HideableElement>
-								<HideableElement visible={this.state.version === null}>
-									<span>Not detected.</span>
-								</HideableElement>
-							</div>
-						</div>
-					</InlineCard>
 					<InlineCard visible={typeof this.state.repaintTimeout !== 'undefined'}>
 						<InlineCardIcon color="#4eb539" icon="clock" />
 						<div>
@@ -132,7 +117,7 @@ export class RuntimeExtension extends Component<ProfilerExtensionPropsInterface,
 							</div>
 						</div>
 					</InlineCard>
-					<InlineCard visible={this.state.version !== null}>
+					<InlineCard visible={this.state.dev !== null}>
 						<InlineCardIcon color="#4eb539" icon="circle" />
 						<div>
 							<InlineCardTitle><span>Environment</span></InlineCardTitle>
@@ -141,7 +126,7 @@ export class RuntimeExtension extends Component<ProfilerExtensionPropsInterface,
 							</div>
 						</div>
 					</InlineCard>
-					<InlineCard visible={this.state.version !== null}>
+					<InlineCard visible={this.state.cache !== null}>
 						<InlineCardIcon color="#4eb539" icon="layers" />
 						<div>
 							<InlineCardTitle><span>Actual cache</span></InlineCardTitle>
@@ -152,7 +137,7 @@ export class RuntimeExtension extends Component<ProfilerExtensionPropsInterface,
 					</InlineCard>
 				</InlineCardsWrapper>
 
-				<Card visible={this.state.version !== null}>
+				<Card visible={Object.keys(this.state.processedSelectors).length > 0}>
 					<CardTitle><span>{`Processed selectors (${Object.keys(this.state.processedSelectors).length})`}</span></CardTitle>
 					<div class={`${Object.keys(this.state.processedSelectors).length ? '' : 'display:none'} profiler__table-wrapper`}>
 						<table>
@@ -181,7 +166,7 @@ export class RuntimeExtension extends Component<ProfilerExtensionPropsInterface,
 					</HideableElement>
 				</Card>
 
-				<Card visible={this.state.version !== null}>
+				<Card visible={Object.keys(this.state.processedComponents).length > 0}>
 					<CardTitle><span>{`Processed components (${Object.keys(this.state.processedComponents).length})`}</span></CardTitle>
 					<div class={`${Object.keys(this.state.processedComponents).length ? '' : 'display:none'} profiler__table-wrapper`}>
 						<table>
@@ -210,7 +195,7 @@ export class RuntimeExtension extends Component<ProfilerExtensionPropsInterface,
 					</HideableElement>
 				</Card>
 
-				<Card visible={this.state.version !== null}>
+				<Card visible={this.state.loadedCache.length !== 0}>
 					<CardTitle><span>{`Loaded cache (${this.state.loadedCache.length})`}</span></CardTitle>
 					<HideableElement visible={this.state.loadedCache.length !== 0}>
 						{this.state.loadedCache.map((loadedCache: string, index) => {
@@ -228,7 +213,7 @@ export class RuntimeExtension extends Component<ProfilerExtensionPropsInterface,
 						<span>No cache was loaded.</span>
 					</HideableElement>
 				</Card>
-			</>
+			</preact.Fragment>
 		);
 	}
 

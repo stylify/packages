@@ -6,6 +6,6 @@ export default defineNuxtConfig({
 	},
 	modules: [
 		['@nuxt/content'],
-		['../esm/module.js', { addPlugin: true }]
+		['../esm/module.mjs', { addPlugin: true }]
 	]
 });

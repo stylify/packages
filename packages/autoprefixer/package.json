@@ -1,26 +1,7 @@
 {
 	"name": "@stylify/autoprefixer",
-	"description": "Autoprefixer browser/ssr integration for @stylify/stylify.",
 	"version": "0.0.16",
-	"main": "lib/index.js",
-	"module": "esm/index.js",
-	"types": "types",
-	"scripts": {
-		"pack": "yarn pack"
-	},
-	"files": [
-		"esm",
-		"lib",
-		"types",
-		"package.json",
-		"LICENSE",
-		"README.md"
-	],
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/stylify/packages.git",
-		"directory": "packages/autoprefixer"
-	},
+	"description": "Autoprefixer browser/ssr integration for @stylify/stylify.",
 	"keywords": [
 		"stylify",
 		"css",
@@ -31,14 +12,40 @@
 		"framework",
 		"web"
 	],
-	"author": "Vladimír Macháček",
-	"license": "MIT",
+	"homepage": "https://stylifycss.com",
 	"bugs": {
 		"url": "https://github.com/stylify/packages/issues"
 	},
-	"homepage": "https://stylify.dev",
-	"publishConfig": {
-		"access": "public"
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/stylify/packages.git",
+		"directory": "packages/autoprefixer"
+	},
+	"license": "MIT",
+	"author": "Vladimír Macháček",
+	"exports": {
+		".": {
+			"import": "./esm/index.mjs",
+			"require": "./lib/index.cjs",
+			"types": "./types/*"
+		},
+		"./dist/*": "./dist/*",
+		"./types/*": "./types/*",
+		"./package.json": "./package.json"
+	},
+	"main": "lib/index.cjs",
+	"module": "esm/index.mjs",
+	"types": "types",
+	"files": [
+		"esm",
+		"lib",
+		"types",
+		"package.json",
+		"LICENSE",
+		"README.md"
+	],
+	"scripts": {
+		"pack": "yarn pack"
 	},
 	"dependencies": {
 		"@stylify/stylify": "^0.0.16",
@@ -47,6 +54,9 @@
 	},
 	"devDependencies": {
 		"@rollup/plugin-commonjs": "^21.0.1"
+	},
+	"publishConfig": {
+		"access": "public"
 	},
 	"gitHead": "5623d95bd53fa0a425378082f65bb3e8c640862d"
 }

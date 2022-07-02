@@ -146,7 +146,7 @@ export default function Stylify(): void {
 	if (moduleConfig.dev) {
 		this.addPlugin({
 			ssr: false,
-			src: path.resolve(__dirname, 'profiler-plugin.js')
+			src: path.resolve(__dirname, `profiler-plugin.${(/lib\/?$/).test(__dirname) ? 'cjs' : 'esm'}`)
 		});
 	}
 

@@ -1,8 +1,8 @@
 <br><br>
 
 <p align="center">
-	<a href="https://stylify.dev" target="_blank" rel="noopener noreferrer">
-		<img src="https://stylify.dev/images/logo.svg" height="100" alt="Stylify logo">
+	<a href="https://stylifycss.com" target="_blank" rel="noopener noreferrer">
+		<img src="https://stylifycss.com/images/logo.svg" height="100" alt="Stylify logo">
 	</a>
 </p>
 
@@ -25,10 +25,10 @@ The Autoprefixer is a package for generating CSS prefixes map using PostCSS. Thi
 
 <img src="https://raw.githubusercontent.com/stylify/packages/master/stylify.gif" height="494" width="1024" alt="Stylify preview">
 
-<p align="center"><a href="https://stylify.dev"><img src="https://user-images.githubusercontent.com/14016808/132552680-ae877b45-5796-42df-b507-c0f6b9cf4706.png"></a></p>
+<p align="center"><a href="https://stylifycss.com"><img src="https://user-images.githubusercontent.com/14016808/132552680-ae877b45-5796-42df-b507-c0f6b9cf4706.png"></a></p>
 
 ### Want to know more?
-- Live examples and tutorials can be found in [documentation](https://stylify.dev/docs/autoprefixer).
+- Live examples and tutorials can be found in [documentation](https://stylifycss.com/docs/autoprefixer).
 - Information about each release can be found in [releases](https://github.com/stylify/packages/releases).
 - Have an idea? Found a bug? Feel free to create an [issue](https://github.com/stylify/packages/issues).
 
@@ -40,7 +40,7 @@ The Autoprefixer is a package for generating CSS prefixes map using PostCSS. Thi
 
 ## Stay In Touch
 
-- Visit Stylify website [https://stylify.dev](https://stylify.dev).
+- Visit Stylify website [https://stylifycss.com](https://stylifycss.com).
 - Follow Stylify on [Twitter](https://twitter.com/stylify_dev).
 - Join Stylify community on [Discord](https://discord.gg/NuJsk5SMDz).
 

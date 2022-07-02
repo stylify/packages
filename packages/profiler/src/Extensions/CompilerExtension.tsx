@@ -1,9 +1,10 @@
 
-import { Card, CardTitle, HideableElement, TableWrapper, utils } from '..';
+import { Card, CardTitle, HideableElement, TableWrapper, utils, preact } from '..';
 import type { ComponentsInterface, PlainSelectorInterface } from '@stylify/stylify';
-import { Component } from 'preact';
 import { JSXInternal } from 'preact/src/jsx';
 import type { ProfilerExtensionPropsInterface } from '../Toolbar';
+
+const { h } = preact;
 
 interface ExpandableStateInterface {
 	mangleSelectors: boolean,
@@ -18,7 +19,7 @@ interface ExpandableStateInterface {
 	screens: Record<string, any>
 }
 
-export class CompilerExtension extends Component<ProfilerExtensionPropsInterface, ExpandableStateInterface> {
+export class CompilerExtension extends preact.Component<ProfilerExtensionPropsInterface, ExpandableStateInterface> {
 
 	public static title = 'Compiler';
 
@@ -154,7 +155,7 @@ export class CompilerExtension extends Component<ProfilerExtensionPropsInterface
 	/* eslint-disable max-len */
 	public render(): JSXInternal.Element {
 		return (
-			<>
+			<preact.Fragment>
 				<Card>
 					<CardTitle><span>{`Variables (${Object.keys({...this.state.colorTypeVariables, ...this.state.unitTypeVariables, ...this.state.otherTypeVariables}).length})`}</span></CardTitle>
 
@@ -370,7 +371,7 @@ export class CompilerExtension extends Component<ProfilerExtensionPropsInterface
 						<span>No helpers configured.</span>
 					</HideableElement>
 				</Card>
-			</>
+			</preact.Fragment>
 		);
 	}
 

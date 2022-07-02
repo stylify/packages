@@ -19,11 +19,8 @@ jobs:
         - name: Install packages
           run: yarn repo:init
 
-        - name: Generate types
-          run: yarn types
-
-        - name: Build packages
-          run: yarn build:all
+        - name: Build
+          run: yarn build
 
         - name: Eslint
           run: yarn eslint:check

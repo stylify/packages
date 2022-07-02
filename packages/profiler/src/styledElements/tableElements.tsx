@@ -1,5 +1,8 @@
 import { HideableElement, HideableElementPropsInterface } from '.';
 import { JSXInternal } from 'preact/src/jsx';
+import { preact } from '..';
+
+const { h } = preact;
 
 export const TableWrapper = (props: HideableElementPropsInterface): JSXInternal.Element => {
 	return (

@@ -27,8 +27,6 @@ export class Runtime {
 
 	public static readonly CLOAK_CLASS: string = 's-cloak';
 
-	public readonly version = '__PACKAGE__VERSION__';
-
 	public dev = false;
 
 	public compiler: Compiler = null;
@@ -39,7 +37,7 @@ export class Runtime {
 
 	private mutationObserverInitialized = false;
 
-	public repaintTimeout = 5;
+	public repaintTimeout = 100;
 
 	constructor(config: RuntimeConfigInterface = {}) {
 		if (typeof document === 'undefined') {
@@ -187,12 +185,16 @@ export class Runtime {
 				});
 
 				compilerContentQueue += mutation.type === 'attributes'
-					? targetElement.className
+					? ` class="${targetElement.className}"`
 					: targetElement.outerHTML;
 			});
 
 			if (updateTimeout) {
 				window.clearTimeout(updateTimeout);
+			}
+
+			if (!compilerContentQueue.trim().length) {
+				return;
 			}
 
 			updateTimeout = window.setTimeout(() => {

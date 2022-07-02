@@ -1,29 +1,7 @@
 {
 	"name": "@stylify/profiler",
-	"description": "Profiler for @stylify/packages",
 	"version": "0.0.16",
-	"main": "lib/index.js",
-	"module": "esm/index.js",
-	"unpkg": "dist/prpfoler.min.js",
-	"jsdelivr": "dist/profiler.min.js",
-	"types": "types",
-	"scripts": {
-		"pack": "yarn pack"
-	},
-	"files": [
-		"dist",
-		"esm",
-		"lib",
-		"types",
-		"package.json",
-		"LICENSE",
-		"README.md"
-	],
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/stylify/packages.git",
-		"directory": "packages/profiler"
-	},
+	"description": "Profiler for @stylify/packages",
 	"keywords": [
 		"stylify",
 		"css",
@@ -34,12 +12,44 @@
 		"framework",
 		"web"
 	],
-	"author": "Vladimír Macháček",
-	"license": "MIT",
+	"homepage": "https://stylifycss.com",
 	"bugs": {
 		"url": "https://github.com/stylify/packages/issues"
 	},
-	"homepage": "https://stylify.dev",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/stylify/packages.git",
+		"directory": "packages/profiler"
+	},
+	"license": "MIT",
+	"author": "Vladimír Macháček",
+	"exports": {
+		".": {
+			"import": "./esm/index.mjs",
+			"require": "./lib/index.cjs",
+			"types": "./types/*"
+		},
+		"./dist/*": "./dist/*",
+		"./types/*": "./types/*",
+		"./package.json": "./package.json"
+	},
+	"main": "lib/index.js",
+	"jsdelivr": "dist/profiler.min.js",
+	"unpkg": "dist/prpfoler.min.js",
+	"module": "esm/index.js",
+	"types": "types",
+	"files": [
+		"dist",
+		"esm",
+		"lib",
+		"types",
+		"package.json",
+		"LICENSE",
+		"README.md"
+	],
+	"scripts": {
+		"pack": "yarn pack"
+	},
 	"devDependencies": {
 		"@stylify/stylify": "^0.0.16"
 	},

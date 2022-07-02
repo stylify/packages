@@ -3,11 +3,12 @@
 	"name": "stylify",
 	"dockerFile": "../Dockerfile",
 	"forwardPorts": [
-		82
+		80,
+		3000
 	],
 	"containerEnv": {
 		"DOMAIN": "localhost",
-        "SCHEME": "http"
+		"SCHEME": "http"
 	},
 	"extensions": [
 		"aaron-bond.better-comments",

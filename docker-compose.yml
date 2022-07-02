@@ -7,6 +7,6 @@ services:
         volumes:
             - ./.:/usr/share/nginx/html:delegated
         ports:
-            - 82:80
+            - 80:80
             - 81:3000 # Stylify nuxt module playground
         tty: true
