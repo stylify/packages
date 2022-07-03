@@ -1,13 +1,13 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { name, version } from '../package.json';
+import { name } from '../package.json';
+import type { BundlesBuildCacheInterface } from '@stylify/bundler';
 import {
 	CompilerConfigInterface,
 	nativePreset
 } from '@stylify/stylify';
 import { unplugin, defineConfig as defineUnpluginConfig, UnpluginConfigInterface } from '@stylify/unplugin';
-import { BundlesBuildCacheInterface } from '@stylify/bundler';
 import {
 	defineNuxtModule,
 	addPlugin,
@@ -68,7 +68,7 @@ const mergeObject = (...objects): any => {
 
 const mergeConfig = (
 	actualConfig: NuxtModuleConfigInterface,
-	config:NuxtModuleConfigInterface
+	config: Record<string, any>
 ): NuxtModuleConfigInterface => {
 	if ('extend' in config) {
 		actualConfig = mergeObject(actualConfig, config.extend);
@@ -98,7 +98,7 @@ export default defineNuxtModule<NuxtModuleConfigInterface>({
 
 		return {
 			dev: false,
-			configPath: 'stylify.config.js',
+			configPath: null,
 			compiler: nativePreset.compiler,
 			cssVarsDirPath: null,
 			sassVarsDirPath: null,
@@ -125,13 +125,39 @@ export default defineNuxtModule<NuxtModuleConfigInterface>({
 			mergeConfig(moduleConfig, moduleConfig);
 		}
 
-		const configPath = path.join(nuxt.options.rootDir, resolveAlias(moduleConfig.configPath));
+		let configFileExists = false;
 
-		if (fs.existsSync(configPath)) {
-			moduleConfig = mergeConfig(moduleConfig, requireModule(configPath));
+		if (moduleConfig.configPath) {
+			moduleConfig.configPath = path.join(nuxt.options.rootDir, resolveAlias(moduleConfig.configPath));
+			configFileExists = fs.existsSync(moduleConfig.configPath);
+
+			if (!configFileExists) {
+				console.error(`Stylify: Given config "${moduleConfig.configPath}" was not found. Skipping.`);
+			}
+
+		} else {
+			const jsConfigPath = path.join(nuxt.options.rootDir, resolveAlias('stylify.config.js'));
+			configFileExists = fs.existsSync(jsConfigPath);
+
+			if (configFileExists) {
+				moduleConfig.configPath = jsConfigPath;
+
+			} else {
+				const tsConfigPath = path.join(nuxt.options.rootDir, resolveAlias('stylify.config.ts'));
+				configFileExists = fs.existsSync(tsConfigPath);
+
+				if (configFileExists) {
+					moduleConfig.configPath = tsConfigPath;
+				}
+			}
+		}
+
+		if (configFileExists) {
+			const config: Partial<NuxtModuleConfigInterface> = requireModule(moduleConfig.configPath);
+			moduleConfig = mergeConfig(moduleConfig, config);
 
 			if (nuxtIsInDevMode) {
-				nuxt.options.watch.push(configPath);
+				nuxt.options.watch.push(moduleConfig.configPath);
 			}
 		}
 
@@ -196,6 +222,7 @@ export default defineNuxtModule<NuxtModuleConfigInterface>({
 		let nuxtBundleBuildCache: BundlesBuildCacheInterface = null;
 		const transformIncludeFilterExtensions = [];
 		const transformIncludeFilterDirectories = [];
+
 		moduleConfig.filesMasks.forEach((fileMask: string) => {
 			transformIncludeFilterExtensions.push(path.extname(fileMask));
 			transformIncludeFilterDirectories.push(path.dirname(fileMask));
