@@ -76,6 +76,7 @@
 		"cross-env": "^7.0",
 		"esbuild": "^0.14.47",
 		"esbuild-sass-plugin": "^2.2.6",
+		"esbuild-plugin-alias": "^0.2",
 		"eslint": "^8.16",
 		"fs-extra": "^10.1",
 		"htm": "^3.1",

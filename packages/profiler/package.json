@@ -51,7 +51,9 @@
 		"pack": "yarn pack"
 	},
 	"devDependencies": {
-		"@stylify/stylify": "^0.0.16"
+		"@stylify/stylify": "^0.0.16",
+		"@stylify/bundler": "^0.0.16",
+		"vue": "^3.2"
 	},
 	"gitHead": "5623d95bd53fa0a425378082f65bb3e8c640862d"
 }

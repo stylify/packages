@@ -6,6 +6,7 @@ import { exec } from 'child_process';
 import fse from 'fs-extra';
 import packageJson from '../../package.json';
 import { sassPlugin } from 'esbuild-sass-plugin';
+import alias from 'esbuild-plugin-alias';
 import postcss from 'postcss';
 import autoprefixer from 'autoprefixer';
 import { env, exit } from 'process';
