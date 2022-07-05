@@ -151,10 +151,10 @@ runBuild(async () => {
 			{
 				entryPoints: [path.join('src', 'runtime', 'plugins', 'profiler-plugin.client')],
 				outfile: path.join('runtime', 'plugins', 'profiler-plugin.client'),
-				platform: 'node',
+				platform: 'browser',
 				minify: false,
 				external: ['@stylify/bundler', '@stylify/stylify', '@stylify/unplugin', '@nuxt/kit'],
-				formats: ['esm', 'cjs']
+				formats: ['esm', 'esm-lib']
 			}
 		]
 	});

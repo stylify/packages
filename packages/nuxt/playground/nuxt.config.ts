@@ -4,8 +4,9 @@ export default defineNuxtConfig({
 	server: {
 		host: '0.0.0.0'
 	},
+
 	modules: [
 		['@nuxt/content'],
-		['../esm/module.mjs', { addPlugin: true }]
+		['../esm/module.mjs']
 	]
 });
