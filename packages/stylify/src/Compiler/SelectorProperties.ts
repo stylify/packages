@@ -6,8 +6,10 @@ export class SelectorProperties {
 		this.properties[property] = String(value);
 	}
 
-	public addMultiple(properties: Record<string, any>): void {
-		this.properties = {...this.properties, ...properties};
+	public addMultiple(properties: Record<string, string|number>): void {
+		for (const propertyName in properties) {
+			this.add(propertyName, properties[propertyName]);
+		}
 	}
 
 }
