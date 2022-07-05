@@ -4,7 +4,8 @@
 	"dockerFile": "../Dockerfile",
 	"forwardPorts": [
 		80,
-		3000
+		3000,
+		4000
 	],
 	"containerEnv": {
 		"DOMAIN": "localhost",
