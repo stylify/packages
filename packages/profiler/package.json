@@ -1,6 +1,6 @@
 {
 	"name": "@stylify/profiler",
-	"version": "0.0.16",
+	"version": "0.1.0",
 	"description": "Profiler for @stylify/packages",
 	"keywords": [
 		"stylify",
@@ -51,7 +51,7 @@
 		"pack": "yarn pack"
 	},
 	"devDependencies": {
-		"@stylify/stylify": "^0.0.16"
+		"@stylify/stylify": "^0.1.0"
 	},
 	"gitHead": "5623d95bd53fa0a425378082f65bb3e8c640862d"
 }
