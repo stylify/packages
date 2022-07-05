@@ -1,36 +1,36 @@
 .color\:red{
-	color:red
+	color: red
 }
 
 @media (min-width: 640px) {
 .minw640px\:color\:blue{
-	color:blue
+	color: blue
 }
 }
 
 @media (min-width: 1024px) and (max-width: 1280px) {
 .minw1024px\&\&maxw1280px\:color\:green{
-	color:green
+	color: green
 }
 }
 
 @media (min-width: 1280px), (orientation: landscape) {
 .minw1280px\|\|landscape\:color\:purple{
-	color:purple
+	color: purple
 }
 .minw1280px\|\|landscape\:hover\:color\:purple:hover{
-	color:purple
+	color: purple
 }
 }
 
 @media (min-width: 1920px) {
 .\33xl\:color\:skyblue{
-	color:skyblue
+	color: skyblue
 }
 }
 
 @media (max-width: 1919px) {
 .to3xl\:color\:green{
-	color:green
+	color: green
 }
 }
