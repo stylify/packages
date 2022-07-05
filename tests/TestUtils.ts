@@ -24,8 +24,12 @@ export default class TestUtils {
 		return path.join(this.getPackageDir(), 'tests', testsType, this.testName);
 	}
 
+	public readFile(filePath): string {
+		return fs.readFileSync(filePath, 'utf8').toString().trim();
+	}
+
 	public getTestFile(fileType: string, fileName: string): string {
-		return fs.readFileSync(path.join(this.getTestDir(), fileType, fileName), 'utf8');
+		return this.readFile(path.join(this.getTestDir(), fileType, fileName));
 	}
 
 	public getInputFile(fileName: string): string {
@@ -70,7 +74,8 @@ export default class TestUtils {
 			fs.mkdirSync(tmpFilePathDir, {recursive: true})
 		}
 
-		fs.writeFileSync(tmpFilePath, fileContentType === 'object' ? JSON.stringify(fileContent) : fileContent);
+		const fileContentToSave = fileContentType === 'object' ? JSON.stringify(fileContent) : fileContent;
+		fs.writeFileSync(tmpFilePath, `${fileContentToSave.trim()}\n`);
 	}
 
 	public testToBe(actual: any, expected: any, tmpFileName: string = null): void {

@@ -56,8 +56,8 @@ new Bundler({
 ]);
 
 test('Bundler - single file', (): void => {
-	const indexCssOutput = fs.readFileSync(path.join(buildTmpDir, 'index.css')).toString();
-	const secondCssOutput = fs.readFileSync(path.join(buildTmpDir, 'second.css')).toString();
+	const indexCssOutput = testUtils.readFile(path.join(buildTmpDir, 'index.css'));
+	const secondCssOutput = testUtils.readFile(path.join(buildTmpDir, 'second.css'));
 
 	testUtils.testCssFileToBe(indexCssOutput);
 	testUtils.testCssFileToBe(secondCssOutput, 'second');

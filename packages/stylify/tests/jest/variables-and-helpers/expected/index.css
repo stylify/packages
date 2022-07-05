@@ -3,22 +3,22 @@
 --grey: #eeeeee;
 }
 .text\:bold{
-	font-weight:bold
+	font-weight: bold
 }
 .text\:\$textColor{
-	color:#87CEEB
+	color: #87CEEB
 }
 .bgc\:\$grey{
-	background-color:#eeeeee
+	background-color: #eeeeee
 }
 .fix\:2{
-	position:fixed;
-	top:2;
-	left:2
+	position: fixed;
+	top: 2;
+	left: 2
 }
 
 @media (min-width: 640px) {
 .md\:zi\:10{
-	z-index:10
+	z-index: 10
 }
 }

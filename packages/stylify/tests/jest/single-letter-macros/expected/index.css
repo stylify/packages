@@ -1,39 +1,39 @@
 .d\:\^M__850\^{
-	d:'M 850'
+	d: 'M 850'
 }
 .d\:\^M__851\^{
-	d:'M 851'
+	d: 'M 851'
 }
 .m\:24px{
-	margin:24px
+	margin: 24px
 }
 .m\:25px{
-	margin:25px
+	margin: 25px
 }
 
 @media (min-width: 768px) {
 .md\:d\:\^M__850\^{
-	d:'M 850'
+	d: 'M 850'
 }
 .md\:d\:\^M__851\^{
-	d:'M 851'
+	d: 'M 851'
 }
 .md\:hover\:d\:\^M__850\^:hover{
-	d:'M 850'
+	d: 'M 850'
 }
 .md\:hover\:d\:\^M__851\^:hover{
-	d:'M 851'
+	d: 'M 851'
 }
 .md\:m\:24px{
-	margin:24px
+	margin: 24px
 }
 .md\:m\:25px{
-	margin:25px
+	margin: 25px
 }
 .md\:hover\:m\:24px:hover{
-	margin:24px
+	margin: 24px
 }
 .md\:hover\:m\:25px:hover{
-	margin:25px
+	margin: 25px
 }
 }

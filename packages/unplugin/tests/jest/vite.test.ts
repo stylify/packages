@@ -34,7 +34,7 @@ test('Vite', async (): Promise<void> => {
 			path.join(buildTmpDir, 'dist', 'assets', '*.js'),
 			path.join(buildTmpDir, 'dist', '*.html'),
 		]).forEach((filePath) => {
-			const fileContent = fs.readFileSync(filePath).toString();
+			const fileContent = testUtils.readFile(filePath);
 			if (filePath.endsWith('css')) {
 				indexCssOutput = fileContent;
 

@@ -13,7 +13,6 @@ import { performance } from 'perf_hooks';
 
 interface BundleFileDataInterface {
 	filePath: string,
-	contentOptions: ContentOptionsInterface,
 	content: string
 }
 
@@ -344,7 +343,7 @@ export class Bundler {
 
 		fileVariablesContent += options.fileContentSuffix || '';
 		const variablesFilePath = path.join(options.filePath, `stylify-variables.${options.fileType}`);
-		fs.writeFileSync(variablesFilePath, fileVariablesContent);
+		this.writeFile(variablesFilePath, fileVariablesContent);
 
 		this.log(`Variables file "${variablesFilePath}" created.`, 'textGreen');
 	}
@@ -589,8 +588,6 @@ export class Bundler {
 					}
 				}
 
-				compiler.configure(fileToProcessConfig.contentOptions);
-
 				bundleBuildCache.compilationResult = compiler.compile(
 					fileToProcessConfig.content,
 					bundleBuildCache.compilationResult
@@ -603,12 +600,16 @@ export class Bundler {
 					);
 
 					const onBeforeInputFileRewrittenHook = async (): Promise<void> => {
-						const hookData = await this.callBundleHook(bundleConfig, 'onBeforeInputFileRewritten', {
-							content: processedContent,
-							filePath: fileToProcessConfig.filePath
-						});
+						const hookData = await this.callBundleHook(
+							bundleConfig,
+							'onBeforeInputFileRewritten',
+							{
+								content: processedContent,
+								filePath: fileToProcessConfig.filePath
+							}
+						) as OnBeforeInputFileRewrittenCallbackDataInterface;
 
-						fs.writeFileSync(hookData.filePath, hookData.content);
+						this.writeFile(hookData.filePath, hookData.content, false);
 					};
 
 					filesToProcessPromises.push(onBeforeInputFileRewrittenHook());
@@ -628,7 +629,7 @@ export class Bundler {
 				filePath: bundleConfig.outputFile
 			}) as OnBeforeCssFileCreatedCallbackDataInterface;
 
-			fs.writeFileSync(hookData.filePath, hookData.content);
+			this.writeFile(hookData.filePath, hookData.content.trim());
 
 			if (bundleConfig.dumpCache) {
 				const serializedResult = bundleBuildCache.compilationResult.serialize();
@@ -640,7 +641,7 @@ export class Bundler {
 
 				delete serializedResult.onPrepareCssRecord;
 
-				fs.writeFileSync(bundleConfig.outputFile + '.json', JSON.stringify(serializedResult));
+				this.writeFile(bundleConfig.outputFile + '.json', JSON.stringify(serializedResult));
 			}
 
 			bundleBuildCache.buildTime = ((performance.now() - startTime)/1000).toFixed(2);
@@ -697,13 +698,12 @@ export class Bundler {
 		for (const filePath of filePaths) {
 			const processFilePath = async (filePath: string) => {
 				const fileContent = fs.readFileSync(filePath).toString();
-				const contentOptions = compiler.getOptionsFromContent(fileContent) as ContentOptionsInterface;
+				const bundlerContentOptions = compiler.getOptionsFromContent(fileContent) as ContentOptionsInterface;
 
 				const hookData = await this.callBundleHook(bundleConfig, 'onFileToProcessOpened', {
 					path: filePath,
 					content: fileContent,
-					contentOptions: contentOptions,
-					filePathsFromContent: contentOptions.files || []
+					filePathsFromContent: bundlerContentOptions.files || []
 				}) as OnFileToProcessOpenedCallbackDataInterface;
 
 				if (hookData.filePathsFromContent.length) {
@@ -723,7 +723,6 @@ export class Bundler {
 				if (this.checkIfFileExists(hookData.path)) {
 					filesToProcess.push({
 						filePath: hookData.path,
-						contentOptions: hookData.contentOptions,
 						content: hookData.content
 					});
 				}
@@ -742,6 +741,16 @@ export class Bundler {
 		await Promise.all(processedFilePaths);
 
 		return filesToProcess;
+	}
+
+	private writeFile(filePath: string, fileContent: string, trailingNewLine = true): void {
+		let newLine = this.compilerConfig.dev ? '\n' : '';
+
+		if (!trailingNewLine) {
+			newLine = '';
+		}
+
+		fs.writeFileSync(filePath, `${fileContent.trim() + newLine}`);
 	}
 
 	private checkIfFileExists(filePath: string): boolean {

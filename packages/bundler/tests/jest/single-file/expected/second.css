@@ -1,196 +1,196 @@
 #stylify-profiler .hover\:background\:\#333:hover,
 #stylify-profiler .profiler-extension:hover{
-	background:#333
+	background: #333
 }
 #stylify-profiler .border-top\:1px__solid__\#444{
-	border-top:1px solid #444
+	border-top: 1px solid #444
 }
 #stylify-profiler .background-color\:\#333,
 #stylify-profiler .profiler-extension__button--active{
-	background-color:#333
+	background-color: #333
 }
 #stylify-profiler .bottom\:0{
-	bottom:0
+	bottom: 0
 }
 #stylify-profiler .color\:\#fff{
-	color:#fff
+	color: #fff
 }
 #stylify-profiler .content-visibility\:hidden{
-	content-visibility:hidden
+	content-visibility: hidden
 }
 #stylify-profiler .content-visibility\:visible{
-	content-visibility:visible
+	content-visibility: visible
 }
 #stylify-profiler .display\:block{
-	display:block
+	display: block
 }
 #stylify-profiler .display\:none{
-	display:none
+	display: none
 }
 #stylify-profiler .font-family\:arial{
-	font-family:arial
+	font-family: arial
 }
 #stylify-profiler .font-size\:12px,
 #stylify-profiler .profiler-extension__button{
-	font-size:12px
+	font-size: 12px
 }
 #stylify-profiler .line-height\:20px{
-	line-height:20px
+	line-height: 20px
 }
 #stylify-profiler .margin-left\:8px{
-	margin-left:8px
+	margin-left: 8px
 }
 #stylify-profiler .margin\:0__8px{
-	margin:0 8px
+	margin: 0 8px
 }
 #stylify-profiler .max-width\:800px{
-	max-width:800px
+	max-width: 800px
 }
 #stylify-profiler .overflow-x\:auto{
-	overflow-x:auto
+	overflow-x: auto
 }
 #stylify-profiler .padding-top\:8px{
-	padding-top:8px
+	padding-top: 8px
 }
 #stylify-profiler .position\:fixed{
-	position:fixed
+	position: fixed
 }
 #stylify-profiler .text-align\:left{
-	text-align:left
+	text-align: left
 }
 #stylify-profiler .visibility\:hidden{
-	visibility:hidden
+	visibility: hidden
 }
 #stylify-profiler .visibility\:visible{
-	visibility:visible
+	visibility: visible
 }
 #stylify-profiler .width\:auto{
-	width:auto
+	width: auto
 }
 #stylify-profiler .word-spacing\:24px{
-	word-spacing:24px
+	word-spacing: 24px
 }
 #stylify-profiler .box-sizing\:border-box,
 #stylify-profiler .profiler-extension,
 #stylify-profiler .profiler-extension__button,
 #stylify-profiler .profiler-extension__dropdown,
 #stylify-profiler .profiler-extension__link{
-	box-sizing:border-box
+	box-sizing: border-box
 }
 #stylify-profiler .border-left\:1px__solid__\#555,
 #stylify-profiler .profiler-extension{
-	border-left:1px solid #555
+	border-left: 1px solid #555
 }
 #stylify-profiler .align-items\:center,
 #stylify-profiler .profiler-extension,
 #stylify-profiler .profiler-extension__button{
-	align-items:center
+	align-items: center
 }
 #stylify-profiler .display\:flex,
 #stylify-profiler .profiler-extension,
 #stylify-profiler .profiler-extension__button{
-	display:flex
+	display: flex
 }
 #stylify-profiler .min-height\:100\%,
 #stylify-profiler .profiler-extension{
-	min-height:100%
+	min-height: 100%
 }
 #stylify-profiler .position\:relative,
 #stylify-profiler .profiler-extension{
-	position:relative
+	position: relative
 }
 #stylify-profiler .height\:20px,
 #stylify-profiler .profiler-extension__button{
-	height:20px
+	height: 20px
 }
 #stylify-profiler .padding\:0__8px,
 #stylify-profiler .profiler-extension__button{
-	padding:0 8px
+	padding: 0 8px
 }
 #stylify-profiler .justify-content\:center,
 #stylify-profiler .profiler-extension__button{
-	justify-content:center
+	justify-content: center
 }
 #stylify-profiler .cursor\:pointer,
 #stylify-profiler .profiler-extension__button,
 #stylify-profiler .profiler-extension__link{
-	cursor:pointer
+	cursor: pointer
 }
 #stylify-profiler .user-select\:none,
 #stylify-profiler .profiler-extension__button{
-	user-select:none
+	user-select: none
 }
 #stylify-profiler .position\:absolute,
 #stylify-profiler .profiler-extension__dropdown{
-	position:absolute
+	position: absolute
 }
 #stylify-profiler .bottom\:100\%,
 #stylify-profiler .profiler-extension__dropdown{
-	bottom:100%
+	bottom: 100%
 }
 #stylify-profiler .left\:0,
 #stylify-profiler .profiler-extension__dropdown{
-	left:0
+	left: 0
 }
 #stylify-profiler .max-height\:50vh,
 #stylify-profiler .profiler-extension__dropdown{
-	max-height:50vh
+	max-height: 50vh
 }
 #stylify-profiler .overflow\:auto,
 #stylify-profiler .profiler-extension__dropdown{
-	overflow:auto
+	overflow: auto
 }
 #stylify-profiler .min-width\:100\%,
 #stylify-profiler .profiler-extension__dropdown{
-	min-width:100%
+	min-width: 100%
 }
 #stylify-profiler .background\:\#000,
 #stylify-profiler .profiler-extension__dropdown{
-	background:#000
+	background: #000
 }
 #stylify-profiler .padding\:8px,
 #stylify-profiler .profiler-extension__dropdown{
-	padding:8px
+	padding: 8px
 }
 #stylify-profiler .text-decoration\:none,
 #stylify-profiler .profiler-extension__link{
-	text-decoration:none
+	text-decoration: none
 }
 #stylify-profiler .color\:\#00b2e5,
 #stylify-profiler .profiler-extension__link{
-	color:#00b2e5
+	color: #00b2e5
 }
 #stylify-profiler .margin-right\:8px,
 #stylify-profiler .profiler-extension__link,
 #stylify-profiler .profiler-extension__button-icon{
-	margin-right:8px
+	margin-right: 8px
 }
 #stylify-profiler .white-space\:nowrap,
 #stylify-profiler .profiler-extension__link{
-	white-space:nowrap
+	white-space: nowrap
 }
 #stylify-profiler .display\:inline-block,
 #stylify-profiler .profiler-extension__link,
 #stylify-profiler .profiler-extension__button-icon{
-	display:inline-block
+	display: inline-block
 }
 #stylify-profiler .width\:12px,
 #stylify-profiler .profiler-extension__button-icon{
-	width:12px
+	width: 12px
 }
 #stylify-profiler .height\:12px,
 #stylify-profiler .profiler-extension__button-icon{
-	height:12px
+	height: 12px
 }
 #stylify-profiler .font-weight\:bold,
 #stylify-profiler .profiler-extension__button-icon{
-	font-weight:bold
+	font-weight: bold
 }
 #stylify-profiler .color\:\#aaa,
 #stylify-profiler .profiler-extension__button-icon{
-	color:#aaa
+	color: #aaa
 }
 #stylify-profiler .line-height\:1,
 #stylify-profiler .profiler-extension__button-label{
-	line-height:1
+	line-height: 1
 }

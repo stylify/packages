@@ -70,10 +70,10 @@ bundler.bundle([
 test('Bundler - single file', async (): Promise<void> => {
 	await bundler.waitOnBundlesProcessed();
 
-	const indexCssOutput = fs.readFileSync(path.join(buildTmpDir, 'index.scss')).toString();
-	const secondCssOutput = fs.readFileSync(path.join(buildTmpDir, 'second.scss')).toString();
-	const indexHtmlOutput = fs.readFileSync(path.join(buildTmpDir, 'index.html')).toString();
-	const secondHtmlOutput = fs.readFileSync(path.join(buildTmpDir, 'second.html')).toString();
+	const indexCssOutput = testUtils.readFile(path.join(buildTmpDir, 'index.scss'));
+	const secondCssOutput = testUtils.readFile(path.join(buildTmpDir, 'second.scss'));
+	const indexHtmlOutput = testUtils.readFile(path.join(buildTmpDir, 'index.html'));
+	const secondHtmlOutput = testUtils.readFile(path.join(buildTmpDir, 'second.html'));
 
 	const indexTxtExists = fs.existsSync(path.join(buildTmpDir, 'index.txt'));
 	const secondTxtExists = fs.existsSync(path.join(buildTmpDir, 'second-modified.txt'));

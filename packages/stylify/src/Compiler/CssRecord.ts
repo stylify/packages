@@ -56,7 +56,7 @@ export class CssRecord {
 
 	public components: ComponentsType = {};
 
-	public properties: Record<string, string | number> = {};
+	public properties: Record<string, string> = {};
 
 	public pseudoClasses: string[] = [];
 
@@ -215,10 +215,13 @@ export class CssRecord {
 				})
 			];
 
+			const indentation = config.minimize ? '' : '\t';
+			const spacing = config.minimize ? '' : ' ';
+
 			this.cache = selectors.join(',' + newLine)
 				+ '{' + newLine
 					+ Object.keys(this.properties)
-						.map(property => `${(config.minimize ? '' : '\t') + property}:${this.properties[property]}`)
+						.map(property => `${indentation + property}:${spacing + this.properties[property]}`)
 						.join(';' + newLine) + newLine
 				+ '}' + newLine;
 			this.changed = false;
