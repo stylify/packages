@@ -8,6 +8,8 @@ import {
 } from '@stylify/profiler';
 import { BundleStatsInterface } from '../../module';
 
+const { h } = preact;
+
 interface ExpandableStateInterface {
 	bundlesStats: BundleStatsInterface[];
 	serializedCompilationResult: string;
@@ -27,9 +29,14 @@ export class NuxtProfilerExtension extends preact.Component<ProfilerExtensionPro
 		super();
 		this.state = {
 			bundlesStats: [],
-			serializedCompilationResult: '{}',
-			...this.getActualStateData()
+			serializedCompilationResult: '{}'
 		};
+
+		if (['complete', 'loaded', 'interactive'].includes(document.readyState)) {
+			this.setState(this.getActualStateData());
+		} else {
+			this.setState(this.getActualStateData());
+		}
 
 		window.addEventListener('load', () => {
 			this.setState(this.getActualStateData());
@@ -57,7 +64,7 @@ export class NuxtProfilerExtension extends preact.Component<ProfilerExtensionPro
 	/* eslint-disable max-len */
 	public render(): any {
 		return (
-			<div>
+			<preact.Fragment>
 				<Card>
 					<CardTitle><span>{`Builds (${this.state.bundlesStats.length})`}</span></CardTitle>
 					<TableWrapper>
@@ -94,7 +101,7 @@ export class NuxtProfilerExtension extends preact.Component<ProfilerExtensionPro
 						{JSON.stringify(JSON.parse(this.state.serializedCompilationResult), null, 2)}
 					</pre>
 				</Card>
-			</div>
+			</preact.Fragment>
 		);
 	}
 
