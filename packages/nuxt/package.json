@@ -40,7 +40,8 @@
 	"scripts": {
 		"build": "nuxi build playground",
 		"dev": "nuxi dev playground",
-		"start": "nuxi start playground"
+		"start": "nuxi start playground",
+		"pack": "yarn pack"
 	},
 	"dependencies": {
 		"@nuxt/kit": "npm:@nuxt/kit-edge@latest",
