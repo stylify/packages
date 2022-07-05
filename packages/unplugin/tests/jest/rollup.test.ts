@@ -65,8 +65,8 @@ async function build() {
 
 test('Rollup', async (): Promise<void> => {
 	const runTest = () => {
-		const indexCssOutput = fs.readFileSync(path.join(buildTmpDir, 'index.css')).toString();
-		const mainJsOutput = fs.readFileSync(path.join(buildTmpDir, 'main.js')).toString();
+		const indexCssOutput = testUtils.readFile(path.join(buildTmpDir, 'index.css'));
+		const mainJsOutput = testUtils.readFile(path.join(buildTmpDir, 'main.js'));
 		testUtils.testCssFileToBe(indexCssOutput);
 		testUtils.testJsFileToBe(mainJsOutput, 'main');
 	}

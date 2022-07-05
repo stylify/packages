@@ -41,7 +41,7 @@ bundler.bundle([
 	},
 	{
 		outputFile: path.join(buildTmpDir, 'second.css'),
-		cache: fs.readFileSync(path.join(bundleTestDir, 'input', 'second.css.json')).toString(),
+		cache: testUtils.readFile(path.join(bundleTestDir, 'input', 'second.css.json')),
 		dumpCache: true,
 		filesBaseDir: buildTmpDir,
 		files: [
@@ -51,20 +51,20 @@ bundler.bundle([
 ]);
 
 test('Bundler - recursive', () => {
-	const indexCssOutput = fs.readFileSync(path.join(buildTmpDir, 'index.css')).toString();
+	const indexCssOutput = testUtils.readFile(path.join(buildTmpDir, 'index.css'));
 	testUtils.testCssFileToBe(indexCssOutput);
 });
 
 test('Bundler - options in file', async () => {
-	const secondCssOutput = fs.readFileSync(path.join(buildTmpDir, 'second.css')).toString();
+	const secondCssOutput = testUtils.readFile(path.join(buildTmpDir, 'second.css'));
 
-	const secondIndexHtmlOutput = fs.readFileSync(path.join(buildTmpDir, 'second.html')).toString();
+	const secondIndexHtmlOutput = testUtils.readFile(path.join(buildTmpDir, 'second.html'));
 
-	const secondHtmlHtmlOutput = fs.readFileSync(path.join(buildTmpDir, 'second', 'html.html')).toString();
-	const secondNetteOutput = fs.readFileSync(path.join(buildTmpDir, 'second', 'nette.latte')).toString();
-	const secondSymfonyOutput = fs.readFileSync(path.join(buildTmpDir, 'second', 'symfony.twig')).toString();
-	const secondVueOutput = fs.readFileSync(path.join(buildTmpDir, 'second', 'vue.vue')).toString();
-	const secondVueComponentOutput = fs.readFileSync(path.join(buildTmpDir, 'second', 'vuejs', 'component.vue')).toString();
+	const secondHtmlHtmlOutput = testUtils.readFile(path.join(buildTmpDir, 'second', 'html.html'));
+	const secondNetteOutput = testUtils.readFile(path.join(buildTmpDir, 'second', 'nette.latte'));
+	const secondSymfonyOutput = testUtils.readFile(path.join(buildTmpDir, 'second', 'symfony.twig'));
+	const secondVueOutput = testUtils.readFile(path.join(buildTmpDir, 'second', 'vue.vue'));
+	const secondVueComponentOutput = testUtils.readFile(path.join(buildTmpDir, 'second', 'vuejs', 'component.vue'));
 
 	testUtils.testCssFileToBe(secondCssOutput, 'second');
 

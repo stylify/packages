@@ -3,16 +3,16 @@
 --blue: steelblue;
 }
 .color\:\$red{
-	color:var(--red)
+	color: var(--red)
 }
 .background\:blue,
 .button{
-	background:blue
+	background: blue
 }
 .color\:white,
 .button{
-	color:white
+	color: white
 }
 .m\:20px{
-	margin:20px
+	margin: 20px
 }

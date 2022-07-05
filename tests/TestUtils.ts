@@ -24,8 +24,12 @@ export default class TestUtils {
 		return path.join(this.getPackageDir(), 'tests', testsType, this.testName);
 	}
 
+	public readFile(filePath): string {
+		return fs.readFileSync(filePath, 'utf8').toString().trim();
+	}
+
 	public getTestFile(fileType: string, fileName: string): string {
-		return fs.readFileSync(path.join(this.getTestDir(), fileType, fileName), 'utf8').trim();
+		return this.readFile(path.join(this.getTestDir(), fileType, fileName));
 	}
 
 	public getInputFile(fileName: string): string {
