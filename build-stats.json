@@ -1,0 +1,118 @@
+{
+  "autoprefixer": {
+    "/esm/index.mjs": {
+      "size": 2535
+    },
+    "/esm/prefixer.mjs": {
+      "size": 979
+    },
+    "/lib/index.cjs": {
+      "size": 3946
+    },
+    "/lib/prefixer.cjs": {
+      "size": 1940
+    },
+    "/dist/prefixer.js": {
+      "size": 1019
+    },
+    "/dist/prefixer.min.js": {
+      "size": 533
+    }
+  },
+  "bundler": {
+    "/esm/index.mjs": {
+      "size": 21496
+    },
+    "/lib/index.cjs": {
+      "size": 22959
+    }
+  },
+  "nuxt": {
+    "/esm/module.mjs": {
+      "size": 9928
+    },
+    "/esm/runtime/plugins/profiler-plugin.client.mjs": {
+      "size": 93655
+    },
+    "/lib/module.cjs": {
+      "size": 11894
+    },
+    "/lib/runtime/plugins/profiler-plugin.client.mjs": {
+      "size": 94896
+    }
+  },
+  "nuxt-module": {
+    "/esm/index.mjs": {
+      "size": 8460
+    },
+    "/esm/profiler-plugin.mjs": {
+      "size": 4927
+    },
+    "/esm/webpack-loader.mjs": {
+      "size": 851
+    },
+    "/lib/index.cjs": {
+      "size": 10076
+    },
+    "/lib/profiler-plugin.cjs": {
+      "size": 6093
+    },
+    "/lib/webpack-loader.cjs": {
+      "size": 1879
+    }
+  },
+  "profiler": {
+    "/esm/index.js": {
+      "size": 89095
+    },
+    "/esm/index.min.js": {
+      "size": 66916
+    },
+    "/esm/index.mjs": {
+      "size": 89095
+    },
+    "/lib/index.cjs": {
+      "size": 90388
+    },
+    "/dist/profiler.js": {
+      "size": 91219
+    },
+    "/dist/profiler.min.js": {
+      "size": 66693
+    }
+  },
+  "stylify": {
+    "/esm/index.js": {
+      "size": 55034
+    },
+    "/esm/index.min.js": {
+      "size": 30045
+    },
+    "/esm/index.mjs": {
+      "size": 55034
+    },
+    "/lib/index.cjs": {
+      "size": 56272
+    },
+    "/dist/stylify.js": {
+      "size": 46880
+    },
+    "/dist/stylify.min.js": {
+      "size": 21896
+    },
+    "/dist/stylify.native.js": {
+      "size": 57570
+    },
+    "/dist/stylify.native.min.js": {
+      "size": 29939
+    }
+  },
+  "unplugin": {
+    "/esm/index.mjs": {
+      "size": 5038
+    },
+    "/lib/index.cjs": {
+      "size": 6263
+    }
+  }
+}
