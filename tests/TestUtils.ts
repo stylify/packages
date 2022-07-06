@@ -10,6 +10,17 @@ export default class TestUtils {
 	constructor(packageName: string, testName: string) {
 		this.packageName = packageName;
 		this.testName = testName;
+
+		const tmpDir = path.join(this.getTmpDir(), testName);
+		const tmpBuildDir = tmpDir + '-build';
+
+		if (fs.existsSync(tmpDir)) {
+			fs.rmdirSync(tmpDir, { recursive: true });
+		}
+
+		if (fs.existsSync(tmpBuildDir)) {
+			fs.rmdirSync(tmpBuildDir, { recursive: true });
+		}
 	}
 
 	public getPackageDir(): string {

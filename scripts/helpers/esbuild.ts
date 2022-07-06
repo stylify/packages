@@ -10,6 +10,7 @@ import postcss from 'postcss';
 import autoprefixer from 'autoprefixer';
 import { env, exit } from 'process';
 import esbuild, { BuildOptions, BuildResult, Format, Platform } from 'esbuild';
+import { compareBuildStats } from './output-stats';
 
 export type BundleFormatType = Format | 'esm-browser' | 'esm-lib';
 
@@ -45,8 +46,8 @@ const filesBanner = `
 
 const packagesDir = path.join(__dirname, '..', '..', 'packages');
 const typescriptTypesBuilds: Promise<void>[] = [];
-
 const bundles: Promise<BuildResult[]>[] = [];
+const processedPackages: string[] = [];
 
 export const getPackageDir = (packageName: string) => path.join(packagesDir, packageName);
 
@@ -64,11 +65,17 @@ export const runBuild = async (buildFunction): Promise<void> => {
 	if (!isWatchMode) {
 		console.info('Build complete.');
 	}
+
+	compareBuildStats(processedPackages.length > 1 ? null : processedPackages[0]);
 };
 
 const runEsbuild = async (config: BuildConfigConfigurationInterface): Promise<BuildResult[]> => {
 	if (selectedPackages.length && !selectedPackages.includes(config.package)) {
 		return;
+	}
+
+	if (!(config.package in processedPackages)) {
+		processedPackages.push(config.package);
 	}
 
 	const buildsResults: Promise<BuildResult>[] = [];
@@ -124,7 +131,15 @@ const runEsbuild = async (config: BuildConfigConfigurationInterface): Promise<Bu
 		for (const format of bundleConfig.formats) {
 			const isBrowserOutput = ['esm-browser', 'esm-lib', 'iife'].includes(format);
 			const suffixes = [''];
-			const shouldMinify = !isWatchMode && !isDevMode && isBrowserOutput && bundleConfig.minify;
+			let shouldMinify = !isDevMode && isBrowserOutput;
+
+			if (typeof bundleConfig.minify !== 'undefined') {
+				shouldMinify = bundleConfig.minify;
+			}
+
+			if (isWatchMode) {
+				shouldMinify = false;
+			}
 
 			if (shouldMinify) {
 				suffixes.push('.min');
@@ -193,9 +208,11 @@ const runEsbuild = async (config: BuildConfigConfigurationInterface): Promise<Bu
 	}
 
 	const result = Promise.all(buildsResults);
+
 	result.finally(() => {
 		console.info(`Bundled: ${config.package}`);
 	});
+
 	result.catch((e) => {
 		if (!isWatchMode) {
 			console.error(e);

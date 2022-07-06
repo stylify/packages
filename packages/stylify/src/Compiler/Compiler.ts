@@ -560,7 +560,9 @@ export class Compiler {
 
 			} catch (error) {
 				if (this.dev) {
-					console.error(error);
+					console.error(
+						`Error "${error as string}" occurred when processing "${optionKey}" and its value "${optionMatchValue}".`
+					);
 				}
 			}
 		}
