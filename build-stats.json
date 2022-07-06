@@ -95,24 +95,24 @@
       "size": 56272
     },
     "/dist/stylify.js": {
-      "size": 46880
+      "size": 45944
     },
     "/dist/stylify.min.js": {
-      "size": 21896
+      "size": 21449
     },
     "/dist/stylify.native.js": {
-      "size": 57570
+      "size": 58206
     },
     "/dist/stylify.native.min.js": {
-      "size": 29939
+      "size": 30326
     }
   },
   "unplugin": {
     "/esm/index.mjs": {
-      "size": 5038
+      "size": 5124
     },
     "/lib/index.cjs": {
-      "size": 6263
+      "size": 6349
     }
   }
 }
