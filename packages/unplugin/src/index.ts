@@ -135,6 +135,11 @@ export const unplugin = createUnplugin((config: UnpluginConfigInterface) => {
 				})
 			);
 		},
+		esbuild: {
+			async setup() {
+				await runBundlerOrWait();
+			}
+		},
 		rollup: {
 			async options(): Promise<void> {
 				if (pluginConfig.dev !== null) {
