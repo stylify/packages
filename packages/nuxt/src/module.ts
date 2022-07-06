@@ -1,6 +1,5 @@
 import fs from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
 import { name } from '../package.json';
 import type { BundlesBuildCacheInterface } from '@stylify/bundler';
 import {
@@ -16,6 +15,7 @@ import {
 	resolveAlias,
 	requireModule
 } from '@nuxt/kit';
+import { fileURLToPath } from 'url';
 
 export interface NuxtModuleConfigInterface {
 	dev?: boolean,
@@ -78,7 +78,6 @@ const mergeConfig = (
 	return {...actualConfig, ...config};
 };
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const processedBundles: Record<string, ProcessedBundleInterface> = {};
 const stylifyCssFileName = 'stylify.css';
 const stylifyJsonFileName = 'stylify.json';
@@ -168,7 +167,9 @@ export default defineNuxtModule<NuxtModuleConfigInterface>({
 			'(?:^|\\s+)(?:v-bind)?:class=\'([^\']+)\''
 		];
 
-		const runtimeDir = path.resolve(__dirname, 'runtime');
+		const runtimeDir = path.join(
+			typeof __dirname === 'undefined' ? path.dirname(fileURLToPath(import.meta.url)) : __dirname, 'runtime'
+		);
 		const assetsDir = resolveAlias(nuxt.options.dir.assets);
 		const assetsStylifyCssPath = path.join(nuxt.options.rootDir, assetsDir, stylifyCssFileName);
 
@@ -177,7 +178,7 @@ export default defineNuxtModule<NuxtModuleConfigInterface>({
 		if (moduleConfig.dev) {
 			addPlugin({
 				ssr: false,
-				src: path.resolve(runtimeDir, 'plugins', 'profiler-plugin.client')
+				src: path.resolve(runtimeDir, 'plugins', 'profiler-plugin.client.mjs')
 			});
 
 			const headSnippet = `

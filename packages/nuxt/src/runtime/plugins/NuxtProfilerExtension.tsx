@@ -32,15 +32,7 @@ export class NuxtProfilerExtension extends preact.Component<ProfilerExtensionPro
 			serializedCompilationResult: '{}'
 		};
 
-		if (['complete', 'loaded', 'interactive'].includes(document.readyState)) {
-			this.setState(this.getActualStateData());
-		} else {
-			this.setState(this.getActualStateData());
-		}
-
-		window.addEventListener('load', () => {
-			this.setState(this.getActualStateData());
-		});
+		this.setState(this.getActualStateData());
 	}
 
 	private getActualStateData(): ExpandableStateInterface {

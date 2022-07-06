@@ -11,7 +11,7 @@ import autoprefixer from 'autoprefixer';
 import { env, exit } from 'process';
 import esbuild, { BuildOptions, BuildResult, Format, Platform } from 'esbuild';
 
-export type BundleFormatType = Format | 'esm-browser';
+export type BundleFormatType = Format | 'esm-browser' | 'esm-lib';
 
 interface BuildConfigBundlesConfigInterface {
 	entryPoints: string[]
@@ -83,6 +83,7 @@ const runEsbuild = async (config: BuildConfigConfigurationInterface): Promise<Bu
 		iife: 'dist',
 		esm: 'esm',
 		'esm-browser': 'esm',
+		'esm-lib': 'lib',
 		cjs: 'lib'
 	};
 
@@ -90,6 +91,7 @@ const runEsbuild = async (config: BuildConfigConfigurationInterface): Promise<Bu
 		iife: 'js',
 		esm: 'mjs',
 		'esm-browser': 'js',
+		'esm-lib': 'mjs',
 		cjs: 'cjs'
 	};
 
@@ -120,25 +122,27 @@ const runEsbuild = async (config: BuildConfigConfigurationInterface): Promise<Bu
 		bundleConfig.platform = bundleConfig.platform ?? 'node';
 
 		for (const format of bundleConfig.formats) {
-			const isBrowserOutput = ['esm-browser', 'iife'].includes(format);
+			const isBrowserOutput = ['esm-browser', 'esm-lib', 'iife'].includes(format);
 			const suffixes = [''];
+			const shouldMinify = !isWatchMode && !isDevMode && isBrowserOutput && bundleConfig.minify;
 
-			if (isBrowserOutput) {
+			if (shouldMinify) {
 				suffixes.push('.min');
 			}
 
 			for (const suffix of suffixes) {
 				const parsedOutputFilePath = path.parse(bundleConfig.outfile);
-
 				const buildConfig: BuildOptions = {
 					entryPoints: bundleConfig.entryPoints.map((filePath) => path.join(packageDir, filePath)),
 					watch: mergedConfig.watch,
-					format: format === 'esm-browser' ? 'esm' : format,
+					format: ['esm-browser', 'esm-lib'].includes(format) ? 'esm' : format as Format,
 					bundle: bundleConfig.bundle ?? true,
-					minify: !isWatchMode && !isDevMode && suffix === '.min' && isBrowserOutput,
+					minify: shouldMinify && suffix === '.min',
 					banner: { js: filesBanner },
-					target: isBrowserOutput ? 'es2016' : 'es2020',
-					platform: isBrowserOutput ? 'browser' : bundleConfig.platform ?? 'browser',
+					target: isBrowserOutput && bundleConfig.platform !== 'node' ? 'es2016' : 'es2020',
+					platform: isBrowserOutput && bundleConfig.platform !== 'node'
+						? 'browser'
+						: bundleConfig.platform ?? 'browser',
 					external: bundleConfig.external ?? [],
 					logLevel: isWatchMode ? 'info' : 'error',
 					jsxFactory: 'preact.h',
@@ -155,7 +159,7 @@ const runEsbuild = async (config: BuildConfigConfigurationInterface): Promise<Bu
 								const { css } = await postcss([autoprefixer]).process(source, {from: 'undefined'});
 								return css;
 							}
-						}),
+						})
 					],
 					outfile: path.join(
 						packageDir,
