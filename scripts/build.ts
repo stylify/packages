@@ -20,14 +20,15 @@ runBuild(async () => {
 				formats: ['esm', 'esm-browser', 'cjs']
 			},
 			{
-				entryPoints: [path.join('src', 'index')],
+				entryPoints: [path.join('src', 'index.browser')],
 				outfile: 'stylify',
-				formats: 'iife',
-				external: ['./Presets']
+				platform: 'browser',
+				formats: 'iife'
 			},
 			{
 				entryPoints: [path.join('src', 'index.browser.native')],
 				outfile: 'stylify.native',
+				platform: 'browser',
 				formats: 'iife'
 			}
 		]

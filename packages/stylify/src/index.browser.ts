@@ -1,4 +1,4 @@
-import { Runtime } from '.';
+import { Runtime } from './Runtime';
 
 declare global {
 	export interface Window {
