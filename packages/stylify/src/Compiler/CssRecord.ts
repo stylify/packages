@@ -5,14 +5,14 @@ export interface SerializedCssRecordInterface {
 	selector: string,
 	properties?: Record<string, string | number>,
 	plainSelectors?: string[],
-	components?: ComponentsType,
+	components?: CssRecordComponentsType,
 	pseudoClasses?: string[],
 	onAddProperty?: string
 	onAfterGenerate?: string,
 	scope?: string
 }
 
-export type ComponentsType = Record<string, string[]>;
+export type CssRecordComponentsType = Record<string, string[]>;
 
 export type OnAddPropertyCallbackType = (property: string, value: any) => Record<string, any>|null;
 
@@ -23,7 +23,7 @@ export interface CssRecordConfigInterface {
 	selector?: string,
 	properties?: Record<string, string | number>,
 	plainSelectors?: string[],
-	components?: ComponentsType,
+	components?: CssRecordComponentsType,
 	pseudoClasses?: string[],
 	onAddProperty?: OnAddPropertyCallbackType | string,
 	onAfterGenerate?: OnAfterGenerateCallbackType | string,
@@ -54,7 +54,7 @@ export class CssRecord {
 
 	public plainSelectors: string[] = [];
 
-	public components: ComponentsType = {};
+	public components: CssRecordComponentsType = {};
 
 	public properties: Record<string, string> = {};
 
@@ -141,7 +141,7 @@ export class CssRecord {
 		this.plainSelectors.push(selector);
 	}
 
-	public addComponents(components: ComponentsType): void {
+	public addComponents(components: CssRecordComponentsType): void {
 		for (const componentSelector in components) {
 			this.addComponent(componentSelector, components[componentSelector]);
 		}

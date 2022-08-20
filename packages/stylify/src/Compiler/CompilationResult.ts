@@ -215,9 +215,9 @@ export class CompilationResult {
 		this.changed = true;
 	}
 
-	public bindPlainSelectorsToSelectors(plainSelectorsSelectorsMap: Record<string, string[]>): void {
-		for (const plainSelector in plainSelectorsSelectorsMap) {
-			for (const dependencySelector of plainSelectorsSelectorsMap[plainSelector]) {
+	public bindPlainSelectorsToSelectors(plainSelectorsSelectorsMap: Record<string, string>): void {
+		for (const [plainSelector, dependencySelectors] of Object.entries(plainSelectorsSelectorsMap)) {
+			for (const dependencySelector of dependencySelectors.split(' ')) {
 				if (!(dependencySelector in this.selectorsList)) {
 					const info = `Selector "${dependencySelector}" for plainSelector "${plainSelector}" was not matched and therefore not added.`;
 
