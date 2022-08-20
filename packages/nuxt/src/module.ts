@@ -116,7 +116,7 @@ export default defineNuxtModule<NuxtModuleConfigInterface>({
 	},
 
 	setup(moduleConfig, nuxt): void {
-		const nuxtIsInDevMode = typeof nuxt.options.dev === 'boolean' ? nuxt.options.dev : moduleConfig.dev;
+		const nuxtIsInDevMode = nuxt.options.dev ?? moduleConfig.dev;
 
 		moduleConfig.dev = nuxtIsInDevMode;
 
@@ -167,9 +167,7 @@ export default defineNuxtModule<NuxtModuleConfigInterface>({
 			'(?:^|\\s+)(?:v-bind)?:class=\'([^\']+)\''
 		];
 
-		const runtimeDir = path.join(
-			typeof __dirname === 'undefined' ? path.dirname(fileURLToPath(import.meta.url)) : __dirname, 'runtime'
-		);
+		const runtimeDir = path.join(__dirname ?? path.dirname(fileURLToPath(import.meta.url)), 'runtime');
 		const assetsDir = resolveAlias(nuxt.options.dir.assets);
 		const assetsStylifyCssPath = path.join(nuxt.options.rootDir, assetsDir, stylifyCssFileName);
 

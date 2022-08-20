@@ -79,11 +79,10 @@ export class CompilationResult {
 		if (!Object.keys(config).length) {
 			return;
 		}
-		this.dev = typeof config.dev === 'boolean' ? config.dev : this.dev;
-		this.reconfigurable = typeof config.reconfigurable === 'boolean' ? config.reconfigurable : this.reconfigurable;
-		this.mangleSelectors = typeof config.mangleSelectors === 'boolean'
-			? config.mangleSelectors
-			: this.mangleSelectors;
+
+		this.dev = config.dev ?? this.dev;
+		this.reconfigurable = config.reconfigurable ?? this.reconfigurable;
+		this.mangleSelectors = config.mangleSelectors ?? this.mangleSelectors;
 
 		this.defaultCss = config.defaultCss || this.defaultCss;
 		this.componentsList = [...this.componentsList, ...config.componentsList || []];

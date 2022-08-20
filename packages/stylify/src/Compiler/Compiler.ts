@@ -134,15 +134,13 @@ export class Compiler {
 	}
 
 	public configure(config: CompilerConfigInterface): Compiler {
-		this.dev = typeof config.dev === 'undefined' ? this.dev : config.dev;
+		this.dev = config.dev ?? this.dev;
 		this.macros = Object.assign(this.macros, config.macros || {});
 
 		this.helpers = Object.assign(this.helpers, config.helpers || {});
 		this.variables = Object.assign(this.variables, config.variables || {});
 		this.screens = Object.assign(this.screens, config.screens || {});
-		this.mangleSelectors = typeof config.mangleSelectors === 'undefined'
-			? this.mangleSelectors
-			: config.mangleSelectors;
+		this.mangleSelectors = config.mangleSelectors ?? this.mangleSelectors;
 
 		if (typeof config.pregenerate !== 'undefined') {
 			this.pregenerate += Array.isArray(config.pregenerate) ? config.pregenerate.join(' ') : config.pregenerate;
@@ -534,7 +532,7 @@ export class Compiler {
 		let optionMatch: RegExpMatchArray;
 
 		while ((optionMatch = regExp.exec(content))) {
-			if (typeof optionMatch[1] !== 'string' || typeof optionMatch[2] !== 'string') {
+			if (![typeof optionMatch[1], typeof optionMatch[2]].includes('string')) {
 				continue;
 			}
 

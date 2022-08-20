@@ -14,7 +14,7 @@ export class MacroMatch {
 
 	constructor(match: string[], screens: Record<string, any>) {
 		this.fullMatch = match[0].trim();
-		this.screenAndPseudoClassesMatch = typeof match[1] === 'undefined' ? null : match[1].trim();
+		this.screenAndPseudoClassesMatch = match[1]?.trim() ?? null;
 		this.selector = this.fullMatch;
 		this.pseudoClasses = [];
 		match.splice(0, 2);

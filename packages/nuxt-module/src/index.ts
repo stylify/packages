@@ -120,7 +120,7 @@ export default function Stylify(): void {
 		}
 	];
 
-	const nuxtIsInDevMode = typeof nuxt.options.dev === 'boolean' ? nuxt.options.dev : moduleConfig.dev;
+	const nuxtIsInDevMode = nuxt.options.dev ?? moduleConfig.dev;
 
 	moduleConfig.dev = nuxtIsInDevMode;
 
