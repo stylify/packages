@@ -296,9 +296,10 @@ export class CompilationResult {
 		sortedScreens.set('_', screensList.get('_'));
 		screensList.delete('_');
 
-		const lightModeScreensListKeys = [];
-		const darkModeScreensListKeys = [];
-		const printScreensListKeys = [];
+		const lightModeScreensListKeys: string[] = [];
+		const darkModeScreensListKeys: string[] = [];
+		const printScreensListKeys: string[] = [];
+
 		const screensListKeysArray = [...screensList.keys()].filter((screen) => {
 			if (screen.includes('(prefers-color-scheme: dark)')) {
 				darkModeScreensListKeys.push(screen);

@@ -120,7 +120,7 @@ export class Runtime {
 			return;
 		}
 
-		const parsedData = typeof data === 'string' ? JSON.parse(data) : data;
+		const parsedData: SerializedCompilationResultInterface = typeof data === 'string' ? JSON.parse(data) : data;
 
 		if (this.compilationResult) {
 			this.compilationResult.configure(parsedData);
@@ -162,7 +162,7 @@ export class Runtime {
 		const targetNode = document.documentElement;
 		const config = { attributeFilter: ['class'], childList: true, subtree: true };
 		let compilerContentQueue = '';
-		let updateTimeout = null;
+		let updateTimeout: number;
 		const ignoreSelector = `.${Runtime.IGNORE_CLASS}`;
 
 		const observer = new MutationObserver((mutationsList) => {

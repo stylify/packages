@@ -1,5 +1,5 @@
 import FastGlob from 'fast-glob';
-import { existsSync, readdirSync, readFileSync, stat, statSync, writeFileSync } from 'fs';
+import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'fs';
 import path from 'path';
 
 const rootDir = path.join(__dirname, '..', '..');
@@ -66,7 +66,7 @@ const getReleaseBuildStats = () => {
 export const compareBuildStats = (selectedPackage: string = null) => {
 	const releaseBuildStats = getReleaseBuildStats();
 	const stats = getPackagesOutputStats(selectedPackage);
-	const statsDiff = {};
+	const statsDiff: Record<string, Record<string, any>> = {};
 
 	for (const packageName in stats) {
 		statsDiff[packageName] = {};
@@ -112,6 +112,7 @@ export const compareBuildStats = (selectedPackage: string = null) => {
 		}
 	});
 
+	// eslint-disable-next-line no-console
 	console.info(statsDiff);
 };
 

@@ -519,7 +519,9 @@ export class Bundler {
 				let compilationResult = null;
 				if (bundleConfig.cache) {
 					compilationResult = compiler.createCompilationResultFromSerializedData(
-						typeof bundleConfig.cache === 'string' ? JSON.parse(bundleConfig.cache) : bundleConfig.cache
+						typeof bundleConfig.cache === 'string'
+							? JSON.parse(bundleConfig.cache) as Record<string, any>
+							: bundleConfig.cache
 					);
 				}
 
@@ -686,7 +688,7 @@ export class Bundler {
 			return normalize(fileMask) as string;
 		});
 
-		const filesBaseDir = typeof bundleConfig.filesBaseDir === 'string'
+		const filesBaseDir: string = typeof bundleConfig.filesBaseDir === 'string'
 			? normalize(bundleConfig.filesBaseDir)
 			: null;
 

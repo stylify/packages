@@ -96,10 +96,10 @@ export const defineConfig = (config: StylifyNuxtModuleConfigInterface): StylifyN
 export default function Stylify(): void {
 	const { nuxt } = this;
 
-	const pagesDir = nuxt.resolver.resolveAlias(nuxt.options.dir.pages);
-	const layoutsDir = nuxt.resolver.resolveAlias(nuxt.options.dir.layouts);
-	const componentsDir = nuxt.resolver.resolveAlias('components');
-	const contentDir = nuxt.resolver.resolveAlias('content');
+	const pagesDir: string = nuxt.resolver.resolveAlias(nuxt.options.dir.pages);
+	const layoutsDir: string = nuxt.resolver.resolveAlias(nuxt.options.dir.layouts);
+	const componentsDir: string = nuxt.resolver.resolveAlias('components');
+	const contentDir: string = nuxt.resolver.resolveAlias('content');
 
 	moduleConfig.filesMasks = [
 		path.join(pagesDir, '**', '*.vue'),
@@ -125,7 +125,7 @@ export default function Stylify(): void {
 	moduleConfig.dev = nuxtIsInDevMode;
 
 	if ('stylify' in nuxt.options) {
-		mergeConfig(nuxt.options.stylify);
+		mergeConfig(nuxt.options.stylify as StylifyNuxtModuleConfigInterface);
 	}
 
 	let configFileExists = false;
@@ -250,7 +250,7 @@ export default function Stylify(): void {
 			) {
 				newObject[key] = Array.isArray(processedValue)
 					? processedValue
-					: convertObjectToStringableForm(processedValue);
+					: convertObjectToStringableForm(processedValue as Record<string, any>);
 			} else if (typeof processedValue === 'function') {
 				newObject[key] = `${processedValue.toString() as string}`;
 			} else {
@@ -296,8 +296,8 @@ export default function Stylify(): void {
 
 	let initStyleGenerated = false;
 	const generateStylifyCssFile = async () => {
-		const assetsDir = nuxt.resolver.resolveAlias(nuxt.options.dir.assets);
-		const assetsStylifyCssPath = path.join('~', nuxt.options.dir.assets, 'stylify.css');
+		const assetsDir: string = nuxt.resolver.resolveAlias(nuxt.options.dir.assets);
+		const assetsStylifyCssPath = path.join('~', nuxt.options.dir.assets as string, 'stylify.css');
 
 		if (!fs.existsSync(assetsDir)) {
 			fs.mkdirSync(assetsDir, { recursive: true });

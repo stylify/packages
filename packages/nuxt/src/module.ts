@@ -234,10 +234,12 @@ export default defineNuxtModule<NuxtModuleConfigInterface>({
 				const processedValue = processedObject[key];
 
 				const processedValueType = typeof processedValue;
-				if (![null, true, false].includes(processedValue) && processedValueType === 'object') {
+				if (![null, true, false].includes(processedValue as (null|true|false))
+					&& processedValueType === 'object'
+				) {
 					newObject[key] = Array.isArray(processedValue)
 						? processedValue
-						: convertObjectToStringableForm(processedValue);
+						: convertObjectToStringableForm(processedValue as Record<string, any>);
 				} else if (processedValueType === 'function') {
 					newObject[key] = `${processedValue.toString() as string}`;
 				} else {
