@@ -29,13 +29,13 @@
   },
   "nuxt": {
     "/esm/module.mjs": {
-      "size": 9928
+      "size": 9855
     },
     "/esm/runtime/plugins/profiler-plugin.client.mjs": {
       "size": 93655
     },
     "/lib/module.cjs": {
-      "size": 11894
+      "size": 11821
     },
     "/lib/runtime/plugins/profiler-plugin.client.mjs": {
       "size": 94896
@@ -43,7 +43,7 @@
   },
   "nuxt-module": {
     "/esm/index.mjs": {
-      "size": 8460
+      "size": 8421
     },
     "/esm/profiler-plugin.mjs": {
       "size": 4927
@@ -52,7 +52,7 @@
       "size": 851
     },
     "/lib/index.cjs": {
-      "size": 10076
+      "size": 10037
     },
     "/lib/profiler-plugin.cjs": {
       "size": 6093
@@ -83,28 +83,28 @@
   },
   "stylify": {
     "/esm/index.js": {
-      "size": 55034
+      "size": 55414
     },
     "/esm/index.min.js": {
-      "size": 30045
+      "size": 30230
     },
     "/esm/index.mjs": {
-      "size": 55034
+      "size": 55414
     },
     "/lib/index.cjs": {
-      "size": 56272
+      "size": 56652
     },
     "/dist/stylify.js": {
-      "size": 45944
+      "size": 46567
     },
     "/dist/stylify.min.js": {
-      "size": 21449
+      "size": 21734
     },
     "/dist/stylify.native.js": {
-      "size": 58206
+      "size": 58829
     },
     "/dist/stylify.native.min.js": {
-      "size": 30326
+      "size": 30611
     }
   },
   "unplugin": {
