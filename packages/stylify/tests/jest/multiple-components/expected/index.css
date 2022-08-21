@@ -1,12 +1,3 @@
-.margin\:11px,
-.button{
-	margin: 11px
-}
-.background\:blue,
-.button,
-.header.button.wrapper{
-	background: blue
-}
 .font-size\:24px,
 .button,
 .title{
@@ -16,6 +7,15 @@
 .button,
 .title{
 	padding: 24px
+}
+.background\:blue,
+.button,
+.header.button.wrapper{
+	background: blue
+}
+.margin\:11px,
+.button{
+	margin: 11px
 }
 .color\:red,
 .title{

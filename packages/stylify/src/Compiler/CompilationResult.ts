@@ -79,11 +79,10 @@ export class CompilationResult {
 		if (!Object.keys(config).length) {
 			return;
 		}
-		this.dev = typeof config.dev === 'boolean' ? config.dev : this.dev;
-		this.reconfigurable = typeof config.reconfigurable === 'boolean' ? config.reconfigurable : this.reconfigurable;
-		this.mangleSelectors = typeof config.mangleSelectors === 'boolean'
-			? config.mangleSelectors
-			: this.mangleSelectors;
+
+		this.dev = config.dev ?? this.dev;
+		this.reconfigurable = config.reconfigurable ?? this.reconfigurable;
+		this.mangleSelectors = config.mangleSelectors ?? this.mangleSelectors;
 
 		this.defaultCss = config.defaultCss || this.defaultCss;
 		this.componentsList = [...this.componentsList, ...config.componentsList || []];
@@ -216,9 +215,9 @@ export class CompilationResult {
 		this.changed = true;
 	}
 
-	public bindPlainSelectorsToSelectors(plainSelectorsSelectorsMap: Record<string, string[]>): void {
-		for (const plainSelector in plainSelectorsSelectorsMap) {
-			for (const dependencySelector of plainSelectorsSelectorsMap[plainSelector]) {
+	public bindPlainSelectorsToSelectors(plainSelectorsSelectorsMap: Record<string, string>): void {
+		for (const [plainSelector, dependencySelectors] of Object.entries(plainSelectorsSelectorsMap)) {
+			for (const dependencySelector of dependencySelectors.split(' ')) {
 				if (!(dependencySelector in this.selectorsList)) {
 					const info = `Selector "${dependencySelector}" for plainSelector "${plainSelector}" was not matched and therefore not added.`;
 
@@ -297,9 +296,10 @@ export class CompilationResult {
 		sortedScreens.set('_', screensList.get('_'));
 		screensList.delete('_');
 
-		const lightModeScreensListKeys = [];
-		const darkModeScreensListKeys = [];
-		const printScreensListKeys = [];
+		const lightModeScreensListKeys: string[] = [];
+		const darkModeScreensListKeys: string[] = [];
+		const printScreensListKeys: string[] = [];
+
 		const screensListKeysArray = [...screensList.keys()].filter((screen) => {
 			if (screen.includes('(prefers-color-scheme: dark)')) {
 				darkModeScreensListKeys.push(screen);

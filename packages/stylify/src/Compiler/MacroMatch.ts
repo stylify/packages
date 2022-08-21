@@ -1,3 +1,5 @@
+import { ScreensType } from './Compiler';
+
 export class MacroMatch {
 
 	public fullMatch: string = null;
@@ -12,9 +14,9 @@ export class MacroMatch {
 
 	public captures: string[] = [];
 
-	constructor(match: string[], screens: Record<string, any>) {
+	constructor(match: string[], screens: ScreensType) {
 		this.fullMatch = match[0].trim();
-		this.screenAndPseudoClassesMatch = typeof match[1] === 'undefined' ? null : match[1].trim();
+		this.screenAndPseudoClassesMatch = match[1]?.trim() ?? null;
 		this.selector = this.fullMatch;
 		this.pseudoClasses = [];
 		match.splice(0, 2);
@@ -36,10 +38,13 @@ export class MacroMatch {
 					continue;
 				}
 
-				possibleScreenMatch = possibleScreenMatch.replace(
-					screenRegExp,
-					typeof screens[key] === 'function' ? screens[key](screenMatches[0]) : screens[key]
-				);
+				let screenData = screens[key];
+
+				if (typeof screenData === 'function') {
+					screenData = screenData(screenMatches[0]);
+				}
+
+				possibleScreenMatch = possibleScreenMatch.replace(screenRegExp, screenData);
 				screenMatched = true;
 			}
 

@@ -1,0 +1,16 @@
+@keyframes colorChangeFromTo {
+		from {background-color: red;}
+		to {background-color: yellow;}
+}
+@keyframes colorChangeByPercentage {
+		0%   {background-color: red;}
+		25%  {background-color: yellow;}
+		50%  {background-color: blue;}
+		100% {background-color: green;}
+}
+.animation\:colorChangeFromTo__4s{
+	animation: colorChangeFromTo 4s
+}
+.animation\:colorChangeByPercentage__4s{
+	animation: colorChangeByPercentage 4s
+}

@@ -4,7 +4,8 @@ import {
 	SelectorProperties,
 	SelectorsComponentsMapType,
 	SelectorsListInterface,
-	stringHashCode
+	stringHashCode,
+	SerializedCompilationResultInterface
 } from '.';
 
 export type MacroCallbackType = (macroMatch: MacroMatch, selectorProperties: SelectorProperties) => void;
@@ -17,8 +18,6 @@ export interface SerializedCompilerInterface {
 
 export type ComponentSelectorsType = string|string[];
 
-export type PlainSelectorDependencySelectorsType = string|string[];
-
 export interface PlainSelectorInterface {
 	selectors: string[]
 }
@@ -29,11 +28,12 @@ export interface ComponentConfigInterface {
 }
 
 export interface CompilerContentOptionsInterface {
-	pregenerate: string,
-	components: Record<string, any>,
-	variables: Record<string, any>,
-	plainSelectors: Record<string, any>
-	screens: Record<string, any>
+	pregenerate: PregenerateType,
+	components: ComponentsType,
+	variables: VariablesType,
+	keyframes: KeyframesType,
+	plainSelectors: PlainSelectorsType
+	screens: ScreensType
 }
 
 export type OnPrepareCompilationResultCallbackType = (compilationResult: CompilationResult) => void;
@@ -45,6 +45,8 @@ export type ContentOptionsProcessorCallbackType = (
 
 export type ContentOptionsProcessorsType = Record<string, ContentOptionsProcessorCallbackType>;
 
+export type ComponentsType = Record<string, ComponentsInterface>;
+
 export type MacrosType = Record<string, MacroCallbackType>;
 
 export type HelpersType = Record<string, CallableFunction>;
@@ -53,15 +55,22 @@ export type ScreensType = Record<string, string|ScreenCallbackType>;
 
 export type VariablesType = Record<string, string|number>;
 
+export type KeyframesType = Record<string, string>;
+
+export type PlainSelectorsType = Record<string, string>;
+
+export type PregenerateType = string[]|string;
+
 export interface CompilerConfigInterface {
 	dev?: boolean,
 	macros?: MacrosType,
 	helpers?: HelpersType,
 	variables?: VariablesType,
+	keyframes?: KeyframesType,
 	screens?: ScreensType,
-	plainSelectors?: Record<string, PlainSelectorDependencySelectorsType>,
+	plainSelectors?: PlainSelectorsType,
 	mangleSelectors?: boolean,
-	pregenerate?: string[]|string,
+	pregenerate?: PregenerateType,
 	components?: Record<string, ComponentSelectorsType|ComponentConfigInterface>,
 	onPrepareCompilationResult?: OnPrepareCompilationResultCallbackType,
 	onNewMacroMatch?: OnNewMacroMatchCallbackType,
@@ -113,13 +122,15 @@ export class Compiler {
 
 	public variables: VariablesType = {};
 
-	public components: Record<string, ComponentsInterface> = {};
+	public keyframes: KeyframesType = {};
+
+	public components: ComponentsType = {};
 
 	public pregenerate = '';
 
 	public selectorsAreas = ['(?:^|\\s+)class="([^"]+)"', '(?:^|\\s+)class=\'([^\']+)\''];
 
-	public plainSelectors: Record<string, PlainSelectorInterface> = {};
+	public plainSelectors: PlainSelectorsType = {};
 
 	public replaceVariablesByCssVariables = false;
 
@@ -134,19 +145,19 @@ export class Compiler {
 	}
 
 	public configure(config: CompilerConfigInterface): Compiler {
-		this.dev = typeof config.dev === 'undefined' ? this.dev : config.dev;
+		this.dev = config.dev ?? this.dev;
 		this.macros = Object.assign(this.macros, config.macros || {});
 
 		this.helpers = Object.assign(this.helpers, config.helpers || {});
 		this.variables = Object.assign(this.variables, config.variables || {});
+		this.keyframes = Object.assign(this.keyframes, config.keyframes || {});
 		this.screens = Object.assign(this.screens, config.screens || {});
-		this.mangleSelectors = typeof config.mangleSelectors === 'undefined'
-			? this.mangleSelectors
-			: config.mangleSelectors;
+		this.mangleSelectors = config.mangleSelectors ?? this.mangleSelectors;
 
 		if (typeof config.pregenerate !== 'undefined') {
 			this.pregenerate += Array.isArray(config.pregenerate) ? config.pregenerate.join(' ') : config.pregenerate;
 		}
+
 		this.contentOptionsProcessors = {...this.contentOptionsProcessors, ...config.contentOptionsProcessors};
 		const ignoredAreasRegExpStrings: string[] = [];
 		this.ignoredAreas = [...this.ignoredAreas, ...config.ignoredAreas || []]
@@ -168,8 +179,8 @@ export class Compiler {
 		this.onNewMacroMatch = config.onNewMacroMatch || this.onNewMacroMatch;
 
 		const plainSelectors = config.plainSelectors || {};
-		for (const plainSelector in plainSelectors) {
-			this.addPlainSelector(plainSelector, plainSelectors[plainSelector]);
+		for (const [plainSelector, dependencySelectors] of Object.entries(plainSelectors)) {
+			this.addPlainSelector(plainSelector, dependencySelectors);
 		}
 
 		const components = config.components || {};
@@ -180,22 +191,16 @@ export class Compiler {
 		return this;
 	}
 
-	public addPlainSelector(selector: string, dependencySelectors: PlainSelectorDependencySelectorsType): void {
+	public addPlainSelector(selector: string, dependencySelectors: string): void {
 		const selectorsArray = selector.split(', ');
 
 		for (const selector of selectorsArray) {
-			dependencySelectors = this.convertStringOrStringArrayToFilteredArray(dependencySelectors);
-			if (selector in this.plainSelectors) {
-				this.plainSelectors[selector].selectors = [
-					...this.plainSelectors[selector].selectors,
-					...dependencySelectors
-				];
-				return;
-			}
+			const filteredSelectors = this.convertStringOrStringArrayToFilteredArray(
+				this.plainSelectors[selector] ?? '',
+				...dependencySelectors.replace(/\s/ig, ' ').split(' ').map(selector => selector.trim())
+			);
 
-			this.plainSelectors[selector] = {
-				selectors: dependencySelectors
-			};
+			this.plainSelectors[selector] = filteredSelectors.join(' ');
 		}
 	}
 
@@ -221,8 +226,8 @@ export class Compiler {
 		const componentConfig = typeof config === 'string' || configIsArray
 			? {
 				selectors: this.convertStringOrStringArrayToFilteredArray([
-					...configIsArray ? config: [config],
-					...componentAlreadyDefined ? this.components[selector].selectors : []
+					...componentAlreadyDefined ? this.components[selector].selectors : [],
+					...(configIsArray ? config: [config]).map(selector => selector.replace(/\s/ig, ' ').trim())
 				]),
 				selectorsChain: componentAlreadyDefined ? this.components[selector].selectorsChain : []
 			}
@@ -242,14 +247,19 @@ export class Compiler {
 		return this;
 	}
 
-	private convertStringOrStringArrayToFilteredArray(data: string|string[]): string[] {
-		if (Array.isArray(data)) {
-			data = data.join(' ');
+	private convertStringOrStringArrayToFilteredArray(...args: string[]|[string[]]): string[] {
+		let filteredArray: string[] = [];
+
+		for (const arg of args) {
+			filteredArray = [
+				...filteredArray,
+				...(Array.isArray(arg) ? arg.join(' ').split(' ') : arg.split(' ')).filter(
+					(filterItem) => filterItem.length && !filteredArray.includes(filterItem)
+				)
+			];
 		}
 
-		return data.replace(/\s/ig, ' ').split(' ').filter((value: string, index, self): boolean => {
-			return value.trim().length > 0 && self.indexOf(value) === index;
-		});
+		return filteredArray;
 	}
 
 	public addMacro(re: string, callback: MacroCallbackType): Compiler {
@@ -267,7 +277,7 @@ export class Compiler {
 		}
 
 		const placeholderTextPart = '__STYLIFY_PLACEHOLDER__';
-		const contentPlaceholders: Record<string, any> = {};
+		const contentPlaceholders: Record<string, string> = {};
 
 		const placeholderInserter = (matched: string) => {
 			const placeholderKey = `${placeholderTextPart}${Object.keys(contentPlaceholders).length}`;
@@ -336,8 +346,6 @@ export class Compiler {
 	): CompilationResult {
 		let contentToProcess = '';
 
-		compilationResult = this.prepareCompilationResult(compilationResult);
-
 		content = content
 			.replace(new RegExp(this.ignoredAreasRegExpString, 'g'), (...args): string => {
 				const matchArguments = args.filter((value) => typeof value === 'string');
@@ -348,10 +356,12 @@ export class Compiler {
 					? fullMatch
 					: fullMatch.replace(innerHtml, '');
 			})
-			.replace(/\r\n|\r|\n|\t/ig, ' ')
 			.replace(/&amp;/ig, '&');
 
+		content = this.dev ? content.replace(/\r\n/, '\n') : content.replace(/\r\n|\r|\n|\t/ig, ' ');
+
 		this.configure(this.getOptionsFromContent(content));
+		compilationResult = this.prepareCompilationResult(compilationResult);
 
 		content = content.replace(new RegExp(this.contentOptionsRegExp.source, 'g'), '');
 
@@ -371,8 +381,8 @@ export class Compiler {
 		const plainSelectorsSelectorsMap = {};
 		for (const plainSelector in this.plainSelectors) {
 			const plainSelectorData = this.plainSelectors[plainSelector];
-			plainSelectorsSelectorsMap[plainSelector] = plainSelectorData.selectors;
-			this.pregenerate += ' ' + plainSelectorData.selectors.join(' ');
+			plainSelectorsSelectorsMap[plainSelector] = plainSelectorData;
+			this.pregenerate += `  ${plainSelectorData}`;
 		}
 
 		contentToProcess = `${this.pregenerate} ${contentToProcess}`;
@@ -414,8 +424,12 @@ export class Compiler {
 		return compilationResult;
 	}
 
-	public createCompilationResultFromSerializedData(data: string|Record<string, any>): CompilationResult {
-		return new CompilationResult(typeof data === 'string' ? JSON.parse(data) : data);
+	public createCompilationResultFromSerializedData(
+		data: string | SerializedCompilationResultInterface
+	): CompilationResult {
+		return new CompilationResult(
+			typeof data === 'string' ? JSON.parse(data) as SerializedCompilationResultInterface : data
+		);
 	}
 
 	private prepareCompilationResult(compilationResult: CompilationResult = null): CompilationResult
@@ -424,10 +438,10 @@ export class Compiler {
 			compilationResult = new CompilationResult();
 		}
 
+		const newLine = this.dev ? '\n' : '';
 		let variablesCss = '';
 
 		if (this.injectVariablesIntoCss && Object.keys(this.variables).length) {
-			const newLine = this.dev ? '\n' : '';
 			variablesCss += `:root {${newLine}`;
 			for (const variable in this.variables) {
 				variablesCss += `--${variable}: ${this.variables[variable]};${newLine}`;
@@ -435,10 +449,16 @@ export class Compiler {
 			variablesCss += `}${newLine}`;
 		}
 
+		let keyframesCss = '';
+
+		for (const [keyframe, keyframeCode] of Object.entries(this.keyframes)) {
+			keyframesCss += `@keyframes ${keyframe} {${keyframeCode.trimEnd()}${newLine}}${newLine}`;
+		}
+
 		compilationResult.configure({
 			dev: this.dev,
 			mangleSelectors: this.mangleSelectors,
-			defaultCss: variablesCss
+			defaultCss: `${[variablesCss, keyframesCss].join(newLine).trim()}${newLine}`
 		});
 
 		if (this.onPrepareCompilationResult) {
@@ -462,7 +482,7 @@ export class Compiler {
 			for (const macroKey in this.macros) {
 
 				content = content.replace(regExpGenerator(macroKey), (...args) => {
-					const macroMatches = args.slice(0, args.length - 2);
+					const macroMatches: string[] = args.slice(0, args.length - 2);
 					const macroMatch = new MacroMatch(macroMatches, this.screens);
 
 					if (macroMatch.fullMatch in compilationResult.selectorsList) {
@@ -527,29 +547,30 @@ export class Compiler {
 			components: {},
 			plainSelectors: {},
 			screens: {},
-			variables: {}
+			variables: {},
+			keyframes: {}
 		};
 
 		const regExp = new RegExp(this.contentOptionsRegExp.source, 'g');
-		let optionMatch: RegExpMatchArray;
+		let optionMatch: RegExpExecArray;
 
 		while ((optionMatch = regExp.exec(content))) {
-			if (typeof optionMatch[1] !== 'string' || typeof optionMatch[2] !== 'string') {
+			if (![typeof optionMatch[1], typeof optionMatch[2]].includes('string')) {
 				continue;
 			}
 
 			const optionKey = optionMatch[1];
-			const optionMatchValue = optionMatch[2].replace(/\n|\t/g, ' ');
+			const optionMatchValue = this.dev ? optionMatch[2] : optionMatch[2].replace(/\n|\t/g, ' ');
 
 			try {
 				if (optionKey === 'pregenerate') {
 					contentOptions[optionKey] += ` ${optionMatchValue}`;
 
-				} else if (['components', 'variables', 'plainSelectors', 'screens'].includes(optionKey)) {
+				} else if (['components', 'variables', 'keyframes', 'plainSelectors', 'screens'].includes(optionKey)) {
 					contentOptions[optionKey] = {
 						...contentOptions[optionKey],
 						// eslint-disable-next-line @typescript-eslint/no-implied-eval
-						...new Function(`return {${optionMatchValue}}`)()
+						...new Function(`return {${optionMatchValue.trim()}}`)()
 					};
 				} else if (optionKey in this.contentOptionsProcessors) {
 					contentOptions = {
