@@ -3,18 +3,12 @@ import {
 	MacroMatch,
 	SelectorProperties,
 	SelectorsComponentsMapType,
-	SelectorsListInterface,
-	stringHashCode,
-	SerializedCompilationResultInterface
+	stringHashCode
 } from '.';
 
 export type MacroCallbackType = (macroMatch: MacroMatch, selectorProperties: SelectorProperties) => void;
 
 export type ScreenCallbackType = (screen: string) => string;
-
-export interface SerializedCompilerInterface {
-	selectorsList: SelectorsListInterface
-}
 
 export type ComponentSelectorsType = string|string[];
 
@@ -422,14 +416,6 @@ export class Compiler {
 		compilationResult.bindComponentsToSelectors(selectorsComponentsMap);
 
 		return compilationResult;
-	}
-
-	public createCompilationResultFromSerializedData(
-		data: string | SerializedCompilationResultInterface
-	): CompilationResult {
-		return new CompilationResult(
-			typeof data === 'string' ? JSON.parse(data) as SerializedCompilationResultInterface : data
-		);
 	}
 
 	private prepareCompilationResult(compilationResult: CompilationResult = null): CompilationResult

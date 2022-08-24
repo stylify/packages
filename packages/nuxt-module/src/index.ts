@@ -47,7 +47,6 @@ let moduleConfig: StylifyNuxtModuleConfigInterface = {
 	stylusVarsDirPath: null,
 	filesMasks: [],
 	loaders: []
-
 };
 
 const mergeObject = (...objects): any => {
@@ -88,8 +87,6 @@ const mergeConfig = (config: Record<string, any>): void => {
 };
 
 let compilationResult: CompilationResult = null;
-
-const processedBundles: Record<string, ProcessedBundleInterface> = {};
 
 export const defineConfig = (config: StylifyNuxtModuleConfigInterface): StylifyNuxtModuleConfigInterface => config;
 
@@ -174,13 +171,6 @@ export default function Stylify(): void {
 		'(?:^|\\s+)(?:v-bind)?:class=\'([^\']+)\''
 	];
 
-	if (moduleConfig.dev) {
-		this.addPlugin({
-			ssr: false,
-			src: path.resolve(__dirname, `profiler-plugin.${filesSuffix}`)
-		});
-	}
-
 	const bundleId = 'stylify';
 	const createBundlerInstance = (): Bundler => {
 		return new Bundler({
@@ -202,10 +192,7 @@ export default function Stylify(): void {
 	this.extendBuild((config: Record<string, any>): void => {
 		config.module.rules.push({
 			test: /\.jsx?$/,
-			include: [
-				path.resolve('node_modules/@stylify/profiler'),
-				path.resolve('node_modules/@stylify/stylify')
-			],
+			include: [path.resolve('node_modules/@stylify/stylify')],
 			use: {
 				loader: 'babel-loader',
 				options: {
@@ -226,9 +213,7 @@ export default function Stylify(): void {
 						loader: path.join(__dirname, `webpack-loader.${filesSuffix}`),
 						options: {
 							getCompiler: getCompiler,
-							getCompilationResult: (): CompilationResult|null => {
-								return compilationResult;
-							}
+							getCompilationResult: (): CompilationResult => compilationResult
 						}
 					}
 				});
@@ -236,63 +221,6 @@ export default function Stylify(): void {
 		}
 
 	});
-
-	const convertObjectToStringableForm = (processedObject: Record<string, any>): Record<string, any> => {
-		const newObject = {};
-
-		for (const key in processedObject) {
-			const processedValue = processedObject[key];
-
-			if (processedValue !== null
-				&& processedValue !== true
-				&& processedValue !== false
-				&& typeof processedValue === 'object'
-			) {
-				newObject[key] = Array.isArray(processedValue)
-					? processedValue
-					: convertObjectToStringableForm(processedValue as Record<string, any>);
-			} else if (typeof processedValue === 'function') {
-				newObject[key] = `${processedValue.toString() as string}`;
-			} else {
-				newObject[key] = processedValue;
-			}
-		}
-
-		return newObject;
-	};
-
-	const dumpProfilerInfo = (params: Record<string, any>): void => {
-		if (!nuxtIsInDevMode || !compilationResult) {
-			return;
-		}
-
-		const compiler = getCompiler();
-		const bundlesStats: BundleStatsInterface[] = [];
-
-		for (const resourcePath in processedBundles) {
-			bundlesStats.push({
-				resourcePath: resourcePath,
-				css: processedBundles[resourcePath].css
-			});
-		}
-
-		const data = convertObjectToStringableForm({
-			compilerExtension: {
-				variables: compiler.variables,
-				plainSelectors: compiler.plainSelectors,
-				macros: compiler.macros,
-				components: compiler.components,
-				helpers: compiler.helpers,
-				screens: compiler.screens
-			},
-			nuxtExtension: {
-				bundlesStats: bundlesStats,
-				serializedCompilationResult: JSON.stringify(compilationResult.serialize())
-			}
-		});
-
-		params.HEAD += `<script class="stylify-profiler-data" type="application/json">${JSON.stringify(data)}</script>`;
-	};
 
 	let initStyleGenerated = false;
 	const generateStylifyCssFile = async () => {
@@ -318,10 +246,6 @@ export default function Stylify(): void {
 
 		compilationResult = bundler.findBundleCache(bundleId).compilationResult;
 
-		processedBundles[bundleId] = {
-			css: compilationResult.generateCss()
-		};
-
 		if (!nuxt.options.css.includes(assetsStylifyCssPath)) {
 			nuxt.options.css.push(assetsStylifyCssPath);
 		}
@@ -345,8 +269,8 @@ export default function Stylify(): void {
 		return generateStylifyCssFile();
 	});
 
-	nuxt.hook('vue-renderer:ssr:templateParams', async (params: Record<string, any>): Promise<void> => {
+	nuxt.hook('vue-renderer:ssr:templateParams', async (): Promise<void> => {
 		await bundler.waitOnBundlesProcessed();
-		dumpProfilerInfo(params);
 	});
+
 }

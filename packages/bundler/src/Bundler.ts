@@ -95,8 +95,6 @@ export interface BundleConfigInterface extends BundleHooksInterface {
 	id?: string,
 	rewriteSelectorsInFiles?: boolean,
 	filesBaseDir?: string,
-	dumpCache?: boolean,
-	cache?: JSON | string,
 	outputFile: string,
 	scope?: string,
 	files: string[],
@@ -332,7 +330,7 @@ export class Bundler {
 
 		for (const variable in this.compilerConfig.variables) {
 			const variableValue = this.compilerConfig.variables[variable];
-			fileVariablesContent += `${variablePrefix}${variable}${variableValueSeparator}${variableValue}${afterValue}\n`;
+			fileVariablesContent += `${variablePrefix}${variable}${variableValueSeparator}${variableValue as string}${afterValue}\n`;
 		}
 
 		fileVariablesContent = fileVariablesContent.trim();
@@ -516,19 +514,10 @@ export class Bundler {
 					}
 				};
 
-				let compilationResult = null;
-				if (bundleConfig.cache) {
-					compilationResult = compiler.createCompilationResultFromSerializedData(
-						typeof bundleConfig.cache === 'string'
-							? JSON.parse(bundleConfig.cache) as Record<string, any>
-							: bundleConfig.cache
-					);
-				}
-
 				this.bundlesBuildCache[bundleConfig.outputFile] = {
 					id: bundleConfig.id || null,
 					compiler: compiler,
-					compilationResult: compilationResult,
+					compilationResult: null,
 					buildTime: null,
 					files: []
 				};
@@ -592,7 +581,7 @@ export class Bundler {
 
 				bundleBuildCache.compilationResult = compiler.compile(
 					fileToProcessConfig.content,
-					bundleBuildCache.compilationResult
+					bundleBuildCache.compilationResult ?? null
 				);
 
 				if (bundleConfig.rewriteSelectorsInFiles) {
@@ -632,19 +621,6 @@ export class Bundler {
 			}) as OnBeforeCssFileCreatedCallbackDataInterface;
 
 			this.writeFile(hookData.filePath, hookData.content.trim());
-
-			if (bundleConfig.dumpCache) {
-				const serializedResult = bundleBuildCache.compilationResult.serialize();
-
-				for (const selector in serializedResult.selectorsList) {
-					delete serializedResult.selectorsList[selector].onAddProperty;
-					delete serializedResult.selectorsList[selector].scope;
-				}
-
-				delete serializedResult.onPrepareCssRecord;
-
-				this.writeFile(bundleConfig.outputFile + '.json', JSON.stringify(serializedResult));
-			}
 
 			bundleBuildCache.buildTime = ((performance.now() - startTime)/1000).toFixed(2);
 			this.log(`Created "${bundleConfig.outputFile}" (${bundleBuildCache.buildTime} s).`, 'textGreen');

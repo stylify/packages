@@ -1,4 +1,4 @@
-import { CssRecord, MacroMatch, SelectorProperties, SerializedCssRecordInterface } from '.';
+import { CssRecord, MacroMatch, SelectorProperties } from '.';
 import { stringHashCode } from './stringHashCode';
 
 type ScreensListMapType = Map<string, number|null>;
@@ -9,7 +9,7 @@ type ScreenSortingFunctionType = (screensList: ScreensListMapType) => ScreensLis
 
 export type ScreensListRecordType = Record<string, number>;
 
-export type SelectorsListType = Record<string, SerializedCssRecordInterface>;
+export type SelectorsListType = Record<string, CssRecord>
 
 export interface CompilationResultConfigInterface {
 	dev?: boolean,
@@ -20,18 +20,6 @@ export interface CompilationResultConfigInterface {
 	componentsList?: string[],
 	mangleSelectors?: boolean,
 	onPrepareCssRecord?: OnPrepareCssRecordCallbackType | string,
-	defaultCss?: string
-}
-
-export interface SerializedCompilationResultInterface {
-	dev?: boolean,
-	reconfigurable?: boolean,
-	screensSortingFunction?: string,
-	screensList?: ScreensListRecordType,
-	selectorsList?: SelectorsListType,
-	componentsList?: string[],
-	mangleSelectors?: boolean,
-	onPrepareCssRecord?: string,
 	defaultCss?: string
 }
 
@@ -70,13 +58,13 @@ export class CompilationResult {
 
 	public defaultCss = '';
 
-	public constructor(config: CompilationResultConfigInterface | SerializedCompilationResultInterface = {}) {
+	public constructor(config: CompilationResultConfigInterface = {}) {
 		this.addScreen('_');
 		this.configure(config);
 	}
 
-	public configure(config: CompilationResultConfigInterface | SerializedCompilationResultInterface = {}): void {
-		if (!Object.keys(config).length) {
+	public configure(config: CompilationResultConfigInterface = {}): void {
+		if (!config || !Object.keys(config).length) {
 			return;
 		}
 
@@ -399,50 +387,6 @@ export class CompilationResult {
 		]);
 
 		return sortedScreens;
-	}
-
-	public serialize(): SerializedCompilationResultInterface {
-		const serializedCompilationResult: SerializedCompilationResultInterface = {};
-
-		if (this.mangleSelectors) {
-			serializedCompilationResult.mangleSelectors = this.mangleSelectors;
-		}
-
-		if (this.dev) {
-			serializedCompilationResult.dev = this.dev;
-		}
-
-		if (!this.reconfigurable) {
-			serializedCompilationResult.reconfigurable = false;
-		}
-
-		if (this.screensList.size > 1) {
-			serializedCompilationResult.screensList = {};
-			for (const [screen, screenId] of this.screensList) {
-				serializedCompilationResult.screensList[screen] = screenId;
-			}
-		}
-
-		if (this.screensSortingFunction) {
-			serializedCompilationResult.screensSortingFunction = this.screensSortingFunction.toString();
-		}
-
-		if (Object.keys(this.componentsList).length) {
-			serializedCompilationResult.componentsList = this.componentsList;
-		}
-
-		if (Object.keys(this.selectorsList).length) {
-			serializedCompilationResult.selectorsList = {};
-			for (const selector in this.selectorsList) {
-				serializedCompilationResult.selectorsList[selector] = this.selectorsList[selector].serialize();
-			}
-		}
-
-		if (this.onPrepareCssRecord) {
-			serializedCompilationResult.onPrepareCssRecord = this.onPrepareCssRecord.toString();
-		}
-
-		return serializedCompilationResult;
 	}
 
 }

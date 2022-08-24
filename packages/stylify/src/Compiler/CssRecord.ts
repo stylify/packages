@@ -1,17 +1,5 @@
 import { stringHashCode } from './stringHashCode';
 
-export interface SerializedCssRecordInterface {
-	screenId: number,
-	selector: string,
-	properties?: Record<string, string | number>,
-	plainSelectors?: string[],
-	components?: CssRecordComponentsType,
-	pseudoClasses?: string[],
-	onAddProperty?: string
-	onAfterGenerate?: string,
-	scope?: string
-}
-
 export type CssRecordComponentsType = Record<string, string[]>;
 
 export type OnAddPropertyCallbackType = (property: string, value: any) => Record<string, any>|null;
@@ -232,44 +220,6 @@ export class CssRecord {
 		}
 
 		return this.cache;
-	}
-
-	public serialize(): SerializedCssRecordInterface {
-		const serializedObject: SerializedCssRecordInterface = {
-			screenId: this.screenId,
-			selector: this.selector.replace(/\\([^-_a-zA-Z\d])/g, '$1'),
-			properties: this.properties
-		};
-
-		if (Object.keys(this.components).length) {
-			serializedObject.components = {};
-			for (const componentSelector in this.components) {
-				const selectorsChain = this.components[componentSelector];
-				serializedObject.components[componentSelector.replace(/\\([^-_a-zA-Z\d])/g, '$1')] = selectorsChain;
-			}
-		}
-
-		if (this.plainSelectors.length) {
-			serializedObject.plainSelectors = this.plainSelectors;
-		}
-
-		if (this.onAddProperty) {
-			serializedObject.onAddProperty = this.onAddProperty.toString();
-		}
-
-		if (this.onAfterGenerate) {
-			serializedObject.onAfterGenerate = this.onAfterGenerate.toString();
-		}
-
-		if (this.scope) {
-			serializedObject.scope = this.scope;
-		}
-
-		if (this.pseudoClasses.length) {
-			serializedObject.pseudoClasses = this.pseudoClasses;
-		}
-
-		return serializedObject;
 	}
 
 }

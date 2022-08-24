@@ -41,8 +41,6 @@ bundler.bundle([
 	},
 	{
 		outputFile: path.join(buildTmpDir, 'second.css'),
-		cache: testUtils.readFile(path.join(bundleTestDir, 'input', 'second.css.json')),
-		dumpCache: true,
 		filesBaseDir: buildTmpDir,
 		files: [
 			path.join(buildTmpDir, 'second.html'),
