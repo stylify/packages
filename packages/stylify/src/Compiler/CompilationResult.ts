@@ -1,5 +1,4 @@
-import { CssRecord, MacroMatch, SelectorProperties } from '.';
-import { stringHashCode } from './stringHashCode';
+import { CssRecord, MacroMatch, SelectorProperties, minifiedSelectorGenerator } from '.';
 
 type ScreensListMapType = Map<string, number|null>;
 
@@ -258,7 +257,7 @@ export class CompilationResult {
 										}
 									}
 
-									selectorFromChain = stringHashCode(selectorFromChain);
+									selectorFromChain = minifiedSelectorGenerator.getSelector(selectorFromChain);
 								}
 
 								return selectorFromChain;
@@ -267,7 +266,9 @@ export class CompilationResult {
 					});
 
 				this.selectorsList[componentDependencySelector].addComponent(
-					this.mangleSelectors ? stringHashCode(componentToBind.component) : componentToBind.component,
+					this.mangleSelectors
+						? minifiedSelectorGenerator.getSelector(componentToBind.component)
+						: componentToBind.component,
 					componentToBind.selectorsChain
 				);
 			}

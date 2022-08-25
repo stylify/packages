@@ -3,4 +3,4 @@ export * from './CssRecord';
 export * from './MacroMatch';
 export * from './SelectorProperties';
 export * from './CompilationResult';
-export * from './stringHashCode';
+export * from './MinifiedSelectorGenerator';

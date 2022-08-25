@@ -5,5 +5,5 @@
 -->
 
 <template>
-	<div v-bind:class="{ '_h1gp9': true }"></div>
+	<div v-bind:class="{ 'm': true }"></div>
 </template>

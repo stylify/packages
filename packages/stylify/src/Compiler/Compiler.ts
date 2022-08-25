@@ -3,7 +3,7 @@ import {
 	MacroMatch,
 	SelectorProperties,
 	SelectorsComponentsMapType,
-	stringHashCode
+	minifiedSelectorGenerator
 } from '.';
 
 export type MacroCallbackType = (macroMatch: MacroMatch, selectorProperties: SelectorProperties) => void;
@@ -235,7 +235,7 @@ export class Compiler {
 			selectorsChain: Array.isArray(componentConfig.selectorsChain)
 				? componentConfig.selectorsChain
 				: [componentConfig.selectorsChain],
-			mangledSelector: stringHashCode(selector)
+			mangledSelector: minifiedSelectorGenerator.getSelector(selector)
 		};
 
 		return this;
@@ -384,7 +384,9 @@ export class Compiler {
 
 		if (compilationResult && Object.keys(compilationResult.selectorsList).length) {
 			contentToProcess = contentToProcess.replace(/_\w+/ig, (matched) => {
-				return matched in compilationResult.selectorsList ? stringHashCode(matched) : matched;
+				return matched in compilationResult.selectorsList
+					? minifiedSelectorGenerator.getSelector(matched)
+					: matched;
 			});
 		}
 

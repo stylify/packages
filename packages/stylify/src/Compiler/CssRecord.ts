@@ -1,4 +1,4 @@
-import { stringHashCode } from './stringHashCode';
+import { minifiedSelectorGenerator } from '.';
 
 export type CssRecordComponentsType = Record<string, string[]>;
 
@@ -65,7 +65,7 @@ export class CssRecord {
 		if ((/^\d/gm).test(this.selector[0])) {
 			this.selector = '\\3' + this.selector;
 		}
-		this.mangledSelector = stringHashCode(this.selector);
+		this.mangledSelector = minifiedSelectorGenerator.getSelector(this.selector);
 		this.scope = config.scope || null;
 		if ('onAddProperty' in config) {
 			this.onAddProperty = typeof config.onAddProperty === 'string'
@@ -150,7 +150,9 @@ export class CssRecord {
 		if (this.changed || !this.cache) {
 			const newLine = config.minimize ? '' : '\n';
 
-			const cssRecordSelector = config.mangleSelectors ? stringHashCode(this.selector) : this.selector;
+			const cssRecordSelector = config.mangleSelectors
+				? minifiedSelectorGenerator.getSelector(this.selector)
+				: this.selector;
 
 			let plainSelectors: string[] = [];
 			let classSelectors: string[] = [];
