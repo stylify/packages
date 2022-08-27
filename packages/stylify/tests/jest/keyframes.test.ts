@@ -14,7 +14,6 @@ nativePreset.compiler.keyframes = {
 };
 
 const compiler = new Compiler(nativePreset.compiler);
-console.log(compiler.keyframes);
 let compilationResult = compiler.compile(inputIndex);
 
 test('Keyframes', (): void => {
