@@ -55,7 +55,7 @@ runBuild(async () => {
 				entryPoints: [path.join('src', 'index')],
 				outfile: 'index',
 				platform: 'node',
-				external: ['@stylify/stylify', 'fast-glob', 'normalize-path'],
+				external: ['@stylify/stylify', 'fast-glob', 'normalize-path', 'postcss', 'autoprefixer'],
 				formats: ['esm', 'cjs']
 			}
 		]

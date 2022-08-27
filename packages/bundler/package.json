@@ -48,8 +48,10 @@
 	},
 	"dependencies": {
 		"@stylify/stylify": "^0.1.3",
+		"autoprefixer": "^10.4",
 		"fast-glob": "^3.2",
-		"normalize-path": "^3.0"
+		"normalize-path": "^3.0",
+		"postcss": "^8.4"
 	},
 	"publishConfig": {
 		"access": "public"

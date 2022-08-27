@@ -10,6 +10,8 @@ import fs from 'fs';
 import { default as normalize } from 'normalize-path';
 import path from 'path';
 import { performance } from 'perf_hooks';
+import autoprefixer from 'autoprefixer';
+import postcss from 'postcss';
 
 interface BundleFileDataInterface {
 	filePath: string,
@@ -103,6 +105,7 @@ export interface BundleConfigInterface extends BundleHooksInterface {
 
 export interface BundlerConfigInterface extends BundleHooksInterface {
 	configFile?: string,
+	autoprefixerEnabled?: boolean,
 	compiler?: CompilerConfigInterface,
 	filesBaseDir?: string,
 	verbose?: boolean,
@@ -120,6 +123,8 @@ export interface WatchedFilesInterface {
 	processing: boolean,
 	bundlesIndexes: string[]
 }
+
+const postCssPrefixer = postcss([autoprefixer()]);
 
 export const defineConfig = (config: BundlerConfigInterface): BundlerConfigInterface => config;
 
@@ -170,6 +175,8 @@ export class Bundler {
 
 	private onFileToProcessOpened: OnFileToProcessOpenedCallbackType = null;
 
+	private autoprefixerEnabled = true;
+
 	public bundlesBuildCache: BundlesBuildCacheType = {};
 
 	public constructor(config: BundlerConfigInterface) {
@@ -212,29 +219,22 @@ export class Bundler {
 			...config.compiler || {}
 		};
 
-		if ('verbose' in config) {
-			this.verbose = config.verbose;
-		}
+		this.verbose = config.verbose ?? this.verbose;
+		this.sync = config.sync ?? this.sync;
+		this.watchFiles = config.watchFiles ?? this.watchFiles;
+		this.filesBaseDir = config.filesBaseDir ?? this.filesBaseDir;
 
-		if ('sync' in config) {
-			this.sync = config.sync;
-		}
+		this.onBeforeInputFileRewritten = config.onBeforeInputFileRewritten ?? this.onBeforeInputFileRewritten;
+		this.onBeforeCssFileCreated = config.onBeforeCssFileCreated ?? this.onBeforeCssFileCreated;
+		this.onBundleProcessed = config.onBundleProcessed ?? this.onBundleProcessed;
+		this.onFileToProcessOpened = config.onFileToProcessOpened ?? this.onFileToProcessOpened;
 
-		if ('watchFiles' in config) {
-			this.watchFiles = config.watchFiles;
-		}
+		this.cssVarsDirPath = config.cssVarsDirPath ?? this.cssVarsDirPath;
+		this.sassVarsDirPath = config.sassVarsDirPath ?? this.sassVarsDirPath;
+		this.lessVarsDirPath = config.lessVarsDirPath ?? this.lessVarsDirPath;
+		this.stylusVarsDirPath = config.stylusVarsDirPath ?? this.stylusVarsDirPath;
 
-		this.filesBaseDir = config.filesBaseDir || this.filesBaseDir;
-
-		this.onBeforeInputFileRewritten = config.onBeforeInputFileRewritten || this.onBeforeInputFileRewritten;
-		this.onBeforeCssFileCreated = config.onBeforeCssFileCreated || this.onBeforeCssFileCreated;
-		this.onBundleProcessed = config.onBundleProcessed || this.onBundleProcessed;
-		this.onFileToProcessOpened = config.onFileToProcessOpened || this.onFileToProcessOpened;
-
-		this.cssVarsDirPath = config.cssVarsDirPath || this.cssVarsDirPath;
-		this.sassVarsDirPath = config.sassVarsDirPath || this.sassVarsDirPath;
-		this.lessVarsDirPath = config.lessVarsDirPath || this.lessVarsDirPath;
-		this.stylusVarsDirPath = config.stylusVarsDirPath || this.stylusVarsDirPath;
+		this.autoprefixerEnabled = config.autoprefixerEnabled ?? this.autoprefixerEnabled;
 
 		if ('bundles' in config) {
 			this.addBundles(config.bundles);
@@ -328,8 +328,7 @@ export class Bundler {
 		const variableValueSeparator = options.variableValueSeparator || '';
 		const afterValue = options.afterValue || '';
 
-		for (const variable in this.compilerConfig.variables) {
-			const variableValue = this.compilerConfig.variables[variable];
+		for (const [variable, variableValue] of Object.entries(this.compilerConfig.variables)) {
 			fileVariablesContent += `${variablePrefix}${variable}${variableValueSeparator}${variableValue as string}${afterValue}\n`;
 		}
 
@@ -435,12 +434,11 @@ export class Bundler {
 		} else if (this.verbose) {
 			let buildsInfo = [];
 
-			for (const bundleOutputFile in this.bundlesBuildCache) {
+			for (const [bundleOutputFile, bundleBuildCache] of Object.entries(this.bundlesBuildCache)) {
 				if (!fs.existsSync(bundleOutputFile)) {
 					continue;
 				}
 
-				const bundleBuildCache = this.bundlesBuildCache[bundleOutputFile];
 				buildsInfo.push({
 					name: bundleOutputFile,
 					size: fs.statSync(bundleOutputFile).size / 1024,
@@ -615,12 +613,17 @@ export class Bundler {
 				fs.mkdirSync(outputDir, { recursive: true });
 			}
 
+			const generatedCss = bundleBuildCache.compilationResult.generateCss();
+			const cssToSave = this.autoprefixerEnabled
+				? (await postCssPrefixer.process(generatedCss, {from: undefined})).css
+				: generatedCss;
+
 			const hookData = await this.callBundleHook(bundleConfig, 'onBeforeCssFileCreated', {
-				content: bundleBuildCache.compilationResult.generateCss(),
+				content: cssToSave,
 				filePath: bundleConfig.outputFile
 			}) as OnBeforeCssFileCreatedCallbackDataInterface;
 
-			this.writeFile(hookData.filePath, hookData.content.trim());
+			this.writeFile(hookData.filePath, hookData.content);
 
 			bundleBuildCache.buildTime = ((performance.now() - startTime)/1000).toFixed(2);
 			this.log(`Created "${bundleConfig.outputFile}" (${bundleBuildCache.buildTime} s).`, 'textGreen');

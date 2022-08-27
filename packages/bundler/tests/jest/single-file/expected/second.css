@@ -118,7 +118,9 @@
 }
 #stylify-profiler .user-select\:none,
 #stylify-profiler .profiler-extension__button{
-	user-select: none
+	-webkit-user-select: none;
+	   -moz-user-select: none;
+	        user-select: none
 }
 #stylify-profiler .position\:absolute,
 #stylify-profiler .profiler-extension__dropdown{
