@@ -45,10 +45,10 @@ const parseColor = (color: string): RgbDataInterface => {
 		b: null
 	};
 
-	if (color.match(/^#/)) {
+	if (/^#/.test(color)) {
 		rgbData = parseHex(color);
 
-	} else if (color.match(/^rgb\(/)) {
+	} else if (/^rgb\(/.test(color)) {
 		rgbData = parseRgb(color);
 	}
 

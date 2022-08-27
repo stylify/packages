@@ -393,7 +393,7 @@ export class Compiler {
 		const selectorsComponentsMap: SelectorsComponentsMapType = {};
 
 		Object.keys(this.components).forEach((componentsSelector) => {
-			if (!contentToProcess.match(new RegExp(`${componentsSelector}`, 'g'))) {
+			if (!new RegExp(`${componentsSelector}`, 'g').test(contentToProcess)) {
 				return;
 			}
 

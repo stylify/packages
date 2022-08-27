@@ -67,6 +67,7 @@ export class CssRecord {
 		}
 		this.mangledSelector = minifiedSelectorGenerator.getSelector(this.selector);
 		this.scope = config.scope || null;
+
 		if ('onAddProperty' in config) {
 			this.onAddProperty = typeof config.onAddProperty === 'string'
 				// eslint-disable-next-line @typescript-eslint/no-implied-eval
