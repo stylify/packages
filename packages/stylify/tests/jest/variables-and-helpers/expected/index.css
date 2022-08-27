@@ -1,20 +1,43 @@
 :root {
---textColor: #87CEEB;
---grey: #eeeeee;
+--bg: white;
+--color: black;
+--fontSize: 12px;
+}
+@media (min-width: 450px) {
+:root {
+--fontSize: 18px;
+}
+}
+@media (min-width: 1024px) {
+:root {
+--fontSize: 24px;
+}
+}
+@media (prefers-color-scheme: dark) {
+:root {
+--bg: black;
+--color: white;
+}
 }
 .text\:bold{
 	font-weight: bold
 }
-.text\:\$textColor{
-	color: #87CEEB
+.text\:italic{
+	font-style: italic
 }
-.bgc\:\$grey{
-	background-color: #eeeeee
+.fs\:\$fontSize{
+	font-size: var(--fontSize)
 }
-.fix\:2{
+.bgc\:\$bg{
+	background-color: var(--bg)
+}
+.clr\:\$color{
+	color: var(--color)
+}
+.fix\:2px{
 	position: fixed;
-	top: 2;
-	left: 2
+	top: 2px;
+	left: 2px
 }
 
 @media (min-width: 640px) {

@@ -4,3 +4,4 @@ export * from './MacroMatch';
 export * from './SelectorProperties';
 export * from './CompilationResult';
 export * from './MinifiedSelectorGenerator';
+export * from './ScreensSorter';

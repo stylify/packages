@@ -3,7 +3,9 @@ import {
 	MacroMatch,
 	SelectorProperties,
 	SelectorsComponentsMapType,
-	minifiedSelectorGenerator
+	minifiedSelectorGenerator,
+	screensSorter,
+	ScreensToSortMapType
 } from '.';
 
 export type MacroCallbackType = (macroMatch: MacroMatch, selectorProperties: SelectorProperties) => void;
@@ -47,7 +49,9 @@ export type HelpersType = Record<string, CallableFunction>;
 
 export type ScreensType = Record<string, string|ScreenCallbackType>;
 
-export type VariablesType = Record<string, string|number>;
+type VariablesTypeValue = string|number;
+
+export type VariablesType = Record<string, VariablesTypeValue|Record<string, VariablesTypeValue>>;
 
 export type KeyframesType = Record<string, string>;
 
@@ -261,11 +265,7 @@ export class Compiler {
 		return this;
 	}
 
-	public rewriteSelectors(
-		content: string,
-		compilationResult: CompilationResult,
-		rewriteOnlyInAreas = true
-	): string {
+	public rewriteSelectors(content: string, compilationResult: CompilationResult, rewriteOnlyInAreas = true): string {
 		if (this.dev && !this.mangleSelectors) {
 			return content;
 		}
@@ -427,14 +427,66 @@ export class Compiler {
 		}
 
 		const newLine = this.dev ? '\n' : '';
+		const makeVariableString = (variable: string, value: VariablesTypeValue) => `--${variable}: ${String(value)};${newLine}`;
 		let variablesCss = '';
 
-		if (this.injectVariablesIntoCss && Object.keys(this.variables).length) {
-			variablesCss += `:root {${newLine}`;
-			for (const variable in this.variables) {
-				variablesCss += `--${variable}: ${this.variables[variable]};${newLine}`;
+		if (this.injectVariablesIntoCss) {
+			let variablesCssMap: ScreensToSortMapType = new Map();
+			variablesCssMap.set('_', '');
+
+			let screensString = '';
+			const addScreenVariable = (screen: string, variable: string, value) => variablesCssMap.set(
+				screen, `${variablesCssMap.get(screen) as string}${makeVariableString(variable, String(value))}`
+
+			);
+			for (const [variableOrScreen, value] of Object.entries(this.variables)) {
+				if (['string', 'number'].includes(typeof value)) {
+					addScreenVariable('_', variableOrScreen, value);
+					continue;
+				}
+
+				if (!(variableOrScreen in variablesCssMap)) {
+					variablesCssMap.set(variableOrScreen, '');
+					screensString += ` ${variableOrScreen}`;
+				}
+
+				for (const [screenVariableName, screenVariableValue] of Object.entries(value)) {
+					addScreenVariable(variableOrScreen, screenVariableName, screenVariableValue);
+				}
 			}
-			variablesCss += `}${newLine}`;
+
+			for (const key in this.screens) {
+				const screenRegExp = new RegExp(`\\b${key}`, 'g');
+				let screenMatches: RegExpExecArray;
+
+				while ((screenMatches = screenRegExp.exec(screensString))) {
+					if (screenMatches === null) {
+						continue;
+					}
+
+					let screenData = this.screens[key];
+
+					if (typeof screenData === 'function') {
+						screenData = screenData(screenMatches[0]);
+					}
+
+					variablesCssMap.set(`@media ${screenData}`, variablesCssMap.get(screenMatches[0]));
+					variablesCssMap.set(screenMatches[0], '');
+				}
+			}
+
+			variablesCssMap = screensSorter.sortCssTreeMediaQueries(variablesCssMap);
+
+			for (const screen of variablesCssMap.keys()) {
+				const screenVariablesString = variablesCssMap.get(screen);
+
+				if (!screenVariablesString.length) {
+					continue;
+				}
+
+				const rootCss = `:root {${newLine}${screenVariablesString as string}}${newLine}`;
+				variablesCss += screen === '_' ? rootCss : `${screen} {${newLine}${rootCss}}${newLine}`;
+			}
 		}
 
 		let keyframesCss = '';

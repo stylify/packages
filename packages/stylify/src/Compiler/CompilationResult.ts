@@ -1,10 +1,18 @@
-import { CssRecord, MacroMatch, SelectorProperties, minifiedSelectorGenerator } from '.';
+import {
+	CssRecord,
+	MacroMatch,
+	SelectorProperties,
+	minifiedSelectorGenerator,
+	screensSorter
+} from '.';
 
-type ScreensListMapType = Map<string, number|null>;
+export type ScreenSortingFunctionType = (screensList: ScreensListMapType) => ScreensListMapType;
+
+export type ScreensListScreenValueType = number|null;
+
+export type ScreensListMapType = Map<string, ScreensListScreenValueType>;
 
 type OnPrepareCssRecordCallbackType = (cssRecord: CssRecord) => void;
-
-type ScreenSortingFunctionType = (screensList: ScreensListMapType) => ScreensListMapType;
 
 export type ScreensListRecordType = Record<string, number>;
 
@@ -18,7 +26,7 @@ export interface CompilationResultConfigInterface {
 	selectorsList?: SelectorsListType,
 	componentsList?: string[],
 	mangleSelectors?: boolean,
-	onPrepareCssRecord?: OnPrepareCssRecordCallbackType | string,
+	onPrepareCssRecord?: OnPrepareCssRecordCallbackType,
 	defaultCss?: string
 }
 
@@ -85,19 +93,8 @@ export class CompilationResult {
 			}
 		}
 
-		if ('screensSortingFunction' in config) {
-			this.screensSortingFunction = typeof config.screensSortingFunction === 'string'
-				// eslint-disable-next-line @typescript-eslint/no-implied-eval
-				? new Function(config.screensSortingFunction) as ScreenSortingFunctionType
-				: config.screensSortingFunction;
-		}
-
-		if ('onPrepareCssRecord' in config) {
-			this.onPrepareCssRecord = typeof config.onPrepareCssRecord === 'string'
-				// eslint-disable-next-line @typescript-eslint/no-implied-eval
-				? new Function(config.onPrepareCssRecord) as OnPrepareCssRecordCallbackType
-				: config.onPrepareCssRecord;
-		}
+		this.screensSortingFunction = config.screensSortingFunction ?? screensSorter.sortCssTreeMediaQueries;
+		this.onPrepareCssRecord = config.onPrepareCssRecord ?? null;
 
 		this.addScreens(config.screensList || {});
 	}
@@ -156,7 +153,7 @@ export class CompilationResult {
 		}
 
 		if (!this.screensListSorted) {
-			this.screensList = this.sortCssTreeMediaQueries(this.screensList);
+			this.screensList = this.screensSortingFunction(this.screensList);
 		}
 
 		for (const [screen] of this.screensList) {
@@ -273,121 +270,6 @@ export class CompilationResult {
 				);
 			}
 		}
-	}
-
-	private sortCssTreeMediaQueries(screensList: ScreensListMapType): ScreensListMapType {
-		this.screensListSorted = true;
-		if (this.screensSortingFunction) {
-			return this.screensSortingFunction(screensList);
-		}
-
-		const sortedScreens: ScreensListMapType = new Map();
-		sortedScreens.set('_', screensList.get('_'));
-		screensList.delete('_');
-
-		const lightModeScreensListKeys: string[] = [];
-		const darkModeScreensListKeys: string[] = [];
-		const printScreensListKeys: string[] = [];
-
-		const screensListKeysArray = [...screensList.keys()].filter((screen) => {
-			if (screen.includes('(prefers-color-scheme: dark)')) {
-				darkModeScreensListKeys.push(screen);
-				return false;
-			} else if (screen.includes('(prefers-color-scheme: light)')) {
-				lightModeScreensListKeys.push(screen);
-				return false;
-			} else if (screen.includes('print')) {
-				printScreensListKeys.push(screen);
-				return false;
-			}
-			return true;
-		});
-
-		const convertUnitToPxSize = (unit: string): number => {
-			const unitMatch = (/(\d*\.?\d+)(ch|em|ex|px|rem)/).exec(unit);
-
-			if (!unitMatch) {
-				return null;
-			}
-
-			const unitSize = unitMatch[1];
-			const unitType = unitMatch[2];
-			let newUnitSize = parseFloat(unitSize);
-
-			if (unitType === 'ch') {
-				newUnitSize = parseFloat(unitSize) * 8.8984375;
-			} else if (['em', 'rem'].includes(unitType)) {
-				newUnitSize = parseFloat(unitSize) * 16;
-			} else if (unitType === 'ex') {
-				newUnitSize = parseFloat(unitSize) * 8.296875;
-			}
-
-			return newUnitSize;
-		};
-
-		const getMediaQueryValue = (mediaQuery: string): number => {
-			// eslint-disable-next-line no-useless-escape
-			const regExp = new RegExp('[\\w-]+: ?\\d*\.?\\d+(?:ch|em|ex|px|rem)');
-			const match = regExp.exec(mediaQuery);
-			return match ? convertUnitToPxSize(match[0]) : Number.MAX_VALUE;
-		};
-
-		const separateAndSort = (cssTreeKeys: string[], mediaQueryType: string, desc = false): string[] => {
-			const cssTreeKeysToReturn: string[] = [];
-			const sortedKeys = cssTreeKeys
-				.filter((mediaQuery): boolean => {
-					// eslint-disable-next-line no-useless-escape
-					const regExp = new RegExp(`${mediaQueryType}: ?\\d*\.?\\d+(?:ch|em|ex|px|rem)`);
-
-					if (!regExp.exec(mediaQuery)) {
-						cssTreeKeysToReturn.push(mediaQuery);
-						return false;
-					}
-
-					return true;
-				})
-				.sort((next: string, previous: string): number => {
-					const result = getMediaQueryValue(next) > getMediaQueryValue(previous);
-
-					if (desc) {
-						return result ? -1 : 0;
-					}
-
-					return result ? 0 : -1;
-				});
-
-			mapSortedKeys(sortedKeys);
-
-			return cssTreeKeysToReturn;
-		};
-
-		const mapSortedKeys = (sortedKeys: string[]): void => {
-			for (const sortedKey of sortedKeys) {
-				sortedScreens.set(sortedKey, screensList.get(sortedKey));
-				screensList.delete(sortedKey);
-			}
-		};
-
-		const sortScreensListKeys = (screensListKeys: string[]): string[] => {
-			screensListKeys = separateAndSort(screensListKeys, 'min-width');
-			screensListKeys = separateAndSort(screensListKeys, 'min-height');
-			screensListKeys = separateAndSort(screensListKeys, 'max-width', true);
-			screensListKeys = separateAndSort(screensListKeys, 'max-height', true);
-			screensListKeys = separateAndSort(screensListKeys, 'min-device-width');
-			screensListKeys = separateAndSort(screensListKeys, 'min-device-height');
-			screensListKeys = separateAndSort(screensListKeys, 'max-device-width', true);
-			screensListKeys = separateAndSort(screensListKeys, 'max-device-height', true);
-			return screensListKeys;
-		};
-
-		mapSortedKeys([
-			...sortScreensListKeys(screensListKeysArray),
-			...sortScreensListKeys(lightModeScreensListKeys),
-			...sortScreensListKeys(darkModeScreensListKeys),
-			...sortScreensListKeys(printScreensListKeys)
-		]);
-
-		return sortedScreens;
 	}
 
 }
