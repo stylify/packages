@@ -1,4 +1,6 @@
 :root {
+--blue: darkblue;
+--border: border 1px solid var(--blue);
 --bg: white;
 --color: black;
 --fontSize: 12px;

@@ -15,6 +15,8 @@ const compiler = new Compiler({
 		'minw\\w+': (screen: string): string => `(min-width: ${screen.replace('minw', '')})`,
 	},
 	variables: {
+		blue: 'darkblue',
+		border: 'border 1px solid $blue',
 		bg: 'white',
 		color: 'black',
 		fontSize: '12px',

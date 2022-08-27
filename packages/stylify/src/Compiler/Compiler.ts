@@ -49,9 +49,9 @@ export type HelpersType = Record<string, CallableFunction>;
 
 export type ScreensType = Record<string, string|ScreenCallbackType>;
 
-type VariablesTypeValue = string|number;
+type VariablesTypeValue = string;
 
-export type VariablesType = Record<string, VariablesTypeValue|Record<string, VariablesTypeValue>>;
+export type VariablesType = Record<string, VariablesTypeValue|Record<string, string>>;
 
 export type KeyframesType = Record<string, string>;
 
@@ -88,6 +88,8 @@ export interface ComponentsInterface {
 }
 
 export class Compiler {
+
+	private readonly variableRegExp = /\$([\w-_]+)/;
 
 	private readonly contentOptionsRegExp = /stylify-([a-zA-Z-_0-9]+)\s([\s\S]+?)\s\/stylify-[a-zA-Z-_0-9]+/;
 
@@ -144,21 +146,26 @@ export class Compiler {
 
 	public configure(config: CompilerConfigInterface): Compiler {
 		this.dev = config.dev ?? this.dev;
-		this.macros = Object.assign(this.macros, config.macros || {});
-
-		this.helpers = Object.assign(this.helpers, config.helpers || {});
-		this.variables = Object.assign(this.variables, config.variables || {});
-		this.keyframes = Object.assign(this.keyframes, config.keyframes || {});
-		this.screens = Object.assign(this.screens, config.screens || {});
+		this.macros = {...this.macros, ...config.macros ?? {}};
+		this.helpers = {...this.helpers, ...config.helpers ?? {}};
+		this.keyframes = {...this.keyframes, ...config.keyframes ?? {}};
+		this.screens = {...this.screens, ...config.screens ?? {}};
+		this.contentOptionsProcessors = {...this.contentOptionsProcessors, ...config.contentOptionsProcessors};
+		this.injectVariablesIntoCss = config.injectVariablesIntoCss ?? this.injectVariablesIntoCss;
+		this.selectorsAreas = [...this.selectorsAreas, ...config.selectorsAreas ?? []];
+		this.onPrepareCompilationResult = config.onPrepareCompilationResult ?? this.onPrepareCompilationResult;
+		this.onNewMacroMatch = config.onNewMacroMatch ?? this.onNewMacroMatch;
 		this.mangleSelectors = config.mangleSelectors ?? this.mangleSelectors;
+		this.replaceVariablesByCssVariables =
+			config.replaceVariablesByCssVariables ?? this.replaceVariablesByCssVariables;
+		this.addVariables(config.variables ?? {});
 
 		if (typeof config.pregenerate !== 'undefined') {
 			this.pregenerate += Array.isArray(config.pregenerate) ? config.pregenerate.join(' ') : config.pregenerate;
 		}
 
-		this.contentOptionsProcessors = {...this.contentOptionsProcessors, ...config.contentOptionsProcessors};
 		const ignoredAreasRegExpStrings: string[] = [];
-		this.ignoredAreas = [...this.ignoredAreas, ...config.ignoredAreas || []]
+		this.ignoredAreas = [...this.ignoredAreas, ...config.ignoredAreas ?? []]
 			.filter((ignoredAreaRegExp, index, self) => {
 				const isUnique = self.indexOf(ignoredAreaRegExp) === index;
 				if (isUnique) ignoredAreasRegExpStrings.push(ignoredAreaRegExp.source);
@@ -166,27 +173,37 @@ export class Compiler {
 			});
 		this.ignoredAreasRegExpString = ignoredAreasRegExpStrings.join('|');
 
-		this.replaceVariablesByCssVariables = 'replaceVariablesByCssVariables' in config
-			? config.replaceVariablesByCssVariables
-			: this.replaceVariablesByCssVariables;
-		this.injectVariablesIntoCss = 'injectVariablesIntoCss' in config
-			? config.injectVariablesIntoCss
-			: this.injectVariablesIntoCss;
-		this.selectorsAreas = [...this.selectorsAreas, ...config.selectorsAreas || []];
-		this.onPrepareCompilationResult = config.onPrepareCompilationResult || this.onPrepareCompilationResult;
-		this.onNewMacroMatch = config.onNewMacroMatch || this.onNewMacroMatch;
-
-		const plainSelectors = config.plainSelectors || {};
-		for (const [plainSelector, dependencySelectors] of Object.entries(plainSelectors)) {
+		for (const [plainSelector, dependencySelectors] of Object.entries(config.plainSelectors ?? {})) {
 			this.addPlainSelector(plainSelector, dependencySelectors);
 		}
 
-		const components = config.components || {};
-		for (const componentSelector in components) {
-			this.addComponent(componentSelector, components[componentSelector]);
+		for (const [componentSelector, selectorDependencies] of Object.entries(config.components ?? {})) {
+			this.addComponent(componentSelector, selectorDependencies);
 		}
 
 		return this;
+	}
+
+	public addVariables(variables: VariablesType, screen: string = null): void {
+		for (const [variableOrScreen, valueOrVariables] of Object.entries(variables)) {
+			if (!['string', 'number'].includes(typeof valueOrVariables)) {
+				this.addVariables(valueOrVariables as VariablesType, variableOrScreen);
+				continue;
+			}
+
+			const processedValue = this.replaceVariableString(String(valueOrVariables));
+
+			if (screen) {
+				if (!(screen in this.variables)) {
+					this.variables[screen] = {};
+				}
+
+				this.variables[screen][variableOrScreen] = processedValue;
+				continue;
+			}
+
+			this.variables[variableOrScreen] = processedValue;
+		}
 	}
 
 	public addPlainSelector(selector: string, dependencySelectors: string): void {
@@ -207,9 +224,7 @@ export class Compiler {
 		config: ComponentSelectorsType|ComponentConfigInterface
 	): Compiler {
 		if (selector.includes(',')) {
-			selector.split(',').forEach((selector) => {
-				this.addComponent(selector.trim(), config);
-			});
+			selector.split(',').forEach((selector) => this.addComponent(selector.trim(), config));
 			return;
 		}
 
@@ -542,23 +557,8 @@ export class Compiler {
 						selectorProperties
 					);
 
-					for (const property in selectorProperties.properties) {
-						selectorProperties.properties[property] = selectorProperties.properties[property].replace(
-							/\$([\w-_]+)/g,
-							(match, substring: string): string => {
-								if (!(substring in this.variables)) {
-									const info = `Stylify: Variable "${substring}" not found when processing "${macroMatch.fullMatch}". Available variables are "${Object.keys(this.variables).join(', ')}".`;
-									if (this.dev) {
-										console.warn(info);
-									} else {
-										throw new Error(info);
-									}
-								}
-								return this.replaceVariablesByCssVariables
-									? `var(--${substring})`
-									: String(this.variables[substring]);
-							}
-						);
+					for (const [property, value] of Object.entries(selectorProperties.properties)) {
+						selectorProperties.properties[property] = this.replaceVariableString(value);
 					}
 
 					if (this.onNewMacroMatch) {
@@ -579,6 +579,25 @@ export class Compiler {
 				});
 			}
 		}
+	}
+
+	private replaceVariableString(string: string): VariablesTypeValue {
+		return string.replace(
+			this.variableRegExp,
+			(match, substring: string): string => {
+				if (!(substring in this.variables)) {
+					const info = `Stylify: Variable "${substring}" not found when processing "${string}".`;
+					if (this.dev) {
+						console.warn(info);
+					} else {
+						throw new Error(info);
+					}
+				}
+				return this.replaceVariablesByCssVariables
+					? `var(--${substring})`
+					: this.variables[substring] as VariablesTypeValue;
+			}
+		);
 	}
 
 	public getOptionsFromContent(content: string): CompilerContentOptionsInterface {
