@@ -23,7 +23,7 @@ export interface NuxtModuleConfigInterface {
 	sassVarsDirPath?: string,
 	lessVarsDirPath?: string,
 	stylusVarsDirPath?: string,
-	filesMasks: string[],
+	filesMasks?: string[],
 	extend?: Partial<NuxtModuleConfigInterface>,
 }
 
@@ -115,44 +115,35 @@ export default defineNuxtModule<NuxtModuleConfigInterface>({
 		const nuxtIsInDevMode = nuxt.options.dev ?? moduleConfig.dev;
 
 		moduleConfig.dev = nuxtIsInDevMode;
-
 		if ('stylify' in nuxt.options) {
-			mergeConfig(moduleConfig, moduleConfig);
+			// eslint-disable-next-line
+			moduleConfig = mergeConfig(moduleConfig, (<any>nuxt).options.stylify as NuxtModuleConfigInterface);
 		}
 
-		let configFileExists = false;
+		const getConfigPath = (configPath: string): string =>
+			path.join(nuxt.options.rootDir, resolveAlias(configPath));
+
+		const configsPaths = [getConfigPath('stylify.config.js'), getConfigPath('stylify.config.ts')];
 
 		if (moduleConfig.configPath) {
-			moduleConfig.configPath = path.join(nuxt.options.rootDir, resolveAlias(moduleConfig.configPath));
-			configFileExists = fs.existsSync(moduleConfig.configPath);
+			moduleConfig.configPath = getConfigPath(moduleConfig.configPath);
 
-			if (!configFileExists) {
-				console.error(`Stylify: Given config "${moduleConfig.configPath}" was not found. Skipping.`);
-			}
-
-		} else {
-			const jsConfigPath = path.join(nuxt.options.rootDir, resolveAlias('stylify.config.js'));
-			configFileExists = fs.existsSync(jsConfigPath);
-
-			if (configFileExists) {
-				moduleConfig.configPath = jsConfigPath;
+			if (fs.existsSync(moduleConfig.configPath)) {
+				configsPaths.push(moduleConfig.configPath);
 
 			} else {
-				const tsConfigPath = path.join(nuxt.options.rootDir, resolveAlias('stylify.config.ts'));
-				configFileExists = fs.existsSync(tsConfigPath);
-
-				if (configFileExists) {
-					moduleConfig.configPath = tsConfigPath;
-				}
+				console.error(`Stylify: Given config "${moduleConfig.configPath}" was not found. Skipping.`);
 			}
 		}
 
-		if (configFileExists) {
-			const config: Partial<NuxtModuleConfigInterface> = requireModule(moduleConfig.configPath);
-			moduleConfig = mergeConfig(moduleConfig, config);
+		for (const configPath of configsPaths) {
+			if (fs.existsSync(configPath)) {
+				const config: Partial<NuxtModuleConfigInterface> = requireModule(configPath);
+				moduleConfig = mergeConfig(moduleConfig, config);
 
-			if (nuxtIsInDevMode) {
-				nuxt.options.watch.push(moduleConfig.configPath);
+				if (nuxtIsInDevMode) {
+					nuxt.options.watch.push(configPath);
+				}
 			}
 		}
 
@@ -163,7 +154,10 @@ export default defineNuxtModule<NuxtModuleConfigInterface>({
 			'(?:^|\\s+)(?:v-bind)?:class=\'([^\']+)\''
 		];
 
-		const runtimeDir = path.join(__dirname ?? path.dirname(fileURLToPath(import.meta.url)), 'runtime');
+		const runtimeDir = path.join(
+			typeof __dirname === 'undefined' ? path.dirname(fileURLToPath(import.meta.url)) : __dirname, 'runtime'
+		);
+
 		const assetsDir = resolveAlias(nuxt.options.dir.assets);
 		const assetsStylifyCssPath = path.join(nuxt.options.rootDir, assetsDir, stylifyCssFileName);
 
