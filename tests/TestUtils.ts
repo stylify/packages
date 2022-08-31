@@ -3,9 +3,9 @@ const path = require('path');
 
 export default class TestUtils {
 
-	private packageName: string = null;
+	private packageName: string|null = null;
 
-	private testName: string = null;
+	private testName: string|null = null;
 
 	constructor(packageName: string, testName: string) {
 		this.packageName = packageName;
@@ -27,7 +27,7 @@ export default class TestUtils {
 		return path.join(__dirname, '..', 'packages', this.packageName);
 	}
 
-	public getTestName(): string {
+	public getTestName(): string|null {
 		return this.testName;
 	}
 
@@ -35,7 +35,7 @@ export default class TestUtils {
 		return path.join(this.getPackageDir(), 'tests', testsType, this.testName);
 	}
 
-	public readFile(filePath): string {
+	public readFile(filePath: string): string {
 		return fs.readFileSync(filePath, 'utf8').toString().trim();
 	}
 

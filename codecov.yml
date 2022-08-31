@@ -23,6 +23,9 @@ flags:
   bundler:
     paths:
       - packages/bundler/
+  nuxt:
+    paths:
+      - packages/nuxt/
   stylify:
     paths:
       - packages/stylify/

@@ -137,13 +137,14 @@ export default defineNuxtModule<NuxtModuleConfigInterface>({
 		}
 
 		for (const configPath of configsPaths) {
-			if (fs.existsSync(configPath)) {
-				const config: Partial<NuxtModuleConfigInterface> = requireModule(configPath);
-				moduleConfig = mergeConfig(moduleConfig, config);
+			if (!fs.existsSync(configPath)) {
+				continue;
+			}
 
-				if (nuxtIsInDevMode) {
-					nuxt.options.watch.push(configPath);
-				}
+			moduleConfig = mergeConfig(moduleConfig, requireModule(configPath) as Partial<NuxtModuleConfigInterface>);
+
+			if (nuxtIsInDevMode) {
+				nuxt.options.watch.push(configPath);
 			}
 		}
 
