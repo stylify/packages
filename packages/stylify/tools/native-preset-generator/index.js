@@ -30,20 +30,21 @@ class NativePresetGenerator {
 
 		while ((propertyMatch = re.exec(listsFilesContent))) {
 			let property = propertyMatch[0];
+			property = property.replace(/^[^\w]+/, '');
 
-			if (propertiesList.indexOf(property) > -1) {
+			if (propertiesList.includes(property)) {
 				continue;
 			}
 
 			propertiesList.push(property);
 		}
 
+		const propertiesMap = {};
 		propertiesList.sort().forEach((property) => {
-			this.assignPropertyToPropertiesMap(property);
+			this.assignPropertyToPropertiesMap(propertiesMap, property);
 		});
 
-		const processedPropertiesRegExpString = this.convertMapIntoRegularExpression(this.propertiesMap);
-		const propertiesRegExp = '(' + processedPropertiesRegExpString + '):(\\\\S+?)';
+		const propertiesRegExp = `(${this.convertMapIntoRegularExpression(propertiesMap)}):(\\\\S+?)`;
 
 		fs.writeFileSync(browserPropertiesListPath, propertiesList.join('\n'));
 
@@ -54,7 +55,7 @@ class NativePresetGenerator {
 				{
 					__SIDES_SHORTCUTS__: JSON.stringify(this.sidesShortcuts),
 					__SIZES_SHORTCUTS__: JSON.stringify(this.sizesShortcuts),
-					__REG_EXP__: propertiesRegExp
+					__PROPERTIES_REG_EXP__: propertiesRegExp
 				}
 			)
 		);
@@ -63,11 +64,11 @@ class NativePresetGenerator {
 	/**
 	 * @param {string} property
 	 */
-	assignPropertyToPropertiesMap(property) {
+	assignPropertyToPropertiesMap(map, property) {
 		let keyPath = property.split('-');
 		let key;
 		let lastKeyIndex = keyPath.length - 1;
-		let object = this.propertiesMap;
+		let object = map;
 		let i;
 
 		for (i = 0; i < lastKeyIndex; ++i) {
@@ -84,6 +85,8 @@ class NativePresetGenerator {
 		}
 
 		object[keyPath[lastKeyIndex]] = true;
+
+		return object;
 	}
 
 	/**

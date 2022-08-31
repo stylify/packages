@@ -527,15 +527,14 @@ export class Compiler {
 		const regExpEndPart = `(?=['"\`{}\\[\\]<>\\s]|$)`;
 		const regExpGenerators = [
 			// Match with media query and without pseudo class
-			(macroKey: string): RegExp => new RegExp(`(?:([a-zA-Z0-9-:&|]+):)${macroKey}${regExpEndPart}`, 'g'),
+			(macroKey: string): RegExp => new RegExp(`\\b(?:([a-zA-Z0-9-:&|]+):)${macroKey}${regExpEndPart}`, 'g'),
 			// Match without media query and without pseudo class
 			// () - empty pseudo class and media query match
-			(macroKey: string): RegExp => new RegExp(`()${macroKey}${regExpEndPart}`, 'g')
+			(macroKey: string): RegExp => new RegExp(`\\b()${macroKey}${regExpEndPart}`, 'g')
 		];
 
 		for (const regExpGenerator of regExpGenerators) {
 			for (const macroKey in this.macros) {
-
 				content = content.replace(regExpGenerator(macroKey), (...args) => {
 					const macroMatches: string[] = args.slice(0, args.length - 2);
 					const macroMatch = new MacroMatch(macroMatches, this.screens);
