@@ -38,6 +38,7 @@
 		"nuxt-module:build": "cross-env packages=nuxt-module yarn build",
 		"nuxt-module:build:notypes": "cross-env packages=nuxt-module yarn build:notypes",
 		"nuxt-module:watch": "cross-env packages=nuxt-module watch=true yarn watch",
+		"nuxt-module:test": "yarn jest:test packages/nuxt-module/tests/jest",
 		"nuxt-module:plg:build": "cd packages/nuxt-module/playground && yarn install && yarn build",
 		"nuxt-module:plg:dev": "cd packages/nuxt-module/playground && yarn install && yarn dev",
 		"nuxt-module:plg:start": "cd packages/nuxt-module/playground && yarn start",

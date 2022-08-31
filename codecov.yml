@@ -26,6 +26,9 @@ flags:
   nuxt:
     paths:
       - packages/nuxt/
+  nuxt-module:
+    paths:
+      - packages/nuxt-module/
   stylify:
     paths:
       - packages/stylify/

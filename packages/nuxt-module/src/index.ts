@@ -21,7 +21,7 @@ export interface StylifyNuxtModuleConfigInterface {
 	sassVarsDirPath?: string,
 	lessVarsDirPath?: string,
 	stylusVarsDirPath?: string,
-	filesMasks: string[],
+	filesMasks?: string[],
 	loaders?: LoadersInterface[],
 	extend?: Partial<StylifyNuxtModuleConfigInterface>,
 }
@@ -125,42 +125,31 @@ export default function Stylify(): void {
 		mergeConfig(nuxt.options.stylify as StylifyNuxtModuleConfigInterface);
 	}
 
+	const getConfigPath = (configPath: string) => nuxt.resolver.resolveAlias(configPath) as string;
+	const configsPaths = [getConfigPath('stylify.config.js'), getConfigPath('stylify.config.ts')];
+
 	let configFileExists = false;
 
 	if (moduleConfig.configPath) {
-		moduleConfig.configPath = nuxt.resolver.resolveAlias(moduleConfig.configPath);
-		configFileExists = fs.existsSync(moduleConfig.configPath);
-
-		if (!configFileExists) {
-			console.error(`Stylify: Given config "${moduleConfig.configPath}" was not found. Skipping.`);
-		}
-
-	} else {
-		const jsConfigPath: string = nuxt.resolver.resolveAlias('stylify.config.js');
-		configFileExists = fs.existsSync(jsConfigPath);
+		const configPath = getConfigPath(moduleConfig.configPath);
+		configFileExists = fs.existsSync(configPath);
 
 		if (configFileExists) {
-			moduleConfig.configPath = jsConfigPath;
-
+			configsPaths.push(configPath);
 		} else {
-			const tsConfigPath: string = nuxt.resolver.resolveAlias('stylify.config.ts');
-			configFileExists = fs.existsSync(tsConfigPath);
-
-			if (configFileExists) {
-				moduleConfig.configPath = tsConfigPath;
-			}
+			console.error(`Stylify: Given config "${moduleConfig.configPath}" was not found. Skipping.`);
 		}
 	}
 
-	if (configFileExists) {
-		const configFromFile: Partial<StylifyNuxtModuleConfigInterface> = nuxt.resolver.requireModule(
-			moduleConfig.configPath
-		);
+	for (const configPath of configsPaths) {
+		if (!fs.existsSync(configPath)) {
+			continue;
+		}
 
-		mergeConfig(configFromFile);
+		mergeConfig(nuxt.resolver.requireModule(configPath) as Partial<StylifyNuxtModuleConfigInterface>);
 
 		if (nuxtIsInDevMode) {
-			nuxt.options.watch.push(moduleConfig.configPath);
+			nuxt.options.watch.push(configPath);
 		}
 	}
 
