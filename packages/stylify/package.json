@@ -1,6 +1,6 @@
 {
 	"name": "@stylify/stylify",
-	"version": "0.1.3",
+	"version": "0.2.1",
 	"description": "Dynamic CSS generator for rapid UI development.",
 	"keywords": [
 		"stylify",

@@ -21,41 +21,29 @@
   },
   "bundler": {
     "/esm/index.mjs": {
-      "size": 21496
+      "size": 21048
     },
     "/lib/index.cjs": {
-      "size": 22959
+      "size": 22589
     }
   },
   "nuxt": {
     "/esm/module.mjs": {
-      "size": 9855
-    },
-    "/esm/runtime/plugins/profiler-plugin.client.mjs": {
-      "size": 93655
+      "size": 6536
     },
     "/lib/module.cjs": {
-      "size": 11821
-    },
-    "/lib/runtime/plugins/profiler-plugin.client.mjs": {
-      "size": 94896
+      "size": 8377
     }
   },
   "nuxt-module": {
     "/esm/index.mjs": {
-      "size": 8421
-    },
-    "/esm/profiler-plugin.mjs": {
-      "size": 4927
+      "size": 6203
     },
     "/esm/webpack-loader.mjs": {
       "size": 851
     },
     "/lib/index.cjs": {
-      "size": 10037
-    },
-    "/lib/profiler-plugin.cjs": {
-      "size": 6093
+      "size": 7774
     },
     "/lib/webpack-loader.cjs": {
       "size": 1879
@@ -63,48 +51,48 @@
   },
   "profiler": {
     "/esm/index.js": {
-      "size": 89095
+      "size": 87696
     },
     "/esm/index.min.js": {
-      "size": 66916
+      "size": 65517
     },
     "/esm/index.mjs": {
-      "size": 89095
+      "size": 87696
     },
     "/lib/index.cjs": {
-      "size": 90388
+      "size": 88989
     },
     "/dist/profiler.js": {
-      "size": 91219
+      "size": 89820
     },
     "/dist/profiler.min.js": {
-      "size": 66693
+      "size": 65294
     }
   },
   "stylify": {
     "/esm/index.js": {
-      "size": 55414
+      "size": 55303
     },
     "/esm/index.min.js": {
-      "size": 30230
+      "size": 29486
     },
     "/esm/index.mjs": {
-      "size": 55414
+      "size": 55303
     },
     "/lib/index.cjs": {
-      "size": 56652
+      "size": 56663
     },
     "/dist/stylify.js": {
-      "size": 46567
+      "size": 46697
     },
     "/dist/stylify.min.js": {
-      "size": 21734
+      "size": 21073
     },
     "/dist/stylify.native.js": {
-      "size": 58829
+      "size": 59058
     },
     "/dist/stylify.native.min.js": {
-      "size": 30611
+      "size": 29996
     }
   },
   "unplugin": {
