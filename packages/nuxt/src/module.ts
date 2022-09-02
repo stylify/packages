@@ -1,7 +1,6 @@
 import fs from 'fs';
 import path from 'path';
 import { name } from '../package.json';
-import type { BundlesBuildCacheInterface } from '@stylify/bundler';
 import {
 	CompilerConfigInterface,
 	nativePreset
@@ -9,7 +8,6 @@ import {
 import { unplugin, defineConfig as defineUnpluginConfig, UnpluginConfigInterface } from '@stylify/unplugin';
 import {
 	defineNuxtModule,
-	addPlugin,
 	extendViteConfig,
 	extendWebpackConfig,
 	resolveAlias,
@@ -25,7 +23,7 @@ export interface NuxtModuleConfigInterface {
 	sassVarsDirPath?: string,
 	lessVarsDirPath?: string,
 	stylusVarsDirPath?: string,
-	filesMasks: string[],
+	filesMasks?: string[],
 	extend?: Partial<NuxtModuleConfigInterface>,
 }
 
@@ -78,9 +76,7 @@ const mergeConfig = (
 	return {...actualConfig, ...config};
 };
 
-const processedBundles: Record<string, ProcessedBundleInterface> = {};
 const stylifyCssFileName = 'stylify.css';
-const stylifyJsonFileName = 'stylify.json';
 
 export const defineConfig = (config: NuxtModuleConfigInterface): NuxtModuleConfigInterface => config;
 
@@ -119,44 +115,36 @@ export default defineNuxtModule<NuxtModuleConfigInterface>({
 		const nuxtIsInDevMode = nuxt.options.dev ?? moduleConfig.dev;
 
 		moduleConfig.dev = nuxtIsInDevMode;
-
 		if ('stylify' in nuxt.options) {
-			mergeConfig(moduleConfig, moduleConfig);
+			// eslint-disable-next-line
+			moduleConfig = mergeConfig(moduleConfig, (<any>nuxt).options.stylify as NuxtModuleConfigInterface);
 		}
 
-		let configFileExists = false;
+		const getConfigPath = (configPath: string): string =>
+			path.join(nuxt.options.rootDir, resolveAlias(configPath));
+
+		const configsPaths = [getConfigPath('stylify.config.js'), getConfigPath('stylify.config.ts')];
 
 		if (moduleConfig.configPath) {
-			moduleConfig.configPath = path.join(nuxt.options.rootDir, resolveAlias(moduleConfig.configPath));
-			configFileExists = fs.existsSync(moduleConfig.configPath);
+			moduleConfig.configPath = getConfigPath(moduleConfig.configPath);
 
-			if (!configFileExists) {
-				console.error(`Stylify: Given config "${moduleConfig.configPath}" was not found. Skipping.`);
-			}
-
-		} else {
-			const jsConfigPath = path.join(nuxt.options.rootDir, resolveAlias('stylify.config.js'));
-			configFileExists = fs.existsSync(jsConfigPath);
-
-			if (configFileExists) {
-				moduleConfig.configPath = jsConfigPath;
+			if (fs.existsSync(moduleConfig.configPath)) {
+				configsPaths.push(moduleConfig.configPath);
 
 			} else {
-				const tsConfigPath = path.join(nuxt.options.rootDir, resolveAlias('stylify.config.ts'));
-				configFileExists = fs.existsSync(tsConfigPath);
-
-				if (configFileExists) {
-					moduleConfig.configPath = tsConfigPath;
-				}
+				console.error(`Stylify: Given config "${moduleConfig.configPath}" was not found. Skipping.`);
 			}
 		}
 
-		if (configFileExists) {
-			const config: Partial<NuxtModuleConfigInterface> = requireModule(moduleConfig.configPath);
-			moduleConfig = mergeConfig(moduleConfig, config);
+		for (const configPath of configsPaths) {
+			if (!fs.existsSync(configPath)) {
+				continue;
+			}
+
+			moduleConfig = mergeConfig(moduleConfig, requireModule(configPath) as Partial<NuxtModuleConfigInterface>);
 
 			if (nuxtIsInDevMode) {
-				nuxt.options.watch.push(moduleConfig.configPath);
+				nuxt.options.watch.push(configPath);
 			}
 		}
 
@@ -167,48 +155,14 @@ export default defineNuxtModule<NuxtModuleConfigInterface>({
 			'(?:^|\\s+)(?:v-bind)?:class=\'([^\']+)\''
 		];
 
-		const runtimeDir = path.join(__dirname ?? path.dirname(fileURLToPath(import.meta.url)), 'runtime');
+		const runtimeDir = path.join(
+			typeof __dirname === 'undefined' ? path.dirname(fileURLToPath(import.meta.url)) : __dirname, 'runtime'
+		);
+
 		const assetsDir = resolveAlias(nuxt.options.dir.assets);
 		const assetsStylifyCssPath = path.join(nuxt.options.rootDir, assetsDir, stylifyCssFileName);
 
 		nuxt.options.build.transpile.push(runtimeDir);
-
-		if (moduleConfig.dev) {
-			addPlugin({
-				ssr: false,
-				src: path.resolve(runtimeDir, 'plugins', 'profiler-plugin.client.mjs')
-			});
-
-			const headSnippet = `
-				window.addEventListener('load', () => {
-					const getStylifyBuildInfo = async () => {
-						try {
-							let response = await fetch('${assetsDir}/${stylifyJsonFileName}')
-
-							const scriptEl = document.createElement('script');
-							const stylifyBuildData = await response.json();
-							scriptEl.innerHTML = JSON.stringify(stylifyBuildData);
-							scriptEl.setAttribute('class', 'stylify-profiler-data');
-							scriptEl.setAttribute('type', 'application/json');
-							document.querySelector('body').append(scriptEl);
-						} catch (e) {
-							console.warn(e);
-						}
-
-						setTimeout(() => {
-							getStylifyBuildInfo();
-						}, 10000)
-					};
-
-					getStylifyBuildInfo();
-				});
-			`;
-
-			nuxt.options.app.head.script = nuxt.options.app.head.script || [];
-			nuxt.options.app.head.script.push({ children: headSnippet });
-		}
-
-		const bundleId = 'stylify';
 
 		if (!fs.existsSync(assetsDir)) {
 			fs.mkdirSync(assetsDir, { recursive: true });
@@ -218,7 +172,6 @@ export default defineNuxtModule<NuxtModuleConfigInterface>({
 			nuxt.options.css.push(assetsStylifyCssPath);
 		}
 
-		let nuxtBundleBuildCache: BundlesBuildCacheInterface = null;
 		const transformIncludeFilterExtensions = [];
 		const transformIncludeFilterDirectories = [];
 
@@ -227,63 +180,6 @@ export default defineNuxtModule<NuxtModuleConfigInterface>({
 			transformIncludeFilterDirectories.push(path.dirname(fileMask));
 		});
 
-		const convertObjectToStringableForm = (processedObject: Record<string, any>): Record<string, any> => {
-			const newObject = {};
-
-			for (const key in processedObject) {
-				const processedValue = processedObject[key];
-
-				const processedValueType = typeof processedValue;
-				if (![null, true, false].includes(processedValue as (null|true|false))
-					&& processedValueType === 'object'
-				) {
-					newObject[key] = Array.isArray(processedValue)
-						? processedValue
-						: convertObjectToStringableForm(processedValue as Record<string, any>);
-				} else if (processedValueType === 'function') {
-					newObject[key] = `${processedValue.toString() as string}`;
-				} else {
-					newObject[key] = processedValue;
-				}
-			}
-
-			return newObject;
-		};
-
-		const dumpProfilerInfo = (): void => {
-			if (!nuxtIsInDevMode || !nuxtBundleBuildCache) {
-				return;
-			}
-
-			const compiler = nuxtBundleBuildCache.compiler;
-			const bundlesStats: BundleStatsInterface[] = [];
-
-			for (const resourcePath in processedBundles) {
-				bundlesStats.push({
-					resourcePath: resourcePath,
-					css: processedBundles[resourcePath].css
-				});
-			}
-
-			const data = convertObjectToStringableForm({
-				compilerExtension: {
-					variables: compiler.variables,
-					plainSelectors: compiler.plainSelectors,
-					macros: compiler.macros,
-					components: compiler.components,
-					helpers: compiler.helpers,
-					screens: compiler.screens
-				},
-				nuxtExtension: {
-					bundlesStats: bundlesStats,
-					serializedCompilationResult: JSON.stringify(
-						nuxtBundleBuildCache.compilationResult.serialize()
-					)
-				}
-			});
-			fs.writeFileSync(path.join(nuxt.options.rootDir, assetsDir, stylifyJsonFileName), JSON.stringify(data));
-		};
-
 		const getPluginConfig = (): UnpluginConfigInterface => defineUnpluginConfig({
 			transformIncludeFilter: (id: string): boolean => {
 				return transformIncludeFilterExtensions.includes(path.extname(id));
@@ -291,14 +187,9 @@ export default defineNuxtModule<NuxtModuleConfigInterface>({
 			dev: nuxtIsInDevMode,
 			bundles: [
 				{
-					id: bundleId,
 					files: moduleConfig.filesMasks,
 					rewriteSelectorsInFiles: false,
-					outputFile: path.join(nuxt.options.rootDir, assetsDir, stylifyCssFileName),
-					onBundleProcessed({bundleBuildCache}) {
-						nuxtBundleBuildCache = bundleBuildCache;
-						dumpProfilerInfo();
-					}
+					outputFile: path.join(nuxt.options.rootDir, assetsDir, stylifyCssFileName)
 				}
 			],
 			extend: {

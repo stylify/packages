@@ -118,7 +118,9 @@
 }
 .user-select\:none,
 .profiler-extension__button{
-	user-select: none
+	-webkit-user-select: none;
+	   -moz-user-select: none;
+	        user-select: none
 }
 .position\:absolute,
 .profiler-extension__dropdown{

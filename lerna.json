@@ -1,6 +1,11 @@
 {
 	"packages": [
-		"packages/*"
+		"packages/autoprefixer",
+		"packages/bundler",
+		"packages/nuxt",
+		"packages/nuxt-module",
+		"packages/stylify",
+		"packages/unplugin"
 	],
 	"publishConfig": {
 		"access": "public"

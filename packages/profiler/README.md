@@ -28,6 +28,16 @@
 
 ## @stylify/profiler introduction
 
+<br>
+
+```
+********** DISCONTINUED **********
+This package release 0.1.3 is the last and there will be no more versions. It is because it didn't solve the purpose that was intended and also of one tool I have in mind, that will be more flexible.
+********** DISCONTINUED **********
+```
+
+<br>
+
 Stylify Profiler is a package that shows the information about what is happenning under the hood when using Stylify packages.<br>
 It alsow shows Variables, Components, Selectors and css to symplify the development.
 

@@ -106,14 +106,16 @@ export const compareBuildStats = (selectedPackage: string = null) => {
 		}
 	}
 
+	// eslint-disable-next-line no-console
+	console.log('-----------------');
 	Object.keys(statsDiff).forEach((packageName) => {
-		if (Object.keys(statsDiff[packageName]).length === 0) {
-			delete statsDiff[packageName];
+		if (Object.keys(statsDiff[packageName]).length > 0) {
+			// eslint-disable-next-line no-console
+			console.log(`\n${packageName}`);
+			// eslint-disable-next-line no-console
+			console.table(statsDiff[packageName]);
 		}
 	});
-
-	// eslint-disable-next-line no-console
-	console.info(statsDiff);
 };
 
 export const generateStatsOutputFile = () => {

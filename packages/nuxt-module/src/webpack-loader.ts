@@ -9,7 +9,7 @@ const queryIsEmpty = (resourceQuery: string): boolean => {
 };
 
 export default function (source: string): string {
-	const { resourceQuery } = this;
+	const { resourceQuery }:{ resourceQuery: string} = this;
 
 	if (!queryIsEmpty(resourceQuery) && ! queryIsTemplateType(resourceQuery)) {
 		return source;

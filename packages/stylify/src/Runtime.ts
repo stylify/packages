@@ -1,10 +1,9 @@
-import { CompilationResult, Compiler, CompilerConfigInterface, SerializedCompilationResultInterface } from './Compiler';
+import { CompilationResult, Compiler, CompilerConfigInterface } from './Compiler';
 
 export interface RuntimeConfigInterface {
 	dev?: boolean,
 	compiler?: CompilerConfigInterface,
 	runtime?: {
-		cache?: string | SerializedCompilationResultInterface,
 		repaintTimeout?: number
 	}
 }
@@ -20,8 +19,6 @@ type UpdateCssCallbackType = (data: UpdateCssCallbackArgumentsInterface) => void
 export class Runtime {
 
 	public static readonly STYLE_EL_ID: string = 'stylify-css';
-
-	public static readonly CACHE_CLASS = 'stylify-runtime-cache';
 
 	public static readonly IGNORE_CLASS = 'stylify-ignore';
 
@@ -62,10 +59,6 @@ export class Runtime {
 		const runtimeConfig = config.runtime || {};
 		const compilerConfig = config.compiler || {};
 
-		if (typeof runtimeConfig.cache !== 'undefined' && !this.initialPaintCompleted) {
-			this.hydrate(runtimeConfig.cache);
-		}
-
 		if (this.initialPaintCompleted) {
 			this.updateCss(document.documentElement.outerHTML);
 		}
@@ -103,34 +96,7 @@ export class Runtime {
 		}
 	}
 
-	public hydrate(data: string|SerializedCompilationResultInterface = null): void {
-		if (!data) {
-			const cacheElements = document.querySelectorAll(`.${Runtime.CACHE_CLASS}:not(.processed)`) || [];
-			cacheElements.forEach((cacheElement: Element) => {
-				cacheElement.classList.add('processed');
-				if (cacheElement.innerHTML.trim().length > 0) {
-					this.hydrate(cacheElement.innerHTML);
-				}
-				if (this.dev) {
-					cacheElement.classList.add('processed');
-				} else {
-					cacheElement.parentElement.removeChild(cacheElement);
-				}
-			});
-			return;
-		}
-
-		const parsedData: SerializedCompilationResultInterface = typeof data === 'string' ? JSON.parse(data) : data;
-
-		if (this.compilationResult) {
-			this.compilationResult.configure(parsedData);
-		} else {
-			this.compilationResult = this.compiler.createCompilationResultFromSerializedData(parsedData);
-		}
-	}
-
 	private updateCss(content: string, callback: UpdateCssCallbackType = null): string|null {
-		this.hydrate();
 		this.compilationResult = this.compiler.compile(content, this.compilationResult);
 
 		if (!this.compilationResult.changed && this.initialPaintCompleted) {

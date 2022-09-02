@@ -7,12 +7,29 @@ const inputIndex = testUtils.getHtmlInputFile();
 
 const compiler = new Compiler({
 	dev: true,
+	replaceVariablesByCssVariables: true,
 	screens: {
-		md: '(min-width: 640px)'
+		md: '(min-width: 640px)',
+		lg: () => '(min-width: 1024px)',
+		dark: '(prefers-color-scheme: dark)',
+		'minw\\w+': (screen: string): string => `(min-width: ${screen.replace('minw', '')})`,
 	},
 	variables: {
-		textColor: '#87CEEB',
-		grey: '#eeeeee'
+		blue: 'darkblue',
+		border: 'border 1px solid $blue',
+		bg: 'white',
+		color: 'black',
+		fontSize: '12px',
+		dark: {
+			bg: 'black',
+			color: 'white'
+		},
+		minw450px: {
+			fontSize: '18px'
+		},
+		lg: {
+			fontSize: '24px'
+		}
 	},
 	helpers: {
 		textPropertyType(value: string): string {
@@ -20,13 +37,14 @@ const compiler = new Compiler({
 				return 'font-weight';
 			} else if (value === 'italic') {
 				return 'font-style'
-			} else if (value.includes('$')) {
-				return 'color';
 			}
+			return value;
 		},
 		shortcut(value: string): string {
 			const shortcuts = {
 				'bgc': 'background-color',
+				'fs': 'font-size',
+				'clr': 'color',
 				'zi': 'z-index'
 			};
 
@@ -38,7 +56,7 @@ const compiler = new Compiler({
 			const property = this.helpers.textPropertyType(m.getCapture(0));
 			p.add(property, m.getCapture(0));
 		},
-		'(bgc|zi):(\\S+)': function (m: MacroMatch, p: SelectorProperties): void {
+		'(fs|bgc|zi|clr):(\\S+)': function (m: MacroMatch, p: SelectorProperties): void {
 			const property = this.helpers.shortcut(m.getCapture(0));
 			p.add(property, m.getCapture(1));
 		},

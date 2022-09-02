@@ -3,18 +3,14 @@ import {
 	MacroMatch,
 	SelectorProperties,
 	SelectorsComponentsMapType,
-	SelectorsListInterface,
-	stringHashCode,
-	SerializedCompilationResultInterface
+	minifiedSelectorGenerator,
+	screensSorter,
+	ScreensToSortMapType
 } from '.';
 
 export type MacroCallbackType = (macroMatch: MacroMatch, selectorProperties: SelectorProperties) => void;
 
 export type ScreenCallbackType = (screen: string) => string;
-
-export interface SerializedCompilerInterface {
-	selectorsList: SelectorsListInterface
-}
 
 export type ComponentSelectorsType = string|string[];
 
@@ -53,7 +49,9 @@ export type HelpersType = Record<string, CallableFunction>;
 
 export type ScreensType = Record<string, string|ScreenCallbackType>;
 
-export type VariablesType = Record<string, string|number>;
+type VariablesTypeValue = string;
+
+export type VariablesType = Record<string, VariablesTypeValue|Record<string, string>>;
 
 export type KeyframesType = Record<string, string>;
 
@@ -90,6 +88,8 @@ export interface ComponentsInterface {
 }
 
 export class Compiler {
+
+	private readonly variableRegExp = /\$([\w-_]+)/;
 
 	private readonly contentOptionsRegExp = /stylify-([a-zA-Z-_0-9]+)\s([\s\S]+?)\s\/stylify-[a-zA-Z-_0-9]+/;
 
@@ -146,21 +146,26 @@ export class Compiler {
 
 	public configure(config: CompilerConfigInterface): Compiler {
 		this.dev = config.dev ?? this.dev;
-		this.macros = Object.assign(this.macros, config.macros || {});
-
-		this.helpers = Object.assign(this.helpers, config.helpers || {});
-		this.variables = Object.assign(this.variables, config.variables || {});
-		this.keyframes = Object.assign(this.keyframes, config.keyframes || {});
-		this.screens = Object.assign(this.screens, config.screens || {});
+		this.macros = {...this.macros, ...config.macros ?? {}};
+		this.helpers = {...this.helpers, ...config.helpers ?? {}};
+		this.keyframes = {...this.keyframes, ...config.keyframes ?? {}};
+		this.screens = {...this.screens, ...config.screens ?? {}};
+		this.contentOptionsProcessors = {...this.contentOptionsProcessors, ...config.contentOptionsProcessors};
+		this.injectVariablesIntoCss = config.injectVariablesIntoCss ?? this.injectVariablesIntoCss;
+		this.selectorsAreas = [...this.selectorsAreas, ...config.selectorsAreas ?? []];
+		this.onPrepareCompilationResult = config.onPrepareCompilationResult ?? this.onPrepareCompilationResult;
+		this.onNewMacroMatch = config.onNewMacroMatch ?? this.onNewMacroMatch;
 		this.mangleSelectors = config.mangleSelectors ?? this.mangleSelectors;
+		this.replaceVariablesByCssVariables =
+			config.replaceVariablesByCssVariables ?? this.replaceVariablesByCssVariables;
+		this.addVariables(config.variables ?? {});
 
 		if (typeof config.pregenerate !== 'undefined') {
 			this.pregenerate += Array.isArray(config.pregenerate) ? config.pregenerate.join(' ') : config.pregenerate;
 		}
 
-		this.contentOptionsProcessors = {...this.contentOptionsProcessors, ...config.contentOptionsProcessors};
 		const ignoredAreasRegExpStrings: string[] = [];
-		this.ignoredAreas = [...this.ignoredAreas, ...config.ignoredAreas || []]
+		this.ignoredAreas = [...this.ignoredAreas, ...config.ignoredAreas ?? []]
 			.filter((ignoredAreaRegExp, index, self) => {
 				const isUnique = self.indexOf(ignoredAreaRegExp) === index;
 				if (isUnique) ignoredAreasRegExpStrings.push(ignoredAreaRegExp.source);
@@ -168,27 +173,37 @@ export class Compiler {
 			});
 		this.ignoredAreasRegExpString = ignoredAreasRegExpStrings.join('|');
 
-		this.replaceVariablesByCssVariables = 'replaceVariablesByCssVariables' in config
-			? config.replaceVariablesByCssVariables
-			: this.replaceVariablesByCssVariables;
-		this.injectVariablesIntoCss = 'injectVariablesIntoCss' in config
-			? config.injectVariablesIntoCss
-			: this.injectVariablesIntoCss;
-		this.selectorsAreas = [...this.selectorsAreas, ...config.selectorsAreas || []];
-		this.onPrepareCompilationResult = config.onPrepareCompilationResult || this.onPrepareCompilationResult;
-		this.onNewMacroMatch = config.onNewMacroMatch || this.onNewMacroMatch;
-
-		const plainSelectors = config.plainSelectors || {};
-		for (const [plainSelector, dependencySelectors] of Object.entries(plainSelectors)) {
+		for (const [plainSelector, dependencySelectors] of Object.entries(config.plainSelectors ?? {})) {
 			this.addPlainSelector(plainSelector, dependencySelectors);
 		}
 
-		const components = config.components || {};
-		for (const componentSelector in components) {
-			this.addComponent(componentSelector, components[componentSelector]);
+		for (const [componentSelector, selectorDependencies] of Object.entries(config.components ?? {})) {
+			this.addComponent(componentSelector, selectorDependencies);
 		}
 
 		return this;
+	}
+
+	public addVariables(variables: VariablesType, screen: string = null): void {
+		for (const [variableOrScreen, valueOrVariables] of Object.entries(variables)) {
+			if (!['string', 'number'].includes(typeof valueOrVariables)) {
+				this.addVariables(valueOrVariables as VariablesType, variableOrScreen);
+				continue;
+			}
+
+			const processedValue = this.replaceVariableString(String(valueOrVariables));
+
+			if (screen) {
+				if (!(screen in this.variables)) {
+					this.variables[screen] = {};
+				}
+
+				this.variables[screen][variableOrScreen] = processedValue;
+				continue;
+			}
+
+			this.variables[variableOrScreen] = processedValue;
+		}
 	}
 
 	public addPlainSelector(selector: string, dependencySelectors: string): void {
@@ -209,9 +224,7 @@ export class Compiler {
 		config: ComponentSelectorsType|ComponentConfigInterface
 	): Compiler {
 		if (selector.includes(',')) {
-			selector.split(',').forEach((selector) => {
-				this.addComponent(selector.trim(), config);
-			});
+			selector.split(',').forEach((selector) => this.addComponent(selector.trim(), config));
 			return;
 		}
 
@@ -241,7 +254,7 @@ export class Compiler {
 			selectorsChain: Array.isArray(componentConfig.selectorsChain)
 				? componentConfig.selectorsChain
 				: [componentConfig.selectorsChain],
-			mangledSelector: stringHashCode(selector)
+			mangledSelector: minifiedSelectorGenerator.getSelector(selector)
 		};
 
 		return this;
@@ -267,11 +280,7 @@ export class Compiler {
 		return this;
 	}
 
-	public rewriteSelectors(
-		content: string,
-		compilationResult: CompilationResult,
-		rewriteOnlyInAreas = true
-	): string {
+	public rewriteSelectors(content: string, compilationResult: CompilationResult, rewriteOnlyInAreas = true): string {
 		if (this.dev && !this.mangleSelectors) {
 			return content;
 		}
@@ -390,14 +399,16 @@ export class Compiler {
 
 		if (compilationResult && Object.keys(compilationResult.selectorsList).length) {
 			contentToProcess = contentToProcess.replace(/_\w+/ig, (matched) => {
-				return matched in compilationResult.selectorsList ? stringHashCode(matched) : matched;
+				return matched in compilationResult.selectorsList
+					? minifiedSelectorGenerator.getSelector(matched)
+					: matched;
 			});
 		}
 
 		const selectorsComponentsMap: SelectorsComponentsMapType = {};
 
 		Object.keys(this.components).forEach((componentsSelector) => {
-			if (!contentToProcess.match(new RegExp(`${componentsSelector}`, 'g'))) {
+			if (!new RegExp(`${componentsSelector}`, 'g').test(contentToProcess)) {
 				return;
 			}
 
@@ -424,14 +435,6 @@ export class Compiler {
 		return compilationResult;
 	}
 
-	public createCompilationResultFromSerializedData(
-		data: string | SerializedCompilationResultInterface
-	): CompilationResult {
-		return new CompilationResult(
-			typeof data === 'string' ? JSON.parse(data) as SerializedCompilationResultInterface : data
-		);
-	}
-
 	private prepareCompilationResult(compilationResult: CompilationResult = null): CompilationResult
 	{
 		if (!compilationResult) {
@@ -439,14 +442,66 @@ export class Compiler {
 		}
 
 		const newLine = this.dev ? '\n' : '';
+		const makeVariableString = (variable: string, value: VariablesTypeValue) => `--${variable}: ${String(value)};${newLine}`;
 		let variablesCss = '';
 
-		if (this.injectVariablesIntoCss && Object.keys(this.variables).length) {
-			variablesCss += `:root {${newLine}`;
-			for (const variable in this.variables) {
-				variablesCss += `--${variable}: ${this.variables[variable]};${newLine}`;
+		if (this.injectVariablesIntoCss) {
+			let variablesCssMap: ScreensToSortMapType = new Map();
+			variablesCssMap.set('_', '');
+
+			let screensString = '';
+			const addScreenVariable = (screen: string, variable: string, value) => variablesCssMap.set(
+				screen, `${variablesCssMap.get(screen) as string}${makeVariableString(variable, String(value))}`
+
+			);
+			for (const [variableOrScreen, value] of Object.entries(this.variables)) {
+				if (['string', 'number'].includes(typeof value)) {
+					addScreenVariable('_', variableOrScreen, value);
+					continue;
+				}
+
+				if (!(variableOrScreen in variablesCssMap)) {
+					variablesCssMap.set(variableOrScreen, '');
+					screensString += ` ${variableOrScreen}`;
+				}
+
+				for (const [screenVariableName, screenVariableValue] of Object.entries(value)) {
+					addScreenVariable(variableOrScreen, screenVariableName, screenVariableValue);
+				}
 			}
-			variablesCss += `}${newLine}`;
+
+			for (const key in this.screens) {
+				const screenRegExp = new RegExp(`\\b${key}`, 'g');
+				let screenMatches: RegExpExecArray;
+
+				while ((screenMatches = screenRegExp.exec(screensString))) {
+					if (screenMatches === null) {
+						continue;
+					}
+
+					let screenData = this.screens[key];
+
+					if (typeof screenData === 'function') {
+						screenData = screenData(screenMatches[0]);
+					}
+
+					variablesCssMap.set(`@media ${screenData}`, variablesCssMap.get(screenMatches[0]));
+					variablesCssMap.set(screenMatches[0], '');
+				}
+			}
+
+			variablesCssMap = screensSorter.sortCssTreeMediaQueries(variablesCssMap);
+
+			for (const screen of variablesCssMap.keys()) {
+				const screenVariablesString = variablesCssMap.get(screen);
+
+				if (!screenVariablesString.length) {
+					continue;
+				}
+
+				const rootCss = `:root {${newLine}${screenVariablesString as string}}${newLine}`;
+				variablesCss += screen === '_' ? rootCss : `${screen} {${newLine}${rootCss}}${newLine}`;
+			}
 		}
 
 		let keyframesCss = '';
@@ -472,15 +527,14 @@ export class Compiler {
 		const regExpEndPart = `(?=['"\`{}\\[\\]<>\\s]|$)`;
 		const regExpGenerators = [
 			// Match with media query and without pseudo class
-			(macroKey: string): RegExp => new RegExp(`(?:([a-zA-Z0-9-:&|]+):)${macroKey}${regExpEndPart}`, 'g'),
+			(macroKey: string): RegExp => new RegExp(`\\b(?:([a-zA-Z0-9-:&|]+):)${macroKey}${regExpEndPart}`, 'g'),
 			// Match without media query and without pseudo class
 			// () - empty pseudo class and media query match
-			(macroKey: string): RegExp => new RegExp(`()${macroKey}${regExpEndPart}`, 'g')
+			(macroKey: string): RegExp => new RegExp(`\\b()${macroKey}${regExpEndPart}`, 'g')
 		];
 
 		for (const regExpGenerator of regExpGenerators) {
 			for (const macroKey in this.macros) {
-
 				content = content.replace(regExpGenerator(macroKey), (...args) => {
 					const macroMatches: string[] = args.slice(0, args.length - 2);
 					const macroMatch = new MacroMatch(macroMatches, this.screens);
@@ -502,23 +556,8 @@ export class Compiler {
 						selectorProperties
 					);
 
-					for (const property in selectorProperties.properties) {
-						selectorProperties.properties[property] = selectorProperties.properties[property].replace(
-							/\$([\w-_]+)/g,
-							(match, substring: string): string => {
-								if (!(substring in this.variables)) {
-									const info = `Stylify: Variable "${substring}" not found when processing "${macroMatch.fullMatch}". Available variables are "${Object.keys(this.variables).join(', ')}".`;
-									if (this.dev) {
-										console.warn(info);
-									} else {
-										throw new Error(info);
-									}
-								}
-								return this.replaceVariablesByCssVariables
-									? `var(--${substring})`
-									: String(this.variables[substring]);
-							}
-						);
+					for (const [property, value] of Object.entries(selectorProperties.properties)) {
+						selectorProperties.properties[property] = this.replaceVariableString(value);
 					}
 
 					if (this.onNewMacroMatch) {
@@ -539,6 +578,25 @@ export class Compiler {
 				});
 			}
 		}
+	}
+
+	private replaceVariableString(string: string): VariablesTypeValue {
+		return string.replace(
+			this.variableRegExp,
+			(match, substring: string): string => {
+				if (!(substring in this.variables)) {
+					const info = `Stylify: Variable "${substring}" not found when processing "${string}".`;
+					if (this.dev) {
+						console.warn(info);
+					} else {
+						throw new Error(info);
+					}
+				}
+				return this.replaceVariablesByCssVariables
+					? `var(--${substring})`
+					: this.variables[substring] as VariablesTypeValue;
+			}
+		);
 	}
 
 	public getOptionsFromContent(content: string): CompilerContentOptionsInterface {

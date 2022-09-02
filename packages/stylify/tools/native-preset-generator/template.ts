@@ -45,10 +45,10 @@ const parseColor = (color: string): RgbDataInterface => {
 		b: null
 	};
 
-	if (color.match(/^#/)) {
+	if (/^#/.test(color)) {
 		rgbData = parseHex(color);
 
-	} else if (color.match(/^rgb\(/)) {
+	} else if (/^rgb\(/.test(color)) {
 		rgbData = parseRgb(color);
 	}
 
@@ -117,9 +117,9 @@ const nativePreset = {
 			light: '(prefers-color-scheme: light)'
 		},
 		macros: {
-			// eslint-disable-next-line quote-props
-			'__REG_EXP__': (m: MacroMatch, p: SelectorProperties): void => {
-				p.add(m.getCapture(0), m.getCapture(1));
+			'__PROPERTIES_REG_EXP__': (m: MacroMatch, p: SelectorProperties): void => {
+				const propertyName = m.getCapture(0);
+				p.add(`${/^(?:apple|webkit|moz)/.test(propertyName) ? '-' : ''}${propertyName}`, m.getCapture(1));
 			}
 		},
 		helpers: {

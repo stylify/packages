@@ -1,16 +1,4 @@
-import { stringHashCode } from './stringHashCode';
-
-export interface SerializedCssRecordInterface {
-	screenId: number,
-	selector: string,
-	properties?: Record<string, string | number>,
-	plainSelectors?: string[],
-	components?: CssRecordComponentsType,
-	pseudoClasses?: string[],
-	onAddProperty?: string
-	onAfterGenerate?: string,
-	scope?: string
-}
+import { minifiedSelectorGenerator } from '.';
 
 export type CssRecordComponentsType = Record<string, string[]>;
 
@@ -77,8 +65,9 @@ export class CssRecord {
 		if ((/^\d/gm).test(this.selector[0])) {
 			this.selector = '\\3' + this.selector;
 		}
-		this.mangledSelector = stringHashCode(this.selector);
+		this.mangledSelector = minifiedSelectorGenerator.getSelector(this.selector);
 		this.scope = config.scope || null;
+
 		if ('onAddProperty' in config) {
 			this.onAddProperty = typeof config.onAddProperty === 'string'
 				// eslint-disable-next-line @typescript-eslint/no-implied-eval
@@ -162,7 +151,9 @@ export class CssRecord {
 		if (this.changed || !this.cache) {
 			const newLine = config.minimize ? '' : '\n';
 
-			const cssRecordSelector = config.mangleSelectors ? stringHashCode(this.selector) : this.selector;
+			const cssRecordSelector = config.mangleSelectors
+				? minifiedSelectorGenerator.getSelector(this.selector)
+				: this.selector;
 
 			let plainSelectors: string[] = [];
 			let classSelectors: string[] = [];
@@ -232,44 +223,6 @@ export class CssRecord {
 		}
 
 		return this.cache;
-	}
-
-	public serialize(): SerializedCssRecordInterface {
-		const serializedObject: SerializedCssRecordInterface = {
-			screenId: this.screenId,
-			selector: this.selector.replace(/\\([^-_a-zA-Z\d])/g, '$1'),
-			properties: this.properties
-		};
-
-		if (Object.keys(this.components).length) {
-			serializedObject.components = {};
-			for (const componentSelector in this.components) {
-				const selectorsChain = this.components[componentSelector];
-				serializedObject.components[componentSelector.replace(/\\([^-_a-zA-Z\d])/g, '$1')] = selectorsChain;
-			}
-		}
-
-		if (this.plainSelectors.length) {
-			serializedObject.plainSelectors = this.plainSelectors;
-		}
-
-		if (this.onAddProperty) {
-			serializedObject.onAddProperty = this.onAddProperty.toString();
-		}
-
-		if (this.onAfterGenerate) {
-			serializedObject.onAfterGenerate = this.onAfterGenerate.toString();
-		}
-
-		if (this.scope) {
-			serializedObject.scope = this.scope;
-		}
-
-		if (this.pseudoClasses.length) {
-			serializedObject.pseudoClasses = this.pseudoClasses;
-		}
-
-		return serializedObject;
 	}
 
 }

@@ -25,7 +25,7 @@ function styleInject(css, ref) {
   }
 }
 
-var css_248z = ":root {--blue: steelblue;}._ro073{color:steelblue}._h2cu7{font-size:35px}._vlosa{border-left:1px solid #555}._rsml{margin:24px}";
+var css_248z = ":root {--blue: steelblue;}.a{color:steelblue}.b{font-size:35px}.c{border-left:1px solid #555}.d{margin:24px}";
 styleInject(css_248z);
 
 alert('Hello World!');
