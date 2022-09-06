@@ -5,3 +5,4 @@ export * from './SelectorProperties';
 export * from './CompilationResult';
 export * from './MinifiedSelectorGenerator';
 export * from './ScreensSorter';
+export * from './defaultPreset';

@@ -104,6 +104,7 @@ export interface BundleConfigInterface extends BundleHooksInterface {
 }
 
 export interface BundlerConfigInterface extends BundleHooksInterface {
+	dev?: boolean,
 	configFile?: string,
 	autoprefixerEnabled?: boolean,
 	compiler?: CompilerConfigInterface,
@@ -115,7 +116,7 @@ export interface BundlerConfigInterface extends BundleHooksInterface {
 	sassVarsDirPath?: string,
 	lessVarsDirPath?: string,
 	stylusVarsDirPath?: string,
-	bundles?: BundleConfigInterface[],
+	bundles?: BundleConfigInterface[]
 }
 
 export interface WatchedFilesInterface {
@@ -148,6 +149,8 @@ export class Bundler {
 	 * @internal
 	 */
 	public compilerConfig: CompilerConfigInterface = {};
+
+	private dev = false;
 
 	private filesBaseDir: string = null;
 
@@ -213,12 +216,9 @@ export class Bundler {
 
 	private mergeConfigs(config: Partial<BundlerConfigInterface>) {
 		this.configFile = config.configFile || this.configFile;
-
-		this.compilerConfig = {
-			...this.compilerConfig,
-			...config.compiler || {}
-		};
-
+		this.dev = config.dev ?? this.dev;
+		this.compilerConfig.dev = this.dev;
+		this.compilerConfig = this.mergeObjects(this.compilerConfig, config.compiler ?? {});
 		this.verbose = config.verbose ?? this.verbose;
 		this.sync = config.sync ?? this.sync;
 		this.watchFiles = config.watchFiles ?? this.watchFiles;
@@ -357,18 +357,13 @@ export class Bundler {
 
 	private addBundles(bundles: BundleConfigInterface[]) {
 		for (const bundle of bundles) {
-			const mangleSelectors = 'compiler' in bundle
-				? bundle.compiler.mangleSelectors
-				: this.compilerConfig.mangleSelectors;
-
+			const mangleSelectors = bundle?.compiler?.mangleSelectors ?? this.compilerConfig.mangleSelectors;
 			const bundleToProcess = {
 				...bundle.outputFile in this.bundles ? this.bundles[bundle.outputFile] : {},
 				...bundle,
 				...{
-					rewriteSelectorsInFiles: 'rewriteSelectorsInFiles' in bundle
-						? bundle.rewriteSelectorsInFiles
-						: mangleSelectors,
-					filesBaseDir: 'filesBaseDir' in bundle ? bundle.filesBaseDir : this.filesBaseDir
+					rewriteSelectorsInFiles: bundle.rewriteSelectorsInFiles ?? mangleSelectors,
+					filesBaseDir: bundle.filesBaseDir ?? this.filesBaseDir
 				}
 			};
 			this.bundles[bundle.outputFile] = bundleToProcess;

@@ -20,12 +20,6 @@ runBuild(async () => {
 				outfile: 'stylify',
 				platform: 'browser',
 				formats: 'iife'
-			},
-			{
-				entryPoints: [path.join('src', 'index.browser.native')],
-				outfile: 'stylify.native',
-				platform: 'browser',
-				formats: 'iife'
 			}
 		]
 	});

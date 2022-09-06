@@ -1,6 +1,5 @@
-import { Compiler, nativePreset } from '../../src';
+import { Compiler } from '../../src';
 import TestUtils from '../../../../tests/TestUtils';
-import fs from 'fs';
 
 const testName = 'combined-pages';
 const testUtils = new TestUtils('stylify', testName);
@@ -8,9 +7,8 @@ const testUtils = new TestUtils('stylify', testName);
 const inputIndex = testUtils.getInputFile('index.html');
 const inputAbout = testUtils.getInputFile('about.html');
 
-nativePreset.compiler.dev = true;
-nativePreset.compiler.mangleSelectors = true;
-const compiler = new Compiler(nativePreset.compiler);
+const compiler = new Compiler({ dev: true, mangleSelectors: true });
+
 let compilationResult = compiler.compile(inputIndex);
 compilationResult = compiler.compile(inputAbout, compilationResult);
 

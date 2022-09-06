@@ -1,8 +1,7 @@
 import {
 	CompilationResult,
 	Compiler,
-	CompilerConfigInterface,
-	nativePreset
+	CompilerConfigInterface
 } from '@stylify/stylify';
 import { Bundler } from '@stylify/bundler';
 import fs from 'fs';
@@ -23,7 +22,7 @@ export interface StylifyNuxtModuleConfigInterface {
 	stylusVarsDirPath?: string,
 	filesMasks?: string[],
 	loaders?: LoadersInterface[],
-	extend?: Partial<StylifyNuxtModuleConfigInterface>,
+	extend?: Partial<Omit<StylifyNuxtModuleConfigInterface, 'extend'>>,
 }
 
 export interface BundleStatsInterface {
@@ -40,7 +39,7 @@ const filesSuffix = (/lib\/?$/).test(__dirname) ? 'cjs' : 'mjs';
 let moduleConfig: StylifyNuxtModuleConfigInterface = {
 	dev: false,
 	configPath: null,
-	compiler: nativePreset.compiler,
+	compiler: {},
 	cssVarsDirPath: null,
 	sassVarsDirPath: null,
 	lessVarsDirPath: null,

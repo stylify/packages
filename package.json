@@ -26,7 +26,7 @@
 		"stylify:build:notypes": "cross-env packages=stylify yarn build:notypes",
 		"stylify:watch": "cross-env packages=stylify watch=true yarn watch",
 		"stylify:test": "yarn jest:test packages/stylify/tests/jest",
-		"stylify:gnp": "node --experimental-modules packages/stylify/tools/native-preset-generator",
+		"stylify:gdp": "node --experimental-modules packages/stylify/tools/default-preset-generator",
 		"stylify:mqe": "node --experimental-modules packages/stylify/tools/media-queries-extractor",
 		"nuxt:build": "cross-env packages=nuxt yarn build",
 		"nuxt:build:notypes": "cross-env packages=nuxt yarn build:notypes",

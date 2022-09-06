@@ -1,12 +1,11 @@
 import TestUtils from '../../../../tests/TestUtils';
-import { Compiler, nativePreset } from '../../src';
+import { Compiler } from '../../src';
 
 const testName = 'dynamic-screens';
 const testUtils = new TestUtils('stylify', testName);
 const inputIndex = testUtils.getHtmlInputFile();
 
-nativePreset.compiler.dev = true;
-const compiler = new Compiler(nativePreset.compiler);
+const compiler = new Compiler({ dev: true });
 let compilationResult = compiler.compile(inputIndex);
 
 test('Dynamic screens', (): void => {

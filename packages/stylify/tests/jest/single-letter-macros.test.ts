@@ -1,17 +1,19 @@
 import TestUtils from '../../../../tests/TestUtils';
-import { Compiler, nativePreset } from '../../src';
+import { Compiler } from '../../src';
 
 const testName = 'single-letter-macros';
 const testUtils = new TestUtils('stylify', testName);
 const inputIndex = testUtils.getHtmlInputFile();
 
-nativePreset.compiler.dev = true;
+const compiler = new Compiler({
+	dev: true,
+	macros: {
+		'm:(\\S+?)': (macroMatch, cssProperties) => {
+			cssProperties.add('margin', macroMatch.getCapture(0));
+		}
+	}
+});
 
-nativePreset.compiler.macros['m:(\\S+?)'] = function (macroMatch, cssProperties) {
-	cssProperties.add('margin', macroMatch.getCapture(0));
-};
-
-const compiler = new Compiler(nativePreset.compiler);
 let compilationResult = compiler.compile(inputIndex);
 
 test('Single letter macros', (): void => {

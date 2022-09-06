@@ -1,5 +1,5 @@
 import { BundleConfigInterface, BundlerConfigInterface, Bundler, BundlesBuildCacheInterface } from '@stylify/bundler';
-import { nativePreset, CompilationResult, Compiler, ComponentsInterface } from '@stylify/stylify';
+import { CompilationResult, Compiler, ComponentsInterface } from '@stylify/stylify';
 import { createUnplugin } from 'unplugin';
 
 export interface UnpluginConfigInterface {
@@ -7,7 +7,7 @@ export interface UnpluginConfigInterface {
 	dev?: boolean;
 	bundler?: BundlerConfigInterface;
 	transformIncludeFilter?: (id: string) => boolean;
-	extend?: Partial<UnpluginConfigInterface>;
+	extend?: Partial<Omit<UnpluginConfigInterface, 'extend'>>;
 }
 
 export const defineConfig = (config: UnpluginConfigInterface): UnpluginConfigInterface => config;
@@ -20,7 +20,8 @@ export const unplugin = createUnplugin((config: UnpluginConfigInterface) => {
 		dev: null,
 		bundles: [],
 		bundler: {
-			compiler: nativePreset.compiler
+			dev: null,
+			compiler: {}
 		},
 		transformIncludeFilter: null
 	});
@@ -69,7 +70,6 @@ export const unplugin = createUnplugin((config: UnpluginConfigInterface) => {
 
 		return bundler;
 	};
-
 
 	if ('extend' in config) {
 		pluginConfig = mergeObject(pluginConfig, config.extend);

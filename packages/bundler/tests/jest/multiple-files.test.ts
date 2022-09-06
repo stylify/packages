@@ -2,24 +2,21 @@ import path from 'path';
 import fs from 'fs';
 import fse from 'fs-extra';
 import { Bundler } from '../../src'
-import { nativePreset } from '@stylify/stylify';
 import TestUtils from '../../../../tests/TestUtils';
 
 const testName = 'multiple-files';
 const testUtils = new TestUtils('bundler', testName);
 
-nativePreset.compiler.dev = true;
-nativePreset.compiler.mangleSelectors = true;
-
 const bundleTestDir = testUtils.getTestDir();
 const buildTmpDir = path.join(testUtils.getTmpDir(), testUtils.getTestName() + '-build');
 
-nativePreset.compiler.selectorsAreas = ['(?:^|\\s+)n:class="([^"]+)"', '(?:^|\\s+)v-bind:class="([^"]+)"'];
-
 const bundler = new Bundler({
-	compiler: nativePreset.compiler,
+	dev: true,
 	filesBaseDir: bundleTestDir,
-	verbose: false
+	compiler: {
+		mangleSelectors: true,
+		selectorsAreas: ['(?:^|\\s+)n:class="([^"]+)"', '(?:^|\\s+)v-bind:class="([^"]+)"']
+	}
 });
 
 if (!fs.existsSync(buildTmpDir)) {

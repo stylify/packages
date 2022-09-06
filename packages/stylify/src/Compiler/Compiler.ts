@@ -5,7 +5,8 @@ import {
 	SelectorsComponentsMapType,
 	minifiedSelectorGenerator,
 	screensSorter,
-	ScreensToSortMapType
+	ScreensToSortMapType,
+	defaultPreset
 } from '.';
 
 export type MacroCallbackType = (macroMatch: MacroMatch, selectorProperties: SelectorProperties) => void;
@@ -137,6 +138,8 @@ export class Compiler {
 	public injectVariablesIntoCss = true;
 
 	constructor(config: CompilerConfigInterface = {}) {
+		this.configure(defaultPreset);
+
 		if (!Object.keys(config).length) {
 			return;
 		}

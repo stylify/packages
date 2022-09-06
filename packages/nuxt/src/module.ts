@@ -24,7 +24,7 @@ export interface NuxtModuleConfigInterface {
 	lessVarsDirPath?: string,
 	stylusVarsDirPath?: string,
 	filesMasks?: string[],
-	extend?: Partial<NuxtModuleConfigInterface>,
+	extend?: Partial<Omit<NuxtModuleConfigInterface, 'extend'>>,
 }
 
 export interface ProcessedBundleInterface {
@@ -94,7 +94,7 @@ export default defineNuxtModule<NuxtModuleConfigInterface>({
 		return {
 			dev: false,
 			configPath: null,
-			compiler: nativePreset.compiler,
+			compiler: {},
 			cssVarsDirPath: null,
 			sassVarsDirPath: null,
 			lessVarsDirPath: null,
