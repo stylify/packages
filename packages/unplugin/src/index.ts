@@ -12,6 +12,41 @@ export interface UnpluginConfigInterface {
 
 export const defineConfig = (config: UnpluginConfigInterface): UnpluginConfigInterface => config;
 
+const defaultAllowedFileTypes = [
+	// Html
+	'html', 'htm', 'xml', 'xhtml', 'xht',
+	// Javascript
+	'vue', 'jsx', 'tsx', 'js', 'cjs', 'mjs', 'ts', 'svelte', 'astro',
+	// PHP
+	'php', 'phtml', 'twig', 'latte', 'tpl', 'pug', 'haml',
+	// Python
+	'py',
+	// Java
+	'java',
+	// Golang
+	'go',
+	// Rust
+	'rs',
+	// C#, .NET and similar
+	'cs', 'asp', 'aspx',
+	// Other
+	'json', 'md', 'txt'
+];
+
+const defaultIgnoredDirectories = [
+	'node_modules',
+	'vendor',
+	'tmp',
+	'log',
+	'cache',
+	'\\.devcontainer',
+	'\\.github',
+	'\\.git'
+];
+
+const defaultAllowedTypesRegExp = new RegExp(`\\.(?:${defaultAllowedFileTypes.join('|')})\\b`);
+const defaultIgnoredDirectoriesRegExp = new RegExp(`/${defaultIgnoredDirectories.join('|')}/`);
+
 export const unplugin = createUnplugin((config: UnpluginConfigInterface) => {
 
 	const pluginName = 'stylify';
@@ -98,7 +133,7 @@ export const unplugin = createUnplugin((config: UnpluginConfigInterface) => {
 		transformInclude(id) {
 			return typeof pluginConfig.transformIncludeFilter === 'function'
 				? pluginConfig.transformIncludeFilter(id)
-				: true;
+				: defaultAllowedTypesRegExp.test(id) && !defaultIgnoredDirectoriesRegExp.test(id);
 		},
 		async transform(code): Promise<string> {
 			const bundler = getBundler();
