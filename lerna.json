@@ -1,6 +1,5 @@
 {
 	"packages": [
-		"packages/autoprefixer",
 		"packages/bundler",
 		"packages/nuxt",
 		"packages/nuxt-module",

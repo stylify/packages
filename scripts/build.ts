@@ -25,24 +25,6 @@ runBuild(async () => {
 	});
 
 	await bundleSync({
-		package: 'autoprefixer',
-		bundles: [
-			{
-				entryPoints: [path.join('src', 'index')],
-				external: ['@stylify/stylify', 'postcss-js', 'autoprefixer'],
-				outfile: 'index',
-				formats: ['esm', 'cjs']
-			},
-			{
-				entryPoints: [path.join('src', 'Prefixer')],
-				bundle: false,
-				outfile: 'prefixer',
-				formats: ['esm', 'cjs', 'iife']
-			}
-		]
-	});
-
-	await bundleSync({
 		package: 'bundler',
 		bundles: [
 			{

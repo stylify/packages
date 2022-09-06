@@ -1,5 +1,5 @@
 const packagesToTest = [
-	'autoprefixer', 'bundler', 'nuxt', 'nuxt-module', 'stylify', 'unplugin'
+	'bundler', 'nuxt', 'nuxt-module', 'stylify', 'unplugin'
 ];
 
 module.exports = {
