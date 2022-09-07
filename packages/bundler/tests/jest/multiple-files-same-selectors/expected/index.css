@@ -1,0 +1,36 @@
+.c{
+	border: 1px solid transparent
+}
+.d{
+	margin-left: 24px
+}
+.e{
+	font-family: arial
+}
+.f{
+	display: block
+}
+.g{
+	display: flex
+}
+.h{
+	justify-content: center
+}
+.i{
+	margin-top: 12px
+}
+.j{
+	color: blue
+}
+
+@media (min-width: 768px) {
+.a{
+	color: red
+}
+}
+
+@media (min-width: 1024px) {
+.b{
+	color: green
+}
+}

@@ -1,0 +1,35 @@
+.k{
+	border: 2px solid transparent
+}
+.l{
+	float: left
+}
+.j{
+	color: blue
+}
+.m{
+	visibility: hidden
+}
+.g{
+	display: flex
+}
+.n{
+	-webkit-user-select: none;
+	   -moz-user-select: none;
+	        user-select: none
+}
+.h{
+	justify-content: center
+}
+
+@media (min-width: 768px) {
+.a{
+	color: red
+}
+}
+
+@media (min-width: 1024px) {
+.b{
+	color: green
+}
+}
