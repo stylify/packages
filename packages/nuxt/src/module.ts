@@ -2,8 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { name } from '../package.json';
 import {
-	CompilerConfigInterface,
-	nativePreset
+	CompilerConfigInterface
 } from '@stylify/stylify';
 import { unplugin, defineConfig as defineUnpluginConfig, UnpluginConfigInterface } from '@stylify/unplugin';
 import {
