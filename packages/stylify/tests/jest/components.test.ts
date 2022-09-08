@@ -1,13 +1,12 @@
 import TestUtils from '../../../../tests/TestUtils';
-import { Compiler, nativePreset } from '../../src';
+import { Compiler } from '../../src';
 
 const testName = 'components';
 const testUtils = new TestUtils('stylify', testName);
 const inputIndex = testUtils.getHtmlInputFile();
 
-nativePreset.compiler.dev = true;
-const compiler = new Compiler(nativePreset.compiler);
-compiler.configure({
+const compiler = new Compiler({
+	dev: true,
 	components: {
 		'button': 'padding:8px background-color:#000 display:inline-block font-size:24px hover:color:blue',
 		'button--big': {
@@ -20,6 +19,7 @@ compiler.configure({
 		'not-used': ['color:steelblue'],
 	}
 });
+
 let compilationResult = compiler.compile(inputIndex);
 
 test('Components', (): void => {

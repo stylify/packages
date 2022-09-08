@@ -1,6 +1,6 @@
 @keyframes colorChangeFromTo {
-		from {background-color: red;}
-		to {background-color: yellow;}
+			from {background-color: red;}
+			to {background-color: yellow;}
 }
 @keyframes colorChangeByPercentage {
 		0%   {background-color: red;}

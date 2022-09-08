@@ -27,6 +27,16 @@
 
 ## @stylify/autoprefixer introduction
 
+<br>
+
+```
+********** DISCONTINUED **********
+This package release 0.2.1 is the last and there will be no more versions. There is no need for this package right now so it will not be eveloped anymore.
+********** DISCONTINUED **********
+```
+
+<br>
+
 The Autoprefixer is a package for generating CSS prefixes map using PostCSS. This generated map is small, therefore doesn't slow down the build by loading PostCSS and can be used inside an SSR application when generating CSS on demand.
 
 <img src="https://raw.githubusercontent.com/stylify/packages/master/stylify.gif" height="494" width="1024" alt="Stylify preview">

@@ -1,12 +1,10 @@
 const path = require('path');
 const fs = require('fs');
 
-const dirname = path.join(process.cwd(), 'packages', 'stylify', 'tools', 'native-preset-generator');
+const dirname = path.join(process.cwd(), 'packages', 'stylify', 'tools', 'default-preset-generator');
 
 const browserPropertiesListPath = path.join(dirname, 'lists', 'complete-properties-list.txt');
-const nativePresetOutputFilePath = path.join(
-	dirname, '..', '..', 'src', 'Presets', 'nativePreset.ts'
-);
+const nativePresetOutputFilePath = path.join(dirname, '..', '..', 'src', 'Compiler', 'defaultPreset.ts');
 const nativePresetTemplateFilePath = path.join(dirname, 'template.ts');
 
 class NativePresetGenerator {

@@ -20,30 +20,6 @@ runBuild(async () => {
 				outfile: 'stylify',
 				platform: 'browser',
 				formats: 'iife'
-			},
-			{
-				entryPoints: [path.join('src', 'index.browser.native')],
-				outfile: 'stylify.native',
-				platform: 'browser',
-				formats: 'iife'
-			}
-		]
-	});
-
-	await bundleSync({
-		package: 'autoprefixer',
-		bundles: [
-			{
-				entryPoints: [path.join('src', 'index')],
-				external: ['@stylify/stylify', 'postcss-js', 'autoprefixer'],
-				outfile: 'index',
-				formats: ['esm', 'cjs']
-			},
-			{
-				entryPoints: [path.join('src', 'Prefixer')],
-				bundle: false,
-				outfile: 'prefixer',
-				formats: ['esm', 'cjs', 'iife']
 			}
 		]
 	});

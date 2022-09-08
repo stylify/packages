@@ -2,17 +2,10 @@ import path from 'path';
 import fs from 'fs';
 import fse from 'fs-extra';
 import { Bundler } from '../../src'
-import { nativePreset } from '@stylify/stylify';
 import TestUtils from '../../../../tests/TestUtils';
 
 const testName = 'bundle-specific-compiler-config';
 const testUtils = new TestUtils('bundler', testName);
-
-nativePreset.compiler.variables = {
-	red: 'darkred',
-	blue: 'steelblue'
-};
-nativePreset.compiler.dev = true;
 
 const bundleTestDir = testUtils.getTestDir();
 const buildTmpDir = path.join(testUtils.getTmpDir(), testUtils.getTestName() + '-build');
@@ -24,10 +17,15 @@ if (!fs.existsSync(buildTmpDir)) {
 fse.copySync(path.join(bundleTestDir, 'input'), buildTmpDir);
 
 new Bundler({
-	compiler: nativePreset.compiler,
-	verbose: false
+	dev: true,
+	compiler: {
+		variables: {
+			red: 'darkred',
+			blue: 'steelblue'
+		}
+	}
 }).bundle([
-   	{
+	{
 		outputFile: path.join(buildTmpDir, 'index.css'),
 		compiler: {
 			replaceVariablesByCssVariables: true,
@@ -35,7 +33,7 @@ new Bundler({
 				button: 'background:blue color:white'
 			},
 			macros: {
-				'm:(\\S+?)': function (macroMatch, cssProperties): void {
+				'm:(\\S+?)': (macroMatch, cssProperties): void => {
 					cssProperties.add('margin', macroMatch.getCapture(0));
 				},
 			},

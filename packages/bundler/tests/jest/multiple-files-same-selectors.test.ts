@@ -4,11 +4,19 @@ import fse from 'fs-extra';
 import { Bundler } from '../../src'
 import TestUtils from '../../../../tests/TestUtils';
 
-const testName = 'single-file';
+const testName = 'multiple-files-same-selectors';
 const testUtils = new TestUtils('bundler', testName);
 
 const bundleTestDir = testUtils.getTestDir();
 const buildTmpDir = path.join(testUtils.getTmpDir(), testUtils.getTestName() + '-build');
+
+const bundler = new Bundler({
+	dev: true,
+	filesBaseDir: bundleTestDir,
+	compiler: {
+		mangleSelectors: true
+	}
+});
 
 if (!fs.existsSync(buildTmpDir)) {
 	fs.mkdirSync(buildTmpDir, {recursive: true});
@@ -16,31 +24,31 @@ if (!fs.existsSync(buildTmpDir)) {
 
 fse.copySync(path.join(bundleTestDir, 'input'), buildTmpDir);
 
-new Bundler({ dev: true }).bundle([
+bundler.bundle([
 	{
 		outputFile: path.join(buildTmpDir, 'index.css'),
 		files: [
 			path.join(buildTmpDir, 'index.html'),
 		]
-	}
-]);
-
-new Bundler({ dev: true }).bundle([
+	},
 	{
-		outputFile: path.join(buildTmpDir, 'second.css'),
-		scope: '#stylify-profiler ',
+		outputFile: path.join(buildTmpDir, 'layout.css'),
 		files: [
-			path.join(buildTmpDir, 'second.html'),
+			path.join(buildTmpDir, 'layout.html'),
 		]
 	}
 ]);
 
-test('Bundler - single file', (): void => {
-	const indexCssOutput = testUtils.readFile(path.join(buildTmpDir, 'index.css'));
-	testUtils.testCssFileToBe(indexCssOutput);
-});
+test('Bundler - multiple files - same selectors', async () => {
+	const indexHtmlOutput = testUtils.readFile(path.join(buildTmpDir, 'index.html'));
+	const layoutHtmlOutput = testUtils.readFile(path.join(buildTmpDir, 'layout.html'));
 
-test('Bundler - single file - with scope', (): void => {
-	const indexCssOutput = testUtils.readFile(path.join(buildTmpDir, 'second.css'));
-	testUtils.testCssFileToBe(indexCssOutput, 'second');
+	const indexCssOutput = testUtils.readFile(path.join(buildTmpDir, 'index.css'));
+	const layoutCssOutput = testUtils.readFile(path.join(buildTmpDir, 'layout.css'));
+
+	testUtils.testCssFileToBe(indexCssOutput);
+	testUtils.testCssFileToBe(layoutCssOutput, 'layout');
+
+	testUtils.testHtmlFileToBe(indexHtmlOutput);
+	testUtils.testHtmlFileToBe(layoutHtmlOutput, 'layout');
 });

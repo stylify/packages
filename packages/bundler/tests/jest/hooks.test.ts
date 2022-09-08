@@ -1,13 +1,11 @@
 import path from 'path';
 import fse from 'fs-extra';
-import fs, { fstatSync } from 'fs';
+import fs from 'fs';
 import { Bundler } from '../../src'
-import { nativePreset } from '@stylify/stylify';
 import TestUtils from '../../../../tests/TestUtils';
 
 const testName = 'hooks';
 const testUtils = new TestUtils('bundler', testName);
-nativePreset.compiler.dev = true;
 
 const bundleTestDir = testUtils.getTestDir();
 const buildTmpDir = path.join(testUtils.getTmpDir(), testUtils.getTestName() + '-build');
@@ -19,8 +17,7 @@ if (!fs.existsSync(buildTmpDir)) {
 fse.copySync(path.join(bundleTestDir, 'input'), buildTmpDir);
 
 const bundler = new Bundler({
-	compiler: nativePreset.compiler,
-	verbose: false,
+	dev: true,
 	onBeforeCssFileCreated: (data) => {
 		const filePathInfo = path.parse(data.filePath);
 		data.filePath = path.join(filePathInfo.dir, filePathInfo.name + '.scss');

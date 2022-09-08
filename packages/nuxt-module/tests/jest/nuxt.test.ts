@@ -2,14 +2,11 @@ import path from 'path';
 import FastGlob from 'fast-glob';
 import fs from 'fs';
 import fse from 'fs-extra';
-import { nativePreset } from '@stylify/stylify';
 import TestUtils from '../../../../tests/TestUtils';
 import { execSync } from 'child_process';
 
 const testName = 'nuxt';
 const testUtils = new TestUtils('nuxt-module', testName);
-
-nativePreset.compiler.dev = true;
 
 const bundleTestDir = testUtils.getTestDir();
 const buildTmpDir = path.join(testUtils.getTmpDir(), testUtils.getTestName() + '-build');

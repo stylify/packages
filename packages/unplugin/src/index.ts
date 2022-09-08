@@ -1,5 +1,5 @@
 import { BundleConfigInterface, BundlerConfigInterface, Bundler, BundlesBuildCacheInterface } from '@stylify/bundler';
-import { nativePreset, CompilationResult, Compiler, ComponentsInterface } from '@stylify/stylify';
+import { CompilationResult, Compiler, ComponentsInterface } from '@stylify/stylify';
 import { createUnplugin } from 'unplugin';
 
 export interface UnpluginConfigInterface {
@@ -7,10 +7,45 @@ export interface UnpluginConfigInterface {
 	dev?: boolean;
 	bundler?: BundlerConfigInterface;
 	transformIncludeFilter?: (id: string) => boolean;
-	extend?: Partial<UnpluginConfigInterface>;
+	extend?: Partial<Omit<UnpluginConfigInterface, 'extend'>>;
 }
 
 export const defineConfig = (config: UnpluginConfigInterface): UnpluginConfigInterface => config;
+
+const defaultAllowedFileTypes = [
+	// Html
+	'html', 'htm', 'xml', 'xhtml', 'xht',
+	// Javascript
+	'vue', 'jsx', 'tsx', 'js', 'cjs', 'mjs', 'ts', 'svelte', 'astro',
+	// PHP
+	'php', 'phtml', 'twig', 'latte', 'tpl', 'pug', 'haml',
+	// Python
+	'py',
+	// Java
+	'java',
+	// Golang
+	'go',
+	// Rust
+	'rs',
+	// C#, .NET and similar
+	'cs', 'asp', 'aspx',
+	// Other
+	'json', 'md', 'txt'
+];
+
+const defaultIgnoredDirectories = [
+	'node_modules',
+	'vendor',
+	'tmp',
+	'log',
+	'cache',
+	'\\.devcontainer',
+	'\\.github',
+	'\\.git'
+];
+
+const defaultAllowedTypesRegExp = new RegExp(`\\.(?:${defaultAllowedFileTypes.join('|')})\\b`);
+const defaultIgnoredDirectoriesRegExp = new RegExp(`/${defaultIgnoredDirectories.join('|')}/`);
 
 export const unplugin = createUnplugin((config: UnpluginConfigInterface) => {
 
@@ -20,7 +55,8 @@ export const unplugin = createUnplugin((config: UnpluginConfigInterface) => {
 		dev: null,
 		bundles: [],
 		bundler: {
-			compiler: nativePreset.compiler
+			dev: null,
+			compiler: {}
 		},
 		transformIncludeFilter: null
 	});
@@ -70,7 +106,6 @@ export const unplugin = createUnplugin((config: UnpluginConfigInterface) => {
 		return bundler;
 	};
 
-
 	if ('extend' in config) {
 		pluginConfig = mergeObject(pluginConfig, config.extend);
 		delete config.extend;
@@ -98,7 +133,7 @@ export const unplugin = createUnplugin((config: UnpluginConfigInterface) => {
 		transformInclude(id) {
 			return typeof pluginConfig.transformIncludeFilter === 'function'
 				? pluginConfig.transformIncludeFilter(id)
-				: true;
+				: defaultAllowedTypesRegExp.test(id) && !defaultIgnoredDirectoriesRegExp.test(id);
 		},
 		async transform(code): Promise<string> {
 			const bundler = getBundler();
