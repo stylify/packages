@@ -51,7 +51,7 @@ It automatically bundles CSS, mangles selectors and also provides a Stylify Prof
 ## Stay In Touch
 
 - Visit Stylify website [https://stylifycss.com](https://stylifycss.com).
-- Follow Stylify on [Twitter](https://twitter.com/stylify_dev).
+- Follow Stylify on [Twitter](https://twitter.com/stylifycss).
 - Join Stylify community on [Discord](https://discord.gg/NuJsk5SMDz).
 
 ## License
