@@ -293,7 +293,7 @@ export class Compiler {
 
 		const placeholderInserter = (matched: string) => {
 			const placeholderKey = `${placeholderTextPart}${Object.keys(contentPlaceholders).length}`;
-			contentPlaceholders[placeholderKey] = matched;
+			contentPlaceholders[placeholderKey] = matched.replace(/\$/g, '__DOLLAR__');
 			return placeholderKey;
 		};
 
@@ -344,8 +344,8 @@ export class Compiler {
 			}
 		}
 
-		for (const placeholderKey in contentPlaceholders) {
-			content = content.replace(placeholderKey, contentPlaceholders[placeholderKey]);
+		for (const [placeholderKey, contentPlaceholder] of Object.entries(contentPlaceholders)) {
+			content = content.replace(placeholderKey, contentPlaceholder.replace(/__DOLLAR__/g, '$$$$'));
 		}
 
 		return content;
