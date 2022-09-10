@@ -21,6 +21,18 @@
 --color: white;
 }
 }
+html[theme="dark"] {
+--bg: black;
+--color: white;
+}
+.dark-theme {
+--bg: black;
+--color: white;
+}
+:root.dark {
+--bg: black;
+--color: white;
+}
 .text\:bold{
 	font-weight: bold
 }
