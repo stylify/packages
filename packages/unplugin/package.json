@@ -36,8 +36,8 @@
 		"./types/*": "./types/*",
 		"./package.json": "./package.json"
 	},
-	"main": "lib/index.js",
-	"module": "esm/index.js",
+	"main": "lib/index.cjs",
+	"module": "esm/index.mjs",
 	"types": "types",
 	"files": [
 		"esm",
@@ -53,7 +53,7 @@
 	"dependencies": {
 		"@stylify/bundler": "^0.2.1",
 		"@stylify/stylify": "^0.2.1",
-		"unplugin": "^0.6"
+		"unplugin": "^0.8"
 	},
 	"devDependencies": {
 		"@rollup/plugin-node-resolve": "13.3",
