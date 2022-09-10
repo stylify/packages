@@ -212,10 +212,10 @@ export default defineNuxtModule<NuxtModuleConfigInterface>({
 		});
 
 		/**
-		 * This is here, because the Nittro hook content:file:parseBefore
-		 * doesn't work when added in nittro:init hook to Nittro instance and can be called only,
-		 * within the Nittro plugin that cannot be a function for some reason. Therefore the Rollup plugin
-		 * is added into the Nittro build process and mangles classes in compiled markdown files
+		 * This is here, because the Nitro hook content:file:parseBefore
+		 * doesn't work when added in nittro:init hook to Nitro instance and can be called only,
+		 * within the Nitro plugin that cannot be a function for some reason. Therefore the Rollup plugin
+		 * is added into the Nitro build process and mangles classes in compiled markdown files
 		 * that have json format ¯\_(ツ)_/¯
 		 */
 		nuxt.hook('nitro:config', (nitroConfig) => {
