@@ -5,6 +5,7 @@ import {
 	minifiedSelectorGenerator,
 	screensSorter
 } from '.';
+import { logOrError } from '../Utilities';
 
 export type ScreenSortingFunctionType = (screensList: ScreensListMapType) => ScreensListMapType;
 
@@ -203,13 +204,7 @@ export class CompilationResult {
 		for (const [plainSelector, dependencySelectors] of Object.entries(plainSelectorsSelectorsMap)) {
 			for (const dependencySelector of dependencySelectors.split(' ')) {
 				if (!(dependencySelector in this.selectorsList)) {
-					const info = `Selector "${dependencySelector}" for plainSelector "${plainSelector}" was not matched and therefore not added.`;
-
-					if (this.dev) {
-						console.warn(info);
-					} else {
-						throw new Error(info);
-					}
+					logOrError(`Selector "${dependencySelector}" for plainSelector "${plainSelector}" was not matched and therefore not added.`, this.dev);
 					continue;
 				}
 
@@ -222,14 +217,7 @@ export class CompilationResult {
 		for (const componentDependencySelector in selectorsComponentsMap) {
 			for (const componentToBind of selectorsComponentsMap[componentDependencySelector]) {
 				if (!(componentDependencySelector in this.selectorsList)) {
-					const info = `Selector "${componentDependencySelector}" for component "${componentToBind.component}" was not matched and therefore not added.`;
-
-					if (this.dev) {
-						console.warn(info);
-					} else {
-						throw new Error(info);
-					}
-
+					logOrError(`Selector "${componentDependencySelector}" for component "${componentToBind.component}" was not matched and therefore not added.`, this.dev);
 					continue;
 				}
 
@@ -246,12 +234,7 @@ export class CompilationResult {
 									if (!(selectorFromChain in this.selectorsList)
 										&& !this.componentsList.includes(selectorFromChain)
 									) {
-										const info = `Stylify: selector "${selectorFromChain}" from component "${componentToBind.component}" selectorsChain list not found.`;
-										if (this.dev) {
-											console.warn(info);
-										} else {
-											throw new Error(info);
-										}
+										logOrError(`Stylify: selector "${selectorFromChain}" from component "${componentToBind.component}" selectorsChain list not found.`, this.dev);
 									}
 
 									selectorFromChain = minifiedSelectorGenerator.getSelector(selectorFromChain);

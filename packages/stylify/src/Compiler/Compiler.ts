@@ -9,6 +9,8 @@ import {
 	defaultPreset
 } from '.';
 
+import { logOrError } from '../Utilities';
+
 export type MacroCallbackType = (macroMatch: MacroMatch, selectorProperties: SelectorProperties) => void;
 
 export type ScreenCallbackType = (screen: string) => string;
@@ -595,12 +597,7 @@ export class Compiler {
 			this.variableRegExp,
 			(match, substring: string): string => {
 				if (!(substring in this.variables)) {
-					const info = `Stylify: Variable "${substring}" not found when processing "${string}".`;
-					if (this.dev) {
-						console.warn(info);
-					} else {
-						throw new Error(info);
-					}
+					logOrError(`Stylify: Variable "${substring}" not found when processing "${string}".`, this.dev);
 				}
 				return this.replaceVariablesByCssVariables
 					? `var(--${substring})`
