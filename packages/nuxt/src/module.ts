@@ -22,8 +22,7 @@ export interface NuxtModuleConfigInterface {
 	sassVarsDirPath?: string,
 	lessVarsDirPath?: string,
 	stylusVarsDirPath?: string,
-	filesMasks?: string[],
-	extend?: Partial<Omit<NuxtModuleConfigInterface, 'extend'>>,
+	filesMasks?: string[]
 }
 
 export interface ProcessedBundleInterface {
@@ -191,22 +190,20 @@ export default defineNuxtModule<NuxtModuleConfigInterface>({
 					outputFile: path.join(nuxt.options.rootDir, assetsDir, stylifyCssFileName)
 				}
 			],
-			extend: {
-				bundler: {
-					cssVarsDirPath: moduleConfig.cssVarsDirPath
-						? path.join(nuxt.options.rootDir, moduleConfig.cssVarsDirPath)
-						: null,
-					sassVarsDirPath: moduleConfig.sassVarsDirPath
-						? path.join(nuxt.options.rootDir, moduleConfig.sassVarsDirPath)
-						: null,
-					lessVarsDirPath: moduleConfig.lessVarsDirPath
-						? path.join(nuxt.options.rootDir, moduleConfig.lessVarsDirPath)
-						: null,
-					stylusVarsDirPath: moduleConfig.stylusVarsDirPath
-						? path.join(nuxt.options.rootDir, moduleConfig.stylusVarsDirPath)
-						: null,
-					compiler: moduleConfig.compiler
-				}
+			bundler: {
+				cssVarsDirPath: moduleConfig.cssVarsDirPath
+					? path.join(nuxt.options.rootDir, moduleConfig.cssVarsDirPath)
+					: null,
+				sassVarsDirPath: moduleConfig.sassVarsDirPath
+					? path.join(nuxt.options.rootDir, moduleConfig.sassVarsDirPath)
+					: null,
+				lessVarsDirPath: moduleConfig.lessVarsDirPath
+					? path.join(nuxt.options.rootDir, moduleConfig.lessVarsDirPath)
+					: null,
+				stylusVarsDirPath: moduleConfig.stylusVarsDirPath
+					? path.join(nuxt.options.rootDir, moduleConfig.stylusVarsDirPath)
+					: null,
+				compiler: moduleConfig.compiler
 			}
 		});
 
@@ -219,7 +216,7 @@ export default defineNuxtModule<NuxtModuleConfigInterface>({
 		 */
 		nuxt.hook('nitro:config', (nitroConfig) => {
 			const pluginConfig = getPluginConfig();
-			pluginConfig.extend.bundler.compiler.selectorsAreas.push('"className":\\[([^\\]]+)\\]');
+			pluginConfig.bundler.compiler.selectorsAreas.push('"className":\\[([^\\]]+)\\]');
 			pluginConfig.dev = nuxtIsInDevMode;
 			nitroConfig.rollupConfig.plugins.unshift(unplugin.rollup(pluginConfig));
 		});
