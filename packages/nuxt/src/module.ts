@@ -2,7 +2,8 @@ import fs from 'fs';
 import path from 'path';
 import { name } from '../package.json';
 import {
-	CompilerConfigInterface
+	CompilerConfigInterface,
+	mergeObjects
 } from '@stylify/stylify';
 import { unplugin, defineConfig as defineUnpluginConfig, UnpluginConfigInterface } from '@stylify/unplugin';
 import {
@@ -62,18 +63,6 @@ const mergeObject = (...objects): any => {
 	return newObject;
 };
 
-const mergeConfig = (
-	actualConfig: NuxtModuleConfigInterface,
-	config: Record<string, any>
-): NuxtModuleConfigInterface => {
-	if ('extend' in config) {
-		actualConfig = mergeObject(actualConfig, config.extend);
-		delete config.extend;
-	}
-
-	return {...actualConfig, ...config};
-};
-
 const stylifyCssFileName = 'stylify.css';
 
 export const defineConfig = (config: NuxtModuleConfigInterface): NuxtModuleConfigInterface => config;
@@ -83,7 +72,7 @@ export default defineNuxtModule<NuxtModuleConfigInterface>({
 		name,
 		configKey: 'stylify'
 	},
-	defaults: (nuxt) => {
+	defaults: (nuxt): NuxtModuleConfigInterface => {
 		const pagesDir = resolveAlias(nuxt.options.dir.pages);
 		const layoutsDir = resolveAlias(nuxt.options.dir.layouts);
 		const componentsDir = resolveAlias('components');
@@ -104,23 +93,20 @@ export default defineNuxtModule<NuxtModuleConfigInterface>({
 				path.join(nuxt.options.rootDir, componentsDir, '**', '*.vue'),
 				path.join(nuxt.options.rootDir, contentDir, '**', '*.vue'),
 				path.join(nuxt.options.rootDir, contentDir, '**', '*.md')
-			],
-			extend: {}
+			]
 		};
 	},
 
 	setup(moduleConfig, nuxt): void {
 		const nuxtIsInDevMode = nuxt.options.dev ?? moduleConfig.dev;
-
 		moduleConfig.dev = nuxtIsInDevMode;
+
 		if ('stylify' in nuxt.options) {
-			// eslint-disable-next-line
-			moduleConfig = mergeConfig(moduleConfig, (<any>nuxt).options.stylify as NuxtModuleConfigInterface);
+			// eslint-disable-next-line no-extra-parens
+			moduleConfig = mergeObjects(moduleConfig, (<any>nuxt).options.stylify ?? {});
 		}
 
-		const getConfigPath = (configPath: string): string =>
-			path.join(nuxt.options.rootDir, resolveAlias(configPath));
-
+		const getConfigPath = (configPath: string): string => path.join(nuxt.options.rootDir, resolveAlias(configPath));
 		const configsPaths = [getConfigPath('stylify.config.js'), getConfigPath('stylify.config.ts')];
 
 		if (moduleConfig.configPath) {
@@ -139,7 +125,7 @@ export default defineNuxtModule<NuxtModuleConfigInterface>({
 				continue;
 			}
 
-			moduleConfig = mergeConfig(moduleConfig, requireModule(configPath) as Partial<NuxtModuleConfigInterface>);
+			moduleConfig = mergeObjects(moduleConfig, requireModule(configPath) as Partial<NuxtModuleConfigInterface>);
 
 			if (nuxtIsInDevMode) {
 				nuxt.options.watch.push(configPath);
@@ -167,11 +153,9 @@ export default defineNuxtModule<NuxtModuleConfigInterface>({
 		}
 
 		const transformIncludeFilterExtensions = [];
-		const transformIncludeFilterDirectories = [];
 
 		moduleConfig.filesMasks.forEach((fileMask: string) => {
 			transformIncludeFilterExtensions.push(path.extname(fileMask));
-			transformIncludeFilterDirectories.push(path.dirname(fileMask));
 		});
 
 		const getPluginConfig = (): UnpluginConfigInterface => defineUnpluginConfig({
@@ -179,13 +163,11 @@ export default defineNuxtModule<NuxtModuleConfigInterface>({
 				return transformIncludeFilterExtensions.includes(path.extname(id));
 			},
 			dev: nuxtIsInDevMode,
-			bundles: [
-				{
-					files: moduleConfig.filesMasks,
-					rewriteSelectorsInFiles: false,
-					outputFile: path.join(nuxt.options.rootDir, assetsDir, stylifyCssFileName)
-				}
-			],
+			bundles: [{
+				files: moduleConfig.filesMasks,
+				rewriteSelectorsInFiles: false,
+				outputFile: path.join(nuxt.options.rootDir, assetsDir, stylifyCssFileName)
+			}],
 			bundler: {
 				cssVarsDirPath: moduleConfig.cssVarsDirPath
 					? path.join(nuxt.options.rootDir, moduleConfig.cssVarsDirPath)
@@ -211,9 +193,15 @@ export default defineNuxtModule<NuxtModuleConfigInterface>({
 		 * that have json format ¯\_(ツ)_/¯
 		 */
 		nuxt.hook('nitro:config', (nitroConfig) => {
-			const pluginConfig = getPluginConfig();
-			pluginConfig.bundler.compiler.selectorsAreas.push('"className":\\[([^\\]]+)\\]');
-			pluginConfig.dev = nuxtIsInDevMode;
+			const pluginConfig = mergeObjects(
+				getPluginConfig(),
+				{
+					dev: nuxtIsInDevMode,
+					compiler: {
+						selectorsAreas: ['"className":\\[([^\\]]+)\\]']
+					}
+				}
+			);
 			nitroConfig.rollupConfig.plugins.unshift(unplugin.rollup(pluginConfig));
 		});
 
