@@ -35,34 +35,6 @@ export interface BundleStatsInterface {
 	css: string
 }
 
-const mergeObject = (...objects): any => {
-	const newObject = {};
-
-	for (const processedObject of objects) {
-		for (const processedObjectKey in processedObject) {
-			const newValue = processedObject[processedObjectKey];
-
-			if (processedObjectKey in newObject) {
-				if (Array.isArray(newValue)) {
-					newObject[processedObjectKey] = [
-						...newObject[processedObjectKey],
-						...newValue
-					];
-					continue;
-
-				} else if (typeof newValue === 'object' && newValue !== null) {
-					newObject[processedObjectKey] = mergeObject(newObject[processedObjectKey], newValue);
-					continue;
-				}
-			}
-
-			newObject[processedObjectKey] = newValue;
-		}
-	}
-
-	return newObject;
-};
-
 const stylifyCssFileName = 'stylify.css';
 
 export const defineConfig = (config: NuxtModuleConfigInterface): NuxtModuleConfigInterface => config;

@@ -1,7 +1,8 @@
 import {
 	CompilationResult,
 	Compiler,
-	CompilerConfigInterface
+	CompilerConfigInterface,
+	mergeObjects
 } from '@stylify/stylify';
 import { Bundler } from '@stylify/bundler';
 import fs from 'fs';
@@ -22,7 +23,6 @@ export interface StylifyNuxtModuleConfigInterface {
 	stylusVarsDirPath?: string,
 	filesMasks?: string[],
 	loaders?: LoadersInterface[],
-	extend?: Partial<Omit<StylifyNuxtModuleConfigInterface, 'extend'>>,
 }
 
 export interface BundleStatsInterface {
@@ -48,44 +48,9 @@ let moduleConfig: StylifyNuxtModuleConfigInterface = {
 	loaders: []
 };
 
-const mergeObject = (...objects): any => {
-	const newObject = {};
-
-	for (const processedObject of objects) {
-		for (const processedObjectKey in processedObject) {
-			const newValue = processedObject[processedObjectKey];
-
-			if (processedObjectKey in newObject) {
-				if (Array.isArray(newValue)) {
-					newObject[processedObjectKey] = [
-						...newObject[processedObjectKey],
-						...newValue
-					];
-					continue;
-
-				} else if (typeof newValue === 'object' && newValue !== null) {
-					newObject[processedObjectKey] = mergeObject(newObject[processedObjectKey], newValue);
-					continue;
-				}
-			}
-
-			newObject[processedObjectKey] = newValue;
-		}
-	}
-
-	return newObject;
-};
-
-const mergeConfig = (config: Record<string, any>): void => {
-	if ('extend' in config) {
-		moduleConfig = mergeObject(moduleConfig, config.extend);
-		delete config.extend;
-	}
-
-	moduleConfig = {...moduleConfig, ...config};
-};
-
 let compilationResult: CompilationResult = null;
+
+const stylifyCssFileName = 'stylify.css';
 
 export const defineConfig = (config: StylifyNuxtModuleConfigInterface): StylifyNuxtModuleConfigInterface => config;
 
@@ -121,7 +86,7 @@ export default function Stylify(): void {
 	moduleConfig.dev = nuxtIsInDevMode;
 
 	if ('stylify' in nuxt.options) {
-		mergeConfig(nuxt.options.stylify as StylifyNuxtModuleConfigInterface);
+		moduleConfig = mergeObjects(moduleConfig, nuxt.options.stylify as StylifyNuxtModuleConfigInterface);
 	}
 
 	const getConfigPath = (configPath: string) => nuxt.resolver.resolveAlias(configPath) as string;
@@ -145,7 +110,9 @@ export default function Stylify(): void {
 			continue;
 		}
 
-		mergeConfig(nuxt.resolver.requireModule(configPath) as Partial<StylifyNuxtModuleConfigInterface>);
+		moduleConfig = mergeObjects(
+			moduleConfig, nuxt.resolver.requireModule(configPath) as Partial<StylifyNuxtModuleConfigInterface>
+		);
 
 		if (nuxtIsInDevMode) {
 			nuxt.options.watch.push(configPath);
@@ -209,7 +176,7 @@ export default function Stylify(): void {
 	let initStyleGenerated = false;
 	const generateStylifyCssFile = async () => {
 		const assetsDir: string = nuxt.resolver.resolveAlias(nuxt.options.dir.assets);
-		const assetsStylifyCssPath = path.join('~', nuxt.options.dir.assets as string, 'stylify.css');
+		const assetsStylifyCssPath = path.join('~', nuxt.options.dir.assets as string, stylifyCssFileName);
 
 		if (!fs.existsSync(assetsDir)) {
 			fs.mkdirSync(assetsDir, { recursive: true });
@@ -224,7 +191,7 @@ export default function Stylify(): void {
 				id: bundleId,
 				files: moduleConfig.filesMasks,
 				rewriteSelectorsInFiles: false,
-				outputFile: path.join(assetsDir, 'stylify.css')
+				outputFile: path.join(assetsDir, stylifyCssFileName)
 			}
 		]);
 
