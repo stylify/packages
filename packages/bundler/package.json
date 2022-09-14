@@ -4,6 +4,7 @@
 	"description": "CSS bundler for @stylify/stylify.",
 	"keywords": [
 		"stylify",
+		"ui",
 		"css",
 		"sass",
 		"mobile-first",

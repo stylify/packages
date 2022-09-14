@@ -154,10 +154,6 @@ export default function Stylify(): void {
 
 	moduleConfig.compiler.dev = moduleConfig.dev;
 	moduleConfig.compiler.mangleSelectors = !moduleConfig.dev;
-	moduleConfig.compiler.selectorsAreas = [
-		'(?:^|\\s+)(?:v-bind)?:class="([^"]+)"',
-		'(?:^|\\s+)(?:v-bind)?:class=\'([^\']+)\''
-	];
 
 	const bundleId = 'stylify';
 	const createBundlerInstance = (): Bundler => {

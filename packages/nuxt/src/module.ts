@@ -148,10 +148,6 @@ export default defineNuxtModule<NuxtModuleConfigInterface>({
 
 		moduleConfig.compiler.dev = moduleConfig.dev;
 		moduleConfig.compiler.mangleSelectors = !moduleConfig.dev;
-		moduleConfig.compiler.selectorsAreas = [
-			'(?:^|\\s+)(?:v-bind)?:class="([^"]+)"',
-			'(?:^|\\s+)(?:v-bind)?:class=\'([^\']+)\''
-		];
 
 		const runtimeDir = path.join(
 			typeof __dirname === 'undefined' ? path.dirname(fileURLToPath(import.meta.url)) : __dirname, 'runtime'

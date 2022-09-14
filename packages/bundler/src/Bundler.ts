@@ -148,7 +148,25 @@ export class Bundler {
 	/**
 	 * @internal
 	 */
-	public compilerConfig: CompilerConfigInterface = {};
+	public compilerConfig: CompilerConfigInterface = {
+		selectorsAreas: [
+			// React
+			'(?:^|\\s+)className="([^"]+)"',
+			'(?:^|\\s+)className=\'([^\']+)\'',
+			'(?:^|\\s+)className=\\{((?:.|\\n)+)\\}',
+			// Vue and alpinejs
+			'(?:^|\\s+)(?:v-bind|x-bind)?:class="([^"]+)"',
+			'(?:^|\\s+)(?:v-bind|x-bind)?:class=\'([^\']+)\'',
+			// Lit
+			'(?:^|\\s+)class=\\$\\{((?:.|\n)+)\\}',
+			// Angular
+			'(?:^|\\s+)\\[(?:ngClass|className)\\]="([^"]+)',
+			'(?:^|\\s+)\\[(?:ngClass|className)\\]=\'([^\']+)',
+			// Nette
+			'(?:^|\\s+)n:class="([^"]+)"',
+			'(?:^|\\s+)n:class=\'([^\']+)\''
+		]
+	};
 
 	private dev = false;
 
