@@ -68,35 +68,35 @@ export const compareBuildStats = (selectedPackage: string = null) => {
 	const stats = getPackagesOutputStats(selectedPackage);
 	const statsDiff: Record<string, Record<string, any>> = {};
 
-	for (const packageName in stats) {
+	for (const [packageName, buildStats] of Object.entries(stats)) {
 		statsDiff[packageName] = {};
 		const packageDir = path.join(packagesDirPath, packageName);
 
 		for (const file in stats[packageName]) {
 			const completeFilePath = path.join(packageDir, file);
 
-			if (!existsSync(completeFilePath)) {
+			if (!(packageName in releaseBuildStats) || !(completeFilePath in releaseBuildStats[packageName] ?? {})) {
 				statsDiff[packageName][file] = 'New file';
 				continue;
 			}
 
 			const fileStats = statSync(completeFilePath);
-			if (fileStats.size !== releaseBuildStats[packageName][file].size) {
-				const sizeChange = -(releaseBuildStats[packageName][file].size - fileStats.size);
+			if (fileStats.size !== buildStats[file].size) {
+				const sizeChange = -(buildStats[file].size - fileStats.size);
 				statsDiff[packageName][file] = `${sizeChange > 0 ? '+' : ''}${sizeChange / 1000} KB`;
 				continue;
 			}
 		}
 	}
 
-	for (const packageName in releaseBuildStats) {
+	for (const [packageName, buildStats] of Object.entries(releaseBuildStats)) {
 		if (!(packageName in statsDiff)) {
 			statsDiff[packageName] = {};
 		}
 
 		const packageDir = path.join(packagesDirPath, packageName);
 
-		for (const file in releaseBuildStats[packageName]) {
+		for (const file in buildStats) {
 			const completeFilePath = path.join(packageDir, file);
 
 			if (!existsSync(completeFilePath)) {

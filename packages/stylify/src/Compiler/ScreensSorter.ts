@@ -4,8 +4,11 @@ class ScreensSorter {
 
 	public sortCssTreeMediaQueries = (screensList: ScreensToSortMapType): ScreensToSortMapType => {
 		const sortedScreens: ScreensToSortMapType = new Map();
-		sortedScreens.set('_', screensList.get('_'));
-		screensList.delete('_');
+
+		if (screensList.has('_')) {
+			sortedScreens.set('_', screensList.get('_'));
+			screensList.delete('_');
+		}
 
 		const lightModeScreensListKeys: string[] = [];
 		const darkModeScreensListKeys: string[] = [];

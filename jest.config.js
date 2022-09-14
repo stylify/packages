@@ -1,5 +1,5 @@
 const packagesToTest = [
-	'bundler', 'nuxt', 'nuxt-module', 'stylify', 'unplugin'
+	'astro', 'bundler', 'nuxt', 'nuxt-module', 'stylify', 'unplugin'
 ];
 
 module.exports = {

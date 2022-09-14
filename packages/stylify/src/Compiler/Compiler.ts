@@ -9,6 +9,8 @@ import {
 	defaultPreset
 } from '.';
 
+import { logOrError } from '../Utilities';
+
 export type MacroCallbackType = (macroMatch: MacroMatch, selectorProperties: SelectorProperties) => void;
 
 export type ScreenCallbackType = (screen: string) => string;
@@ -293,7 +295,7 @@ export class Compiler {
 
 		const placeholderInserter = (matched: string) => {
 			const placeholderKey = `${placeholderTextPart}${Object.keys(contentPlaceholders).length}`;
-			contentPlaceholders[placeholderKey] = matched;
+			contentPlaceholders[placeholderKey] = matched.replace(/\$/g, '__DOLLAR__');
 			return placeholderKey;
 		};
 
@@ -344,8 +346,8 @@ export class Compiler {
 			}
 		}
 
-		for (const placeholderKey in contentPlaceholders) {
-			content = content.replace(placeholderKey, contentPlaceholders[placeholderKey]);
+		for (const [placeholderKey, contentPlaceholder] of Object.entries(contentPlaceholders)) {
+			content = content.replace(placeholderKey, contentPlaceholder.replace(/__DOLLAR__/g, '$$$$'));
 		}
 
 		return content;
@@ -449,61 +451,68 @@ export class Compiler {
 		let variablesCss = '';
 
 		if (this.injectVariablesIntoCss) {
-			let variablesCssMap: ScreensToSortMapType = new Map();
-			variablesCssMap.set('_', '');
-
+			let rootCss = '';
 			let screensString = '';
-			const addScreenVariable = (screen: string, variable: string, value) => variablesCssMap.set(
-				screen, `${variablesCssMap.get(screen) as string}${makeVariableString(variable, String(value))}`
 
-			);
 			for (const [variableOrScreen, value] of Object.entries(this.variables)) {
 				if (['string', 'number'].includes(typeof value)) {
-					addScreenVariable('_', variableOrScreen, value);
+					rootCss += makeVariableString(variableOrScreen, String(value));
 					continue;
 				}
 
-				if (!(variableOrScreen in variablesCssMap)) {
-					variablesCssMap.set(variableOrScreen, '');
-					screensString += ` ${variableOrScreen}`;
-				}
-
-				for (const [screenVariableName, screenVariableValue] of Object.entries(value)) {
-					addScreenVariable(variableOrScreen, screenVariableName, screenVariableValue);
+				const newScreenStringPart = variableOrScreen.replace(' ', '__');
+				if (!new RegExp(`(?:\\s|^)${newScreenStringPart}`).test(screensString)) {
+					screensString += ` ${newScreenStringPart}`;
 				}
 			}
 
-			for (const key in this.screens) {
-				const screenRegExp = new RegExp(`\\b${key}`, 'g');
+			if (rootCss) {
+				variablesCss += `:root {${newLine}${rootCss}}${newLine}`;
+			}
+
+			const screensToSort: ScreensToSortMapType = new Map();
+
+			for (const [key, screenData] of Object.entries(this.screens)) {
+				const screenRegExp = new RegExp(`(?:\\s|^)\\b${key}`, 'g');
 				let screenMatches: RegExpExecArray;
 
 				while ((screenMatches = screenRegExp.exec(screensString))) {
 					if (screenMatches === null) {
 						continue;
 					}
-
-					let screenData = this.screens[key];
-
-					if (typeof screenData === 'function') {
-						screenData = screenData(screenMatches[0]);
-					}
-
-					variablesCssMap.set(`@media ${screenData}`, variablesCssMap.get(screenMatches[0]));
-					variablesCssMap.set(screenMatches[0], '');
+					const matchedScreen = screenMatches[0].trim();
+					screensToSort.set(
+						`@media ${typeof screenData === 'function' ? screenData(matchedScreen) : screenData}`,
+						this.variables[matchedScreen]
+					);
+					screensString = screensString.replace(new RegExp(`(?:\\s|^)${matchedScreen}`), '');
 				}
 			}
 
-			variablesCssMap = screensSorter.sortCssTreeMediaQueries(variablesCssMap);
+			const sortedScreens = screensSorter.sortCssTreeMediaQueries(screensToSort);
 
-			for (const screen of variablesCssMap.keys()) {
-				const screenVariablesString = variablesCssMap.get(screen);
-
-				if (!screenVariablesString.length) {
-					continue;
+			for (const screen of sortedScreens.keys()) {
+				const screenVariables: Record<string, string|number> = sortedScreens.get(screen);
+				let screenCss = '';
+				for (const [variable, value] of Object.entries(screenVariables)) {
+					screenCss += makeVariableString(variable, String(value));
 				}
+				variablesCss += `${screen} {${newLine}:root {${newLine}${screenCss}}${newLine}}${newLine}`;
+			}
 
-				const rootCss = `:root {${newLine}${screenVariablesString as string}}${newLine}`;
-				variablesCss += screen === '_' ? rootCss : `${screen} {${newLine}${rootCss}}${newLine}`;
+			screensString = screensString.trim();
+
+			if (screensString.length) {
+				for (let screen of screensString.split(' ')) {
+					screen = screen.replace('__', ' ');
+					variablesCss += `${screen} {${newLine}`;
+
+					for (const [variable, value] of Object.entries(this.variables[screen])) {
+						variablesCss += makeVariableString(variable, value);
+					}
+
+					variablesCss += `}${newLine}`;
+				}
 			}
 		}
 
@@ -563,6 +572,34 @@ export class Compiler {
 						selectorProperties.properties[property] = this.replaceVariableString(value);
 					}
 
+					for (const [property, propertyValue] of Object.entries(selectorProperties.properties)) {
+						selectorProperties.properties[property] = propertyValue.replace(/(?:^|\s+)(\S+)\(([^)]+)\)/g, (fullMatch, helperName: string, helperArguments: string) => {
+							if (!(helperName in this.helpers)) {
+								return fullMatch;
+							}
+
+							const helperArgumentsPlaceholders: string[] =[];
+
+							const helperArgumentsArray: (string|number)[] = helperArguments
+								.replace(/'([^']+)'/g, (fullMatch, helperArgument: string): string => {
+									const helperPlaceholderKey = helperArgumentsPlaceholders.length;
+									helperArgumentsPlaceholders.push(helperArgument);
+									return `__arg${helperPlaceholderKey}__`;
+								})
+								.split(',').map((helperArgument: string) => {
+									helperArgument = helperArgument.replace(/__arg(\d+)__/, (fullMatch: string, placeholderKeyMatch: string) => {
+										return helperArgumentsPlaceholders[placeholderKeyMatch] as string;
+									});
+									return isNaN(Number(helperArgument)) ? helperArgument : parseFloat(helperArgument);
+								});
+
+							return fullMatch.replace(
+								`${helperName}(${helperArguments})`,
+								this.helpers[helperName](...helperArgumentsArray) as string
+							);
+						});
+					}
+
 					if (this.onNewMacroMatch) {
 						this.onNewMacroMatch.call(
 							{
@@ -588,12 +625,7 @@ export class Compiler {
 			this.variableRegExp,
 			(match, substring: string): string => {
 				if (!(substring in this.variables)) {
-					const info = `Stylify: Variable "${substring}" not found when processing "${string}".`;
-					if (this.dev) {
-						console.warn(info);
-					} else {
-						throw new Error(info);
-					}
+					logOrError(`Stylify: Variable "${substring}" not found when processing "${string}".`, this.dev);
 				}
 				return this.replaceVariablesByCssVariables
 					? `var(--${substring})`

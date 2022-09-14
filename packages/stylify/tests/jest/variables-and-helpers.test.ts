@@ -5,6 +5,11 @@ const testName = 'variables-and-helpers';
 const testUtils = new TestUtils('stylify', testName);
 const inputIndex = testUtils.getHtmlInputFile();
 
+const darkThemeVariables = {
+	bg: 'black',
+	color: 'white'
+};
+
 const compiler = new Compiler({
 	dev: true,
 	replaceVariablesByCssVariables: true,
@@ -20,10 +25,10 @@ const compiler = new Compiler({
 		bg: 'white',
 		color: 'black',
 		fontSize: '12px',
-		dark: {
-			bg: 'black',
-			color: 'white'
-		},
+		dark: darkThemeVariables,
+		'html[theme="dark"]': darkThemeVariables,
+		'.dark-theme': darkThemeVariables,
+		':root.dark': darkThemeVariables,
 		minw450px: {
 			fontSize: '18px'
 		},
@@ -39,6 +44,9 @@ const compiler = new Compiler({
 				return 'font-style'
 			}
 			return value;
+		},
+		myContent(...strings: string[]): string {
+			return `"${strings.join(' ')}"`;
 		},
 		shortcut(value: string): string {
 			const shortcuts = {

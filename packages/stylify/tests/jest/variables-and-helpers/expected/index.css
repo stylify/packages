@@ -21,6 +21,27 @@
 --color: white;
 }
 }
+html[theme="dark"] {
+--bg: black;
+--color: white;
+}
+.dark-theme {
+--bg: black;
+--color: white;
+}
+:root.dark {
+--bg: black;
+--color: white;
+}
+.color\:lighten\(\#000\,10\){
+	color: #0a0a0a
+}
+.border\:2px__solid__lighten\(\#000\,20\){
+	border: 2px solid #141414
+}
+.content\:myContent\(\^Super\^\,\^Content\^\){
+	content: "Super Content"
+}
 .text\:bold{
 	font-weight: bold
 }

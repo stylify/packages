@@ -39,16 +39,14 @@ async function build() {
 						files: [path.join(buildTmpDir, 'index.html')]
 					}
 				],
-				extend: {
-					bundler: {
-						compiler: {
-							variables: {
-								blue: 'steelblue'
-							},
-							macros: {
-								'm:(\\S+?)': (m: MacroMatch, p: SelectorProperties) => {
-									p.add('margin', m.getCapture(0));
-								}
+				bundler: {
+					compiler: {
+						variables: {
+							blue: 'steelblue'
+						},
+						macros: {
+							'm:(\\S+?)': (m: MacroMatch, p: SelectorProperties) => {
+								p.add('margin', m.getCapture(0));
 							}
 						}
 					}

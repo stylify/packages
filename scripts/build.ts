@@ -83,4 +83,18 @@ runBuild(async () => {
 		]
 	});
 
+	bundle({
+		package: 'astro',
+		bundles: [
+			{
+				entryPoints: [path.join('src', 'index')],
+				outfile: 'index',
+				platform: 'node',
+				minify: false,
+				external: ['@stylify/stylify', '@stylify/unplugin'],
+				formats: ['esm', 'cjs']
+			}
+		]
+	});
+
 });
