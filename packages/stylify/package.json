@@ -1,9 +1,10 @@
 {
 	"name": "@stylify/stylify",
 	"version": "0.2.1",
-	"description": "Dynamic CSS generator for rapid UI development.",
+	"description": "Stylify generates utility-first CSS dynamically based on what you write. Write HTML. Get CSS.",
 	"keywords": [
 		"stylify",
+		"ui",
 		"css",
 		"sass",
 		"mobile-first",
