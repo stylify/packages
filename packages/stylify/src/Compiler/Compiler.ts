@@ -572,6 +572,34 @@ export class Compiler {
 						selectorProperties.properties[property] = this.replaceVariableString(value);
 					}
 
+					for (const [property, propertyValue] of Object.entries(selectorProperties.properties)) {
+						selectorProperties.properties[property] = propertyValue.replace(/(?:^|\s+)(\S+)\(([^)]+)\)/g, (fullMatch, helperName: string, helperArguments: string) => {
+							if (!(helperName in this.helpers)) {
+								return fullMatch;
+							}
+
+							const helperArgumentsPlaceholders: string[] =[];
+
+							const helperArgumentsArray: (string|number)[] = helperArguments
+								.replace(/'([^']+)'/g, (fullMatch, helperArgument: string): string => {
+									const helperPlaceholderKey = helperArgumentsPlaceholders.length;
+									helperArgumentsPlaceholders.push(helperArgument);
+									return `__arg${helperPlaceholderKey}__`;
+								})
+								.split(',').map((helperArgument: string) => {
+									helperArgument = helperArgument.replace(/__arg(\d+)__/, (fullMatch: string, placeholderKeyMatch: string) => {
+										return helperArgumentsPlaceholders[placeholderKeyMatch] as string;
+									});
+									return isNaN(Number(helperArgument)) ? helperArgument : parseFloat(helperArgument);
+								});
+
+							return fullMatch.replace(
+								`${helperName}(${helperArguments})`,
+								this.helpers[helperName](...helperArgumentsArray) as string
+							);
+						});
+					}
+
 					if (this.onNewMacroMatch) {
 						this.onNewMacroMatch.call(
 							{

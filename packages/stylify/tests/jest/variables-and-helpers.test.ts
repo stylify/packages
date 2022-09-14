@@ -45,6 +45,9 @@ const compiler = new Compiler({
 			}
 			return value;
 		},
+		myContent(...strings: string[]): string {
+			return `"${strings.join(' ')}"`;
+		},
 		shortcut(value: string): string {
 			const shortcuts = {
 				'bgc': 'background-color',
