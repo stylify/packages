@@ -75,14 +75,17 @@ export const compareBuildStats = (selectedPackage: string = null) => {
 		for (const file in stats[packageName]) {
 			const completeFilePath = path.join(packageDir, file);
 
-			if (!(packageName in releaseBuildStats) || !(completeFilePath in releaseBuildStats[packageName] ?? {})) {
+			if (typeof releaseBuildStats[packageName] === 'undefined'
+				|| !(packageName in releaseBuildStats) && !(completeFilePath in releaseBuildStats[packageName])
+			) {
 				statsDiff[packageName][file] = 'New file';
 				continue;
 			}
 
 			const fileStats = statSync(completeFilePath);
-			if (fileStats.size !== buildStats[file].size) {
-				const sizeChange = -(buildStats[file].size - fileStats.size);
+			const fileReleaseStats = releaseBuildStats[packageName][file];
+			if (fileStats.size !== fileReleaseStats.size) {
+				const sizeChange = -(fileReleaseStats.size - fileStats.size);
 				statsDiff[packageName][file] = `${sizeChange > 0 ? '+' : ''}${sizeChange / 1000} KB`;
 				continue;
 			}
