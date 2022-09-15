@@ -1,10 +1,12 @@
 import type { AstroIntegration } from 'astro';
-import { UnpluginConfigInterface, vitePlugin } from '@stylify/unplugin';
+import { UnpluginConfigInterface, vitePlugin, defineConfig as stylifyUnpluginConfig } from '@stylify/unplugin';
 import { Configurator } from '@stylify/stylify';
 import { fileURLToPath } from 'url';
 import { join } from 'path';
 
-export default function stylifyIntegration(options?: UnpluginConfigInterface): AstroIntegration {
+export const defineConfig = stylifyUnpluginConfig;
+
+export const stylifyIntegration = (options?: UnpluginConfigInterface): AstroIntegration => {
 
 	return {
 		name: '@stylify/astro',
@@ -42,4 +44,6 @@ export default function stylifyIntegration(options?: UnpluginConfigInterface): A
 			}
 		}
 	};
-}
+};
+
+export default stylifyIntegration;
