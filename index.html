@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,14 +13,12 @@
 </head>
 <body>
 
-	<h1 class="color:red">Hello World!</h1>
+	<h1 class="color:red ">Hello World!</h1>
 
 	<script type="module">
-		import { Runtime, nativePreset } from './packages/stylify/esm/index.js';
-		import { Profiler } from './packages/profiler/esm/index.js'
+		import { Runtime } from './packages/stylify/esm/index.js';
 
-		new Profiler();
-		new Runtime(nativePreset);
+		new Runtime();
 	</script>
 </body>
 </html>

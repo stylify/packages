@@ -13,10 +13,16 @@ runBuild(async () => {
 			{
 				entryPoints: [path.join('src', 'index')],
 				outfile: 'index',
-				formats: ['esm', 'esm-browser', 'cjs']
+				formats: ['esm', 'cjs']
 			},
 			{
 				entryPoints: [path.join('src', 'index.browser')],
+				outfile: 'index',
+				platform: 'browser',
+				formats: 'esm-browser'
+			},
+			{
+				entryPoints: [path.join('src', 'index.browser.iife')],
 				outfile: 'stylify',
 				platform: 'browser',
 				formats: 'iife'

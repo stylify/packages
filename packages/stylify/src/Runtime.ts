@@ -3,9 +3,7 @@ import { CompilationResult, Compiler, CompilerConfigInterface } from './Compiler
 export interface RuntimeConfigInterface {
 	dev?: boolean,
 	compiler?: CompilerConfigInterface,
-	runtime?: {
-		repaintTimeout?: number
-	}
+	repaintTimeout?: number
 }
 
 interface UpdateCssCallbackArgumentsInterface {
@@ -18,11 +16,11 @@ type UpdateCssCallbackType = (data: UpdateCssCallbackArgumentsInterface) => void
 
 export class Runtime {
 
-	public static readonly STYLE_EL_ID: string = 'stylify-css';
+	public static readonly styleElId: string = 'stylify-css';
 
-	public static readonly IGNORE_CLASS = 'stylify-ignore';
+	public static readonly ignoreClass = 'stylify-ignore';
 
-	public static readonly CLOAK_CLASS: string = 's-cloak';
+	public static readonly cloakClass: string = 's-cloak';
 
 	public dev = false;
 
@@ -42,34 +40,26 @@ export class Runtime {
 		}
 
 		this.configure(config);
-		this.initialPaintCompleted = false;
-
 		this.triggerEvent('stylify:ready', this);
 
 		if (['complete', 'loaded', 'interactive'].includes(document.readyState)) {
 			this.init();
-		} else {
-			document.addEventListener('DOMContentLoaded', () => {
-				this.init();
-			});
+			return;
 		}
+
+		document.addEventListener('DOMContentLoaded', () => this.init() );
 	}
 
 	public configure(config: RuntimeConfigInterface): void {
-		const runtimeConfig = config.runtime || {};
-		const compilerConfig = config.compiler || {};
+		const compilerConfig = config.compiler ?? {};
 
-		if (this.initialPaintCompleted) {
-			this.updateCss(document.documentElement.outerHTML);
-		}
+		this.dev = config.dev ?? this.dev;
+		this.repaintTimeout = config.repaintTimeout ?? this.repaintTimeout;
 
-		this.dev = 'dev' in config ? config.dev : this.dev;
-		this.repaintTimeout = runtimeConfig.repaintTimeout || this.repaintTimeout;
-
-		compilerConfig.dev = this.dev;
+		compilerConfig.dev = compilerConfig.dev ?? this.dev;
 		compilerConfig.ignoredAreas = [
-			...compilerConfig.ignoredAreas || [],
-			...[/<stylify-runtime-ignore[\s]*?>([\s\S]*?)<\/stylify-runtime-ignore>/]
+			...compilerConfig.ignoredAreas ?? [],
+			...[/stylify-runtime-ignore([\s\S]*?)\/stylify-runtime-ignore/]
 		];
 
 		if (!this.compiler) {
@@ -81,6 +71,11 @@ export class Runtime {
 		this.triggerEvent('stylify:configured', {
 			config: config
 		});
+
+		if (this.initialPaintCompleted) {
+			this.compilationResult = null;
+			this.updateCss(document.documentElement.outerHTML);
+		}
 	}
 
 	private init() {
@@ -129,7 +124,7 @@ export class Runtime {
 		const config = { attributeFilter: ['class'], childList: true, subtree: true };
 		let compilerContentQueue = '';
 		let updateTimeout: number;
-		const ignoreSelector = `.${Runtime.IGNORE_CLASS}`;
+		const ignoreSelector = `.${Runtime.ignoreClass}`;
 
 		const observer = new MutationObserver((mutationsList) => {
 			mutationsList.forEach((mutation) => {
@@ -138,8 +133,8 @@ export class Runtime {
 				if (!['attributes', 'childList'].includes(mutation.type)
 					|| mutation.type === 'attributes' && mutation.attributeName !== 'class'
 					|| targetElement.nodeType !== Node.ELEMENT_NODE
-					|| targetElement.id === Runtime.STYLE_EL_ID
-					|| targetElement.classList.contains(Runtime.IGNORE_CLASS)
+					|| targetElement.id === Runtime.styleElId
+					|| targetElement.classList.contains(Runtime.ignoreClass)
 					|| targetElement.closest(ignoreSelector) !== null
 				) {
 					return;
@@ -164,14 +159,7 @@ export class Runtime {
 			}
 
 			updateTimeout = window.setTimeout(() => {
-				const css = this.updateCss(compilerContentQueue);
-
-				if (css === null) {
-					return;
-				}
-
-				compilerContentQueue = '';
-
+				compilerContentQueue = this.updateCss(compilerContentQueue) ?? '';
 			}, this.repaintTimeout);
 		});
 
@@ -179,20 +167,20 @@ export class Runtime {
 	}
 
 	public injectCss(css: string): void {
-		let el = document.querySelector(`#${Runtime.STYLE_EL_ID}`);
+		let el = document.querySelector(`#${Runtime.styleElId}`);
 
 		if (el) {
 			el.innerHTML = css;
 		} else {
 			el = document.createElement('style');
-			el.id = Runtime.STYLE_EL_ID;
+			el.id = Runtime.styleElId;
 			el.innerHTML = css;
 			document.head.appendChild(el);
 		}
 
-		const elements = document.querySelectorAll(`.${Runtime.CLOAK_CLASS}`);
+		const elements = document.querySelectorAll(`.${Runtime.cloakClass}`);
 		elements.forEach((element) => {
-			element.classList.remove(Runtime.CLOAK_CLASS);
+			element.classList.remove(Runtime.cloakClass);
 			this.triggerEvent('stylify:uncloak', {
 				el: element
 			});
