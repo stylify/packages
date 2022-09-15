@@ -89,6 +89,23 @@ const lightenDarkenColor = (color: string, amount: number): string => {
 };
 
 export const defaultPreset = {
+	selectorAreas: [
+		// React
+		'(?:^|\\s+)className="([^"]+)"',
+		'(?:^|\\s+)className=\'([^\']+)\'',
+		'(?:^|\\s+)className=\\{((?:.|\\n)+)\\}',
+		// Vue and alpinejs
+		'(?:^|\\s+)(?:v-bind|x-bind)?:class="([^"]+)"',
+		'(?:^|\\s+)(?:v-bind|x-bind)?:class=\'([^\']+)\'',
+		// Lit
+		'(?:^|\\s+)class=\\$\\{((?:.|\n)+)\\}',
+		// Angular
+		'(?:^|\\s+)\\[(?:ngClass|className)\\]="([^"]+)',
+		'(?:^|\\s+)\\[(?:ngClass|className)\\]=\'([^\']+)',
+		// Nette
+		'(?:^|\\s+)n:class="([^"]+)"',
+		'(?:^|\\s+)n:class=\'([^\']+)\''
+	],
 	screens: {
 		tosm: maxWidthScreen('639px'),
 		sm: minWidthScreen('640px'),
