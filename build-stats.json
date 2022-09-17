@@ -1,106 +1,81 @@
 {
-  "autoprefixer": {
+  "astro": {
     "/esm/index.mjs": {
-      "size": 2535
+      "size": 1836
     },
-    "/esm/prefixer.mjs": {
-      "size": 979
-    },
+    "/lib/index.cjs": {
+      "size": 2998
+    }
+  },
+  "autoprefixer": {
     "/lib/index.cjs": {
       "size": 3946
     },
     "/lib/prefixer.cjs": {
       "size": 1940
-    },
-    "/dist/prefixer.js": {
-      "size": 1019
-    },
-    "/dist/prefixer.min.js": {
-      "size": 533
     }
   },
   "bundler": {
     "/esm/index.mjs": {
-      "size": 21048
+      "size": 21076
     },
     "/lib/index.cjs": {
-      "size": 22589
+      "size": 22617
     }
   },
   "nuxt": {
     "/esm/module.mjs": {
-      "size": 6536
+      "size": 5240
     },
     "/lib/module.cjs": {
-      "size": 8377
+      "size": 7111
     }
   },
   "nuxt-module": {
     "/esm/index.mjs": {
-      "size": 6203
+      "size": 5217
     },
     "/esm/webpack-loader.mjs": {
       "size": 851
     },
     "/lib/index.cjs": {
-      "size": 7774
+      "size": 6813
     },
     "/lib/webpack-loader.cjs": {
       "size": 1879
     }
   },
   "profiler": {
-    "/esm/index.js": {
-      "size": 87696
-    },
-    "/esm/index.min.js": {
-      "size": 65517
-    },
-    "/esm/index.mjs": {
-      "size": 87696
-    },
     "/lib/index.cjs": {
       "size": 88989
-    },
-    "/dist/profiler.js": {
-      "size": 89820
-    },
-    "/dist/profiler.min.js": {
-      "size": 65294
     }
   },
   "stylify": {
     "/esm/index.js": {
-      "size": 55303
+      "size": 57578
     },
     "/esm/index.min.js": {
-      "size": 29486
+      "size": 30925
     },
     "/esm/index.mjs": {
-      "size": 55303
+      "size": 59519
     },
     "/lib/index.cjs": {
-      "size": 56663
+      "size": 61044
     },
     "/dist/stylify.js": {
-      "size": 46697
+      "size": 59277
     },
     "/dist/stylify.min.js": {
-      "size": 21073
-    },
-    "/dist/stylify.native.js": {
-      "size": 59058
-    },
-    "/dist/stylify.native.min.js": {
-      "size": 29996
+      "size": 30547
     }
   },
   "unplugin": {
     "/esm/index.mjs": {
-      "size": 5124
+      "size": 6291
     },
     "/lib/index.cjs": {
-      "size": 6349
+      "size": 7534
     }
   }
 }
