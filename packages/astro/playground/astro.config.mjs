@@ -4,7 +4,7 @@ import node from '@astrojs/node';
 
 // https://astro.build/config
 export default defineConfig({
-	integrations: [stylifyIntegration()],
+	integrations: [stylifyIntegration({dev: true})],
 	output: 'server',
 	adapter: node(),
 	server: {

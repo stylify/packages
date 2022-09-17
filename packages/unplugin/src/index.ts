@@ -10,6 +10,7 @@ import {
 import { createUnplugin } from 'unplugin';
 
 export interface UnpluginConfigInterface extends DefaultConfigInterface {
+	configFile?: string,
 	bundles?: BundleConfigInterface[];
 	dev?: boolean;
 	bundler?: BundlerConfigInterface;
@@ -53,7 +54,7 @@ export const defineConfig = (config: UnpluginConfigInterface): UnpluginConfigInt
 const defaultAllowedTypesRegExp = new RegExp(`\\.(?:${defaultAllowedFileTypes.join('|')})\\b`);
 const defaultIgnoredDirectoriesRegExp = new RegExp(`/${defaultIgnoredDirectories.join('|')}/`);
 
-export const unplugin = createUnplugin((config: UnpluginConfigInterface) => {
+export const unplugin = createUnplugin((config: UnpluginConfigInterface|UnpluginConfigInterface[]) => {
 
 	const pluginName = 'stylify';
 	let pluginConfig: UnpluginConfigInterface = {};
@@ -81,10 +82,11 @@ export const unplugin = createUnplugin((config: UnpluginConfigInterface) => {
 			};
 		});
 
-		const pluginCustomConfig: UnpluginConfigInterface[] = Array.isArray(config) ? config : [config];
-		const configurator = new Configurator();
+		const pluginCustomConfig: UnpluginConfigInterface = mergeObjects(
+			...Array.isArray(config) ? config : [config]
+		);
 
-		pluginConfig = await configurator.processConfigs([
+		const configsToProcess: (UnpluginConfigInterface|string)[] = [
 			{
 				dev: null,
 				bundles: [],
@@ -94,8 +96,17 @@ export const unplugin = createUnplugin((config: UnpluginConfigInterface) => {
 				transformIncludeFilter: (id: string) =>
 					defaultAllowedTypesRegExp.test(id) && !defaultIgnoredDirectoriesRegExp.test(id)
 			},
-			...pluginCustomConfig
-		]);
+			pluginCustomConfig
+		];
+
+		if (pluginCustomConfig.configFile) {
+			configsToProcess.push(pluginCustomConfig.configFile);
+			delete pluginCustomConfig.configFile;
+		}
+
+		const configurator = new Configurator();
+
+		pluginConfig = await configurator.processConfigs(configsToProcess);
 
 		pluginConfigured();
 	};

@@ -89,7 +89,7 @@ const lightenDarkenColor = (color: string, amount: number): string => {
 };
 
 export const defaultPreset = {
-	selectorAreas: [
+	selectorsAreas: [
 		// React
 		'(?:^|\\s+)className="([^"]+)"',
 		'(?:^|\\s+)className=\'([^\']+)\'',

@@ -20,13 +20,19 @@ export interface ConfiguratorConfigInterface {
 	configs?: (ConfiguratorConfigsType | string)[]
 }
 
+export interface DefaultConfigFiles {
+	js?: string,
+	mjs?: string,
+	cjs?: string
+}
+
 export interface DefaultConfigInterface extends Record<string, any> {
 	compiler?: CompilerConfigInterface
 }
 
 export class Configurator {
 
-	public static defaultConfigName = 'stylify.config.js';
+	public static defaultConfigName = 'stylify.config';
 
 	private configsAreProcessedPromise: Promise<void> = null;
 
@@ -46,8 +52,17 @@ export class Configurator {
 		this.addConfigs(config.configs ?? []);
 	}
 
-	public static getDefaultConfigPath(path: string): string {
-		return join(path, this.defaultConfigName);
+	public static getDefaultExistingConfigFiles(path: string): DefaultConfigFiles {
+		const configs: DefaultConfigFiles = {};
+
+		['js', 'mjs', 'cjs'].forEach((suffix) => {
+			const filePath = join(path, `${this.defaultConfigName}.${suffix}`);
+			if (existsSync(filePath)) {
+				configs[suffix] = filePath;
+			}
+		});
+
+		return configs;
 	}
 
 	public async processConfigs<T extends DefaultConfigInterface>(
@@ -72,22 +87,24 @@ export class Configurator {
 		const configsToAdd: ConfigsQueueInterface[] = [];
 
 		for (const config of this.rawConfigs) {
+			const configIsFilePathString = typeof config === 'string';
 			const configsToAddLength = configsToAdd.length;
 			const configToAdd: ConfigsQueueInterface = {
 				position: configsToAddLength > 0 ? configsToAddLength - 1 : 0,
 				promisePosition: null,
-				config: null
+				config: configIsFilePathString ? null : config
 			};
 
-			if (typeof config !== 'string') {
-				configToAdd.config = config;
-				configsToAdd.push(configToAdd);
+			configsToAdd.push(configToAdd);
+
+			if (!configIsFilePathString) {
 				continue;
 			}
 
 			const configsLoadingPromisesLength = configsLoadingPromises.length;
 			configToAdd.promisePosition = configsLoadingPromisesLength > 0 ? configsLoadingPromisesLength - 1 : 0;
 			configsLoadingPromises.push(this.loadConfigFile<ConfiguratorConfigsType>(config));
+
 			if (!(config in this.configFilesToWatch) && this.onConfigFileChangedHook) {
 				this.configFilesToWatch[config] = watch(config, () => {
 					if (this.configsAreProcessedPromise !== null) {
@@ -99,11 +116,11 @@ export class Configurator {
 			}
 		}
 
-		await Promise.all(configsLoadingPromises);
+		const configsFromFiles = await Promise.all(configsLoadingPromises);
 
 		const configsToMerge: ConfiguratorConfigsType[] = configsToAdd.map((config): DefaultConfigInterface => {
 			if (config.promisePosition !== null) {
-				config.config = configsLoadingPromises[config.promisePosition];
+				config.config = configsFromFiles[config.promisePosition];
 			}
 
 			return config.config;
@@ -126,7 +143,9 @@ export class Configurator {
 	}
 
 	public async loadConfigFile<T extends Record<string, any> = Record<string, any>>(configPath: string): Promise<T> {
-		let config = {};
+		let config = {
+			default: {}
+		};
 
 		if (existsSync(configPath)) {
 			config = await import(configPath);
@@ -135,7 +154,7 @@ export class Configurator {
 			console.error(`Config "${configPath}" not found. Skipping.`);
 		}
 
-		return config as T;
+		return config.default as T;
 	}
 
 }

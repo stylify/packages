@@ -20,20 +20,20 @@ fse.copySync(path.join(bundleTestDir, 'input'), buildTmpDir);
 execSync(`cd ${buildTmpDir} && yarn install && yarn build`);
 
 const indexHtmlPart = `
-	<body class="c">
-		<h1 class="d e f">Layout</h1>
-		<h1 class="f">Hello World!</h1><h2 class="a b">Subtitle</h2>
-	</body>
+	<body class="c d">
+		<h1 class="e f g">Layout</h1>
+		<h1 class="g">Hello World!</h1><h2 class="a b">Subtitle</h2>
+	</body></html>
 `.trim();
 
 const secondHtmlPart = `
-	<body class="c">
-		<h1 class="d e f">Layout</h1>
-		<h1 class="g">Hello World 2!</h1><h2 class="a b">Subtitle</h2>
-	</body>
+	<body class="c d">
+		<h1 class="e f g">Layout</h1>
+		<h1 class="h">Hello World 2!</h1><h2 class="a b">Subtitle</h2>
+	</body></html>
 `.trim();
 
-const cssFilePart = '.a{color:orange}.b{font-size:24px}.c{text-align:center}.d{font-size:48px}.e{margin-top:24px}.f{color:purple}.g{color:lightpurple}'
+const cssFilePart = ':root{--blue: darkblue}.a{color:orange}.b{font-size:24px}.c{text-align:center}.d{color:#00008b}.e{font-size:48px}.f{margin-top:24px}.g{color:purple}.h{color:lightpurple}';
 
 test('Astro build', async (): Promise<void> => {
  	const [indexHtmlFileEntry] = FastGlob.sync(path.join(buildTmpDir, 'dist', 'index.html'));
