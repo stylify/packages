@@ -1,10 +1,13 @@
 import type { AstroIntegration } from 'astro';
-import { UnpluginConfigInterface, vitePlugin } from '@stylify/unplugin';
+import { UnpluginConfigInterface, vitePlugin, defineConfig as stylifyUnpluginConfig } from '@stylify/unplugin';
 import { Configurator } from '@stylify/stylify';
 import { fileURLToPath } from 'url';
 import { join } from 'path';
+import { existsSync } from 'fs';
 
-export default function stylifyIntegration(options?: UnpluginConfigInterface): AstroIntegration {
+export const defineConfig = stylifyUnpluginConfig;
+
+export const stylifyIntegration = (options?: UnpluginConfigInterface): AstroIntegration => {
 
 	return {
 		name: '@stylify/astro',
@@ -12,28 +15,35 @@ export default function stylifyIntegration(options?: UnpluginConfigInterface): A
 			'astro:config:setup': ({ updateConfig, config, injectScript, command}): void => {
 				const srcDir = join(fileURLToPath(config.root), 'src');
 				const singleBundleOutputFilePath = join(srcDir, 'styles', 'stylify.css');
-				const isDev = import.meta?.env?.DEV
+				const isDev = options?.dev ?? (import.meta?.env?.DEV === true
 					|| import.meta?.env?.MODE === 'development'
 					|| command === 'dev'
-					|| false;
+					|| null);
+
+				// todo options musí být započítaný už tady do isDev a nebo rozšíření mangleSelectors u options
+
+				const defaultConfig: UnpluginConfigInterface = {
+					dev: options?.dev ?? isDev,
+					compiler: {
+						mangleSelectors: options?.compiler?.mangleSelectors ?? !isDev
+					},
+					bundles: options?.bundles ? [] : [{
+						outputFile: singleBundleOutputFilePath,
+						files: [join(srcDir, `**`, `*.{astro,html,js,jsx,svelte,ts,tsx,vue}`)]
+					}]
+				};
+
+				const configs = Configurator.getDefaultExistingConfigFiles(fileURLToPath(config.root));
+				const configsTypes = Object.keys(configs);
+
+				if (configsTypes.length > 0) {
+					defaultConfig.configFile = configs[configsTypes[0]];
+				}
 
 				updateConfig({
 					vite: {
 						plugins: [
-							vitePlugin([
-								{
-									dev: isDev,
-									configFile: Configurator.getDefaultConfigPath(fileURLToPath(config.root)),
-									compiler: {
-										mangleSelectors: !isDev
-									},
-									bundles: options?.bundles ? [] : [{
-										outputFile: singleBundleOutputFilePath,
-										files: [join(srcDir, `**`, `*.{astro,html,js,jsx,svelte,ts,tsx,vue}`)]
-									}]
-								},
-								options ?? {}
-							])
+							vitePlugin([defaultConfig, options ?? {}])
 						]
 					}
 				});
@@ -42,4 +52,6 @@ export default function stylifyIntegration(options?: UnpluginConfigInterface): A
 			}
 		}
 	};
-}
+};
+
+export default stylifyIntegration;

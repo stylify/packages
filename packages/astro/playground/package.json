@@ -2,6 +2,7 @@
   "name": "@example/basics",
   "version": "0.0.1",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
@@ -10,7 +11,11 @@
     "astro": "astro"
   },
   "dependencies": {
+	"@stylify/stylify": "file:../../stylify",
+	"@stylify/bundler": "file:../../bundler",
+	"@stylify/unplugin": "file:../../unplugin",
+	"@stylify/astro": "file:../",
     "@astrojs/node": "^1.0.1",
-    "astro": "^1.1"
+    "astro": "^1.2"
   }
 }

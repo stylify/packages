@@ -8,6 +8,7 @@
 		"repo:pack": "lerna run pack",
 		"repo:publish": "yarn build && yarn build:generate-stats && npm login && lerna publish --no-push --no-git-tag-version --yes",
 		"lerna:patch": "lerna version patch --no-push --no-git-tag-version --yes",
+		"lerna:minor": "lerna version minor --no-push --no-git-tag-version --yes",
 		"bootstrap": "lerna bootstrap --force-local",
 		"watch": "cross-env watch=true yarn build",
 		"build": "ts-node scripts/build.ts",
