@@ -3,11 +3,10 @@ import { UnpluginConfigInterface, vitePlugin, defineConfig as stylifyUnpluginCon
 import { Configurator } from '@stylify/stylify';
 import { fileURLToPath } from 'url';
 import { join } from 'path';
-import { existsSync } from 'fs';
 
 export const defineConfig = stylifyUnpluginConfig;
 
-export const stylifyIntegration = (options?: UnpluginConfigInterface): AstroIntegration => {
+export const stylify = (options?: UnpluginConfigInterface): AstroIntegration => {
 
 	return {
 		name: '@stylify/astro',
@@ -54,4 +53,4 @@ export const stylifyIntegration = (options?: UnpluginConfigInterface): AstroInte
 	};
 };
 
-export default stylifyIntegration;
+export default stylify;
