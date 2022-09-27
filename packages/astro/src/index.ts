@@ -19,12 +19,11 @@ export const stylify = (options?: UnpluginConfigInterface): AstroIntegration => 
 					|| command === 'dev'
 					|| null);
 
-				// todo options musí být započítaný už tady do isDev a nebo rozšíření mangleSelectors u options
-
 				const defaultConfig: UnpluginConfigInterface = {
 					dev: options?.dev ?? isDev,
 					compiler: {
-						mangleSelectors: options?.compiler?.mangleSelectors ?? !isDev
+						mangleSelectors: options?.compiler?.mangleSelectors ?? !isDev,
+						selectorsAreas: ['(?:^|\\s+)class:list=\\{\\[((?:.|\\n)+)\\]\\}']
 					},
 					bundles: options?.bundles ? [] : [{
 						outputFile: singleBundleOutputFilePath,
