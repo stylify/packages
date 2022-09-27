@@ -1,4 +1,5 @@
 import type { CompilerConfigInterface, MacroMatch, SelectorProperties } from '.';
+import { logOrError } from '../Utilities';
 
 export interface RgbDataInterface {
 	r: number | null
@@ -52,6 +53,10 @@ const parseColor = (color: string): RgbDataInterface => {
 		rgbData = parseRgb(color);
 	}
 
+	if (rgbData.r === null) {
+		throw new Error(`Color "${color}" could not be converted to RGB.`);
+	}
+
 	return rgbData;
 };
 
@@ -69,6 +74,7 @@ const rgbToHex = (color: string|Record<string, any>) => {
 
 const lightenDarkenColor = (color: string, amount: number): string => {
 	const { r, g, b} = parseColor(color);
+
 	const colors = [r, g, b].map((colorPart: number): number => {
 		colorPart += amount;
 
@@ -148,11 +154,6 @@ export const defaultPreset = {
 		},
 		colorToRgb: (color: string, alpha: number = null) => {
 			const { r, g, b } = parseColor(color);
-
-			if (r === null) {
-				return color;
-			}
-
 			const rgb = `${r},${g},${b}`;
 
 			return alpha ? `rgba(${rgb},${alpha})` : `rgb(${rgb})`;

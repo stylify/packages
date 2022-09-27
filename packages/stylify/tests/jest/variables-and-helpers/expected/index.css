@@ -1,6 +1,6 @@
 :root {
---blue: darkblue;
---border: border 1px solid var(--blue);
+--blue: #0000FF;
+--border: border 1px solid #0a0aff;
 --bg: white;
 --color: black;
 --fontSize: 12px;
@@ -49,13 +49,13 @@ html[theme="dark"] {
 	font-style: italic
 }
 .fs\:\$fontSize{
-	font-size: var(--fontSize)
+	font-size: 12px
 }
 .bgc\:\$bg{
-	background-color: var(--bg)
+	background-color: white
 }
 .clr\:\$color{
-	color: var(--color)
+	color: black
 }
 .fix\:2px{
 	position: fixed;
