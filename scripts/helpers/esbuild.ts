@@ -160,12 +160,9 @@ const runEsbuild = async (config: BuildConfigConfigurationInterface): Promise<Bu
 						: bundleConfig.platform ?? 'browser',
 					external: bundleConfig.external ?? [],
 					logLevel: isWatchMode ? 'info' : 'error',
-					jsxFactory: 'preact.h',
-					jsxFragment: 'preact.Fragment',
 					loader: {
 						'.woff': 'base64',
-						'.svg': 'dataurl',
-						'.tsx': 'tsx'
+						'.svg': 'dataurl'
 					},
 					plugins: [
 						sassPlugin({
@@ -196,7 +193,6 @@ const runEsbuild = async (config: BuildConfigConfigurationInterface): Promise<Bu
 			const tscCommand = [
 				`yarn tsc ${typesDirsString}`,
 				'-d --emitDeclarationOnly',
-				'--jsx react-jsx --jsxImportSource preact',
 				`--outDir ${typesOutputDir}`
 			];
 
