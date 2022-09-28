@@ -487,30 +487,20 @@ export class Bundler {
 
 			if (!(bundleConfig.outputFile in this.bundlesBuildCache)) {
 				const bundleCompilerConfig = this.mergeObjects(this.compilerConfig, bundleConfig.compiler);
-				const originalOnPrepareCompilationResultFunction = bundleCompilerConfig.onPrepareCompilationResult;
-
 				const compiler = new Compiler(bundleCompilerConfig);
-				compiler.onPrepareCompilationResult = (compilationResult: CompilationResult): void => {
-					compilationResult.configure({
-						mangleSelectors: bundleCompilerConfig.mangleSelectors,
-						reconfigurable: false
-					});
-
-					if (bundleConfig.scope) {
-						compilationResult.onPrepareCssRecord = (cssRecord: CssRecord): void => {
-							cssRecord.scope = bundleConfig.scope;
-						};
-					}
-
-					if (typeof originalOnPrepareCompilationResultFunction === 'function') {
-						originalOnPrepareCompilationResultFunction(compilationResult);
-					}
-				};
 
 				this.bundlesBuildCache[bundleConfig.outputFile] = {
 					id: bundleConfig.id || null,
 					compiler: compiler,
-					compilationResult: null,
+					compilationResult: new CompilationResult({
+						mangleSelectors: bundleCompilerConfig.mangleSelectors,
+						reconfigurable: false,
+						onPrepareCssRecord: (cssRecord) => {
+							if (bundleConfig.scope) {
+								cssRecord.scope = bundleConfig.scope;
+							}
+						}
+					}),
 					buildTime: null,
 					files: []
 				};
