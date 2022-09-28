@@ -6,7 +6,7 @@ import { join } from 'path';
 
 export const defineConfig = stylifyUnpluginConfig;
 
-export const stylify = (options?: UnpluginConfigInterface): AstroIntegration => {
+export const stylify = (options: UnpluginConfigInterface = {}): AstroIntegration => {
 
 	return {
 		name: '@stylify/astro',
