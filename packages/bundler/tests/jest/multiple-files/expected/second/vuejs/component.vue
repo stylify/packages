@@ -1,4 +1,4 @@
-<!-- stylify-pregenerate content:^vuejs__component^ /stylify-pregenerate -->
+<!-- stylify-pregenerate content:^vuejs_component^ /stylify-pregenerate -->
 
 <template>
 	<div v-bind:class="{ 'q': true }"></div>

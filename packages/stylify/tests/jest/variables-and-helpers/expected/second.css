@@ -9,7 +9,7 @@
 .color\:lighten\(\$black\,10\){
 	color: var(--lighten-black-10)
 }
-.border\:2px__solid__lighten\(\$black\,20\){
+.border\:2px_solid_lighten\(\$black\,20\){
 	border: 2px solid var(--lighten-black-20)
 }
 .content\:myContent\(\^Super\^\,\^Content\^\){

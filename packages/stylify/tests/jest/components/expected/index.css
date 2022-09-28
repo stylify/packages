@@ -25,14 +25,14 @@
 	padding: 12px
 }
 .padding\:4px,
-.container__wrapper{
+.container_wrapper{
 	padding: 4px
 }
 .max-width\:800px,
 .container{
 	max-width: 800px
 }
-.margin\:0__auto,
+.margin\:0_auto,
 .container{
 	margin: 0 auto
 }

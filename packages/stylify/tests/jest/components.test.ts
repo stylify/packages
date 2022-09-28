@@ -13,8 +13,8 @@ const compiler = new Compiler({
 			selectors: 'padding:12px font-size:24px',
 			selectorsChain: 'button'
 		},
-		'container__wrapper': 'padding:4px',
-		'container': `max-width:800px margin:0__auto`,
+		'container_wrapper': 'padding:4px',
+		'container': `max-width:800px margin:0_auto`,
 		'title': ['font-size:24px', 'color:green', 'font-size:24px md:font-size:32px'],
 		'not-used': ['color:steelblue'],
 	}

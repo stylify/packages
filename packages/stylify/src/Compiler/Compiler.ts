@@ -94,8 +94,6 @@ export class Compiler {
 
 	private readonly dollarPlaceholder = '_DOLLAR_';
 
-	private readonly selectorsSpaceCharacter = '__';
-
 	private readonly variableRegExp = /\$([\w-_]+)/;
 
 	private readonly contentOptionsRegExp = /stylify-([a-zA-Z-_0-9]+)\s([\s\S]+?)\s\/stylify-[a-zA-Z-_0-9]+/;
@@ -452,7 +450,7 @@ export class Compiler {
 					continue;
 				}
 
-				const newScreenStringPart = variableOrScreen.replace(' ', this.selectorsSpaceCharacter);
+				const newScreenStringPart = variableOrScreen.replace(' ', MacroMatch.selectorSpaceCharacter);
 				if (!new RegExp(`(?:\\s|^)${newScreenStringPart}`).test(screensString)) {
 					screensString += ` ${newScreenStringPart}`;
 				}
@@ -496,7 +494,7 @@ export class Compiler {
 
 			if (screensString.length) {
 				for (let screen of screensString.split(' ')) {
-					screen = screen.replace(this.selectorsSpaceCharacter, ' ');
+					screen = screen.replace(MacroMatch.selectorSpaceCharacter, ' ');
 					variablesCss += `${screen} {${newLine}`;
 
 					for (const [variable, value] of Object.entries(this.variables[screen])) {

@@ -36,7 +36,7 @@ html[theme="dark"] {
 .color\:lighten\(\#000\,10\){
 	color: #0a0a0a
 }
-.border\:2px__solid__lighten\(\#000\,20\){
+.border\:2px_solid_lighten\(\#000\,20\){
 	border: 2px solid #141414
 }
 .content\:myContent\(\^Super\^\,\^Content\^\){
