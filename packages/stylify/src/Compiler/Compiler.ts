@@ -9,8 +9,6 @@ import {
 	defaultPreset
 } from '.';
 
-import { logOrError } from '../Utilities';
-
 export type MacroCallbackType = (macroMatch: MacroMatch, selectorProperties: SelectorProperties) => void;
 
 export type ScreenCallbackType = (screen: string) => string;
@@ -242,11 +240,6 @@ export class Compiler {
 		}
 
 		const componentAlreadyDefined = selector in this.components;
-
-		if (componentAlreadyDefined && this.dev) {
-			const info = `You are configuring component "${selector}" that has already been configured.`;
-			console.warn(info);
-		}
 
 		const configIsArray = Array.isArray(config);
 		const componentConfig = typeof config === 'string' || configIsArray
@@ -628,18 +621,12 @@ export class Compiler {
 							const helperValue = this.variables[helperArgument.slice(1)];
 
 							if (!helperValue) {
-								logOrError(
-									`Variable "${helperArgument}" not found when processing helper "${helperName}"`,
-									this.dev
-								);
+								throw new Error( `Variable "${helperArgument}" not found when processing helper "${helperName}".`);
 							} else if (['string', 'number'].includes(typeof helperValue)) {
 								helperArgument = String(helperValue);
 
 							} else {
-								logOrError(
-									`Screen "${helperArgument}" cannot be used as value in helper "${helperName}"`,
-									this.dev
-								);
+								throw new Error(`Screen "${helperArgument}" cannot be used as value in helper "${helperName}".`);
 							}
 						}
 
@@ -665,7 +652,7 @@ export class Compiler {
 			this.variableRegExp,
 			(match, substring: string): string => {
 				if (!(substring in this.variables)) {
-					logOrError(`Stylify: Variable "${substring}" not found when processing "${string}".`, this.dev);
+					throw new Error(`Stylify: Variable "${substring}" not found when processing "${string}".`);
 				}
 				return this.replaceVariablesByCssVariables
 					? `var(--${substring})`

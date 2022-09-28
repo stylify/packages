@@ -5,7 +5,6 @@ import {
 	minifiedSelectorGenerator,
 	screensSorter
 } from '.';
-import { logOrError } from '../Utilities';
 
 export type ScreenSortingFunctionType = (screensList: ScreensListMapType) => ScreensListMapType;
 
@@ -204,8 +203,7 @@ export class CompilationResult {
 		for (const [plainSelector, dependencySelectors] of Object.entries(plainSelectorsSelectorsMap)) {
 			for (const dependencySelector of dependencySelectors.split(' ')) {
 				if (!(dependencySelector in this.selectorsList)) {
-					logOrError(`Selector "${dependencySelector}" for plainSelector "${plainSelector}" was not matched and therefore not added.`, this.dev);
-					continue;
+					throw new Error(`Selector "${dependencySelector}" for plainSelector "${plainSelector}" was not matched and therefore not added.`);
 				}
 
 				this.selectorsList[dependencySelector].addPlainSelector(plainSelector);
@@ -217,8 +215,7 @@ export class CompilationResult {
 		for (const componentDependencySelector in selectorsComponentsMap) {
 			for (const componentToBind of selectorsComponentsMap[componentDependencySelector]) {
 				if (!(componentDependencySelector in this.selectorsList)) {
-					logOrError(`Selector "${componentDependencySelector}" for component "${componentToBind.component}" was not matched and therefore not added.`, this.dev);
-					continue;
+					throw new Error(`Selector "${componentDependencySelector}" for component "${componentToBind.component}" was not matched and therefore not added.`);
 				}
 
 				if (!this.componentsList.includes(componentToBind.component)) {
@@ -234,7 +231,7 @@ export class CompilationResult {
 									if (!(selectorFromChain in this.selectorsList)
 										&& !this.componentsList.includes(selectorFromChain)
 									) {
-										logOrError(`Stylify: selector "${selectorFromChain}" from component "${componentToBind.component}" selectorsChain list not found.`, this.dev);
+										throw new Error(`Stylify: selector "${selectorFromChain}" from component "${componentToBind.component}" selectorsChain list not found.`);
 									}
 
 									selectorFromChain = minifiedSelectorGenerator.getSelector(selectorFromChain);
