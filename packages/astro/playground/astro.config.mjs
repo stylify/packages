@@ -1,10 +1,10 @@
 import { defineConfig } from 'astro/config';
-import { stylifyIntegration } from '@stylify/astro';
+import stylify from '@stylify/astro';
 import node from '@astrojs/node';
 
 // https://astro.build/config
 export default defineConfig({
-	integrations: [stylifyIntegration({dev: true})],
+	integrations: [stylify({dev: true})],
 	output: 'server',
 	adapter: node(),
 	server: {

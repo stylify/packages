@@ -10,7 +10,7 @@
 .align-items\:baseline{
 	align-items: baseline
 }
-.margin\:0__auto{
+.margin\:0_auto{
 	margin: 0 auto
 }
 .margin-top\:40px{
@@ -43,7 +43,7 @@
 .justify-content\:space-around{
 	justify-content: space-around
 }
-.padding\:15px__25px{
+.padding\:15px_25px{
 	padding: 15px 25px
 }
 .margin-left\:40px{
@@ -88,7 +88,7 @@
 .display\:grid{
 	display: grid
 }
-.padding\:50px__0px{
+.padding\:50px_0px{
 	padding: 50px 0px
 }
 .flex-direction\:column{
@@ -123,16 +123,16 @@
 .md\:display\:block{
 	display: block
 }
-.md\:grid-template-columns\:auto__auto__auto{
+.md\:grid-template-columns\:auto_auto_auto{
 	grid-template-columns: auto auto auto
 }
-.md\:grid-template-rows\:auto__auto{
+.md\:grid-template-rows\:auto_auto{
 	grid-template-rows: auto auto
 }
 .md\:height\:223px{
 	height: 223px
 }
-.md\:grid-template-columns\:50\%__50\%{
+.md\:grid-template-columns\:50\%_50\%{
 	grid-template-columns: 50% 50%
 }
 }
@@ -147,7 +147,7 @@
 .lg\:height\:306px{
 	height: 306px
 }
-.lg\:grid-template-columns\:37\%__21\%__21\%__21\%{
+.lg\:grid-template-columns\:37\%_21\%_21\%_21\%{
 	grid-template-columns: 37% 21% 21% 21%
 }
 .lg\:grid-template-rows\:auto{

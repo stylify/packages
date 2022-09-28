@@ -2,10 +2,8 @@ const path = require('path');
 const fs = require('fs');
 
 const dirname = path.join(process.cwd(), 'packages', 'stylify', 'tools', 'default-preset-generator');
-
-const browserPropertiesListPath = path.join(dirname, 'lists', 'complete-properties-list.txt');
-const nativePresetOutputFilePath = path.join(dirname, '..', '..', 'src', 'Compiler', 'defaultPreset.ts');
-const nativePresetTemplateFilePath = path.join(dirname, 'template.ts');
+const tmpDir = path.join(dirname, '..', '..', 'tmp');
+const browserPropertiesListPath = path.join(tmpDir, 'complete-properties-list.txt');
 
 class NativePresetGenerator {
 	constructor() {
@@ -42,20 +40,10 @@ class NativePresetGenerator {
 			this.assignPropertyToPropertiesMap(propertiesMap, property);
 		});
 
-		const propertiesRegExp = `(${this.convertMapIntoRegularExpression(propertiesMap)}):(\\\\S+?)`;
-
 		fs.writeFileSync(browserPropertiesListPath, propertiesList.join('\n'));
 
 		fs.writeFileSync(
-			nativePresetOutputFilePath,
-			this.generateTemplate(
-				fs.readFileSync(nativePresetTemplateFilePath, 'utf-8'),
-				{
-					__SIDES_SHORTCUTS__: JSON.stringify(this.sidesShortcuts),
-					__SIZES_SHORTCUTS__: JSON.stringify(this.sizesShortcuts),
-					__PROPERTIES_REG_EXP__: propertiesRegExp
-				}
-			)
+			path.join(tmpDir, 'reg-exp.txt'), `(${this.convertMapIntoRegularExpression(propertiesMap)}):(\\\\S+?)`
 		);
 	}
 
@@ -145,22 +133,6 @@ class NativePresetGenerator {
 		});
 
 		return regExpString;
-	}
-
-	/**
-	 *
-	 * @param {string} template
-	 * @param {Record<string, any>} values
-	 * @param {boolean} prettierEnabled
-	 * @returns {string}
-	 */
-	generateTemplate(template, values) {
-
-		Object.keys(values).forEach((key) => {
-			template = template.replace(key, values[key]);
-		});
-
-		return template;
 	}
 }
 

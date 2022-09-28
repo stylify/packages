@@ -1,16 +1,7 @@
 {
-	"presets": [
-		["@babel/preset-react", {
-			"pragma": "h"
-		}]
-	],
 	"include": ["src/**/*"],
 	"plugins": [
 		"@babel/proposal-class-properties",
-		"@babel/proposal-object-rest-spread",
-		["@babel/plugin-transform-react-jsx", {
-			"runtime": "automatic",
-			"importSource": "preact"
-		}]
+		"@babel/proposal-object-rest-spread"
 	]
 }

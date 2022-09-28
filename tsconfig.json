@@ -18,10 +18,6 @@
 		"removeComments": true,
 		"experimentalDecorators": true,
 		"resolveJsonModule": true,
-		"jsx": "react-jsx",
-		"jsxImportSource": "preact",
-		"jsxFactory": "h",
-		"jsxFragmentFactory": "Fragment",
 		"noEmit": true,
 		"allowJs": true
 	},

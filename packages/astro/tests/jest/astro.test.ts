@@ -22,18 +22,18 @@ execSync(`cd ${buildTmpDir} && yarn install && yarn build`);
 const indexHtmlPart = `
 	<body class="c d">
 		<h1 class="e f g">Layout</h1>
-		<h1 class="g">Hello World!</h1><h2 class="a b">Subtitle</h2>
+		<h1 class="g">Hello World!</h1><h2 class="j h k i"></h2><h2 class="a b">Subtitle</h2>
 	</body></html>
 `.trim();
 
 const secondHtmlPart = `
 	<body class="c d">
 		<h1 class="e f g">Layout</h1>
-		<h1 class="h">Hello World 2!</h1><h2 class="a b">Subtitle</h2>
+		<h1 class="l">Hello World 2!</h1><h2 class="a b">Subtitle</h2>
 	</body></html>
 `.trim();
 
-const cssFilePart = ':root{--blue: darkblue}.a{color:orange}.b{font-size:24px}.c{text-align:center}.d{color:#00008b}.e{font-size:48px}.f{margin-top:24px}.g{color:purple}.h{color:lightpurple}';
+const cssFilePart = ':root{--blue: darkblue}.a{color:orange}.b{font-size:24px}.c{text-align:center}.d{color:#00008b}.e{font-size:48px}.f{margin-top:24px}.g{color:purple}.j{font-weight:700}.k{font-size:12px}.l{color:lightpurple}@media (min-width: 1024px){.h{color:darkpurple}.i{font-size:24px}}';
 
 test('Astro build', async (): Promise<void> => {
  	const [indexHtmlFileEntry] = FastGlob.sync(path.join(buildTmpDir, 'dist', 'index.html'));

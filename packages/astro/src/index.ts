@@ -3,11 +3,10 @@ import { UnpluginConfigInterface, vitePlugin, defineConfig as stylifyUnpluginCon
 import { Configurator } from '@stylify/stylify';
 import { fileURLToPath } from 'url';
 import { join } from 'path';
-import { existsSync } from 'fs';
 
 export const defineConfig = stylifyUnpluginConfig;
 
-export const stylifyIntegration = (options?: UnpluginConfigInterface): AstroIntegration => {
+export const stylify = (options: UnpluginConfigInterface = {}): AstroIntegration => {
 
 	return {
 		name: '@stylify/astro',
@@ -20,12 +19,11 @@ export const stylifyIntegration = (options?: UnpluginConfigInterface): AstroInte
 					|| command === 'dev'
 					|| null);
 
-				// todo options musí být započítaný už tady do isDev a nebo rozšíření mangleSelectors u options
-
 				const defaultConfig: UnpluginConfigInterface = {
 					dev: options?.dev ?? isDev,
 					compiler: {
-						mangleSelectors: options?.compiler?.mangleSelectors ?? !isDev
+						mangleSelectors: options?.compiler?.mangleSelectors ?? !isDev,
+						selectorsAreas: ['(?:^|\\s+)class:list=\\{\\[((?:.|\\n)+)\\]\\}']
 					},
 					bundles: options?.bundles ? [] : [{
 						outputFile: singleBundleOutputFilePath,
@@ -54,4 +52,4 @@ export const stylifyIntegration = (options?: UnpluginConfigInterface): AstroInte
 	};
 };
 
-export default stylifyIntegration;
+export default stylify;

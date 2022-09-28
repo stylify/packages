@@ -9,8 +9,6 @@ import {
 	defaultPreset
 } from '.';
 
-import { logOrError } from '../Utilities';
-
 export type MacroCallbackType = (macroMatch: MacroMatch, selectorProperties: SelectorProperties) => void;
 
 export type ScreenCallbackType = (screen: string) => string;
@@ -92,6 +90,10 @@ export interface ComponentsInterface {
 
 export class Compiler {
 
+	private readonly textPlaceholder = '_TEXT_';
+
+	private readonly dollarPlaceholder = '_DOLLAR_';
+
 	private readonly variableRegExp = /\$([\w-_]+)/;
 
 	private readonly contentOptionsRegExp = /stylify-([a-zA-Z-_0-9]+)\s([\s\S]+?)\s\/stylify-[a-zA-Z-_0-9]+/;
@@ -138,6 +140,8 @@ export class Compiler {
 	public replaceVariablesByCssVariables = false;
 
 	public injectVariablesIntoCss = true;
+
+	private processedHelpers = {};
 
 	constructor(config: CompilerConfigInterface = {}) {
 		this.configure(defaultPreset);
@@ -196,7 +200,7 @@ export class Compiler {
 				continue;
 			}
 
-			const processedValue = this.replaceVariableString(String(valueOrVariables));
+			const processedValue = this.replaceVariableString(this.processHelpers(String(valueOrVariables), false));
 
 			if (screen) {
 				if (!(screen in this.variables)) {
@@ -234,11 +238,6 @@ export class Compiler {
 		}
 
 		const componentAlreadyDefined = selector in this.components;
-
-		if (componentAlreadyDefined && this.dev) {
-			const info = `You are configuring component "${selector}" that has already been configured.`;
-			console.warn(info);
-		}
 
 		const configIsArray = Array.isArray(config);
 		const componentConfig = typeof config === 'string' || configIsArray
@@ -290,12 +289,13 @@ export class Compiler {
 			return content;
 		}
 
-		const placeholderTextPart = '__STYLIFY_PLACEHOLDER__';
+		const dollarPlaceholderRegExp = new RegExp(this.dollarPlaceholder, 'g');
+		const placeholderTextPart = this.textPlaceholder;
 		const contentPlaceholders: Record<string, string> = {};
 
 		const placeholderInserter = (matched: string) => {
 			const placeholderKey = `${placeholderTextPart}${Object.keys(contentPlaceholders).length}`;
-			contentPlaceholders[placeholderKey] = matched.replace(/\$/g, '__DOLLAR__');
+			contentPlaceholders[placeholderKey] = matched.replace(/\$/g, this.dollarPlaceholder);
 			return placeholderKey;
 		};
 
@@ -347,7 +347,7 @@ export class Compiler {
 		}
 
 		for (const [placeholderKey, contentPlaceholder] of Object.entries(contentPlaceholders)) {
-			content = content.replace(placeholderKey, contentPlaceholder.replace(/__DOLLAR__/g, '$$$$'));
+			content = content.replace(placeholderKey, contentPlaceholder.replace(dollarPlaceholderRegExp, '$$$$'));
 		}
 
 		return content;
@@ -375,8 +375,6 @@ export class Compiler {
 		content = this.dev ? content.replace(/\r\n/, '\n') : content.replace(/\r\n|\r|\n|\t/ig, ' ');
 
 		this.configure(this.getOptionsFromContent(content));
-		compilationResult = this.prepareCompilationResult(compilationResult);
-
 		content = content.replace(new RegExp(this.contentOptionsRegExp.source, 'g'), '');
 
 		if (matchOnlyInAreas) {
@@ -402,14 +400,6 @@ export class Compiler {
 		contentToProcess = `${this.pregenerate} ${contentToProcess}`;
 		this.pregenerate = '';
 
-		if (compilationResult && Object.keys(compilationResult.selectorsList).length) {
-			contentToProcess = contentToProcess.replace(/_\w+/ig, (matched) => {
-				return matched in compilationResult.selectorsList
-					? minifiedSelectorGenerator.getSelector(matched)
-					: matched;
-			});
-		}
-
 		const selectorsComponentsMap: SelectorsComponentsMapType = {};
 
 		Object.keys(this.components).forEach((componentsSelector) => {
@@ -432,7 +422,11 @@ export class Compiler {
 			});
 		});
 
+		compilationResult = compilationResult ?? new CompilationResult();
+
 		this.processMacros(contentToProcess, compilationResult);
+
+		this.prepareCompilationResult(compilationResult);
 
 		compilationResult.bindPlainSelectorsToSelectors(plainSelectorsSelectorsMap);
 		compilationResult.bindComponentsToSelectors(selectorsComponentsMap);
@@ -440,12 +434,8 @@ export class Compiler {
 		return compilationResult;
 	}
 
-	private prepareCompilationResult(compilationResult: CompilationResult = null): CompilationResult
+	private prepareCompilationResult(compilationResult: CompilationResult): CompilationResult
 	{
-		if (!compilationResult) {
-			compilationResult = new CompilationResult();
-		}
-
 		const newLine = this.dev ? '\n' : '';
 		const makeVariableString = (variable: string, value: VariablesTypeValue) => `--${variable}: ${String(value)};${newLine}`;
 		let variablesCss = '';
@@ -460,7 +450,7 @@ export class Compiler {
 					continue;
 				}
 
-				const newScreenStringPart = variableOrScreen.replace(' ', '__');
+				const newScreenStringPart = variableOrScreen.replace(' ', MacroMatch.selectorSpaceCharacter);
 				if (!new RegExp(`(?:\\s|^)${newScreenStringPart}`).test(screensString)) {
 					screensString += ` ${newScreenStringPart}`;
 				}
@@ -504,7 +494,7 @@ export class Compiler {
 
 			if (screensString.length) {
 				for (let screen of screensString.split(' ')) {
-					screen = screen.replace('__', ' ');
+					screen = screen.replace(MacroMatch.selectorSpaceCharacter, ' ');
 					variablesCss += `${screen} {${newLine}`;
 
 					for (const [variable, value] of Object.entries(this.variables[screen])) {
@@ -535,7 +525,7 @@ export class Compiler {
 		return compilationResult;
 	}
 
-	private processMacros(content: string, compilationResult: CompilationResult = null) {
+	private processMacros(content: string, compilationResult: CompilationResult) {
 		const regExpEndPart = `(?=['"\`{}\\[\\]<>\\s]|$)`;
 		const regExpGenerators = [
 			// Match with media query and without pseudo class
@@ -568,36 +558,12 @@ export class Compiler {
 						selectorProperties
 					);
 
-					for (const [property, value] of Object.entries(selectorProperties.properties)) {
-						selectorProperties.properties[property] = this.replaceVariableString(value);
+					for (const [property, propertyValue] of Object.entries(selectorProperties.properties)) {
+						selectorProperties.properties[property] = this.processHelpers(propertyValue);
 					}
 
-					for (const [property, propertyValue] of Object.entries(selectorProperties.properties)) {
-						selectorProperties.properties[property] = propertyValue.replace(/(?:^|\s+)(\S+)\(([^)]+)\)/g, (fullMatch, helperName: string, helperArguments: string) => {
-							if (!(helperName in this.helpers)) {
-								return fullMatch;
-							}
-
-							const helperArgumentsPlaceholders: string[] =[];
-
-							const helperArgumentsArray: (string|number)[] = helperArguments
-								.replace(/'([^']+)'/g, (fullMatch, helperArgument: string): string => {
-									const helperPlaceholderKey = helperArgumentsPlaceholders.length;
-									helperArgumentsPlaceholders.push(helperArgument);
-									return `__arg${helperPlaceholderKey}__`;
-								})
-								.split(',').map((helperArgument: string) => {
-									helperArgument = helperArgument.replace(/__arg(\d+)__/, (fullMatch: string, placeholderKeyMatch: string) => {
-										return helperArgumentsPlaceholders[placeholderKeyMatch] as string;
-									});
-									return isNaN(Number(helperArgument)) ? helperArgument : parseFloat(helperArgument);
-								});
-
-							return fullMatch.replace(
-								`${helperName}(${helperArguments})`,
-								this.helpers[helperName](...helperArgumentsArray) as string
-							);
-						});
+					for (const [property, value] of Object.entries(selectorProperties.properties)) {
+						selectorProperties.properties[property] = this.replaceVariableString(value);
 					}
 
 					if (this.onNewMacroMatch) {
@@ -620,12 +586,71 @@ export class Compiler {
 		}
 	}
 
+	private processHelpers(content: string, replaceByVariable = true): string {
+		return content.replace(/(?:^|\s+)(\S+)\(([^)]+)\)/g, (fullMatch, helperName: string, helperArguments: string) => {
+			if (!(helperName in this.helpers)) {
+				return fullMatch;
+			}
+
+			const cssVariableEnabled = this.replaceVariablesByCssVariables && replaceByVariable;
+			const helperResultVariableName = `${helperName}${helperArguments}`.replace(/[^a-zA-Z0-9]/g, '-').replace(/[^a-zA-Z0-9]$/g, '');
+			let matchedHelperResult = this.processedHelpers[helperResultVariableName] ?? null;
+
+			if (!matchedHelperResult) {
+				const helperArgumentPlaceholderStart = '_ARG';
+				const helperArgumentPlaceholderEnd = '_';
+				const helperArgumentRegExp = new RegExp(`${helperArgumentPlaceholderStart}(\\d+)${helperArgumentPlaceholderEnd}`);
+				const helperArgumentsPlaceholders: string[] =[];
+				const helperArgumentsArray: (string|number)[] = helperArguments
+					.replace(/'([^']+)'/g, (fullMatch, helperArgument: string): string => {
+						const helperPlaceholderKey = helperArgumentsPlaceholders.length;
+						helperArgumentsPlaceholders.push(helperArgument);
+						return `${helperArgumentPlaceholderStart}${helperPlaceholderKey}${helperArgumentPlaceholderEnd}`;
+					})
+					.split(',')
+					.map((helperArgument: string) => {
+						helperArgument = helperArgument.replace(
+							helperArgumentRegExp,
+							(fullMatch: string, placeholderKeyMatch: string) => {
+								return helperArgumentsPlaceholders[placeholderKeyMatch] as string;
+							});
+
+						if (helperArgument.startsWith('$')) {
+							const helperValue = this.variables[helperArgument.slice(1)];
+
+							if (!helperValue) {
+								throw new Error( `Variable "${helperArgument}" not found when processing helper "${helperName}".`);
+							} else if (['string', 'number'].includes(typeof helperValue)) {
+								helperArgument = String(helperValue);
+
+							} else {
+								throw new Error(`Screen "${helperArgument}" cannot be used as value in helper "${helperName}".`);
+							}
+						}
+
+						return isNaN(Number(helperArgument)) ? helperArgument : parseFloat(helperArgument);
+					});
+
+				matchedHelperResult = this.helpers[helperName](...helperArgumentsArray) as string;
+
+				if (cssVariableEnabled) {
+					this.addVariables({[helperResultVariableName]: matchedHelperResult});
+				}
+			}
+
+			return fullMatch.replace(
+				`${helperName}(${helperArguments})`,
+				cssVariableEnabled ? `var(--${helperResultVariableName})` : matchedHelperResult as string
+			);
+		});
+	}
+
 	private replaceVariableString(string: string): VariablesTypeValue {
 		return string.replace(
 			this.variableRegExp,
 			(match, substring: string): string => {
 				if (!(substring in this.variables)) {
-					logOrError(`Stylify: Variable "${substring}" not found when processing "${string}".`, this.dev);
+					throw new Error(`Stylify: Variable "${substring}" not found when processing "${string}".`);
 				}
 				return this.replaceVariablesByCssVariables
 					? `var(--${substring})`

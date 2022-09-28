@@ -1,40 +1,21 @@
 import TestUtils from '../../../../tests/TestUtils';
-import { Compiler, MacroMatch, SelectorProperties } from '../../src';
+import { Compiler, CompilerConfigInterface, MacroMatch, SelectorProperties } from '../../src';
 
 const testName = 'variables-and-helpers';
 const testUtils = new TestUtils('stylify', testName);
-const inputIndex = testUtils.getHtmlInputFile();
 
 const darkThemeVariables = {
 	bg: 'black',
 	color: 'white'
 };
 
-const compiler = new Compiler({
+const getCompilerConfig = (): CompilerConfigInterface => ({
 	dev: true,
-	replaceVariablesByCssVariables: true,
 	screens: {
 		md: '(min-width: 640px)',
 		lg: () => '(min-width: 1024px)',
 		dark: '(prefers-color-scheme: dark)',
 		'minw\\w+': (screen: string): string => `(min-width: ${screen.replace('minw', '')})`,
-	},
-	variables: {
-		blue: 'darkblue',
-		border: 'border 1px solid $blue',
-		bg: 'white',
-		color: 'black',
-		fontSize: '12px',
-		dark: darkThemeVariables,
-		'html[theme="dark"]': darkThemeVariables,
-		'.dark-theme': darkThemeVariables,
-		':root.dark': darkThemeVariables,
-		minw450px: {
-			fontSize: '18px'
-		},
-		lg: {
-			fontSize: '24px'
-		}
 	},
 	helpers: {
 		textPropertyType(value: string): string {
@@ -78,8 +59,41 @@ const compiler = new Compiler({
 	}
 });
 
-let compilationResult = compiler.compile(inputIndex);
-
 test('Variables and helpers', (): void => {
+	const compilerConfig = getCompilerConfig();
+	compilerConfig.variables = {
+		blue: '#0000FF',
+		border: 'border 1px solid lighten($blue,10)',
+		bg: 'white',
+		color: 'black',
+		fontSize: '12px',
+		dark: darkThemeVariables,
+		'html[theme="dark"]': darkThemeVariables,
+		'.dark-theme': darkThemeVariables,
+		':root.dark': darkThemeVariables,
+		minw450px: {
+			fontSize: '18px'
+		},
+		lg: {
+			fontSize: '24px'
+		}
+	}
+	const compiler = new Compiler(compilerConfig);
+
+	let compilationResult = compiler.compile(testUtils.getHtmlInputFile());
 	testUtils.testCssFileToBe(compilationResult.generateCss());
+});
+
+test('Variables and helpers - replaceVariablesByCssVariables', (): void => {
+	const compilerConfig = getCompilerConfig();
+	compilerConfig.replaceVariablesByCssVariables = true;
+	compilerConfig.variables = {
+		lightblack: 'lighten(#000,5)',
+		black: 'lighten($lightblack,5)',
+		border2: 'border 1px solid $black',
+	};
+	const compiler = new Compiler(compilerConfig);
+
+	let compilationResult = compiler.compile(testUtils.getHtmlInputFile('second'));
+	testUtils.testCssFileToBe(compilationResult.generateCss(), 'second');
 });

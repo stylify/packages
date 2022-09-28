@@ -1,6 +1,6 @@
 :root {
---blue: darkblue;
---border: border 1px solid var(--blue);
+--blue: #0000FF;
+--border: border 1px solid #0a0aff;
 --bg: white;
 --color: black;
 --fontSize: 12px;
@@ -36,7 +36,7 @@ html[theme="dark"] {
 .color\:lighten\(\#000\,10\){
 	color: #0a0a0a
 }
-.border\:2px__solid__lighten\(\#000\,20\){
+.border\:2px_solid_lighten\(\#000\,20\){
 	border: 2px solid #141414
 }
 .content\:myContent\(\^Super\^\,\^Content\^\){
@@ -49,13 +49,13 @@ html[theme="dark"] {
 	font-style: italic
 }
 .fs\:\$fontSize{
-	font-size: var(--fontSize)
+	font-size: 12px
 }
 .bgc\:\$bg{
-	background-color: var(--bg)
+	background-color: white
 }
 .clr\:\$color{
-	color: var(--color)
+	color: black
 }
 .fix\:2px{
 	position: fixed;

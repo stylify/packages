@@ -2,6 +2,10 @@ import { ScreensType } from './Compiler';
 
 export class MacroMatch {
 
+	public static readonly selectorSpaceCharacter = '_';
+
+	private readonly selectorSpaceCharacterRegExp = new RegExp(MacroMatch.selectorSpaceCharacter, 'g');
+
 	public fullMatch: string = null;
 
 	public screenAndPseudoClassesMatch: string = null;
@@ -63,7 +67,7 @@ export class MacroMatch {
 
 	public getCapture(index: number|string, defaultValue = ''): string {
 		return this.hasCapture(index)
-			? this.captures[index].replace(/__/g, ' ').replace(/\^/g, '\'') as string
+			? this.captures[index].replace(this.selectorSpaceCharacterRegExp, ' ').replace(/\^/g, '\'') as string
 			: defaultValue;
 	}
 

@@ -18,9 +18,6 @@ lerna-debug.log
 /packages/**/tmp
 /packages/**/types
 
-# @stylify/stylify
-/packages/stylify/**/complete-properties-list.txt
-
 # @stylify/nuxt
 /packages/nuxt/.nuxt
 /packages/nuxt/.output

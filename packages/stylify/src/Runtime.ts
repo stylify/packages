@@ -62,11 +62,16 @@ export class Runtime {
 			...[/stylify-runtime-ignore([\s\S]*?)\/stylify-runtime-ignore/]
 		];
 
-		if (!this.compiler) {
-			this.compiler = new Compiler();
-		}
+		try {
+			if (!this.compiler) {
+				this.compiler = new Compiler();
+			}
 
-		this.compiler.configure(compilerConfig);
+			this.compiler.configure(compilerConfig);
+		} catch (error) {
+			console.error(error);
+			return;
+		}
 
 		this.triggerEvent('stylify:configured', {
 			config: config
@@ -91,11 +96,16 @@ export class Runtime {
 		}
 	}
 
-	private updateCss(content: string, callback: UpdateCssCallbackType = null): string|null {
-		this.compilationResult = this.compiler.compile(content, this.compilationResult);
+	private updateCss(content: string, callback: UpdateCssCallbackType = null): string | undefined {
+		try {
+			this.compilationResult = this.compiler.compile(content, this.compilationResult);
+		} catch (error) {
+			console.error(error);
+			return;
+		}
 
 		if (!this.compilationResult.changed && this.initialPaintCompleted) {
-			return null;
+			return;
 		}
 
 		const css: string = this.compilationResult.generateCss();

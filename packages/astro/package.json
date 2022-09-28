@@ -1,6 +1,6 @@
 {
 	"name": "@stylify/astro",
-	"version": "0.3.0",
+	"version": "0.4.0",
 	"description": "Stylify generates utility-first CSS dynamically based on what you write. Write HTML. Get CSS.",
 	"type": "module",
 	"keywords": [
@@ -51,7 +51,7 @@
 		"pack": "yarn pack"
 	},
 	"dependencies": {
-		"@stylify/unplugin": "^0.3.0",
+		"@stylify/unplugin": "^0.4.0",
 		"loader-utils": "^2.0"
 	},
 	"devDependencies": {

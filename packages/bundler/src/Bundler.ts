@@ -3,8 +3,7 @@ import {
 	CompilationResult,
 	Compiler,
 	CompilerConfigInterface,
-	CompilerContentOptionsInterface,
-	CssRecord
+	CompilerContentOptionsInterface
 } from '@stylify/stylify';
 import fs from 'fs';
 import { default as normalize } from 'normalize-path';
@@ -487,33 +486,28 @@ export class Bundler {
 
 			if (!(bundleConfig.outputFile in this.bundlesBuildCache)) {
 				const bundleCompilerConfig = this.mergeObjects(this.compilerConfig, bundleConfig.compiler);
-				const originalOnPrepareCompilationResultFunction = bundleCompilerConfig.onPrepareCompilationResult;
+				try {
+					const compiler = new Compiler(bundleCompilerConfig);
 
-				const compiler = new Compiler(bundleCompilerConfig);
-				compiler.onPrepareCompilationResult = (compilationResult: CompilationResult): void => {
-					compilationResult.configure({
-						mangleSelectors: bundleCompilerConfig.mangleSelectors,
-						reconfigurable: false
-					});
-
-					if (bundleConfig.scope) {
-						compilationResult.onPrepareCssRecord = (cssRecord: CssRecord): void => {
-							cssRecord.scope = bundleConfig.scope;
-						};
-					}
-
-					if (typeof originalOnPrepareCompilationResultFunction === 'function') {
-						originalOnPrepareCompilationResultFunction(compilationResult);
-					}
-				};
-
-				this.bundlesBuildCache[bundleConfig.outputFile] = {
-					id: bundleConfig.id || null,
-					compiler: compiler,
-					compilationResult: null,
-					buildTime: null,
-					files: []
-				};
+					this.bundlesBuildCache[bundleConfig.outputFile] = {
+						id: bundleConfig.id || null,
+						compiler: compiler,
+						compilationResult: new CompilationResult({
+							mangleSelectors: bundleCompilerConfig.mangleSelectors,
+							reconfigurable: false,
+							onPrepareCssRecord: (cssRecord) => {
+								if (bundleConfig.scope) {
+									cssRecord.scope = bundleConfig.scope;
+								}
+							}
+						}),
+						buildTime: null,
+						files: []
+					};
+				} catch (error) {
+					this.logOrError(error);
+					return;
+				}
 			}
 
 			const bundleBuildCache = this.bundlesBuildCache[bundleConfig.outputFile];
@@ -572,10 +566,16 @@ export class Bundler {
 					}
 				}
 
-				bundleBuildCache.compilationResult = compiler.compile(
-					fileToProcessConfig.content,
-					bundleBuildCache.compilationResult ?? null
-				);
+				try {
+					bundleBuildCache.compilationResult = compiler.compile(
+						fileToProcessConfig.content,
+						bundleBuildCache.compilationResult ?? null
+					);
+
+				} catch (error) {
+					this.logOrError(error);
+					return;
+				}
 
 				if (bundleConfig.rewriteSelectorsInFiles) {
 					const processedContent = compiler.rewriteSelectors(
@@ -630,6 +630,14 @@ export class Bundler {
 		};
 
 		this.processedBundlesQueue.push(bundleRunner());
+	}
+
+	private logOrError(message): void {
+		if (this.watchFiles) {
+			console.error(message);
+		} else {
+			throw new Error(message);
+		}
 	}
 
 	private async callBundleHook(
