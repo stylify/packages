@@ -92,6 +92,12 @@ export interface ComponentsInterface {
 
 export class Compiler {
 
+	private readonly textPlaceholder = '_TEXT_';
+
+	private readonly dollarPlaceholder = '_DOLLAR_';
+
+	private readonly selectorsSpaceCharacter = '__';
+
 	private readonly variableRegExp = /\$([\w-_]+)/;
 
 	private readonly contentOptionsRegExp = /stylify-([a-zA-Z-_0-9]+)\s([\s\S]+?)\s\/stylify-[a-zA-Z-_0-9]+/;
@@ -292,12 +298,13 @@ export class Compiler {
 			return content;
 		}
 
-		const placeholderTextPart = '__STYLIFY_PLACEHOLDER__';
+		const dollarPlaceholderRegExp = new RegExp(this.dollarPlaceholder, 'g');
+		const placeholderTextPart = this.textPlaceholder;
 		const contentPlaceholders: Record<string, string> = {};
 
 		const placeholderInserter = (matched: string) => {
 			const placeholderKey = `${placeholderTextPart}${Object.keys(contentPlaceholders).length}`;
-			contentPlaceholders[placeholderKey] = matched.replace(/\$/g, '__DOLLAR__');
+			contentPlaceholders[placeholderKey] = matched.replace(/\$/g, this.dollarPlaceholder);
 			return placeholderKey;
 		};
 
@@ -349,7 +356,7 @@ export class Compiler {
 		}
 
 		for (const [placeholderKey, contentPlaceholder] of Object.entries(contentPlaceholders)) {
-			content = content.replace(placeholderKey, contentPlaceholder.replace(/__DOLLAR__/g, '$$$$'));
+			content = content.replace(placeholderKey, contentPlaceholder.replace(dollarPlaceholderRegExp, '$$$$'));
 		}
 
 		return content;
@@ -452,7 +459,7 @@ export class Compiler {
 					continue;
 				}
 
-				const newScreenStringPart = variableOrScreen.replace(' ', '__');
+				const newScreenStringPart = variableOrScreen.replace(' ', this.selectorsSpaceCharacter);
 				if (!new RegExp(`(?:\\s|^)${newScreenStringPart}`).test(screensString)) {
 					screensString += ` ${newScreenStringPart}`;
 				}
@@ -496,7 +503,7 @@ export class Compiler {
 
 			if (screensString.length) {
 				for (let screen of screensString.split(' ')) {
-					screen = screen.replace('__', ' ');
+					screen = screen.replace(this.selectorsSpaceCharacter, ' ');
 					variablesCss += `${screen} {${newLine}`;
 
 					for (const [variable, value] of Object.entries(this.variables[screen])) {
@@ -599,18 +606,23 @@ export class Compiler {
 			let matchedHelperResult = this.processedHelpers[helperResultVariableName] ?? null;
 
 			if (!matchedHelperResult) {
+				const helperArgumentPlaceholderStart = '_ARG';
+				const helperArgumentPlaceholderEnd = '_';
+				const helperArgumentRegExp = new RegExp(`${helperArgumentPlaceholderStart}(\\d+)${helperArgumentPlaceholderEnd}`);
 				const helperArgumentsPlaceholders: string[] =[];
 				const helperArgumentsArray: (string|number)[] = helperArguments
 					.replace(/'([^']+)'/g, (fullMatch, helperArgument: string): string => {
 						const helperPlaceholderKey = helperArgumentsPlaceholders.length;
 						helperArgumentsPlaceholders.push(helperArgument);
-						return `__arg${helperPlaceholderKey}__`;
+						return `${helperArgumentPlaceholderStart}${helperPlaceholderKey}${helperArgumentPlaceholderEnd}`;
 					})
 					.split(',')
 					.map((helperArgument: string) => {
-						helperArgument = helperArgument.replace(/__arg(\d+)__/, (fullMatch: string, placeholderKeyMatch: string) => {
-							return helperArgumentsPlaceholders[placeholderKeyMatch] as string;
-						});
+						helperArgument = helperArgument.replace(
+							helperArgumentRegExp,
+							(fullMatch: string, placeholderKeyMatch: string) => {
+								return helperArgumentsPlaceholders[placeholderKeyMatch] as string;
+							});
 
 						if (helperArgument.startsWith('$')) {
 							const helperValue = this.variables[helperArgument.slice(1)];
