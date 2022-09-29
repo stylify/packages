@@ -278,44 +278,46 @@ export class Bundler {
 			return contentOptions;
 		};
 
-		if (this.cssVarsDirPath) {
-			this.dumpVariablesIntoFile({
-				filePath: this.cssVarsDirPath,
-				fileType: 'css',
-				variablePrefix: '--',
-				variableValueSeparator: ': ',
-				afterValue: ';',
-				fileContentPrefix: ':root {\n',
-				fileContentSuffix: '\n}'
-			});
-		}
+		if (this.compilerConfig.variables) {
+			if (this.cssVarsDirPath) {
+				this.dumpVariablesIntoFile({
+					filePath: this.cssVarsDirPath,
+					fileType: 'css',
+					variablePrefix: '--',
+					variableValueSeparator: ': ',
+					afterValue: ';',
+					fileContentPrefix: ':root {\n',
+					fileContentSuffix: '\n}'
+				});
+			}
 
-		if (this.sassVarsDirPath) {
-			this.dumpVariablesIntoFile({
-				filePath: this.sassVarsDirPath,
-				fileType: 'scss',
-				variablePrefix: '$',
-				variableValueSeparator: ': ',
-				afterValue: ';'
-			});
-		}
+			if (this.sassVarsDirPath) {
+				this.dumpVariablesIntoFile({
+					filePath: this.sassVarsDirPath,
+					fileType: 'scss',
+					variablePrefix: '$',
+					variableValueSeparator: ': ',
+					afterValue: ';'
+				});
+			}
 
-		if (this.lessVarsDirPath) {
-			this.dumpVariablesIntoFile({
-				filePath: this.lessVarsDirPath,
-				fileType: 'less',
-				variablePrefix: '@',
-				variableValueSeparator: ': '
-			});
-		}
+			if (this.lessVarsDirPath) {
+				this.dumpVariablesIntoFile({
+					filePath: this.lessVarsDirPath,
+					fileType: 'less',
+					variablePrefix: '@',
+					variableValueSeparator: ': '
+				});
+			}
 
-		if (this.stylusVarsDirPath) {
-			this.dumpVariablesIntoFile({
-				filePath: this.stylusVarsDirPath,
-				fileType: 'styl',
-				variablePrefix: '',
-				variableValueSeparator: ' = '
-			});
+			if (this.stylusVarsDirPath) {
+				this.dumpVariablesIntoFile({
+					filePath: this.stylusVarsDirPath,
+					fileType: 'styl',
+					variablePrefix: '',
+					variableValueSeparator: ' = '
+				});
+			}
 		}
 
 		this.configurationLoadingPromise = null;
