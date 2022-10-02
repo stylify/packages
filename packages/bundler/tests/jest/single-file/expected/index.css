@@ -1,12 +1,12 @@
-.hover\:background\:\#333:hover,
-.profiler-extension:hover{
+.profiler-extension:hover,
+.hover\:background\:\#333:hover{
 	background: #333
 }
 .border-top\:1px_solid_\#444{
 	border-top: 1px solid #444
 }
-.background-color\:\#333,
-.profiler-extension_button--active{
+.profiler-extension_button--active,
+.background-color\:\#333{
 	background-color: #333
 }
 .bottom\:0{
@@ -30,8 +30,8 @@
 .font-family\:arial{
 	font-family: arial
 }
-.font-size\:12px,
-.profiler-extension_button{
+.profiler-extension_button,
+.font-size\:12px{
 	font-size: 12px
 }
 .line-height\:20px{
@@ -70,129 +70,129 @@
 .word-spacing\:24px{
 	word-spacing: 24px
 }
-.box-sizing\:border-box,
 .profiler-extension,
 .profiler-extension_button,
 .profiler-extension_dropdown,
-.profiler-extension_link{
+.profiler-extension_link,
+.box-sizing\:border-box{
 	box-sizing: border-box
 }
-.border-left\:1px_solid_\#555,
-.profiler-extension{
+.profiler-extension,
+.border-left\:1px_solid_\#555{
 	border-left: 1px solid #555
 }
-.align-items\:center,
 .profiler-extension,
-.profiler-extension_button{
+.profiler-extension_button,
+.align-items\:center{
 	align-items: center
 }
-.display\:flex,
 .profiler-extension,
-.profiler-extension_button{
+.profiler-extension_button,
+.display\:flex{
 	display: flex
 }
-.min-height\:100\%,
-.profiler-extension{
+.profiler-extension,
+.min-height\:100\%{
 	min-height: 100%
 }
-.position\:relative,
-.profiler-extension{
+.profiler-extension,
+.position\:relative{
 	position: relative
 }
-.height\:20px,
-.profiler-extension_button{
+.profiler-extension_button,
+.height\:20px{
 	height: 20px
 }
-.padding\:0_8px,
-.profiler-extension_button{
+.profiler-extension_button,
+.padding\:0_8px{
 	padding: 0 8px
 }
-.justify-content\:center,
-.profiler-extension_button{
+.profiler-extension_button,
+.justify-content\:center{
 	justify-content: center
 }
-.cursor\:pointer,
 .profiler-extension_button,
-.profiler-extension_link{
+.profiler-extension_link,
+.cursor\:pointer{
 	cursor: pointer
 }
-.user-select\:none,
-.profiler-extension_button{
+.profiler-extension_button,
+.user-select\:none{
 	-webkit-user-select: none;
 	   -moz-user-select: none;
 	        user-select: none
 }
-.position\:absolute,
-.profiler-extension_dropdown{
+.profiler-extension_dropdown,
+.position\:absolute{
 	position: absolute
 }
-.bottom\:100\%,
-.profiler-extension_dropdown{
+.profiler-extension_dropdown,
+.bottom\:100\%{
 	bottom: 100%
 }
-.left\:0,
-.profiler-extension_dropdown{
+.profiler-extension_dropdown,
+.left\:0{
 	left: 0
 }
-.max-height\:50vh,
-.profiler-extension_dropdown{
+.profiler-extension_dropdown,
+.max-height\:50vh{
 	max-height: 50vh
 }
-.overflow\:auto,
-.profiler-extension_dropdown{
+.profiler-extension_dropdown,
+.overflow\:auto{
 	overflow: auto
 }
-.min-width\:100\%,
-.profiler-extension_dropdown{
+.profiler-extension_dropdown,
+.min-width\:100\%{
 	min-width: 100%
 }
-.background\:\#000,
-.profiler-extension_dropdown{
+.profiler-extension_dropdown,
+.background\:\#000{
 	background: #000
 }
-.padding\:8px,
-.profiler-extension_dropdown{
+.profiler-extension_dropdown,
+.padding\:8px{
 	padding: 8px
 }
-.text-decoration\:none,
-.profiler-extension_link{
+.profiler-extension_link,
+.text-decoration\:none{
 	text-decoration: none
 }
-.color\:\#00b2e5,
-.profiler-extension_link{
+.profiler-extension_link,
+.color\:\#00b2e5{
 	color: #00b2e5
 }
-.margin-right\:8px,
 .profiler-extension_link,
-.profiler-extension_button-icon{
+.profiler-extension_button-icon,
+.margin-right\:8px{
 	margin-right: 8px
 }
-.white-space\:nowrap,
-.profiler-extension_link{
+.profiler-extension_link,
+.white-space\:nowrap{
 	white-space: nowrap
 }
-.display\:inline-block,
 .profiler-extension_link,
-.profiler-extension_button-icon{
+.profiler-extension_button-icon,
+.display\:inline-block{
 	display: inline-block
 }
-.width\:12px,
-.profiler-extension_button-icon{
+.profiler-extension_button-icon,
+.width\:12px{
 	width: 12px
 }
-.height\:12px,
-.profiler-extension_button-icon{
+.profiler-extension_button-icon,
+.height\:12px{
 	height: 12px
 }
-.font-weight\:bold,
-.profiler-extension_button-icon{
+.profiler-extension_button-icon,
+.font-weight\:bold{
 	font-weight: bold
 }
-.color\:\#aaa,
-.profiler-extension_button-icon{
+.profiler-extension_button-icon,
+.color\:\#aaa{
 	color: #aaa
 }
-.line-height\:1,
-.profiler-extension_button-label{
+.profiler-extension_button-label,
+.line-height\:1{
 	line-height: 1
 }

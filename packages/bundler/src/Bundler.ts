@@ -534,10 +534,7 @@ export class Bundler {
 				}
 
 				if (bundleConfig.rewriteSelectorsInFiles) {
-					const processedContent = compiler.rewriteSelectors(
-						fileToProcessConfig.content,
-						bundleBuildCache.compilationResult
-					);
+					const processedContent = compiler.rewriteSelectors(fileToProcessConfig.content);
 
 					const beforeInputFileRewrittenHook = async (): Promise<void> => {
 						const hookData = await hooks.callAsyncHook(

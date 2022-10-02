@@ -18,5 +18,5 @@ let compilationResult = compiler.compile(inputIndex);
  */
 test('Mangle with special characters - dollars should stay as they are and non should removed.', (): void => {
 	testUtils.testCssFileToBe(compilationResult.generateCss());
-	testUtils.testHtmlFileToBe(compiler.rewriteSelectors(inputIndex, compilationResult));
+	testUtils.testHtmlFileToBe(compiler.rewriteSelectors(inputIndex));
 });

@@ -10,5 +10,5 @@ let compilationResult = compiler.compile(inputIndex);
 
 test('Ignored areas', (): void => {
 	testUtils.testCssFileToBe(compilationResult.generateCss());
-	testUtils.testHtmlFileToBe(compiler.rewriteSelectors(inputIndex, compilationResult));
+	testUtils.testHtmlFileToBe(compiler.rewriteSelectors(inputIndex));
 });

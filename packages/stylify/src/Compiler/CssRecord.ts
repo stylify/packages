@@ -59,12 +59,14 @@ export class CssRecord {
 			return;
 		}
 
+		this.mangledSelector = minifiedSelectorGenerator.getSelector(config.selector);
 		this.screenId = config.screenId;
 		this.selector = config.selector.replace(/([^-_a-zA-Z\d])/g, '\\$1');
+
 		if ((/^\d/gm).test(this.selector[0])) {
 			this.selector = '\\3' + this.selector;
 		}
-		this.mangledSelector = minifiedSelectorGenerator.getSelector(this.selector);
+
 		this.scope = config.scope || null;
 		this.shouldBeGenerated = 'shouldBeGenerated' in config ? config.shouldBeGenerated : this.shouldBeGenerated;
 		this.addComponents(config.components || {});
@@ -134,9 +136,7 @@ export class CssRecord {
 		if (this.changed || !this.cache) {
 			const newLine = config.minimize ? '' : '\n';
 
-			const cssRecordSelector = config.mangleSelectors
-				? minifiedSelectorGenerator.getSelector(this.selector)
-				: this.selector;
+			const cssRecordSelector = config.mangleSelectors ? this.mangledSelector : this.selector;
 
 			let plainSelectors: string[] = [];
 			let classSelectors: string[] = [];

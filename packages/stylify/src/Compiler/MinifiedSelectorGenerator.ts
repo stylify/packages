@@ -5,7 +5,7 @@ export class MinifiedSelectorGenerator {
 
 	private readonly lastLetterIndex = this.lettersLength - 1;
 
-	private processedSelectors: Record<string, string> = {};
+	public processedSelectors: Record<string, string> = {};
 
 	public getSelector(selector: string) {
 		if (!(selector in this.processedSelectors)) {
@@ -13,7 +13,6 @@ export class MinifiedSelectorGenerator {
 				Object.keys(this.processedSelectors).length
 			);
 		}
-
 		return this.processedSelectors[selector];
 	}
 

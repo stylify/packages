@@ -11,8 +11,8 @@ const compiler = new Compiler({
 	components: {
 		'button': 'padding:8px background-color:#000 display:inline-block font-size:24px',
 		'container': `max-width:800px margin:0_auto`,
-		'title': ['font-size:24px', 'color:green', 'font-size:24px md:font-size:32px'],
-		'not-used': ['color:steelblue']
+		'title': 'font-size:24px color:green font-size:24px md:font-size:32px',
+		'not-used': `'color:steelblue'`
 	}
 });
 
@@ -20,5 +20,5 @@ let compilationResult = compiler.compile(inputIndex);
 
 test('Components - mangle selectors', (): void => {
 	testUtils.testCssFileToBe(compilationResult.generateCss());
-	testUtils.testHtmlFileToBe(compiler.rewriteSelectors(inputIndex, compilationResult));
+	testUtils.testHtmlFileToBe(compiler.rewriteSelectors(inputIndex));
 });

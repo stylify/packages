@@ -33,7 +33,6 @@ export interface CompilationResultConfigInterface {
 	screensSortingFunction?: ScreenSortingFunctionType,
 	screensList?: ScreensListRecordType,
 	selectorsList?: SelectorsListType,
-	componentsList?: string[],
 	mangleSelectors?: boolean,
 	defaultCss?: string
 }
@@ -67,8 +66,6 @@ export class CompilationResult {
 
 	public selectorsList: Record<string, CssRecord> = {};
 
-	public componentsList: string[] = [];
-
 	public screensSortingFunction: ScreenSortingFunctionType = null;
 
 	public defaultCss = '';
@@ -87,7 +84,6 @@ export class CompilationResult {
 		this.reconfigurable = config.reconfigurable ?? this.reconfigurable;
 		this.mangleSelectors = config.mangleSelectors ?? this.mangleSelectors;
 		this.defaultCss = config.defaultCss || this.defaultCss;
-		this.componentsList = [...this.componentsList, ...config.componentsList || []];
 
 		if ('selectorsList' in config) {
 			for (const selector in config.selectorsList) {
@@ -210,47 +206,6 @@ export class CompilationResult {
 				}
 
 				this.selectorsList[dependencySelector].addPlainSelector(plainSelector);
-			}
-		}
-	}
-
-	public bindComponentsToSelectors(selectorsComponentsMap: SelectorsComponentsMapType): void {
-		for (const componentDependencySelector in selectorsComponentsMap) {
-			for (const componentToBind of selectorsComponentsMap[componentDependencySelector]) {
-				if (!(componentDependencySelector in this.selectorsList)) {
-					throw new Error(`Selector "${componentDependencySelector}" for component "${componentToBind.component}" was not matched and therefore not added.`);
-				}
-
-				if (!this.componentsList.includes(componentToBind.component)) {
-					this.componentsList.push(componentToBind.component);
-				}
-
-				componentToBind.selectorsChain = componentToBind.selectorsChain
-					.map((selectorsChain: string): string => {
-						return selectorsChain
-							.split(' ')
-							.map((selectorFromChain: string) => {
-								if (this.mangleSelectors) {
-									if (!(selectorFromChain in this.selectorsList)
-										&& !this.componentsList.includes(selectorFromChain)
-									) {
-										throw new Error(`Stylify: selector "${selectorFromChain}" from component "${componentToBind.component}" selectorsChain list not found.`);
-									}
-
-									selectorFromChain = minifiedSelectorGenerator.getSelector(selectorFromChain);
-								}
-
-								return selectorFromChain;
-							})
-							.join(' ');
-					});
-
-				this.selectorsList[componentDependencySelector].addComponent(
-					this.mangleSelectors
-						? minifiedSelectorGenerator.getSelector(componentToBind.component)
-						: componentToBind.component,
-					componentToBind.selectorsChain
-				);
 			}
 		}
 	}

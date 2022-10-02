@@ -23,7 +23,7 @@ export default function (source: string): string {
 	const compiler = getCompiler();
 
 	if (compiler.mangleSelectors && queryIsTemplateType(resourceQuery)) {
-		source = compiler.rewriteSelectors(source, getCompilationResult()) as string;
+		source = compiler.rewriteSelectors(source) as string;
 	}
 
 	return source;

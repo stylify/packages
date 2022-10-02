@@ -176,13 +176,7 @@ export const unplugin = createUnplugin((config: UnpluginConfigInterface|Unplugin
 				}
 			}
 
-			return new Compiler(bundler.compilerConfig).rewriteSelectors(
-				code,
-				new CompilationResult({
-					selectorsList: selectors,
-					componentsList: Object.keys(components)
-				})
-			);
+			return new Compiler(bundler.compilerConfig).rewriteSelectors(code);
 		},
 		esbuild: {
 			async setup() {

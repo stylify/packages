@@ -18,5 +18,5 @@ let compilationResult = compiler.compile(inputIndex);
 
 test('Mangle single letter macros', (): void => {
 	testUtils.testCssFileToBe(compilationResult.generateCss());
-	testUtils.testHtmlFileToBe(compiler.rewriteSelectors(inputIndex, compilationResult));
+	testUtils.testHtmlFileToBe(compiler.rewriteSelectors(inputIndex));
 });
