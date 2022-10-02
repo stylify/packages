@@ -1,4 +1,5 @@
 import { CompilationResult, Compiler, CompilerConfigInterface } from './Compiler';
+import { hooks } from './Hooks';
 
 export interface RuntimeConfigInterface {
 	dev?: boolean,
@@ -24,9 +25,11 @@ export class Runtime {
 
 	public dev = false;
 
-	public compiler: Compiler = null;
+	public compiler!: Compiler;
 
-	public compilationResult: CompilationResult = null;
+	public hooks = hooks;
+
+	public compilationResult!: CompilationResult;
 
 	private initialPaintCompleted = false;
 

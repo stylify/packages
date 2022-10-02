@@ -6,13 +6,22 @@ import {
 	screensSorter
 } from '.';
 
+import { hooks } from '../Hooks';
+
+export interface ConfigurCssRecordHookDataInterface {
+	compilationResult: CompilationResult,
+	cssRecord: CssRecord
+}
+
+export interface CompilationResultHooksListInterface {
+	'compilationResult:configureCssRecord': ConfigurCssRecordHookDataInterface,
+}
+
 export type ScreenSortingFunctionType = (screensList: ScreensListMapType) => ScreensListMapType;
 
 export type ScreensListScreenValueType = number|null;
 
 export type ScreensListMapType = Map<string, ScreensListScreenValueType>;
-
-type OnPrepareCssRecordCallbackType = (cssRecord: CssRecord) => void;
 
 export type ScreensListRecordType = Record<string, number>;
 
@@ -26,7 +35,6 @@ export interface CompilationResultConfigInterface {
 	selectorsList?: SelectorsListType,
 	componentsList?: string[],
 	mangleSelectors?: boolean,
-	onPrepareCssRecord?: OnPrepareCssRecordCallbackType,
 	defaultCss?: string
 }
 
@@ -42,6 +50,8 @@ export interface SelectorsComponentsMapInterface {
 }
 
 export class CompilationResult {
+
+	public readonly id = Date.now().toString(36) + Math.random().toString(36).substr(2);
 
 	private screensList: ScreensListMapType = new Map();
 
@@ -61,8 +71,6 @@ export class CompilationResult {
 
 	public screensSortingFunction: ScreenSortingFunctionType = null;
 
-	public onPrepareCssRecord: OnPrepareCssRecordCallbackType = null;
-
 	public defaultCss = '';
 
 	public constructor(config: CompilationResultConfigInterface = {}) {
@@ -71,14 +79,13 @@ export class CompilationResult {
 	}
 
 	public configure(config: CompilationResultConfigInterface = {}): void {
-		if (!config || !Object.keys(config).length) {
+		if (!Object.keys(config).length) {
 			return;
 		}
 
 		this.dev = config.dev ?? this.dev;
 		this.reconfigurable = config.reconfigurable ?? this.reconfigurable;
 		this.mangleSelectors = config.mangleSelectors ?? this.mangleSelectors;
-
 		this.defaultCss = config.defaultCss || this.defaultCss;
 		this.componentsList = [...this.componentsList, ...config.componentsList || []];
 
@@ -94,8 +101,6 @@ export class CompilationResult {
 		}
 
 		this.screensSortingFunction = config.screensSortingFunction ?? screensSorter.sortCssTreeMediaQueries;
-		this.onPrepareCssRecord = config.onPrepareCssRecord ?? null;
-
 		this.addScreens(config.screensList || {});
 	}
 
@@ -189,9 +194,7 @@ export class CompilationResult {
 			shouldBeGenerated: true
 		});
 
-		if (this.onPrepareCssRecord) {
-			this.onPrepareCssRecord(newCssRecord);
-		}
+		hooks.callHook('compilationResult:configureCssRecord', {compilationResult: this, cssRecord: newCssRecord});
 
 		newCssRecord.addProperties(selectorProperties.properties);
 

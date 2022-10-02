@@ -9,6 +9,21 @@ import {
 	defaultPreset
 } from '.';
 
+import { hooks } from '../Hooks';
+
+export interface CompilerHooksListInterface {
+	'compiler:beforeMacrosProcessed': CompilationResult,
+	'compiler:afterMacrosProcessed': CompilationResult,
+	'compiler:compilationResultConfigured': CompilationResult,
+	'compiler:newMacroMatch': {
+		dev: boolean,
+		macroMatch: MacroMatch,
+		selectorProperties: SelectorProperties,
+		variables: VariablesType,
+		helpers: HelpersType
+	}
+}
+
 export type MacroCallbackType = (macroMatch: MacroMatch, selectorProperties: SelectorProperties) => void;
 
 export type ScreenCallbackType = (screen: string) => string;
@@ -71,8 +86,6 @@ export interface CompilerConfigInterface {
 	mangleSelectors?: boolean,
 	pregenerate?: PregenerateType,
 	components?: Record<string, ComponentSelectorsType|ComponentConfigInterface>,
-	onPrepareCompilationResult?: OnPrepareCompilationResultCallbackType,
-	onNewMacroMatch?: OnNewMacroMatchCallbackType,
 	contentOptionsProcessors?: ContentOptionsProcessorsType,
 	ignoredAreas?: RegExp[],
 	selectorsAreas?: string[],
@@ -162,8 +175,6 @@ export class Compiler {
 		this.contentOptionsProcessors = {...this.contentOptionsProcessors, ...config.contentOptionsProcessors};
 		this.injectVariablesIntoCss = config.injectVariablesIntoCss ?? this.injectVariablesIntoCss;
 		this.selectorsAreas = [...this.selectorsAreas, ...config.selectorsAreas ?? []];
-		this.onPrepareCompilationResult = config.onPrepareCompilationResult ?? this.onPrepareCompilationResult;
-		this.onNewMacroMatch = config.onNewMacroMatch ?? this.onNewMacroMatch;
 		this.mangleSelectors = config.mangleSelectors ?? this.mangleSelectors;
 		this.replaceVariablesByCssVariables =
 			config.replaceVariablesByCssVariables ?? this.replaceVariablesByCssVariables;
@@ -424,9 +435,13 @@ export class Compiler {
 
 		compilationResult = compilationResult ?? new CompilationResult();
 
+		hooks.callHook('compiler:beforeMacrosProcessed', compilationResult);
+
 		this.processMacros(contentToProcess, compilationResult);
 
-		this.prepareCompilationResult(compilationResult);
+		hooks.callHook('compiler:afterMacrosProcessed', compilationResult);
+
+		this.configureCompilationResult(compilationResult);
 
 		compilationResult.bindPlainSelectorsToSelectors(plainSelectorsSelectorsMap);
 		compilationResult.bindComponentsToSelectors(selectorsComponentsMap);
@@ -434,7 +449,7 @@ export class Compiler {
 		return compilationResult;
 	}
 
-	private prepareCompilationResult(compilationResult: CompilationResult): CompilationResult
+	private configureCompilationResult(compilationResult: CompilationResult): CompilationResult
 	{
 		const newLine = this.dev ? '\n' : '';
 		const makeVariableString = (variable: string, value: VariablesTypeValue) => `--${variable}: ${String(value)};${newLine}`;
@@ -518,9 +533,7 @@ export class Compiler {
 			defaultCss: `${[variablesCss, keyframesCss].join(newLine).trim()}${newLine}`
 		});
 
-		if (this.onPrepareCompilationResult) {
-			this.onPrepareCompilationResult(compilationResult);
-		}
+		hooks.callHook('compiler:compilationResultConfigured', compilationResult);
 
 		return compilationResult;
 	}
@@ -566,17 +579,13 @@ export class Compiler {
 						selectorProperties.properties[property] = this.replaceVariableString(value);
 					}
 
-					if (this.onNewMacroMatch) {
-						this.onNewMacroMatch.call(
-							{
-								dev: this.dev,
-								variables: this.variables,
-								helpers: this.helpers
-							},
-							macroMatch,
-							selectorProperties
-						);
-					}
+					hooks.callHook('compiler:newMacroMatch', {
+						macroMatch: macroMatch,
+						selectorProperties,
+						dev: this.dev,
+						variables: this.variables,
+						helpers: this.helpers
+					});
 
 					compilationResult.addCssRecord(macroMatch, selectorProperties);
 
@@ -659,7 +668,7 @@ export class Compiler {
 		);
 	}
 
-	public getOptionsFromContent(content: string): CompilerContentOptionsInterface {
+	public getOptionsFromContent<T = CompilerContentOptionsInterface>(content: string): T {
 		let contentOptions: CompilerContentOptionsInterface = {
 			pregenerate: '',
 			components: {},
@@ -706,7 +715,7 @@ export class Compiler {
 			}
 		}
 
-		return contentOptions;
+		return contentOptions as T;
 	}
 
 }

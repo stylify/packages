@@ -1,7 +1,7 @@
 import path from 'path';
 import fse from 'fs-extra';
 import fs from 'fs';
-import { Bundler } from '../../src'
+import { Bundler, hooks } from '../../src'
 import TestUtils from '../../../../tests/TestUtils';
 
 const testName = 'hooks';
@@ -16,53 +16,70 @@ if (!fs.existsSync(buildTmpDir)) {
 
 fse.copySync(path.join(bundleTestDir, 'input'), buildTmpDir);
 
-const bundler = new Bundler({
-	dev: true,
-	onBeforeCssFileCreated: (data) => {
-		const filePathInfo = path.parse(data.filePath);
-		data.filePath = path.join(filePathInfo.dir, filePathInfo.name + '.scss');
-		data.content = `/* File content changed during build */\n${data.content}`;
-	},
-	onBundleProcessed: (data) => {
-		const filePathInfo = path.parse(data.bundleConfig.outputFile);
-		fs.writeFileSync(path.join(filePathInfo.dir, filePathInfo.name + '.txt'), '')
-	},
-	onFileToProcessOpened: (data) => {
-		const regExp = new RegExp('{% extends "(\\S+)" %}', 'g');
-		let match: RegExpMatchArray;
+const bundler = new Bundler({ dev: true });
 
-		while (match = regExp.exec(data.content)) {
-			data.filePathsFromContent.push(match[1]);
-		}
-	}
-});
 bundler.bundle([
    	{
+		id: 'index',
 		outputFile: path.join(buildTmpDir, 'index.css'),
-		files: [
-			path.join(buildTmpDir, 'index.html'),
-		],
-		compiler: {
-			mangleSelectors: true
-		},
-		onBeforeInputFileRewritten: (data) => {
-			const filePathInfo = path.parse(data.filePath);
-			data.filePath = path.join(filePathInfo.dir, filePathInfo.name + '.html');
-			data.content = `<!-- File content changed during build. -->\n${data.content}`;
-		},
+		files: [ path.join(buildTmpDir, 'index.html') ],
+		compiler: { mangleSelectors: true },
 	},
  	{
+		id: 'second',
 		outputFile: path.join(buildTmpDir, 'second.css'),
 		files: [
 			path.join(buildTmpDir, 'second.html'),
 			path.join(buildTmpDir, 'default.twig'),
-		],
-		onBundleProcessed: (data) => {
-			const filePathInfo = path.parse(data.bundleConfig.outputFile);
-			fs.writeFileSync(path.join(filePathInfo.dir, filePathInfo.name + '-modified.txt'), '')
-		}
+		]
 	}
 ]);
+
+hooks.addListener('bundler:beforeCssFileCreated', (data) => {
+	const filePathInfo = path.parse(data.bundleConfig.outputFile);
+	data.bundleConfig.outputFile = path.join(filePathInfo.dir, filePathInfo.name + '.scss');
+	data.content = `/* File content changed during build */\n${data.content}`;
+});
+
+hooks.addListener('bundler:bundleProcessed', (data) => {
+	const filePathInfo = path.parse(data.bundleConfig.outputFile);
+	fs.writeFileSync(path.join(filePathInfo.dir, filePathInfo.name + '.txt'), '')
+});
+
+hooks.addListener('bundler:fileToProcessOpened', (data) => {
+	const regExp = new RegExp('{% extends "(\\S+)" %}', 'g');
+	let match: RegExpMatchArray;
+
+	if (typeof data.contentOptions.files === 'undefined') {
+		data.contentOptions.files = [];
+	};
+
+	while (match = regExp.exec(data.content)) {
+		data.contentOptions.files.push(match[1]);
+	}
+});
+
+hooks.addListener(
+	'bundler:beforeInputFileRewritten',
+	(data) => {
+		if (data.bundleConfig.id !== 'index') {
+			return;
+		}
+
+		const filePathInfo = path.parse(data.filePath);
+		data.filePath = path.join(filePathInfo.dir, filePathInfo.name + '.html');
+		data.content = `<!-- File content changed during build. -->\n${data.content}`;
+	}
+)
+
+hooks.addListener('bundler:bundleProcessed', (data) => {
+	if (data.bundleConfig.id !== 'second') {
+		return;
+	}
+
+	const filePathInfo = path.parse(data.bundleConfig.outputFile);
+	fs.writeFileSync(path.join(filePathInfo.dir, filePathInfo.name + '-modified.txt'), '')
+});
 
 test('Bundler - single file', async (): Promise<void> => {
 	await bundler.waitOnBundlesProcessed();

@@ -1,10 +1,14 @@
 import { minifiedSelectorGenerator } from '.';
+import { hooks } from '../Hooks';
+
+export interface CssRecordHooksListInterface {
+	'cssRecord:addProperty': PropertiesType,
+	'cssRecord:cssGenerated': CssRecord
+}
 
 export type CssRecordComponentsType = Record<string, string[]>;
 
-export type OnAddPropertyCallbackType = (property: string, value: any) => Record<string, any>|null;
-
-export type OnAfterGenerateCallbackType = (cssRecord: CssRecord) => void;
+export type PropertiesType = Record<string, string>;
 
 export interface CssRecordConfigInterface {
 	screenId?: number,
@@ -13,8 +17,6 @@ export interface CssRecordConfigInterface {
 	plainSelectors?: string[],
 	components?: CssRecordComponentsType,
 	pseudoClasses?: string[],
-	onAddProperty?: OnAddPropertyCallbackType | string,
-	onAfterGenerate?: OnAfterGenerateCallbackType | string,
 	scope?: string,
 	shouldBeGenerated?: boolean
 }
@@ -44,22 +46,19 @@ export class CssRecord {
 
 	public components: CssRecordComponentsType = {};
 
-	public properties: Record<string, string> = {};
+	public properties: PropertiesType = {};
 
 	public pseudoClasses: string[] = [];
 
-	public onAddProperty: OnAddPropertyCallbackType = null;
-
-	public onAfterGenerate: OnAfterGenerateCallbackType = null;
-
 	constructor(config: CssRecordConfigInterface = {}) {
-		if (!Object.keys(config).length) {
-			return;
-		}
 		this.configure(config);
 	}
 
-	public configure(config: CssRecordConfigInterface): void {
+	public configure(config: CssRecordConfigInterface = {}): void {
+		if (!Object.keys(config).length) {
+			return;
+		}
+
 		this.screenId = config.screenId;
 		this.selector = config.selector.replace(/([^-_a-zA-Z\d])/g, '\\$1');
 		if ((/^\d/gm).test(this.selector[0])) {
@@ -67,13 +66,6 @@ export class CssRecord {
 		}
 		this.mangledSelector = minifiedSelectorGenerator.getSelector(this.selector);
 		this.scope = config.scope || null;
-
-		if ('onAddProperty' in config) {
-			this.onAddProperty = typeof config.onAddProperty === 'string'
-				// eslint-disable-next-line @typescript-eslint/no-implied-eval
-				? new Function(config.onAddProperty) as OnAddPropertyCallbackType
-				: config.onAddProperty;
-		}
 		this.shouldBeGenerated = 'shouldBeGenerated' in config ? config.shouldBeGenerated : this.shouldBeGenerated;
 		this.addComponents(config.components || {});
 		this.addProperties(config.properties || {});
@@ -93,20 +85,11 @@ export class CssRecord {
 			return;
 		}
 
-		const onAddPropertyHook = (property: string, value: any): Record<string, any> => {
-			let properties = this.onAddProperty ? this.onAddProperty(property, value) : null;
-
-			if (!properties || typeof properties === 'undefined') {
-				properties = {
-					[property]: value
-				};
-			}
-
-			return properties;
-		};
+		const addPropertyHookData = { [property]: value} as PropertiesType;
+		const hookResult = hooks.callHook('cssRecord:addProperty', addPropertyHookData);
 
 		this.changed = true;
-		this.properties = {...this.properties, ...onAddPropertyHook(property, value)};
+		this.properties = {...this.properties, ...hookResult};
 	}
 
 	public addPseudoClasses(pseudoClasses: string[] | string): void {
@@ -218,9 +201,7 @@ export class CssRecord {
 			this.changed = false;
 		}
 
-		if (this.onAfterGenerate) {
-			this.onAfterGenerate(this);
-		}
+		hooks.callHook('cssRecord:cssGenerated', this);
 
 		return this.cache;
 	}

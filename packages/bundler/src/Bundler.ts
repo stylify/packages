@@ -1,9 +1,15 @@
 import FastGlob from 'fast-glob';
 import {
+	CompilerConfigInterface,
+	CompilerContentOptionsInterface,
+	DefaultHooksListInterface,
+	DefaultHooksNamesListType
+} from '@stylify/stylify';
+import {
+	mergeObjects,
 	CompilationResult,
 	Compiler,
-	CompilerConfigInterface,
-	CompilerContentOptionsInterface
+	Hooks
 } from '@stylify/stylify';
 import fs from 'fs';
 import { default as normalize } from 'normalize-path';
@@ -15,6 +21,28 @@ import postcss from 'postcss';
 interface BundleFileDataInterface {
 	filePath: string,
 	content: string
+}
+
+export interface BundlerHooksListInterface extends DefaultHooksListInterface {
+	'bundler:beforeInputFileRewritten': {
+		bundleConfig: BundleConfigInterface,
+		content: string
+		filePath: string
+	},
+	'bundler:beforeCssFileCreated': {
+		content: string,
+		bundleConfig: BundleConfigInterface
+	},
+	'bundler:bundleProcessed': {
+		bundleConfig: BundleConfigInterface,
+		bundleBuildCache: BundlesBuildCacheInterface
+	},
+	'bundler:fileToProcessOpened': {
+		bundleConfig: BundleConfigInterface,
+		filePath: string,
+		contentOptions: ContentOptionsInterface,
+		content: string
+	}
 }
 
 export interface DumpVariablesIntoFileOptionsInterface {
@@ -47,52 +75,7 @@ export interface BundlesBuildStatsInterface {
 	buildTime: string
 }
 
-export interface OnBeforeInputFileRewrittenCallbackDataInterface {
-	content: string
-	filePath: string
-}
-
-export interface OnBeforeCssFileCreatedCallbackDataInterface {
-	content: string,
-	filePath: string
-}
-
-export interface OnBundleProcessedCallbackDataInterface {
-	bundleConfig: BundleConfigInterface,
-	bundleBuildCache: BundlesBuildCacheInterface
-}
-
-export interface OnFileToProcessOpenedCallbackDataInterface {
-	path: string,
-	content: string,
-	filePathsFromContent: string[],
-	contentOptions: ContentOptionsInterface
-}
-
-export type OnBeforeInputFileRewrittenCallbackType = (
-	data: OnBeforeInputFileRewrittenCallbackDataInterface
-) => Promise<void> | void;
-
-export type OnBeforeCssFileCreatedCallbackType = (
-	data: OnBeforeCssFileCreatedCallbackDataInterface
-) => Promise<void> | void;
-
-export type OnBundleProcessedCallbackType = (
-	data: OnBundleProcessedCallbackDataInterface
-) => Promise<void> | void;
-
-export type OnFileToProcessOpenedCallbackType = (
-	data: OnFileToProcessOpenedCallbackDataInterface
-) => Promise<void> | void;
-
-interface BundleHooksInterface {
-	onBeforeInputFileRewritten?: OnBeforeInputFileRewrittenCallbackType
-	onBeforeCssFileCreated?: OnBeforeCssFileCreatedCallbackType,
-	onBundleProcessed?: OnBundleProcessedCallbackType,
-	onFileToProcessOpened?: OnFileToProcessOpenedCallbackType
-}
-
-export interface BundleConfigInterface extends BundleHooksInterface {
+export interface BundleConfigInterface {
 	id?: string,
 	rewriteSelectorsInFiles?: boolean,
 	filesBaseDir?: string,
@@ -102,7 +85,7 @@ export interface BundleConfigInterface extends BundleHooksInterface {
 	compiler?: CompilerConfigInterface
 }
 
-export interface BundlerConfigInterface extends BundleHooksInterface {
+export interface BundlerConfigInterface {
 	dev?: boolean,
 	configFile?: string,
 	autoprefixerEnabled?: boolean,
@@ -125,6 +108,10 @@ export interface WatchedFilesInterface {
 }
 
 const postCssPrefixer = postcss([autoprefixer()]);
+
+export type BundlerHooksNamesListType = keyof BundlerHooksListInterface;
+
+export const hooks = new Hooks<BundlerHooksListInterface>;
 
 export const defineConfig = (config: BundlerConfigInterface): BundlerConfigInterface => config;
 
@@ -169,14 +156,6 @@ export class Bundler {
 
 	private bundles: Record<string, BundleConfigInterface> = {};
 
-	private onBeforeInputFileRewritten: OnBeforeInputFileRewrittenCallbackType = null;
-
-	private onBeforeCssFileCreated: OnBeforeCssFileCreatedCallbackType = null;
-
-	private onBundleProcessed: OnBundleProcessedCallbackType = null;
-
-	private onFileToProcessOpened: OnFileToProcessOpenedCallbackType = null;
-
 	private autoprefixerEnabled = true;
 
 	public bundlesBuildCache: BundlesBuildCacheType = {};
@@ -185,48 +164,15 @@ export class Bundler {
 		this.configurationLoadingPromise = this.configure(config);
 	}
 
-	private mergeObjects(...objects): Record<string, any> {
-		const newObject = {};
-
-		for (const processedObject of objects) {
-			for (const processedObjectKey in processedObject) {
-				const newValue = processedObject[processedObjectKey];
-
-				if (processedObjectKey in newObject) {
-					if (Array.isArray(newValue)) {
-						newObject[processedObjectKey] = [
-							...newObject[processedObjectKey],
-							...newValue
-						];
-						continue;
-
-					} else if (typeof newValue === 'object' && newValue !== null) {
-						newObject[processedObjectKey] = this.mergeObjects(newObject[processedObjectKey], newValue);
-						continue;
-					}
-				}
-
-				newObject[processedObjectKey] = newValue;
-			}
-		}
-
-		return newObject;
-	}
-
 	private mergeConfigs(config: Partial<BundlerConfigInterface>) {
 		this.configFile = config.configFile || this.configFile;
 		this.dev = config.dev ?? this.dev;
 		this.compilerConfig.dev = this.dev;
-		this.compilerConfig = this.mergeObjects(this.compilerConfig, config.compiler ?? {});
+		this.compilerConfig = mergeObjects(this.compilerConfig, config.compiler ?? {});
 		this.verbose = config.verbose ?? this.verbose;
 		this.sync = config.sync ?? this.sync;
 		this.watchFiles = config.watchFiles ?? this.watchFiles;
 		this.filesBaseDir = config.filesBaseDir ?? this.filesBaseDir;
-
-		this.onBeforeInputFileRewritten = config.onBeforeInputFileRewritten ?? this.onBeforeInputFileRewritten;
-		this.onBeforeCssFileCreated = config.onBeforeCssFileCreated ?? this.onBeforeCssFileCreated;
-		this.onBundleProcessed = config.onBundleProcessed ?? this.onBundleProcessed;
-		this.onFileToProcessOpened = config.onFileToProcessOpened ?? this.onFileToProcessOpened;
 
 		this.cssVarsDirPath = config.cssVarsDirPath ?? this.cssVarsDirPath;
 		this.sassVarsDirPath = config.sassVarsDirPath ?? this.sassVarsDirPath;
@@ -487,25 +433,33 @@ export class Bundler {
 			}
 
 			if (!(bundleConfig.outputFile in this.bundlesBuildCache)) {
-				const bundleCompilerConfig = this.mergeObjects(this.compilerConfig, bundleConfig.compiler);
+				const bundleCompilerConfig = typeof bundleConfig.compiler === 'undefined'
+					? this.compilerConfig
+					: mergeObjects(this.compilerConfig, bundleConfig.compiler);
+
 				try {
 					const compiler = new Compiler(bundleCompilerConfig);
+
+					const bundleCompilationResult = new CompilationResult({
+						mangleSelectors: bundleCompilerConfig.mangleSelectors,
+						reconfigurable: false
+					});
 
 					this.bundlesBuildCache[bundleConfig.outputFile] = {
 						id: bundleConfig.id || null,
 						compiler: compiler,
-						compilationResult: new CompilationResult({
-							mangleSelectors: bundleCompilerConfig.mangleSelectors,
-							reconfigurable: false,
-							onPrepareCssRecord: (cssRecord) => {
-								if (bundleConfig.scope) {
-									cssRecord.scope = bundleConfig.scope;
-								}
-							}
-						}),
+						compilationResult: bundleCompilationResult,
 						buildTime: null,
 						files: []
 					};
+
+					hooks.addListener(
+						'compilationResult:configureCssRecord',
+						({compilationResult, cssRecord}) => {
+							if (compilationResult.id === bundleCompilationResult.id) {
+								cssRecord.scope = bundleConfig.scope;
+							}
+						});
 				} catch (error) {
 					this.logOrError(error);
 					return;
@@ -585,20 +539,20 @@ export class Bundler {
 						bundleBuildCache.compilationResult
 					);
 
-					const onBeforeInputFileRewrittenHook = async (): Promise<void> => {
-						const hookData = await this.callBundleHook(
-							bundleConfig,
-							'onBeforeInputFileRewritten',
+					const beforeInputFileRewrittenHook = async (): Promise<void> => {
+						const hookData = await hooks.callAsyncHook(
+							'bundler:beforeInputFileRewritten',
 							{
+								bundleConfig,
 								content: processedContent,
 								filePath: fileToProcessConfig.filePath
 							}
-						) as OnBeforeInputFileRewrittenCallbackDataInterface;
+						);
 
 						this.writeFile(hookData.filePath, hookData.content, false);
 					};
 
-					filesToProcessPromises.push(onBeforeInputFileRewrittenHook());
+					filesToProcessPromises.push(beforeInputFileRewrittenHook());
 				}
 			}
 
@@ -615,52 +569,27 @@ export class Bundler {
 				? (await postCssPrefixer.process(generatedCss, {from: undefined})).css
 				: generatedCss;
 
-			const hookData = await this.callBundleHook(bundleConfig, 'onBeforeCssFileCreated', {
-				content: cssToSave,
-				filePath: bundleConfig.outputFile
-			}) as OnBeforeCssFileCreatedCallbackDataInterface;
+			const hookData = await hooks.callAsyncHook(
+				'bundler:beforeCssFileCreated', { content: cssToSave, bundleConfig }
+			);
 
-			this.writeFile(hookData.filePath, hookData.content);
+			this.writeFile(hookData.bundleConfig.outputFile, hookData.content);
 
 			bundleBuildCache.buildTime = ((performance.now() - startTime)/1000).toFixed(2);
 			this.log(`Created "${bundleConfig.outputFile}" (${bundleBuildCache.buildTime} s).`, 'textGreen');
 
-			await this.callBundleHook(bundleConfig, 'onBundleProcessed', {
-				bundleConfig: bundleConfig,
-				bundleBuildCache: bundleBuildCache
-			});
+			await hooks.callAsyncHook('bundler:bundleProcessed', { bundleConfig, bundleBuildCache });
 		};
 
 		this.processedBundlesQueue.push(bundleRunner());
 	}
 
-	private logOrError(message): void {
+	private logOrError(message: string): void {
 		if (this.watchFiles) {
 			console.error(message);
 		} else {
 			throw new Error(message);
 		}
-	}
-
-	private async callBundleHook(
-		bundleConfig: BundleConfigInterface,
-		hookName: string,
-		hookData: Record<string, any>
-	): Promise<Record<string, any>> {
-		let hookCallbackPossiblePromise = null;
-
-		if (typeof bundleConfig[hookName] === 'function') {
-			hookCallbackPossiblePromise = bundleConfig[hookName](hookData);
-
-		} else if (typeof this[hookName] === 'function') {
-			hookCallbackPossiblePromise = this[hookName](hookData);
-		}
-
-		if (hookCallbackPossiblePromise instanceof Promise) {
-			await hookCallbackPossiblePromise;
-		}
-
-		return hookData;
 	}
 
 	private async getFilesToProcess(
@@ -683,17 +612,32 @@ export class Bundler {
 
 		for (const filePath of filePaths) {
 			const processFilePath = async (filePath: string) => {
+				if (!this.checkIfFileExists(filePath)) {
+					return;
+				}
+
 				const fileContent = fs.readFileSync(filePath).toString();
-				const bundlerContentOptions = compiler.getOptionsFromContent(fileContent) as ContentOptionsInterface;
+				const contentOptions = compiler.getOptionsFromContent<ContentOptionsInterface>(fileContent);
 
-				const hookData = await this.callBundleHook(bundleConfig, 'onFileToProcessOpened', {
-					path: filePath,
-					content: fileContent,
-					filePathsFromContent: bundlerContentOptions.files || []
-				}) as OnFileToProcessOpenedCallbackDataInterface;
+				const hookData = await hooks.callAsyncHook(
+					'bundler:fileToProcessOpened',
+					{
+						bundleConfig,
+						filePath,
+						contentOptions,
+						content: fileContent
+					}
+				);
 
-				if (hookData.filePathsFromContent.length) {
-					hookData.filePathsFromContent = hookData.filePathsFromContent.map((fileOptionValue) => {
+				filesToProcess.push({
+					filePath: filePath,
+					content: hookData.content
+				});
+
+				let filePathsFromContent: string[] = hookData.contentOptions.files ?? [];
+
+				if (filePathsFromContent.length) {
+					filePathsFromContent = filePathsFromContent.map((fileOptionValue) => {
 						let filePathToReturn = path.join(path.dirname(filePath), fileOptionValue);
 
 						if (fileOptionValue.startsWith(path.sep)) {
@@ -704,20 +648,18 @@ export class Bundler {
 
 						return normalize(filePathToReturn) as string;
 					});
-				}
 
-				if (this.checkIfFileExists(hookData.path)) {
-					filesToProcess.push({
-						filePath: hookData.path,
-						content: hookData.content
-					});
-				}
-
-				if (hookData.filePathsFromContent.length) {
 					const nestedFilePaths = await this.getFilesToProcess(
-						bundleConfig, compiler, this.clearFilePaths(hookData.filePathsFromContent)
+						bundleConfig, compiler, this.clearFilePaths(filePathsFromContent)
 					);
 					filesToProcess = [...filesToProcess, ...nestedFilePaths];
+				}
+
+				if (this.checkIfFileExists(hookData.filePath)) {
+					filesToProcess.push({
+						filePath: hookData.filePath,
+						content: hookData.content
+					});
 				}
 			};
 
