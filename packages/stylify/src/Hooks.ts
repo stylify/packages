@@ -3,13 +3,15 @@ import {
 	CompilerHooksListInterface,
 	CssRecordHooksListInterface
 } from './Compiler';
+import { RuntimeHooksListInterface } from './Runtime';
 
 type HookCallbackType<HookDataType = any> = (data: HookDataType) => void|Promise<HookDataType>;
 
 export interface DefaultHooksListInterface extends
 	CompilationResultHooksListInterface,
 	CompilerHooksListInterface,
-	CssRecordHooksListInterface {
+	CssRecordHooksListInterface,
+	RuntimeHooksListInterface {
 }
 
 export type DefaultHooksNamesListType = keyof DefaultHooksListInterface;

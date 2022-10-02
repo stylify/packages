@@ -15,6 +15,21 @@ interface UpdateCssCallbackArgumentsInterface {
 
 type UpdateCssCallbackType = (data: UpdateCssCallbackArgumentsInterface) => void;
 
+export interface RuntimeHooksListInterface {
+	'stylify:ready': Runtime,
+	'stylify:configured': {
+		config: RuntimeConfigInterface
+	},
+	'stylify:repainted': {
+		css: string,
+		compilationResult: CompilationResult,
+		content: string
+	},
+	'stylify:uncloak': {
+		el: HTMLElement
+	}
+}
+
 export class Runtime {
 
 	public static readonly styleElId: string = 'stylify-css';
@@ -43,7 +58,7 @@ export class Runtime {
 		}
 
 		this.configure(config);
-		this.triggerEvent('stylify:ready', this);
+		hooks.callHook('stylify:ready', this);
 
 		if (['complete', 'loaded', 'interactive'].includes(document.readyState)) {
 			this.init();
@@ -76,7 +91,7 @@ export class Runtime {
 			return;
 		}
 
-		this.triggerEvent('stylify:configured', {
+		hooks.callHook('stylify:configured', {
 			config: config
 		});
 
@@ -122,7 +137,7 @@ export class Runtime {
 			});
 		}
 
-		this.triggerEvent('stylify:repainted', {
+		hooks.callHook('stylify:repainted', {
 			css: css,
 			compilationResult: this.compilationResult,
 			content: content
@@ -191,18 +206,11 @@ export class Runtime {
 			document.head.appendChild(el);
 		}
 
-		const elements = document.querySelectorAll(`.${Runtime.cloakClass}`);
+		const elements = document.querySelectorAll<HTMLElement>(`.${Runtime.cloakClass}`);
 		elements.forEach((element) => {
 			element.classList.remove(Runtime.cloakClass);
-			this.triggerEvent('stylify:uncloak', {
-				el: element
-			});
+			hooks.callHook('stylify:uncloak', { el: element });
 		});
-	}
-
-	private triggerEvent(eventName: string, eventData: any): void {
-		const event = new window.CustomEvent(eventName, eventData ? {detail: eventData} : null);
-		document.dispatchEvent(event);
 	}
 
 }
