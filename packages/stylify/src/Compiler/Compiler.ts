@@ -11,6 +11,15 @@ import {
 
 import { hooks } from '../Hooks';
 
+export interface CompilerContentOptionsInterface {
+	pregenerate: PregenerateType,
+	components: ComponentsType,
+	variables: VariablesType,
+	keyframes: KeyframesType,
+	plainSelectors: PlainSelectorType
+	screens: ScreensType
+}
+
 export interface CompilerHooksListInterface {
 	'compiler:beforeMacrosProcessed': CompilationResult,
 	'compiler:afterMacrosProcessed': CompilationResult,
@@ -21,6 +30,11 @@ export interface CompilerHooksListInterface {
 		selectorProperties: SelectorProperties,
 		variables: VariablesType,
 		helpers: HelpersType
+	},
+	[key: `compiler:processContentOption:${string}`]: {
+		contentOptions: Record<string, any>,
+		key: string,
+		value: string
 	}
 }
 
@@ -32,23 +46,7 @@ export interface PlainSelectorInterface {
 	selectors: string[]
 }
 
-export interface CompilerContentOptionsInterface {
-	pregenerate: PregenerateType,
-	components: ComponentsType,
-	variables: VariablesType,
-	keyframes: KeyframesType,
-	plainSelectors: PlainSelectorType
-	screens: ScreensType
-}
-
 export type OnPrepareCompilationResultCallbackType = (compilationResult: CompilationResult) => void;
-
-export type ContentOptionsProcessorCallbackType = (
-	contentOptions: Partial<CompilerContentOptionsInterface>,
-	optionMatchValue: string
-	) => Partial<CompilerContentOptionsInterface>;
-
-export type ContentOptionsProcessorsType = Record<string, ContentOptionsProcessorCallbackType>;
 
 export type ComponentsType = Record<string, ComponentsInterface>;
 
@@ -79,7 +77,6 @@ export interface CompilerConfigInterface {
 	mangleSelectors?: boolean,
 	pregenerate?: PregenerateType,
 	components?: Record<string, string>,
-	contentOptionsProcessors?: ContentOptionsProcessorsType,
 	ignoredAreas?: RegExp[],
 	selectorsAreas?: string[],
 	replaceVariablesByCssVariables?: boolean,
@@ -116,8 +113,6 @@ export class Compiler {
 		/<script[\s]*?>([\s\S]*?)<\/script>/,
 		/<style[\s]*?>([\s\S]*?)<\/style>/
 	];
-
-	public contentOptionsProcessors: ContentOptionsProcessorsType = {};
 
 	public onPrepareCompilationResult: OnPrepareCompilationResultCallbackType = null;
 
@@ -167,7 +162,6 @@ export class Compiler {
 		this.helpers = {...this.helpers, ...config.helpers ?? {}};
 		this.keyframes = {...this.keyframes, ...config.keyframes ?? {}};
 		this.screens = {...this.screens, ...config.screens ?? {}};
-		this.contentOptionsProcessors = {...this.contentOptionsProcessors, ...config.contentOptionsProcessors};
 		this.injectVariablesIntoCss = config.injectVariablesIntoCss ?? this.injectVariablesIntoCss;
 		this.selectorsAreas = [...this.selectorsAreas, ...config.selectorsAreas ?? []];
 		this.mangleSelectors = config.mangleSelectors ?? this.mangleSelectors;
@@ -356,7 +350,7 @@ export class Compiler {
 
 		content = this.dev ? content.replace(/\r\n/, '\n') : content.replace(/\r\n|\r|\n|\t/ig, ' ');
 
-		this.configure(this.getOptionsFromContent(content));
+		this.configure(this.processOptionsFromContent(this.getOptionsFromContent(content)));
 		content = content.replace(new RegExp(this.contentOptionsRegExp.source, 'g'), '');
 
 		if (matchOnlyInAreas) {
@@ -417,6 +411,34 @@ export class Compiler {
 		compilationResult.bindPlainSelectorsToSelectors(plainSelectorsSelectorsMap);
 
 		return compilationResult;
+	}
+
+	public getOptionsFromContent<
+		ContentOptions extends CompilerContentOptionsInterface,
+		Keys extends keyof ContentOptions = keyof ContentOptions,
+		Data = Record<Keys, string[]>
+	>(content: string): Data {
+		const contentOptions = {};
+
+		const regExp = new RegExp(this.contentOptionsRegExp.source, 'g');
+		let optionMatch: RegExpExecArray;
+
+		while ((optionMatch = regExp.exec(content))) {
+			if (![typeof optionMatch[1], typeof optionMatch[2]].includes('string')) {
+				continue;
+			}
+
+			const option = optionMatch[1];
+			const optionValue = this.dev ? optionMatch[2] : optionMatch[2].replace(/\n|\t/g, ' ');
+
+			if (!(option in contentOptions)) {
+				contentOptions[option] = [];
+			}
+
+			contentOptions[option].push(optionValue);
+		}
+
+		return contentOptions as Data;
 	}
 
 	private configureCompilationResult(compilationResult: CompilationResult): CompilationResult
@@ -638,54 +660,42 @@ export class Compiler {
 		);
 	}
 
-	public getOptionsFromContent<T = CompilerContentOptionsInterface>(content: string): T {
-		let contentOptions: CompilerContentOptionsInterface = {
-			pregenerate: '',
-			components: {},
-			plainSelectors: {},
-			screens: {},
-			variables: {},
-			keyframes: {}
-		};
+	private processOptionsFromContent(options: Record<string, string[]>) {
+		let contentOptions: Record<string, any> = {};
 
-		const regExp = new RegExp(this.contentOptionsRegExp.source, 'g');
-		let optionMatch: RegExpExecArray;
+		for (const [option, optionValues] of Object.entries(options)) {
+			for (const optionValue of optionValues) {
+				try {
+					if (option === 'pregenerate') {
+						contentOptions[option] += ` ${optionValue}`;
 
-		while ((optionMatch = regExp.exec(content))) {
-			if (![typeof optionMatch[1], typeof optionMatch[2]].includes('string')) {
-				continue;
-			}
+					} else if (['components', 'variables', 'keyframes', 'plainSelectors', 'screens'].includes(option)) {
+						contentOptions[option] = {
+							...contentOptions[option],
+							// eslint-disable-next-line @typescript-eslint/no-implied-eval
+							...new Function(`return {${optionValue.trim()}}`)()
+						};
+					} else {
+						const hookData = hooks.callHook(`compiler:processContentOption:${option}`, {
+							contentOptions: contentOptions,
+							option: option,
+							value: optionValue
+						});
 
-			const optionKey = optionMatch[1];
-			const optionMatchValue = this.dev ? optionMatch[2] : optionMatch[2].replace(/\n|\t/g, ' ');
+						contentOptions = hookData.contentOptions;
+					}
 
-			try {
-				if (optionKey === 'pregenerate') {
-					contentOptions[optionKey] += ` ${optionMatchValue}`;
-
-				} else if (['components', 'variables', 'keyframes', 'plainSelectors', 'screens'].includes(optionKey)) {
-					contentOptions[optionKey] = {
-						...contentOptions[optionKey],
-						// eslint-disable-next-line @typescript-eslint/no-implied-eval
-						...new Function(`return {${optionMatchValue.trim()}}`)()
-					};
-				} else if (optionKey in this.contentOptionsProcessors) {
-					contentOptions = {
-						...contentOptions,
-						...this.contentOptionsProcessors[optionKey](contentOptions, optionMatchValue)
-					};
-				}
-
-			} catch (error) {
-				if (this.dev) {
-					console.error(
-						`Error "${error as string}" occurred when processing "${optionKey}" and its value "${optionMatchValue}".`
-					);
+				} catch (error) {
+					if (this.dev) {
+						console.error(
+							`Error "${error as string}" occurred when processing "${option}" and its value "${optionValue}".`
+						);
+					}
 				}
 			}
 		}
 
-		return contentOptions as T;
+		return contentOptions;
 	}
 
 }

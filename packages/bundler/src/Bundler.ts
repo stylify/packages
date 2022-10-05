@@ -2,8 +2,7 @@ import FastGlob from 'fast-glob';
 import {
 	CompilerConfigInterface,
 	CompilerContentOptionsInterface,
-	DefaultHooksListInterface,
-	DefaultHooksNamesListType
+	DefaultHooksListInterface
 } from '@stylify/stylify';
 import {
 	mergeObjects,
@@ -207,22 +206,6 @@ export class Bundler {
 		}
 
 		this.mergeConfigs(config);
-
-		if (!('contentOptionsProcessors' in this.compilerConfig)) {
-			this.compilerConfig.contentOptionsProcessors = {};
-		}
-
-		this.compilerConfig.contentOptionsProcessors.files = (
-			contentOptions: ContentOptionsInterface,
-			optionMatchValue: string
-		): ContentOptionsInterface => {
-			const optionMatchValueToArray = optionMatchValue.split(' ').filter((value: string): boolean => {
-				return value.trim().length !== 0;
-			});
-
-			contentOptions.files = [...contentOptions.files || [], ...optionMatchValueToArray];
-			return contentOptions;
-		};
 
 		if (this.compilerConfig.variables) {
 			if (this.cssVarsDirPath) {
@@ -631,23 +614,32 @@ export class Bundler {
 					content: hookData.content
 				});
 
-				let filePathsFromContent: string[] = hookData.contentOptions.files ?? [];
+				const filePathsFromContent: string[] = hookData.contentOptions.files ?? [];
 
 				if (filePathsFromContent.length) {
-					filePathsFromContent = filePathsFromContent.map((fileOptionValue) => {
-						let filePathToReturn = path.join(path.dirname(filePath), fileOptionValue);
+					const filePathsToProcess: string[] = [];
 
-						if (fileOptionValue.startsWith(path.sep)) {
-							filePathToReturn = filesBaseDir
-								? path.join(filesBaseDir, fileOptionValue)
-								: fileOptionValue;
-						}
+					filePathsFromContent
+						.join(' ')
+						.split(' ')
+						.forEach((fileOptionValue) => {
+							if (fileOptionValue.trim().length === 0) {
+								return;
+							}
 
-						return normalize(filePathToReturn) as string;
-					});
+							let filePathToNormalize = path.join(path.dirname(filePath), fileOptionValue);
+
+							if (fileOptionValue.startsWith(path.sep)) {
+								filePathToNormalize = filesBaseDir
+									? path.join(filesBaseDir, fileOptionValue)
+									: fileOptionValue;
+							}
+
+							filePathsToProcess.push(normalize(filePathToNormalize) as string);
+						});
 
 					const nestedFilePaths = await this.getFilesToProcess(
-						bundleConfig, compiler, this.clearFilePaths(filePathsFromContent)
+						bundleConfig, compiler, this.clearFilePaths(filePathsToProcess)
 					);
 					filesToProcess = [...filesToProcess, ...nestedFilePaths];
 				}
