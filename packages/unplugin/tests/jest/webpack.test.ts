@@ -6,7 +6,7 @@ import path from 'path';
 import fs from 'fs';
 import fse from 'fs-extra';
 import { webpack }  from 'webpack'
-import { webpackPlugin } from '../../src';
+import { stylifyWebpack } from '../../src';
 import type { MacroMatch, SelectorProperties } from '@stylify/stylify';
 import TestUtils from '../../../../tests/TestUtils';
 
@@ -37,7 +37,7 @@ test('Webpack', async (): Promise<void> => {
 			entry: path.join(buildTmpDir, 'index.js'),
 			mode: 'production',
 			plugins: [
-				webpackPlugin({
+				stylifyWebpack({
 					transformIncludeFilter(id) {
 						return id.endsWith('html');
 					},

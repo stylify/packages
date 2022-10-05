@@ -1,6 +1,5 @@
 import { BundleConfigInterface, BundlerConfigInterface, Bundler, BundlesBuildCacheInterface } from '@stylify/bundler';
 import {
-	CompilationResult,
 	Compiler,
 	ComponentsInterface,
 	Configurator,
@@ -244,7 +243,7 @@ export const unplugin = createUnplugin((config: UnpluginConfigInterface|Unplugin
 	};
 });
 
-export const vitePlugin = unplugin.vite;
-export const rollupPlugin = unplugin.rollup;
-export const webpackPlugin = unplugin.webpack;
-export const esbuildPlugin = unplugin.esbuild;
+export const stylifyVite = unplugin.vite;
+export const stylifyRollup = unplugin.rollup;
+export const stylifyWebpack = unplugin.webpack;
+export const stylifyEsbuild = unplugin.esbuild;

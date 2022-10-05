@@ -8,7 +8,7 @@ import fse from 'fs-extra';
 import TestUtils from '../../../../tests/TestUtils';
 import esbuild from 'esbuild';
 import { MacroMatch, SelectorProperties } from '@stylify/stylify';
-import { esbuildPlugin } from '../../src';
+import { stylifyEsbuild } from '../../src';
 
 const testName = 'esbuild';
 const testUtils = new TestUtils('unplugin', testName);
@@ -28,7 +28,7 @@ async function build() {
 		bundle: true,
 		outfile: path.join(buildTmpDir, 'output.js'),
 		plugins: [
-			esbuildPlugin({
+			stylifyEsbuild({
 				transformIncludeFilter(id) {
 					return id.endsWith('js');
 				},
