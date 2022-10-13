@@ -120,6 +120,8 @@ export class Bundler {
 
 	private processedBundlesQueue: Promise<void>[] = [];
 
+	private bundleMethodPromise: Promise<void> = null;
+
 	private isReloadingConfiguration = false;
 
 	private watchedFiles: Record<string, WatchedFilesInterface> = {};
@@ -158,6 +160,8 @@ export class Bundler {
 	private autoprefixerEnabled = true;
 
 	public bundlesBuildCache: BundlesBuildCacheType = {};
+
+	private createdFilesContentCache: Record<string, string> = {};
 
 	public constructor(config: BundlerConfigInterface) {
 		this.configurationLoadingPromise = this.configure(config);
@@ -276,9 +280,10 @@ export class Bundler {
 	}
 
 	public async waitOnBundlesProcessed(): Promise<void> {
-		if (this.processedBundlesQueue.length) {
-			await Promise.all(this.processedBundlesQueue);
-		}
+		await Promise.all([
+			...this.bundleMethodPromise === null ? [] : [this.bundleMethodPromise],
+			...this.processedBundlesQueue.length ? this.processedBundlesQueue : []
+		]);
 	}
 
 	public findBundleCache(id: string): BundlesBuildCacheInterface | null {
@@ -301,6 +306,12 @@ export class Bundler {
 	}
 
 	public async bundle(bundles: BundleConfigInterface[] = null): Promise<void> {
+		let bundleMethodPromiseResolve = null;
+
+		this.bundleMethodPromise = new Promise((resolve) => {
+			bundleMethodPromiseResolve = resolve;
+		});
+
 		if (this.configurationLoadingPromise instanceof Promise) {
 			await this.configurationLoadingPromise;
 		}
@@ -399,6 +410,8 @@ export class Bundler {
 
 			this.log(`Build done (${((performance.now() - startTime)/1000).toFixed(2)} s).`);
 		}
+
+		bundleMethodPromiseResolve();
 	}
 
 	private processBundle(bundleConfig: BundleConfigInterface): void {

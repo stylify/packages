@@ -132,30 +132,26 @@ export const unplugin = createUnplugin((config: UnpluginConfigInterface|Unplugin
 		return bundler;
 	};
 
-	const runBundlerOrWait = async () => {
+	const runBundler = async () => {
 		if (bundler) {
-			return bundler.waitOnBundlesProcessed();
+			await bundler.waitOnBundlesProcessed();
 		}
 
-		const localBundler = getBundler();
-
-		await Promise.all([
-			localBundler.bundle(),
-			localBundler.waitOnBundlesProcessed()
-		]);
+		// eslint-disable-next-line @typescript-eslint/no-floating-promises
+		getBundler().bundle();
+		await bundler.waitOnBundlesProcessed();
 	};
 
 	return {
 		name: pluginName,
 		transformInclude(id) { return pluginConfig.transformIncludeFilter(id); },
 		async transform(code): Promise<string> {
-			const bundler = getBundler();
-			await bundler.bundle();
-			await bundler.waitOnBundlesProcessed();
-
 			if (pluginConfig.dev) {
 				return code;
 			}
+
+			const bundler = getBundler();
+			await bundler.waitOnBundlesProcessed();
 
 			const selectors = {};
 			const components: Record<string, ComponentsInterface> = {};
@@ -180,7 +176,7 @@ export const unplugin = createUnplugin((config: UnpluginConfigInterface|Unplugin
 		esbuild: {
 			async setup() {
 				await waitForConfiguratinToLoad();
-				await runBundlerOrWait();
+				await runBundler();
 			}
 		},
 		rollup: {
@@ -192,7 +188,7 @@ export const unplugin = createUnplugin((config: UnpluginConfigInterface|Unplugin
 				}
 
 				pluginConfig.bundler.watchFiles = process.env.ROLLUP_WATCH === 'true';
-				return runBundlerOrWait();
+				await runBundler();
 			}
 		},
 		vite: {
@@ -207,7 +203,7 @@ export const unplugin = createUnplugin((config: UnpluginConfigInterface|Unplugin
 					pluginConfig.bundler.watchFiles = true;
 				}
 
-				return runBundlerOrWait();
+				await runBundler();
 			}
 		},
 		webpack(compiler) {
@@ -232,12 +228,12 @@ export const unplugin = createUnplugin((config: UnpluginConfigInterface|Unplugin
 
 			compiler.hooks.beforeRun.tapPromise(pluginName, async (): Promise<void> => {
 				await modifyConfig();
-				return runBundlerOrWait();
+				await runBundler();
 			});
 
 			compiler.hooks.watchRun.tapPromise(pluginName, async (): Promise<void> => {
 				await modifyConfig();
-				return runBundlerOrWait();
+				await runBundler();
 			});
 		}
 	};
