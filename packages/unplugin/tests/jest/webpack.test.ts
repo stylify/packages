@@ -7,7 +7,6 @@ import fs from 'fs';
 import fse from 'fs-extra';
 import { webpack }  from 'webpack'
 import { stylifyWebpack } from '../../src';
-import type { MacroMatch, SelectorProperties } from '@stylify/stylify';
 import TestUtils from '../../../../tests/TestUtils';
 
 const testName = 'webpack';
@@ -38,9 +37,7 @@ test('Webpack', async (): Promise<void> => {
 			mode: 'production',
 			plugins: [
 				stylifyWebpack({
-					transformIncludeFilter(id) {
-						return id.endsWith('html');
-					},
+					transformIncludeFilter: (id) => id.endsWith('html'),
 					bundles: [
 						{
 							outputFile: path.join(buildTmpDir, 'index.css'),
@@ -53,8 +50,8 @@ test('Webpack', async (): Promise<void> => {
 								blue: 'steelblue'
 							},
 							macros: {
-								'm:(\\S+?)': (m: MacroMatch, p: SelectorProperties) => {
-									p.add('margin', m.getCapture(0));
+								'm:(\\S+?)': ({macroMatch, selectorProperties}) => {
+									selectorProperties.add('margin', macroMatch.getCapture(0));
 								}
 							}
 						}
@@ -77,6 +74,8 @@ test('Webpack', async (): Promise<void> => {
 			}
 		});
 
-		compiler.run(() => compiler.close(test));
+		compiler.run(() => {
+			test();
+		});
 	});
 });

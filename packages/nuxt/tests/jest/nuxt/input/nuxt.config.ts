@@ -10,8 +10,8 @@ export default defineNuxtConfig({
 				red: 'darkred'
 			},
 			macros: {
-				'clr:(\\S+?)': function (macroMatch, cssProperties) {
-					cssProperties.add('color', macroMatch.getCapture(0));
+				'clr:(\\S+?)': function ({macroMatch, selectorProperties}) {
+					selectorProperties.add('color', macroMatch.getCapture(0));
 				}
 			}
 		}

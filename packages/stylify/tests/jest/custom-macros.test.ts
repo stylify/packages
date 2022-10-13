@@ -8,8 +8,8 @@ const inputIndex = testUtils.getHtmlInputFile();
 const compiler = new Compiler({
 	dev: true,
 	macros: {
-		'zi:(\\S+?)': (macroMatch, cssProperties) => {
-			cssProperties.addMultiple({
+		'zi:(\\S+?)': ({macroMatch, selectorProperties}) => {
+			selectorProperties.addMultiple({
 				'position': 'relative',
 				'z-index': Number(macroMatch.getCapture(0))
 			});

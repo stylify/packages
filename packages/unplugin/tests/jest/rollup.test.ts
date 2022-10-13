@@ -44,8 +44,8 @@ async function build() {
 							blue: 'steelblue'
 						},
 						macros: {
-							'm:(\\S+?)': (m: MacroMatch, p: SelectorProperties) => {
-								p.add('margin', m.getCapture(0));
+							'm:(\\S+?)': ({macroMatch, selectorProperties}) => {
+								selectorProperties.add('margin', macroMatch.getCapture(0));
 							}
 						}
 					}

@@ -24,13 +24,7 @@ export interface CompilerHooksListInterface {
 	'compiler:beforeMacrosProcessed': CompilationResult,
 	'compiler:afterMacrosProcessed': CompilationResult,
 	'compiler:compilationResultConfigured': CompilationResult,
-	'compiler:newMacroMatch': {
-		dev: boolean,
-		macroMatch: MacroMatch,
-		selectorProperties: SelectorProperties,
-		variables: VariablesType,
-		helpers: HelpersType
-	},
+	'compiler:newMacroMatch': MacroCallbackDataInterface,
 	[key: `compiler:processContentOption:${string}`]: {
 		contentOptions: Record<string, any>,
 		key: string,
@@ -38,7 +32,15 @@ export interface CompilerHooksListInterface {
 	}
 }
 
-export type MacroCallbackType = (macroMatch: MacroMatch, selectorProperties: SelectorProperties) => void;
+export interface MacroCallbackDataInterface {
+	dev: boolean,
+	helpers: HelpersType,
+	variables: VariablesType,
+	macroMatch: MacroMatch,
+	selectorProperties: SelectorProperties
+}
+
+export type MacroCallbackType = (data: MacroCallbackDataInterface) => void;
 
 export type ScreenCallbackType = (screen: string) => string;
 
@@ -637,15 +639,13 @@ export class Compiler {
 
 					const selectorProperties = new SelectorProperties();
 
-					this.macros[macroKey].call(
-						{
-							dev: this.dev,
-							variables: this.variables,
-							helpers: this.helpers
-						},
+					this.macros[macroKey]({
 						macroMatch,
-						selectorProperties
-					);
+						selectorProperties,
+						dev: this.dev,
+						variables: this.variables,
+						helpers: this.helpers
+					});
 
 					for (const [property, propertyValue] of Object.entries(selectorProperties.properties)) {
 						selectorProperties.properties[property] = this.processHelpers(propertyValue);
@@ -656,7 +656,7 @@ export class Compiler {
 					}
 
 					hooks.callHook('compiler:newMacroMatch', {
-						macroMatch: macroMatch,
+						macroMatch,
 						selectorProperties,
 						dev: this.dev,
 						variables: this.variables,
