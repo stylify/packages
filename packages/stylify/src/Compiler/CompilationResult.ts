@@ -2,7 +2,6 @@ import {
 	CssRecord,
 	MacroMatch,
 	SelectorProperties,
-	minifiedSelectorGenerator,
 	screensSorter
 } from '.';
 
