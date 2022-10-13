@@ -680,7 +680,21 @@ export class Bundler {
 			newLine = '';
 		}
 
-		fs.writeFileSync(filePath, `${fileContent.trim() + newLine}`);
+		const newFileContent = fileContent.trim() + newLine + newLine;
+
+		try {
+			const actualFileContent = this.createdFilesContentCache[filePath]
+				?? fs.readFileSync(filePath).toString('utf-8');
+
+			if (actualFileContent === newFileContent) {
+				return;
+			}
+		} catch (e) {
+			this.log(`Stylify Bundler: File "${filePath}" not found. It will be created.`);
+		}
+
+		this.createdFilesContentCache[filePath] = newFileContent;
+		fs.writeFileSync(filePath, newFileContent);
 	}
 
 	private checkIfFileExists(filePath: string): boolean {
