@@ -198,14 +198,14 @@ export class CompilationResult {
 		this.changed = true;
 	}
 
-	public bindPlainSelectorsToSelectors(plainSelectorsSelectorsMap: Record<string, string>): void {
-		for (const [plainSelector, dependencySelectors] of Object.entries(plainSelectorsSelectorsMap)) {
-			for (const dependencySelector of dependencySelectors.split(' ')) {
+	public bindCustomSelectorsToSelectors(customSelectorsSelectorsMap: Record<string, string>): void {
+		for (const [customSelector, dependencySelectors] of Object.entries(customSelectorsSelectorsMap)) {
+			for (const dependencySelector of dependencySelectors.split(' ').filter((item) => item.trim() !== '')) {
 				if (!(dependencySelector in this.selectorsList)) {
-					throw new Error(`Selector "${dependencySelector}" for plainSelector "${plainSelector}" was not matched and therefore not added.`);
+					throw new Error(`Selector "${dependencySelector}" for custom selector "${customSelector}" was not matched and therefore not added.`);
 				}
 
-				this.selectorsList[dependencySelector].addPlainSelector(plainSelector);
+				this.selectorsList[dependencySelector].addCustomSelector(customSelector);
 			}
 		}
 	}

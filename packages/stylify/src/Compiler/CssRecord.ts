@@ -14,7 +14,7 @@ export interface CssRecordConfigInterface {
 	screenId?: number,
 	selector?: string,
 	properties?: Record<string, string | number>,
-	plainSelectors?: string[],
+	customSelectors?: string[],
 	components?: CssRecordComponentsType,
 	pseudoClasses?: string[],
 	scope?: string,
@@ -42,7 +42,7 @@ export class CssRecord {
 
 	public scope: string = null;
 
-	public plainSelectors: string[] = [];
+	public customSelectors: string[] = [];
 
 	public components: CssRecordComponentsType = {};
 
@@ -59,7 +59,7 @@ export class CssRecord {
 			return;
 		}
 
-		this.mangledSelector = minifiedSelectorGenerator.getSelector(config.selector);
+		this.mangledSelector = minifiedSelectorGenerator.getMangledSelector(config.selector);
 		this.screenId = config.screenId;
 		this.selector = config.selector.replace(/([^-_a-zA-Z\d])/g, '\\$1');
 
@@ -107,12 +107,12 @@ export class CssRecord {
 		}
 	}
 
-	public addPlainSelector(selector: string): void {
-		if (this.plainSelectors.includes(selector)) {
+	public addCustomSelector(selector: string): void {
+		if (this.customSelectors.includes(selector)) {
 			return;
 		}
 
-		this.plainSelectors.push(selector);
+		this.customSelectors.push(selector);
 	}
 
 	public addComponents(components: CssRecordComponentsType): void {
@@ -138,7 +138,7 @@ export class CssRecord {
 
 			const cssRecordSelector = config.mangleSelectors ? this.mangledSelector : this.selector;
 
-			let plainSelectors: string[] = [];
+			let customSelectors: string[] = [];
 			let classSelectors: string[] = [];
 			const componentsSelectors: string[] = [];
 
@@ -162,7 +162,7 @@ export class CssRecord {
 			if (this.pseudoClasses.length) {
 				for (const pseudoClass of this.pseudoClasses) {
 					const pseudoClassSuffix = `:${pseudoClass}`;
-					plainSelectors = this.plainSelectors.map((selector: string): string => {
+					customSelectors = this.customSelectors.map((selector: string): string => {
 						return `${selector}${pseudoClassSuffix}`;
 					});
 					classSelectors = [
@@ -175,13 +175,13 @@ export class CssRecord {
 				}
 
 			} else {
-				plainSelectors = this.plainSelectors;
+				customSelectors = this.customSelectors;
 				classSelectors = [cssRecordSelector, ...componentsSelectors];
 			}
 
 			const scopePart = this.scope ? this.scope : '';
 			const selectors = [
-				...plainSelectors.map((selector): string => {
+				...customSelectors.map((selector): string => {
 					return `${scopePart}${selector}`;
 				}),
 				...classSelectors.map((selector): string => {

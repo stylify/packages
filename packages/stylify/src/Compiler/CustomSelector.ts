@@ -37,19 +37,23 @@ export class CustomSelector {
 				}
 
 				for (const [selector, childTree] of Object.entries(tree.children)) {
-					let actualTreeSelector = selectorToAdd;
-					const selectorIncludesPlaceholder = selector.includes('&');
+					for (const selectorSplitPart of selector.split(',')) {
+						let actualTreeSelector = selectorToAdd;
+						const selectorIncludesPlaceholder = selectorSplitPart.includes('&');
 
-					if (selectorIncludesPlaceholder && !selector.startsWith(this.placeholderCharacter)) {
-						actualTreeSelector = `${replaceRootPlaceholder(selector, actualTreeSelector)}`;
+						if (selectorIncludesPlaceholder) {
+							actualTreeSelector = `${selector.startsWith(this.placeholderCharacter) ? ' ' : ''}${replaceRootPlaceholder(selectorSplitPart, actualTreeSelector)}`;
 
-					} else {
-						actualTreeSelector += ` ${replaceRootPlaceholder(
-							selectorIncludesPlaceholder ? selector.substring(1) : selector, actualTreeSelector
-						)}`;
+						} else {
+							actualTreeSelector += ` ${replaceRootPlaceholder(
+								selectorIncludesPlaceholder
+									? selectorSplitPart.substring(1)
+									: selectorSplitPart, actualTreeSelector
+							)}`;
+						}
+
+						processTree(actualTreeSelector.trim(), childTree);
 					}
-
-					processTree(actualTreeSelector.trim(), childTree);
 				}
 			}
 		};
@@ -76,7 +80,10 @@ export class CustomSelector {
 				contentIterator ++;
 
 				if (character === '{') {
-					const nestedTreeSelector = tokenQueue.match(/([^\n]+)$/);
+					const nestedTreeSelector = tokenQueue.match(/(?:\n|^)([^\n]+)$/);
+					if (!nestedTreeSelector) {
+						throw new Error(`Selector levels cannot be created without selector. Processing "${content}".`);
+					}
 					actualTree.selectors += tokenQueue.replace(nestedTreeSelector[0], '').trim();
 					tokenQueue = '';
 					actualTree.children[nestedTreeSelector[1].trim()] = parseContent(content, createTree());
