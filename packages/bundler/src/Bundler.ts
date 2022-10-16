@@ -542,7 +542,7 @@ export class Bundler {
 							}
 						);
 
-						this.writeFile(hookData.filePath, hookData.content, false);
+						this.writeFile(hookData.filePath, hookData.content);
 					};
 
 					filesToProcessPromises.push(beforeInputFileRewrittenHook());
@@ -674,7 +674,7 @@ export class Bundler {
 	}
 
 	private writeFile(filePath: string, fileContent: string, trailingNewLine = true): void {
-		let newLine = this.compilerConfig.dev ? '\n' : '';
+		let newLine = '\n';
 
 		if (!trailingNewLine) {
 			newLine = '';
