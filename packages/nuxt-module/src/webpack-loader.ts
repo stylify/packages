@@ -15,10 +15,7 @@ export default function (source: string): string {
 		return source;
 	}
 
-	const {
-		getCompiler,
-		getCompilationResult
-	} = getOptions(this);
+	const { getCompiler } = getOptions(this);
 
 	const compiler = getCompiler();
 
