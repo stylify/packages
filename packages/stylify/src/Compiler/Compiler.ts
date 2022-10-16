@@ -253,21 +253,6 @@ export class Compiler {
 		return this;
 	}
 
-	private convertStringOrStringArrayToFilteredArray(...args: string[]|[string[]]): string[] {
-		let filteredArray: string[] = [];
-
-		for (const arg of args) {
-			filteredArray = [
-				...filteredArray,
-				...(Array.isArray(arg) ? arg.join(' ').split(' ') : arg.split(' ')).filter(
-					(filterItem) => filterItem.length && !filteredArray.includes(filterItem)
-				)
-			];
-		}
-
-		return filteredArray;
-	}
-
 	public addMacro(re: string, callback: MacroCallbackType): Compiler {
 		this.macros[re] = callback;
 		return this;

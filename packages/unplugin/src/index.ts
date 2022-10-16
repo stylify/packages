@@ -1,4 +1,4 @@
-import { BundleConfigInterface, BundlerConfigInterface, Bundler, BundlesBuildCacheInterface } from '@stylify/bundler';
+import { BundleConfigInterface, BundlerConfigInterface, Bundler } from '@stylify/bundler';
 import {
 	Compiler,
 	Configurator,
