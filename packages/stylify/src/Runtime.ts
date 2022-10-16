@@ -173,9 +173,14 @@ export class Runtime {
 					element.remove();
 				});
 
-				compilerContentQueue += mutation.type === 'attributes'
-					? ` class="${targetElement.className}"`
-					: targetElement.outerHTML;
+				if (mutation.type === 'attributes') {
+					const contentToAdd = ` class="${targetElement.className}"`;
+					if (!compilerContentQueue.includes(contentToAdd)) {
+						compilerContentQueue += contentToAdd;
+					}
+				} else if (!compilerContentQueue.includes(targetElement.outerHTML)) {
+					compilerContentQueue += targetElement.outerHTML;
+				}
 			});
 
 			if (updateTimeout) {
