@@ -11,7 +11,7 @@ export class MinifiedSelectorGenerator {
 
 	private readonly lastLetterIndex = this.lettersLength - 1;
 
-	public processedSelectors: Record<string, ProcessedSelectorInterface> = {}
+	public processedSelectors: Record<string, ProcessedSelectorInterface> = {};
 
 	public getSelectorPrefix(selector: string): string {
 		return this.processedSelectors[selector].prefix ?? '';

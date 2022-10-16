@@ -1,4 +1,4 @@
-import type { CompilerConfigInterface, MacroMatch, SelectorProperties } from '.';
+import type { CompilerConfigInterface } from '.';
 
 export interface RgbDataInterface {
 	r: number | null

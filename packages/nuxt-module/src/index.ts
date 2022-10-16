@@ -1,5 +1,4 @@
 import {
-	CompilationResult,
 	Compiler,
 	CompilerConfigInterface,
 	mergeObjects
