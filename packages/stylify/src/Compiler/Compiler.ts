@@ -48,8 +48,6 @@ export interface CustomSelectorInterface {
 	selectors: string[]
 }
 
-export type OnPrepareCompilationResultCallbackType = (compilationResult: CompilationResult) => void;
-
 export type ComponentsType = Record<string, ComponentsInterface>;
 
 export type MacrosType = Record<string, MacroCallbackType>;
@@ -90,8 +88,6 @@ export interface CustomSelectorsInterface {
 	customSelectors: CustomSelector[]
 }
 
-export type OnNewMacroMatchCallbackType = MacroCallbackType;
-
 export interface ComponentsInterface {
 	customSelectors: CustomSelector[],
 }
@@ -116,10 +112,6 @@ export class Compiler {
 		/<script[\s]*?>([\s\S]*?)<\/script>/,
 		/<style[\s]*?>([\s\S]*?)<\/style>/
 	];
-
-	public onPrepareCompilationResult: OnPrepareCompilationResultCallbackType = null;
-
-	public onNewMacroMatch: OnNewMacroMatchCallbackType = null;
 
 	public mangleSelectors = false;
 
