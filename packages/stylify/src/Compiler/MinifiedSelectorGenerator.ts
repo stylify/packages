@@ -17,10 +17,6 @@ export class MinifiedSelectorGenerator {
 		return this.processedSelectors[selector].prefix ?? '';
 	}
 
-	public reset(): void {
-		this.processedSelectors = {};
-	}
-
 	public getStringToMatch(selector: string, addPrefix = false): string {
 		return addPrefix ? `${this.processedSelectors[selector].prefix ?? ''}${selector}`: selector;
 	}

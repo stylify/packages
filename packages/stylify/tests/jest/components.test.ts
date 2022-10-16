@@ -5,7 +5,7 @@ const testName = 'components';
 const testUtils = new TestUtils('stylify', testName);
 
 beforeEach(() => {
-	minifiedSelectorGenerator.reset()
+	minifiedSelectorGenerator.processedSelectors = {};
 });
 
 test('Components', (): void => {
@@ -28,7 +28,6 @@ test('Components', (): void => {
 	let compilationResult = compiler.compile(testUtils.getHtmlInputFile());
 	testUtils.testCssFileToBe(compilationResult.generateCss());
 });
-
 
 test('Components - mangle selectors', (): void => {
 	const testFileName = 'mangle-selectors'
