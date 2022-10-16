@@ -9,8 +9,8 @@ const compiler = new Compiler({
 	dev: true,
 	mangleSelectors: true,
 	macros: {
-		'm:(\\S+?)': (macroMatch, cssProperties) => {
-			cssProperties.add('margin', macroMatch.getCapture(0));
+		'm:(\\S+?)': ({macroMatch, selectorProperties}) => {
+			selectorProperties.add('margin', macroMatch.getCapture(0));
 		}
 	}
 });
@@ -18,5 +18,5 @@ let compilationResult = compiler.compile(inputIndex);
 
 test('Mangle single letter macros', (): void => {
 	testUtils.testCssFileToBe(compilationResult.generateCss());
-	testUtils.testHtmlFileToBe(compiler.rewriteSelectors(inputIndex, compilationResult));
+	testUtils.testHtmlFileToBe(compiler.rewriteSelectors(inputIndex));
 });

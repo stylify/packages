@@ -1,20 +1,22 @@
 import { minifiedSelectorGenerator } from '.';
+import { hooks } from '../Hooks';
+
+export interface CssRecordHooksListInterface {
+	'cssRecord:addProperty': PropertiesType,
+	'cssRecord:cssGenerated': CssRecord
+}
 
 export type CssRecordComponentsType = Record<string, string[]>;
 
-export type OnAddPropertyCallbackType = (property: string, value: any) => Record<string, any>|null;
-
-export type OnAfterGenerateCallbackType = (cssRecord: CssRecord) => void;
+export type PropertiesType = Record<string, string>;
 
 export interface CssRecordConfigInterface {
 	screenId?: number,
 	selector?: string,
 	properties?: Record<string, string | number>,
-	plainSelectors?: string[],
+	customSelectors?: string[],
 	components?: CssRecordComponentsType,
 	pseudoClasses?: string[],
-	onAddProperty?: OnAddPropertyCallbackType | string,
-	onAfterGenerate?: OnAfterGenerateCallbackType | string,
 	scope?: string,
 	shouldBeGenerated?: boolean
 }
@@ -40,40 +42,32 @@ export class CssRecord {
 
 	public scope: string = null;
 
-	public plainSelectors: string[] = [];
+	public customSelectors: string[] = [];
 
 	public components: CssRecordComponentsType = {};
 
-	public properties: Record<string, string> = {};
+	public properties: PropertiesType = {};
 
 	public pseudoClasses: string[] = [];
 
-	public onAddProperty: OnAddPropertyCallbackType = null;
-
-	public onAfterGenerate: OnAfterGenerateCallbackType = null;
-
 	constructor(config: CssRecordConfigInterface = {}) {
-		if (!Object.keys(config).length) {
-			return;
-		}
 		this.configure(config);
 	}
 
-	public configure(config: CssRecordConfigInterface): void {
+	public configure(config: CssRecordConfigInterface = {}): void {
+		if (!Object.keys(config).length) {
+			return;
+		}
+
+		this.mangledSelector = minifiedSelectorGenerator.getMangledSelector(config.selector);
 		this.screenId = config.screenId;
 		this.selector = config.selector.replace(/([^-_a-zA-Z\d])/g, '\\$1');
+
 		if ((/^\d/gm).test(this.selector[0])) {
 			this.selector = '\\3' + this.selector;
 		}
-		this.mangledSelector = minifiedSelectorGenerator.getSelector(this.selector);
-		this.scope = config.scope || null;
 
-		if ('onAddProperty' in config) {
-			this.onAddProperty = typeof config.onAddProperty === 'string'
-				// eslint-disable-next-line @typescript-eslint/no-implied-eval
-				? new Function(config.onAddProperty) as OnAddPropertyCallbackType
-				: config.onAddProperty;
-		}
+		this.scope = config.scope || null;
 		this.shouldBeGenerated = 'shouldBeGenerated' in config ? config.shouldBeGenerated : this.shouldBeGenerated;
 		this.addComponents(config.components || {});
 		this.addProperties(config.properties || {});
@@ -93,20 +87,11 @@ export class CssRecord {
 			return;
 		}
 
-		const onAddPropertyHook = (property: string, value: any): Record<string, any> => {
-			let properties = this.onAddProperty ? this.onAddProperty(property, value) : null;
-
-			if (!properties || typeof properties === 'undefined') {
-				properties = {
-					[property]: value
-				};
-			}
-
-			return properties;
-		};
+		const addPropertyHookData = { [property]: value} as PropertiesType;
+		const hookResult = hooks.callHook('cssRecord:addProperty', addPropertyHookData);
 
 		this.changed = true;
-		this.properties = {...this.properties, ...onAddPropertyHook(property, value)};
+		this.properties = {...this.properties, ...hookResult};
 	}
 
 	public addPseudoClasses(pseudoClasses: string[] | string): void {
@@ -122,12 +107,12 @@ export class CssRecord {
 		}
 	}
 
-	public addPlainSelector(selector: string): void {
-		if (this.plainSelectors.includes(selector)) {
+	public addCustomSelector(selector: string): void {
+		if (this.customSelectors.includes(selector)) {
 			return;
 		}
 
-		this.plainSelectors.push(selector);
+		this.customSelectors.push(selector);
 	}
 
 	public addComponents(components: CssRecordComponentsType): void {
@@ -151,11 +136,9 @@ export class CssRecord {
 		if (this.changed || !this.cache) {
 			const newLine = config.minimize ? '' : '\n';
 
-			const cssRecordSelector = config.mangleSelectors
-				? minifiedSelectorGenerator.getSelector(this.selector)
-				: this.selector;
+			const cssRecordSelector = config.mangleSelectors ? this.mangledSelector : this.selector;
 
-			let plainSelectors: string[] = [];
+			let customSelectors: string[] = [];
 			let classSelectors: string[] = [];
 			const componentsSelectors: string[] = [];
 
@@ -179,7 +162,7 @@ export class CssRecord {
 			if (this.pseudoClasses.length) {
 				for (const pseudoClass of this.pseudoClasses) {
 					const pseudoClassSuffix = `:${pseudoClass}`;
-					plainSelectors = this.plainSelectors.map((selector: string): string => {
+					customSelectors = this.customSelectors.map((selector: string): string => {
 						return `${selector}${pseudoClassSuffix}`;
 					});
 					classSelectors = [
@@ -192,13 +175,13 @@ export class CssRecord {
 				}
 
 			} else {
-				plainSelectors = this.plainSelectors;
+				customSelectors = this.customSelectors;
 				classSelectors = [cssRecordSelector, ...componentsSelectors];
 			}
 
 			const scopePart = this.scope ? this.scope : '';
 			const selectors = [
-				...plainSelectors.map((selector): string => {
+				...customSelectors.map((selector): string => {
 					return `${scopePart}${selector}`;
 				}),
 				...classSelectors.map((selector): string => {
@@ -218,9 +201,7 @@ export class CssRecord {
 			this.changed = false;
 		}
 
-		if (this.onAfterGenerate) {
-			this.onAfterGenerate(this);
-		}
+		hooks.callHook('cssRecord:cssGenerated', this);
 
 		return this.cache;
 	}

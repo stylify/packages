@@ -1,36 +1,36 @@
-.f,
-.a{
+.a,
+.e{
 	padding: 8px
 }
-.g,
-.a{
+.a,
+.f{
 	background-color: #000
 }
-.h,
-.a{
+.a,
+.g{
 	display: inline-block
 }
-.i,
 .a,
-.c{
+.c,
+.h{
 	font-size: 24px
 }
-.j,
-.b{
+.b,
+.i{
 	max-width: 800px
 }
-.k,
-.b{
+.b,
+.j{
 	margin: 0 auto
 }
-.l,
-.c{
+.c,
+.k{
 	color: green
 }
 
 @media (min-width: 768px) {
-.e,
-.c{
+.c,
+.d{
 	font-size: 32px
 }
 }

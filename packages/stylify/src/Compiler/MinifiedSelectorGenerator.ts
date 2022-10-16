@@ -1,3 +1,9 @@
+
+export interface ProcessedSelectorInterface {
+	mangledSelector: string,
+	prefix: string | null
+}
+
 export class MinifiedSelectorGenerator {
 	private readonly letters = 'abcdefghijklmnopqrstuvwxyz';
 
@@ -5,16 +11,31 @@ export class MinifiedSelectorGenerator {
 
 	private readonly lastLetterIndex = this.lettersLength - 1;
 
-	private processedSelectors: Record<string, string> = {};
+	public processedSelectors: Record<string, ProcessedSelectorInterface> = {};
 
-	public getSelector(selector: string) {
+	public getSelectorPrefix(selector: string): string {
+		return this.processedSelectors[selector].prefix ?? '';
+	}
+
+	public reset(): void {
+		this.processedSelectors = {};
+	}
+
+	public getStringToMatch(selector: string, addPrefix = false): string {
+		return addPrefix ? `${this.processedSelectors[selector].prefix ?? ''}${selector}`: selector;
+	}
+
+	public getMangledSelector(selector: string, prefix: string|null = '.') {
 		if (!(selector in this.processedSelectors)) {
-			this.processedSelectors[selector] = this.divideLengthAndGetLetter(
-				Object.keys(this.processedSelectors).length
-			);
+			this.processedSelectors[selector] = {
+				mangledSelector: this.divideLengthAndGetLetter(
+					Object.keys(this.processedSelectors).length
+				),
+				prefix: prefix
+			};
 		}
 
-		return this.processedSelectors[selector];
+		return this.processedSelectors[selector].mangledSelector;
 	}
 
 	private divideLengthAndGetLetter(length: number): string {

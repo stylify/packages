@@ -5,7 +5,7 @@
 import path from 'path';
 import fs from 'fs';
 import fse from 'fs-extra';
-import { rollupPlugin } from '../../src';
+import { stylifyRollup } from '../../src';
 import type { MacroMatch, SelectorProperties } from '@stylify/stylify';
 import TestUtils from '../../../../tests/TestUtils';
 import { rollup } from 'rollup';
@@ -27,7 +27,7 @@ async function build() {
 	const bundle = await rollup({
 		input: path.join(buildTmpDir, 'index.js'),
 		plugins: [
-			rollupPlugin({
+			stylifyRollup({
 				transformIncludeFilter(id) {
 					return id.endsWith('html');
 				},
@@ -44,8 +44,8 @@ async function build() {
 							blue: 'steelblue'
 						},
 						macros: {
-							'm:(\\S+?)': (m: MacroMatch, p: SelectorProperties) => {
-								p.add('margin', m.getCapture(0));
+							'm:(\\S+?)': ({macroMatch, selectorProperties}) => {
+								selectorProperties.add('margin', macroMatch.getCapture(0));
 							}
 						}
 					}

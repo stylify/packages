@@ -5,12 +5,12 @@
 .color\:\$red{
 	color: var(--red)
 }
-.background\:blue,
-.button{
+.button,
+.background\:blue{
 	background: blue
 }
-.color\:white,
-.button{
+.button,
+.color\:white{
 	color: white
 }
 .m\:20px{

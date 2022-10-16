@@ -2,45 +2,53 @@ import {
 	CompilationResult,
 	MacroMatch,
 	SelectorProperties,
-	SelectorsComponentsMapType,
 	minifiedSelectorGenerator,
 	screensSorter,
 	ScreensToSortMapType,
-	defaultPreset
+	defaultPreset,
+	CustomSelector
 } from '.';
 
-export type MacroCallbackType = (macroMatch: MacroMatch, selectorProperties: SelectorProperties) => void;
-
-export type ScreenCallbackType = (screen: string) => string;
-
-export type ComponentSelectorsType = string|string[];
-
-export interface PlainSelectorInterface {
-	selectors: string[]
-}
-
-export interface ComponentConfigInterface {
-	selectors: ComponentSelectorsType
-	selectorsChain: string|string[],
-}
+import { hooks } from '../Hooks';
 
 export interface CompilerContentOptionsInterface {
 	pregenerate: PregenerateType,
 	components: ComponentsType,
 	variables: VariablesType,
 	keyframes: KeyframesType,
-	plainSelectors: PlainSelectorsType
+	customSelectors: CustomSelectorType
 	screens: ScreensType
 }
 
+export interface CompilerHooksListInterface {
+	'compiler:beforeMacrosProcessed': CompilationResult,
+	'compiler:afterMacrosProcessed': CompilationResult,
+	'compiler:compilationResultConfigured': CompilationResult,
+	'compiler:newMacroMatch': MacroCallbackDataInterface,
+	[key: `compiler:processContentOption:${string}`]: {
+		contentOptions: Record<string, any>,
+		key: string,
+		value: string
+	}
+}
+
+export interface MacroCallbackDataInterface {
+	dev: boolean,
+	helpers: HelpersType,
+	variables: VariablesType,
+	macroMatch: MacroMatch,
+	selectorProperties: SelectorProperties
+}
+
+export type MacroCallbackType = (data: MacroCallbackDataInterface) => void;
+
+export type ScreenCallbackType = (screen: string) => string;
+
+export interface CustomSelectorInterface {
+	selectors: string[]
+}
+
 export type OnPrepareCompilationResultCallbackType = (compilationResult: CompilationResult) => void;
-
-export type ContentOptionsProcessorCallbackType = (
-	contentOptions: Partial<CompilerContentOptionsInterface>,
-	optionMatchValue: string
-	) => Partial<CompilerContentOptionsInterface>;
-
-export type ContentOptionsProcessorsType = Record<string, ContentOptionsProcessorCallbackType>;
 
 export type ComponentsType = Record<string, ComponentsInterface>;
 
@@ -56,7 +64,7 @@ export type VariablesType = Record<string, VariablesTypeValue|Record<string, str
 
 export type KeyframesType = Record<string, string>;
 
-export type PlainSelectorsType = Record<string, string>;
+export type CustomSelectorType = Record<string, string>;
 
 export type PregenerateType = string[]|string;
 
@@ -67,25 +75,25 @@ export interface CompilerConfigInterface {
 	variables?: VariablesType,
 	keyframes?: KeyframesType,
 	screens?: ScreensType,
-	plainSelectors?: PlainSelectorsType,
+	customSelectors?: CustomSelectorType,
 	mangleSelectors?: boolean,
 	pregenerate?: PregenerateType,
-	components?: Record<string, ComponentSelectorsType|ComponentConfigInterface>,
-	onPrepareCompilationResult?: OnPrepareCompilationResultCallbackType,
-	onNewMacroMatch?: OnNewMacroMatchCallbackType,
-	contentOptionsProcessors?: ContentOptionsProcessorsType,
+	components?: Record<string, string>,
 	ignoredAreas?: RegExp[],
 	selectorsAreas?: string[],
 	replaceVariablesByCssVariables?: boolean,
 	injectVariablesIntoCss?: boolean
+	matchCustomSelectors?: boolean
+}
+
+export interface CustomSelectorsInterface {
+	customSelectors: CustomSelector[]
 }
 
 export type OnNewMacroMatchCallbackType = MacroCallbackType;
 
 export interface ComponentsInterface {
-	selectors: string[],
-	selectorsChain: string[],
-	mangledSelector: string
+	customSelectors: CustomSelector[],
 }
 
 export class Compiler {
@@ -108,8 +116,6 @@ export class Compiler {
 		/<script[\s]*?>([\s\S]*?)<\/script>/,
 		/<style[\s]*?>([\s\S]*?)<\/style>/
 	];
-
-	public contentOptionsProcessors: ContentOptionsProcessorsType = {};
 
 	public onPrepareCompilationResult: OnPrepareCompilationResultCallbackType = null;
 
@@ -135,7 +141,9 @@ export class Compiler {
 
 	public selectorsAreas = ['(?:^|\\s+)class="([^"]+)"', '(?:^|\\s+)class=\'([^\']+)\''];
 
-	public plainSelectors: PlainSelectorsType = {};
+	public customSelectors: Record<string, CustomSelectorsInterface> = {};
+
+	private matchCustomSelectors = true;
 
 	public replaceVariablesByCssVariables = false;
 
@@ -155,15 +163,13 @@ export class Compiler {
 
 	public configure(config: CompilerConfigInterface): Compiler {
 		this.dev = config.dev ?? this.dev;
+		this.matchCustomSelectors = config.matchCustomSelectors ?? this.matchCustomSelectors;
 		this.macros = {...this.macros, ...config.macros ?? {}};
 		this.helpers = {...this.helpers, ...config.helpers ?? {}};
 		this.keyframes = {...this.keyframes, ...config.keyframes ?? {}};
 		this.screens = {...this.screens, ...config.screens ?? {}};
-		this.contentOptionsProcessors = {...this.contentOptionsProcessors, ...config.contentOptionsProcessors};
 		this.injectVariablesIntoCss = config.injectVariablesIntoCss ?? this.injectVariablesIntoCss;
 		this.selectorsAreas = [...this.selectorsAreas, ...config.selectorsAreas ?? []];
-		this.onPrepareCompilationResult = config.onPrepareCompilationResult ?? this.onPrepareCompilationResult;
-		this.onNewMacroMatch = config.onNewMacroMatch ?? this.onNewMacroMatch;
 		this.mangleSelectors = config.mangleSelectors ?? this.mangleSelectors;
 		this.replaceVariablesByCssVariables =
 			config.replaceVariablesByCssVariables ?? this.replaceVariablesByCssVariables;
@@ -182,12 +188,12 @@ export class Compiler {
 			});
 		this.ignoredAreasRegExpString = ignoredAreasRegExpStrings.join('|');
 
-		for (const [plainSelector, dependencySelectors] of Object.entries(config.plainSelectors ?? {})) {
-			this.addPlainSelector(plainSelector, dependencySelectors);
+		for (const [selector, selectorsToGenerate] of Object.entries(config.customSelectors ?? {})) {
+			this.addCustomSelector(selector, selectorsToGenerate);
 		}
 
-		for (const [componentSelector, selectorDependencies] of Object.entries(config.components ?? {})) {
-			this.addComponent(componentSelector, selectorDependencies);
+		for (const [componentSelector, componentString] of Object.entries(config.components ?? {})) {
+			this.addComponent(componentSelector, componentString);
 		}
 
 		return this;
@@ -215,51 +221,34 @@ export class Compiler {
 		}
 	}
 
-	public addPlainSelector(selector: string, dependencySelectors: string): void {
-		const selectorsArray = selector.split(', ');
-
-		for (const selector of selectorsArray) {
-			const filteredSelectors = this.convertStringOrStringArrayToFilteredArray(
-				this.plainSelectors[selector] ?? '',
-				...dependencySelectors.replace(/\s/ig, ' ').split(' ').map(selector => selector.trim())
-			);
-
-			this.plainSelectors[selector] = filteredSelectors.join(' ');
-		}
-	}
-
-	public addComponent(
-		selector: string,
-		config: ComponentSelectorsType|ComponentConfigInterface
-	): Compiler {
-		if (selector.includes(',')) {
-			selector.split(',').forEach((selector) => this.addComponent(selector.trim(), config));
+	public addCustomSelector(selector: string, selectors: string, selectorCanBeSplit = true): void {
+		if (selectorCanBeSplit && selector.includes(',')) {
+			selector.split(',').forEach((selectorSplit) => this.addCustomSelector(selectorSplit.trim(), selectors));
 			return;
 		}
 
-		const componentAlreadyDefined = selector in this.components;
+		if (!(selector in this.customSelectors)) {
+			this.customSelectors[selector] = {
+				customSelectors: []
+			};
+		}
 
-		const configIsArray = Array.isArray(config);
-		const componentConfig = typeof config === 'string' || configIsArray
-			? {
-				selectors: this.convertStringOrStringArrayToFilteredArray([
-					...componentAlreadyDefined ? this.components[selector].selectors : [],
-					...(configIsArray ? config: [config]).map(selector => selector.replace(/\s/ig, ' ').trim())
-				]),
-				selectorsChain: componentAlreadyDefined ? this.components[selector].selectorsChain : []
-			}
-			: config;
+		this.customSelectors[selector].customSelectors.push(new CustomSelector(selectors));
+	}
 
-		this.components[selector] = {
-			selectors: this.convertStringOrStringArrayToFilteredArray([
-				...Array.isArray(componentConfig.selectors) ? componentConfig.selectors : [componentConfig.selectors],
-				...componentAlreadyDefined ? this.components[selector].selectors : []
-			]),
-			selectorsChain: Array.isArray(componentConfig.selectorsChain)
-				? componentConfig.selectorsChain
-				: [componentConfig.selectorsChain],
-			mangledSelector: minifiedSelectorGenerator.getSelector(selector)
-		};
+	public addComponent(selector: string, selectors: string): Compiler {
+		if (selector.includes(',')) {
+			selector.split(',').forEach((selector) => this.addComponent(selector.trim(), selectors));
+			return;
+		}
+
+		if (!(selector in this.components)) {
+			this.components[selector] = {
+				customSelectors: []
+			};
+		}
+
+		this.components[selector].customSelectors.push(new CustomSelector(selectors));
 
 		return this;
 	}
@@ -284,7 +273,23 @@ export class Compiler {
 		return this;
 	}
 
-	public rewriteSelectors(content: string, compilationResult: CompilationResult, rewriteOnlyInAreas = true): string {
+	public rewriteSelectors(options: {
+		content: string,
+		rewriteOnlyInAreas?: boolean
+		matchSelectorsWithPrefixes?: boolean
+	}|string): string {
+		let rewriteOnlyInAreas = true;
+		let matchSelectorsWithPrefixes = false;
+		let content = '';
+
+		if (typeof options === 'string') {
+			content = options;
+		} else {
+			content = options.content;
+			rewriteOnlyInAreas = options.rewriteOnlyInAreas ?? rewriteOnlyInAreas;
+			matchSelectorsWithPrefixes = options.matchSelectorsWithPrefixes ?? matchSelectorsWithPrefixes;
+		}
+
 		if (this.dev && !this.mangleSelectors) {
 			return content;
 		}
@@ -312,35 +317,33 @@ export class Compiler {
 				return placeholderInserter(matched);
 			});
 
-		const selectorsListKeys = Object.keys(compilationResult.selectorsList);
-		const sortedSelectorsListKeys = [...selectorsListKeys, ...compilationResult.componentsList]
-			.sort((a: string, b: string): number => {
-				return b.length - a.length;
-			});
+		const selectorsListKeys = Object.keys(minifiedSelectorGenerator.processedSelectors)
+			.sort((a: string, b: string): number => b.length - a.length);
 
-		for (let selector of sortedSelectorsListKeys) {
-			const selectorIsSelector = selectorsListKeys.includes(selector);
-			const selectorIsComponent = selector in this.components;
-
-			if (!content.includes(selector) || !(selectorIsSelector || selectorIsComponent)) {
+		for (let selector of selectorsListKeys) {
+			if (!content.includes(selector)) {
 				continue;
 			}
 
-			const mangledSelector = selectorIsSelector
-				? compilationResult.selectorsList[selector].mangledSelector
-				: this.components[selector].mangledSelector;
+			const mangledSelector = minifiedSelectorGenerator.getMangledSelector(selector);
+			const selectorPrefix = matchSelectorsWithPrefixes
+				? minifiedSelectorGenerator.getSelectorPrefix(selector)
+				: '';
+			selector = this.escapeCssSelector(
+				minifiedSelectorGenerator.getStringToMatch(selector, matchSelectorsWithPrefixes)
+			);
 
-			selector = selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+			const replacement = `${selectorPrefix}${mangledSelector}`;
 
-			if (!rewriteOnlyInAreas) {
-				content = content.replace(new RegExp(selector, 'g'), mangledSelector);
+			if (rewriteOnlyInAreas === false) {
+				content = content.replace(new RegExp(selector, 'g'), replacement);
 				continue;
 			}
 
 			for (const rewriteSelectorAreaRegExpString of this.selectorsAreas) {
 				const regExp = new RegExp(rewriteSelectorAreaRegExpString, 'g');
 				content = content.replace(regExp, (fullMatch: string, selectorMatch: string): string => {
-					const selectorReplacement = selectorMatch.replace(new RegExp(selector, 'g'), mangledSelector);
+					const selectorReplacement = selectorMatch.replace(new RegExp(selector, 'g'), replacement);
 					return fullMatch.replace(selectorMatch, selectorReplacement);
 				});
 			}
@@ -374,7 +377,7 @@ export class Compiler {
 
 		content = this.dev ? content.replace(/\r\n/, '\n') : content.replace(/\r\n|\r|\n|\t/ig, ' ');
 
-		this.configure(this.getOptionsFromContent(content));
+		this.configure(this.processOptionsFromContent(this.getOptionsFromContent(content)));
 		content = content.replace(new RegExp(this.contentOptionsRegExp.source, 'g'), '');
 
 		if (matchOnlyInAreas) {
@@ -390,51 +393,82 @@ export class Compiler {
 			contentToProcess = content;
 		}
 
-		const plainSelectorsSelectorsMap = {};
-		for (const plainSelector in this.plainSelectors) {
-			const plainSelectorData = this.plainSelectors[plainSelector];
-			plainSelectorsSelectorsMap[plainSelector] = plainSelectorData;
-			this.pregenerate += `  ${plainSelectorData}`;
-		}
-
 		contentToProcess = `${this.pregenerate} ${contentToProcess}`;
 		this.pregenerate = '';
 
-		const selectorsComponentsMap: SelectorsComponentsMapType = {};
+		if (this.matchCustomSelectors) {
+			contentToProcess = contentToProcess.replace(
+				/\[([^{}\s]+)\]{([^{}]+)}/g,
+				(fullMatch: string, selector: string, selectors: string) => {
+					const customSelector = MacroMatch.replaceCharactersAliases(selector);
+					const customSelectorSelector = this.mangleSelectors
+						? minifiedSelectorGenerator.getMangledSelector(fullMatch, null)
+						: fullMatch;
 
-		Object.keys(this.components).forEach((componentsSelector) => {
-			if (!new RegExp(`${componentsSelector}`, 'g').test(contentToProcess)) {
-				return;
-			}
-
-			const { selectors, selectorsChain } = this.components[componentsSelector];
-			contentToProcess += ` ${selectors.join(' ')}`;
-
-			selectors.forEach((componentDependencySelector: string): void => {
-				if (! (componentDependencySelector in selectorsComponentsMap)) {
-					selectorsComponentsMap[componentDependencySelector] = [];
+					this.addCustomSelector(
+						`.${this.escapeCssSelector(customSelectorSelector, true)}`,
+						`${customSelector}{${selectors.replace(/;/g, ' ')}}`,
+						false
+					);
+					return '';
 				}
+			);
+		}
 
-				selectorsComponentsMap[componentDependencySelector].push({
-					component: componentsSelector,
-					selectorsChain: selectorsChain
-				});
-			});
-		});
+		this.processComponents(contentToProcess);
+
+		const customSelectorsSelectorsMap: Record<string, string> = this.processCustomSelectors();
+
+		contentToProcess += ` ${Object.values(customSelectorsSelectorsMap).join(' ')}`;
 
 		compilationResult = compilationResult ?? new CompilationResult();
 
+		hooks.callHook('compiler:beforeMacrosProcessed', compilationResult);
+
 		this.processMacros(contentToProcess, compilationResult);
 
-		this.prepareCompilationResult(compilationResult);
+		hooks.callHook('compiler:afterMacrosProcessed', compilationResult);
 
-		compilationResult.bindPlainSelectorsToSelectors(plainSelectorsSelectorsMap);
-		compilationResult.bindComponentsToSelectors(selectorsComponentsMap);
+		this.configureCompilationResult(compilationResult);
+
+		compilationResult.bindCustomSelectorsToSelectors(customSelectorsSelectorsMap);
 
 		return compilationResult;
 	}
 
-	private prepareCompilationResult(compilationResult: CompilationResult): CompilationResult
+	public getOptionsFromContent<
+		ContentOptions extends CompilerContentOptionsInterface,
+		Keys extends keyof ContentOptions = keyof ContentOptions,
+		Data = Record<Keys, string[]>
+	>(content: string): Data {
+		const contentOptions = {};
+
+		const regExp = new RegExp(this.contentOptionsRegExp.source, 'g');
+		let optionMatch: RegExpExecArray;
+
+		while ((optionMatch = regExp.exec(content))) {
+			if (![typeof optionMatch[1], typeof optionMatch[2]].includes('string')) {
+				continue;
+			}
+
+			const option = optionMatch[1];
+			const optionValue = this.dev ? optionMatch[2] : optionMatch[2].replace(/\n|\t/g, ' ');
+
+			if (!(option in contentOptions)) {
+				contentOptions[option] = [];
+			}
+
+			contentOptions[option].push(optionValue);
+		}
+
+		return contentOptions as Data;
+	}
+
+	private escapeCssSelector(selector: string, all = false): string {
+		return selector.replace(all ? /[^a-zA-Z0-9]/g : /[.*+?^${}()|[\]\\]/g, '\\$&');
+	}
+
+	private configureCompilationResult(compilationResult: CompilationResult): CompilationResult
 	{
 		const newLine = this.dev ? '\n' : '';
 		const makeVariableString = (variable: string, value: VariablesTypeValue) => `--${variable}: ${String(value)};${newLine}`;
@@ -450,7 +484,7 @@ export class Compiler {
 					continue;
 				}
 
-				const newScreenStringPart = variableOrScreen.replace(' ', MacroMatch.selectorSpaceCharacter);
+				const newScreenStringPart = MacroMatch.replaceCharactersAliases(variableOrScreen, 'space');
 				if (!new RegExp(`(?:\\s|^)${newScreenStringPart}`).test(screensString)) {
 					screensString += ` ${newScreenStringPart}`;
 				}
@@ -494,7 +528,7 @@ export class Compiler {
 
 			if (screensString.length) {
 				for (let screen of screensString.split(' ')) {
-					screen = screen.replace(MacroMatch.selectorSpaceCharacter, ' ');
+					screen = MacroMatch.replaceCharactersAliases(screen, 'space');
 					variablesCss += `${screen} {${newLine}`;
 
 					for (const [variable, value] of Object.entries(this.variables[screen])) {
@@ -518,11 +552,68 @@ export class Compiler {
 			defaultCss: `${[variablesCss, keyframesCss].join(newLine).trim()}${newLine}`
 		});
 
-		if (this.onPrepareCompilationResult) {
-			this.onPrepareCompilationResult(compilationResult);
-		}
+		hooks.callHook('compiler:compilationResultConfigured', compilationResult);
 
 		return compilationResult;
+	}
+
+	private processCustomSelectors(): Record<string, string> {
+		const selectorsMap: Record<string, string> = {};
+
+		for (const [selector, config] of Object.entries(this.customSelectors)) {
+			for (const customSelector of config.customSelectors) {
+				const generatedCssEntries = customSelector.generateSelectors(selector);
+
+				for (const [customSelector, customSelectorSelectors] of Object.entries(generatedCssEntries)) {
+					if (!(customSelector in selectorsMap)) {
+						selectorsMap[customSelector] = '';
+					}
+
+					const selectorsToAdd = selectorsMap[customSelector].split(' ');
+
+					customSelectorSelectors.split(' ').forEach((selector) => {
+						if (!selectorsToAdd.includes(selector) && selector.trim().length !== 0) {
+							selectorsToAdd.push(selector);
+						}
+					});
+
+					selectorsMap[
+						this.rewriteSelectors({
+							content: customSelector,
+							rewriteOnlyInAreas: false,
+							matchSelectorsWithPrefixes: true
+						})
+					] = selectorsToAdd.join(' ').replace(/\s/g, ' ').trim();
+				}
+			}
+		}
+
+		return selectorsMap;
+	}
+
+	private processComponents(content: string): void {
+		for (const [componentName, config] of Object.entries(this.components)) {
+			const regExp = new RegExp(componentName, 'g');
+			let componentMatches: RegExpExecArray;
+
+			while ((componentMatches = regExp.exec(content))) {
+				const componentClassSelector = `.${
+					this.mangleSelectors
+						? minifiedSelectorGenerator.getMangledSelector(componentMatches[0])
+						: componentMatches[0]
+				}`;
+
+				for (const customSelector of config.customSelectors) {
+					const generatedCssEntries = Object.entries(
+						customSelector.generateSelectors(componentClassSelector)
+					);
+
+					for (const [componentCustomSelector, selectorsToAttach] of generatedCssEntries) {
+						this.addCustomSelector(componentCustomSelector, selectorsToAttach);
+					}
+				}
+			}
+		}
 	}
 
 	private processMacros(content: string, compilationResult: CompilationResult) {
@@ -548,15 +639,13 @@ export class Compiler {
 
 					const selectorProperties = new SelectorProperties();
 
-					this.macros[macroKey].call(
-						{
-							dev: this.dev,
-							variables: this.variables,
-							helpers: this.helpers
-						},
+					this.macros[macroKey]({
 						macroMatch,
-						selectorProperties
-					);
+						selectorProperties,
+						dev: this.dev,
+						variables: this.variables,
+						helpers: this.helpers
+					});
 
 					for (const [property, propertyValue] of Object.entries(selectorProperties.properties)) {
 						selectorProperties.properties[property] = this.processHelpers(propertyValue);
@@ -566,17 +655,13 @@ export class Compiler {
 						selectorProperties.properties[property] = this.replaceVariableString(value);
 					}
 
-					if (this.onNewMacroMatch) {
-						this.onNewMacroMatch.call(
-							{
-								dev: this.dev,
-								variables: this.variables,
-								helpers: this.helpers
-							},
-							macroMatch,
-							selectorProperties
-						);
-					}
+					hooks.callHook('compiler:newMacroMatch', {
+						macroMatch,
+						selectorProperties,
+						dev: this.dev,
+						variables: this.variables,
+						helpers: this.helpers
+					});
 
 					compilationResult.addCssRecord(macroMatch, selectorProperties);
 
@@ -659,49 +744,39 @@ export class Compiler {
 		);
 	}
 
-	public getOptionsFromContent(content: string): CompilerContentOptionsInterface {
-		let contentOptions: CompilerContentOptionsInterface = {
-			pregenerate: '',
-			components: {},
-			plainSelectors: {},
-			screens: {},
-			variables: {},
-			keyframes: {}
-		};
+	private processOptionsFromContent(options: Record<string, string[]>) {
+		let contentOptions: Record<string, any> = {};
 
-		const regExp = new RegExp(this.contentOptionsRegExp.source, 'g');
-		let optionMatch: RegExpExecArray;
+		for (const [option, optionValues] of Object.entries(options)) {
+			for (const optionValue of optionValues) {
+				try {
+					if (option === 'pregenerate') {
+						contentOptions[option] += ` ${optionValue}`;
 
-		while ((optionMatch = regExp.exec(content))) {
-			if (![typeof optionMatch[1], typeof optionMatch[2]].includes('string')) {
-				continue;
-			}
+					} else if (
+						['components', 'variables', 'keyframes', 'customSelectors', 'screens'].includes(option)
+					) {
+						contentOptions[option] = {
+							...contentOptions[option],
+							// eslint-disable-next-line @typescript-eslint/no-implied-eval
+							...new Function(`return {${optionValue.trim()}}`)()
+						};
+					} else {
+						const hookData = hooks.callHook(`compiler:processContentOption:${option}`, {
+							contentOptions: contentOptions,
+							option: option,
+							value: optionValue
+						});
 
-			const optionKey = optionMatch[1];
-			const optionMatchValue = this.dev ? optionMatch[2] : optionMatch[2].replace(/\n|\t/g, ' ');
+						contentOptions = hookData.contentOptions;
+					}
 
-			try {
-				if (optionKey === 'pregenerate') {
-					contentOptions[optionKey] += ` ${optionMatchValue}`;
-
-				} else if (['components', 'variables', 'keyframes', 'plainSelectors', 'screens'].includes(optionKey)) {
-					contentOptions[optionKey] = {
-						...contentOptions[optionKey],
-						// eslint-disable-next-line @typescript-eslint/no-implied-eval
-						...new Function(`return {${optionMatchValue.trim()}}`)()
-					};
-				} else if (optionKey in this.contentOptionsProcessors) {
-					contentOptions = {
-						...contentOptions,
-						...this.contentOptionsProcessors[optionKey](contentOptions, optionMatchValue)
-					};
-				}
-
-			} catch (error) {
-				if (this.dev) {
-					console.error(
-						`Error "${error as string}" occurred when processing "${optionKey}" and its value "${optionMatchValue}".`
-					);
+				} catch (error) {
+					if (this.dev) {
+						console.error(
+							`Error "${error as string}" occurred when processing "${option}" and its value "${optionValue}".`
+						);
+					}
 				}
 			}
 		}

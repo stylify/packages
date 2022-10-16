@@ -1,5 +1,5 @@
 import type { AstroIntegration } from 'astro';
-import { UnpluginConfigInterface, vitePlugin, defineConfig as stylifyUnpluginConfig } from '@stylify/unplugin';
+import { UnpluginConfigInterface, stylifyVite, defineConfig as stylifyUnpluginConfig } from '@stylify/unplugin';
 import { Configurator } from '@stylify/stylify';
 import { fileURLToPath } from 'url';
 import { join } from 'path';
@@ -41,7 +41,7 @@ export const stylify = (options: UnpluginConfigInterface = {}): AstroIntegration
 				updateConfig({
 					vite: {
 						plugins: [
-							vitePlugin([defaultConfig, options ?? {}])
+							stylifyVite([defaultConfig, options ?? {}])
 						]
 					}
 				});

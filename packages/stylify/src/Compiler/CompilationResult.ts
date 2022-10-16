@@ -2,17 +2,25 @@ import {
 	CssRecord,
 	MacroMatch,
 	SelectorProperties,
-	minifiedSelectorGenerator,
 	screensSorter
 } from '.';
+
+import { hooks } from '../Hooks';
+
+export interface ConfigurCssRecordHookDataInterface {
+	compilationResult: CompilationResult,
+	cssRecord: CssRecord
+}
+
+export interface CompilationResultHooksListInterface {
+	'compilationResult:configureCssRecord': ConfigurCssRecordHookDataInterface,
+}
 
 export type ScreenSortingFunctionType = (screensList: ScreensListMapType) => ScreensListMapType;
 
 export type ScreensListScreenValueType = number|null;
 
 export type ScreensListMapType = Map<string, ScreensListScreenValueType>;
-
-type OnPrepareCssRecordCallbackType = (cssRecord: CssRecord) => void;
 
 export type ScreensListRecordType = Record<string, number>;
 
@@ -24,9 +32,7 @@ export interface CompilationResultConfigInterface {
 	screensSortingFunction?: ScreenSortingFunctionType,
 	screensList?: ScreensListRecordType,
 	selectorsList?: SelectorsListType,
-	componentsList?: string[],
 	mangleSelectors?: boolean,
-	onPrepareCssRecord?: OnPrepareCssRecordCallbackType,
 	defaultCss?: string
 }
 
@@ -43,6 +49,8 @@ export interface SelectorsComponentsMapInterface {
 
 export class CompilationResult {
 
+	public readonly id = Date.now().toString(36) + Math.random().toString(36).substr(2);
+
 	private screensList: ScreensListMapType = new Map();
 
 	private screensListSorted = false;
@@ -57,11 +65,7 @@ export class CompilationResult {
 
 	public selectorsList: Record<string, CssRecord> = {};
 
-	public componentsList: string[] = [];
-
 	public screensSortingFunction: ScreenSortingFunctionType = null;
-
-	public onPrepareCssRecord: OnPrepareCssRecordCallbackType = null;
 
 	public defaultCss = '';
 
@@ -71,16 +75,14 @@ export class CompilationResult {
 	}
 
 	public configure(config: CompilationResultConfigInterface = {}): void {
-		if (!config || !Object.keys(config).length) {
+		if (!Object.keys(config).length) {
 			return;
 		}
 
 		this.dev = config.dev ?? this.dev;
 		this.reconfigurable = config.reconfigurable ?? this.reconfigurable;
 		this.mangleSelectors = config.mangleSelectors ?? this.mangleSelectors;
-
 		this.defaultCss = config.defaultCss || this.defaultCss;
-		this.componentsList = [...this.componentsList, ...config.componentsList || []];
 
 		if ('selectorsList' in config) {
 			for (const selector in config.selectorsList) {
@@ -94,8 +96,6 @@ export class CompilationResult {
 		}
 
 		this.screensSortingFunction = config.screensSortingFunction ?? screensSorter.sortCssTreeMediaQueries;
-		this.onPrepareCssRecord = config.onPrepareCssRecord ?? null;
-
 		this.addScreens(config.screensList || {});
 	}
 
@@ -189,9 +189,7 @@ export class CompilationResult {
 			shouldBeGenerated: true
 		});
 
-		if (this.onPrepareCssRecord) {
-			this.onPrepareCssRecord(newCssRecord);
-		}
+		hooks.callHook('compilationResult:configureCssRecord', {compilationResult: this, cssRecord: newCssRecord});
 
 		newCssRecord.addProperties(selectorProperties.properties);
 
@@ -199,55 +197,14 @@ export class CompilationResult {
 		this.changed = true;
 	}
 
-	public bindPlainSelectorsToSelectors(plainSelectorsSelectorsMap: Record<string, string>): void {
-		for (const [plainSelector, dependencySelectors] of Object.entries(plainSelectorsSelectorsMap)) {
-			for (const dependencySelector of dependencySelectors.split(' ')) {
+	public bindCustomSelectorsToSelectors(customSelectorsSelectorsMap: Record<string, string>): void {
+		for (const [customSelector, dependencySelectors] of Object.entries(customSelectorsSelectorsMap)) {
+			for (const dependencySelector of dependencySelectors.split(' ').filter((item) => item.trim() !== '')) {
 				if (!(dependencySelector in this.selectorsList)) {
-					throw new Error(`Selector "${dependencySelector}" for plainSelector "${plainSelector}" was not matched and therefore not added.`);
+					throw new Error(`Selector "${dependencySelector}" for custom selector "${customSelector}" was not matched and therefore not added.`);
 				}
 
-				this.selectorsList[dependencySelector].addPlainSelector(plainSelector);
-			}
-		}
-	}
-
-	public bindComponentsToSelectors(selectorsComponentsMap: SelectorsComponentsMapType): void {
-		for (const componentDependencySelector in selectorsComponentsMap) {
-			for (const componentToBind of selectorsComponentsMap[componentDependencySelector]) {
-				if (!(componentDependencySelector in this.selectorsList)) {
-					throw new Error(`Selector "${componentDependencySelector}" for component "${componentToBind.component}" was not matched and therefore not added.`);
-				}
-
-				if (!this.componentsList.includes(componentToBind.component)) {
-					this.componentsList.push(componentToBind.component);
-				}
-
-				componentToBind.selectorsChain = componentToBind.selectorsChain
-					.map((selectorsChain: string): string => {
-						return selectorsChain
-							.split(' ')
-							.map((selectorFromChain: string) => {
-								if (this.mangleSelectors) {
-									if (!(selectorFromChain in this.selectorsList)
-										&& !this.componentsList.includes(selectorFromChain)
-									) {
-										throw new Error(`Stylify: selector "${selectorFromChain}" from component "${componentToBind.component}" selectorsChain list not found.`);
-									}
-
-									selectorFromChain = minifiedSelectorGenerator.getSelector(selectorFromChain);
-								}
-
-								return selectorFromChain;
-							})
-							.join(' ');
-					});
-
-				this.selectorsList[componentDependencySelector].addComponent(
-					this.mangleSelectors
-						? minifiedSelectorGenerator.getSelector(componentToBind.component)
-						: componentToBind.component,
-					componentToBind.selectorsChain
-				);
+				this.selectorsList[dependencySelector].addCustomSelector(customSelector);
 			}
 		}
 	}

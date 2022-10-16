@@ -15,15 +15,12 @@ export default function (source: string): string {
 		return source;
 	}
 
-	const {
-		getCompiler,
-		getCompilationResult
-	} = getOptions(this);
+	const { getCompiler } = getOptions(this);
 
 	const compiler = getCompiler();
 
 	if (compiler.mangleSelectors && queryIsTemplateType(resourceQuery)) {
-		source = compiler.rewriteSelectors(source, getCompilationResult()) as string;
+		source = compiler.rewriteSelectors(source) as string;
 	}
 
 	return source;

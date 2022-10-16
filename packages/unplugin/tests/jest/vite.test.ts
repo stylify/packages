@@ -6,7 +6,7 @@ import path from 'path';
 import fs from 'fs';
 import fse from 'fs-extra';
 import * as fg from 'fast-glob';
-import { vitePlugin } from '../../src';
+import { stylifyVite } from '../../src';
 import { build } from 'vite'
 import TestUtils from '../../../../tests/TestUtils';
 
@@ -59,7 +59,7 @@ test('Vite', async (): Promise<void> => {
 		root: buildTmpDir,
 		logLevel: 'error',
 		plugins: [
-			vitePlugin({
+			stylifyVite({
 				transformIncludeFilter(id) {
 					return id.endsWith('html');
 				},

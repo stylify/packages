@@ -1,10 +1,12 @@
 import { ScreensType } from './Compiler';
 
+export type CharacterAliasTypeOptions = 'quote' | 'space';
+
 export class MacroMatch {
 
-	public static readonly selectorSpaceCharacter = '_';
+	public static readonly selectorSpaceAlias = '_';
 
-	private readonly selectorSpaceCharacterRegExp = new RegExp(MacroMatch.selectorSpaceCharacter, 'g');
+	public static readonly selectorQuoteAlias = '^';
 
 	public fullMatch: string = null;
 
@@ -61,13 +63,26 @@ export class MacroMatch {
 		}
 	}
 
+	public static replaceCharactersAliases(content: string, alias: CharacterAliasTypeOptions = null) {
+		const aliases: Record<CharacterAliasTypeOptions, [string, string]> = {
+			space: [MacroMatch.selectorSpaceAlias, ' '],
+			quote: [MacroMatch.selectorQuoteAlias, '\'']
+		};
+
+		for (const [characterToReplace, replacement] of alias ? aliases[alias] : Object.values(aliases)) {
+			content = content.replace(new RegExp(`\\${characterToReplace}`, 'g'), replacement);
+		}
+
+		return content;
+	}
+
 	public hasCapture(index: number|string): boolean {
 		return typeof this.captures[index] !== 'undefined';
 	}
 
 	public getCapture(index: number|string, defaultValue = ''): string {
 		return this.hasCapture(index)
-			? this.captures[index].replace(this.selectorSpaceCharacterRegExp, ' ').replace(/\^/g, '\'') as string
+			? MacroMatch.replaceCharactersAliases(this.captures[index] as string)
 			: defaultValue;
 	}
 

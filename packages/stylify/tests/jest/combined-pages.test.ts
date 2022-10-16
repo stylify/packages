@@ -14,6 +14,6 @@ compilationResult = compiler.compile(inputAbout, compilationResult);
 
 test('Combined pages', (): void => {
 	testUtils.testCssFileToBe(compilationResult.generateCss());
-	testUtils.testHtmlFileToBe(compiler.rewriteSelectors(inputIndex, compilationResult));
-	testUtils.testHtmlFileToBe(compiler.rewriteSelectors(inputAbout, compilationResult), 'about');
+	testUtils.testHtmlFileToBe(compiler.rewriteSelectors(inputIndex));
+	testUtils.testHtmlFileToBe(compiler.rewriteSelectors(inputAbout), 'about');
 });

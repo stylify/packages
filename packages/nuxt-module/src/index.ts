@@ -1,5 +1,4 @@
 import {
-	CompilationResult,
 	Compiler,
 	CompilerConfigInterface,
 	mergeObjects
@@ -47,8 +46,6 @@ let moduleConfig: StylifyNuxtModuleConfigInterface = {
 	filesMasks: [],
 	loaders: []
 };
-
-let compilationResult: CompilationResult = null;
 
 const stylifyCssFileName = 'stylify.css';
 
@@ -163,8 +160,7 @@ export default function Stylify(): void {
 					use: {
 						loader: path.join(__dirname, `webpack-loader.${filesSuffix}`),
 						options: {
-							getCompiler: getCompiler,
-							getCompilationResult: (): CompilationResult => compilationResult
+							getCompiler: getCompiler
 						}
 					}
 				});
@@ -194,8 +190,6 @@ export default function Stylify(): void {
 				outputFile: path.join(assetsDir, stylifyCssFileName)
 			}
 		]);
-
-		compilationResult = bundler.findBundleCache(bundleId).compilationResult;
 
 		if (!nuxt.options.css.includes(assetsStylifyCssPath)) {
 			nuxt.options.css.push(assetsStylifyCssPath);

@@ -5,7 +5,13 @@ import {
 	CompilerConfigInterface,
 	mergeObjects
 } from '@stylify/stylify';
-import { unplugin, defineConfig as defineUnpluginConfig, UnpluginConfigInterface } from '@stylify/unplugin';
+import {
+	stylifyRollup,
+	stylifyWebpack,
+	stylifyVite,
+	defineConfig as defineUnpluginConfig,
+	UnpluginConfigInterface
+} from '@stylify/unplugin';
 import {
 	defineNuxtModule,
 	extendViteConfig,
@@ -174,17 +180,17 @@ export default defineNuxtModule<NuxtModuleConfigInterface>({
 					}
 				}
 			);
-			nitroConfig.rollupConfig.plugins.unshift(unplugin.rollup(pluginConfig));
+			nitroConfig.rollupConfig.plugins.unshift(stylifyRollup(pluginConfig));
 		});
 
 		extendWebpackConfig((config) => {
-			const plugin = unplugin.webpack(getPluginConfig());
+			const plugin = stylifyWebpack(getPluginConfig());
 			config.plugins = config.plugins || [];
 			config.plugins.push(plugin);
 		});
 
 		extendViteConfig((config) => {
-			const plugin = unplugin.vite(getPluginConfig());
+			const plugin = stylifyVite(getPluginConfig());
 			config.plugins = config.plugins || [];
 			config.plugins.push(plugin);
 		});

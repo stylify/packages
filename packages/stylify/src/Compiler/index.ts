@@ -6,3 +6,4 @@ export * from './CompilationResult';
 export * from './MinifiedSelectorGenerator';
 export * from './ScreensSorter';
 export * from './defaultPreset';
+export * from './CustomSelector';
