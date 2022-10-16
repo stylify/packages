@@ -1,7 +1,6 @@
 import { BundleConfigInterface, BundlerConfigInterface, Bundler, BundlesBuildCacheInterface } from '@stylify/bundler';
 import {
 	Compiler,
-	ComponentsInterface,
 	Configurator,
 	DefaultConfigInterface,
 	mergeObjects
@@ -52,6 +51,7 @@ export const defineConfig = (config: UnpluginConfigInterface): UnpluginConfigInt
 
 const defaultAllowedTypesRegExp = new RegExp(`\\.(?:${defaultAllowedFileTypes.join('|')})\\b`);
 const defaultIgnoredDirectoriesRegExp = new RegExp(`/${defaultIgnoredDirectories.join('|')}/`);
+let transformCompiler: Compiler = null;
 
 export const unplugin = createUnplugin((config: UnpluginConfigInterface|UnpluginConfigInterface[]) => {
 
@@ -153,25 +153,11 @@ export const unplugin = createUnplugin((config: UnpluginConfigInterface|Unplugin
 			const bundler = getBundler();
 			await bundler.waitOnBundlesProcessed();
 
-			const selectors = {};
-			const components: Record<string, ComponentsInterface> = {};
-
-			const bundlesBuildCache: BundlesBuildCacheInterface[] = Object.values(bundler.bundlesBuildCache);
-			for (const bundleBuildCache of bundlesBuildCache) {
-				for (const selector in bundleBuildCache.compilationResult.selectorsList) {
-					if (!(selector in selectors)) {
-						selectors[selector] = {selector: selector};
-					}
-				}
-
-				for (const component in bundleBuildCache.compiler.components) {
-					if (!(component in components)) {
-						components[component] = bundleBuildCache.compiler.components[component];
-					}
-				}
+			if (transformCompiler === null) {
+				transformCompiler = new Compiler;
 			}
 
-			return new Compiler(bundler.compilerConfig).rewriteSelectors(code);
+			return transformCompiler.rewriteSelectors(code);
 		},
 		esbuild: {
 			async setup() {
