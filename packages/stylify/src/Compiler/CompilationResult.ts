@@ -49,7 +49,7 @@ export interface SelectorsComponentsMapInterface {
 
 export class CompilationResult {
 
-	public readonly id = Date.now().toString(36) + Math.random().toString(36).substr(2);
+	public readonly id = Date.now().toString(36) + Math.random().toString(36).substring(2);
 
 	private screensList: ScreensListMapType = new Map();
 
