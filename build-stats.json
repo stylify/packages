@@ -59,10 +59,10 @@
   },
   "unplugin": {
     "/esm/index.mjs": {
-      "size": 5545
+      "size": 6219
     },
     "/lib/index.cjs": {
-      "size": 6802
+      "size": 7476
     }
   }
 }
