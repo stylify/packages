@@ -252,10 +252,10 @@ export class Compiler {
 
 	public rewriteSelectors(options: {
 		content: string,
-		rewriteOnlyInAreas?: boolean
+		rewriteOnlyInSelectorsAreas?: boolean
 		matchSelectorsWithPrefixes?: boolean
 	}|string): string {
-		let rewriteOnlyInAreas = true;
+		let rewriteOnlyInSelectorsAreas = true;
 		let matchSelectorsWithPrefixes = false;
 		let content = '';
 
@@ -263,7 +263,7 @@ export class Compiler {
 			content = options;
 		} else {
 			content = options.content;
-			rewriteOnlyInAreas = options.rewriteOnlyInAreas ?? rewriteOnlyInAreas;
+			rewriteOnlyInSelectorsAreas = options.rewriteOnlyInSelectorsAreas ?? rewriteOnlyInSelectorsAreas;
 			matchSelectorsWithPrefixes = options.matchSelectorsWithPrefixes ?? matchSelectorsWithPrefixes;
 		}
 
@@ -312,7 +312,7 @@ export class Compiler {
 
 			const replacement = `${selectorPrefix}${mangledSelector}`;
 
-			if (rewriteOnlyInAreas === false) {
+			if (rewriteOnlyInSelectorsAreas === false) {
 				content = content.replace(new RegExp(selector, 'g'), replacement);
 				continue;
 			}
@@ -557,7 +557,7 @@ export class Compiler {
 					selectorsMap[
 						this.rewriteSelectors({
 							content: customSelector,
-							rewriteOnlyInAreas: false,
+							rewriteOnlyInSelectorsAreas: false,
 							matchSelectorsWithPrefixes: true
 						})
 					] = selectorsToAdd.join(' ').replace(/\s/g, ' ').trim();
