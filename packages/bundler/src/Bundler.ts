@@ -566,7 +566,7 @@ export class Bundler {
 				'bundler:beforeCssFileCreated', { content: cssToSave, bundleConfig }
 			);
 
-			this.writeFile(hookData.bundleConfig.outputFile, hookData.content);
+			this.writeFile(hookData.bundleConfig.outputFile, hookData.content, bundleBuildCache.compiler.dev);
 
 			bundleBuildCache.buildTime = ((performance.now() - startTime)/1000).toFixed(2);
 			this.log(`Created "${bundleConfig.outputFile}" (${bundleBuildCache.buildTime} s).`, 'textGreen');
@@ -680,7 +680,7 @@ export class Bundler {
 			newLine = '';
 		}
 
-		const newFileContent = fileContent.trim() + newLine + newLine;
+		const newFileContent = fileContent.trim() + newLine;
 
 		try {
 			const actualFileContent = this.createdFilesContentCache[filePath]
