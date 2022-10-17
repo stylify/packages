@@ -87,7 +87,6 @@ export const unplugin = createUnplugin((config: UnpluginConfigInterface|Unplugin
 
 		const configsToProcess: (UnpluginConfigInterface|string)[] = [
 			{
-				dev: null,
 				bundles: [],
 				bundler: {
 					compiler: {}
@@ -114,9 +113,12 @@ export const unplugin = createUnplugin((config: UnpluginConfigInterface|Unplugin
 	configure();
 
 	const getBundler = (): Bundler => {
-		if (pluginConfig.dev === null && typeof process.env['NODE_ENV'] !== 'undefined') {
+		if (typeof pluginConfig.dev === 'undefined' && typeof process.env['NODE_ENV'] !== 'undefined') {
 			pluginConfig.dev = process.env['NODE_ENV'] !== 'test';
-			pluginConfig.bundler.compiler.mangleSelectors = !pluginConfig.dev;
+			pluginConfig.bundler.dev = pluginConfig?.bundler?.dev ?? pluginConfig.dev;
+			pluginConfig.bundler.compiler.mangleSelectors = pluginConfig?.compiler?.mangleSelectors
+				?? pluginConfig?.bundler?.compiler?.mangleSelectors
+				?? !pluginConfig.dev;
 		}
 
 		if (pluginConfig.dev || !bundler) {
@@ -169,8 +171,10 @@ export const unplugin = createUnplugin((config: UnpluginConfigInterface|Unplugin
 			async options(): Promise<void> {
 				await waitForConfiguratinToLoad();
 
-				if (pluginConfig.dev !== null) {
-					pluginConfig.bundler.compiler.mangleSelectors = !pluginConfig.dev;
+				if (typeof pluginConfig.dev === 'boolean') {
+					pluginConfig.bundler.compiler.mangleSelectors = pluginConfig?.compiler?.mangleSelectors
+						?? pluginConfig?.bundler?.compiler?.mangleSelectors
+						?? !pluginConfig.dev;
 				}
 
 				pluginConfig.bundler.watchFiles = process.env.ROLLUP_WATCH === 'true';
@@ -181,13 +185,17 @@ export const unplugin = createUnplugin((config: UnpluginConfigInterface|Unplugin
 			async configResolved(config): Promise<void> {
 				await waitForConfiguratinToLoad();
 
-				if (pluginConfig.dev === null) {
+				if (typeof pluginConfig.dev === 'undefined') {
 					pluginConfig.dev = !config.isProduction;
-					pluginConfig.bundler.compiler.mangleSelectors = !pluginConfig.dev;
-					pluginConfig.bundler.watchFiles = pluginConfig.dev;
+					pluginConfig.bundler.compiler.mangleSelectors = pluginConfig?.compiler?.mangleSelectors
+						?? pluginConfig?.bundler?.compiler?.mangleSelectors
+						?? !pluginConfig.dev;
+					pluginConfig.bundler.watchFiles = pluginConfig?.bundler?.watchFiles ?? pluginConfig.dev;
 				} else if (pluginConfig.dev === true) {
-					pluginConfig.bundler.watchFiles = true;
+					pluginConfig.bundler.watchFiles = pluginConfig?.bundler?.watchFiles ?? true;
 				}
+
+				pluginConfig.bundler.dev = pluginConfig.dev;
 
 				await runBundler();
 			}
@@ -202,12 +210,14 @@ export const unplugin = createUnplugin((config: UnpluginConfigInterface|Unplugin
 
 				await waitForConfiguratinToLoad();
 
-				if (pluginConfig.dev === null && compiler.options.mode !== 'none') {
+				if (typeof pluginConfig.dev === 'undefined' && compiler.options.mode !== 'none') {
 					pluginConfig.dev = compiler.options.mode === 'development';
+					pluginConfig.bundler.dev = pluginConfig.dev;
 				}
 
-				pluginConfig.bundler.compiler.mangleSelectors = !pluginConfig.dev && !compiler.options.watch;
-				pluginConfig.bundler.watchFiles = compiler.options.watch;
+				pluginConfig.bundler.compiler.mangleSelectors =
+					pluginConfig?.bundler?.compiler?.mangleSelectors ?? (!pluginConfig.dev && !compiler.options.watch);
+				pluginConfig.bundler.watchFiles = pluginConfig?.bundler?.watchFiles ?? compiler.options.watch;
 
 				configModified = true;
 			};
