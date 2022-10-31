@@ -1,6 +1,6 @@
 {
 	"name": "@stylify/bundler",
-	"version": "0.5.1",
+	"version": "0.5.2",
 	"description": "CSS bundler for @stylify/stylify.",
 	"keywords": [
 		"stylify",
@@ -48,7 +48,7 @@
 		"pack": "yarn pack"
 	},
 	"dependencies": {
-		"@stylify/stylify": "^0.5.1",
+		"@stylify/stylify": "^0.5.2",
 		"autoprefixer": "^10.4",
 		"fast-glob": "^3.2",
 		"normalize-path": "^3.0",
