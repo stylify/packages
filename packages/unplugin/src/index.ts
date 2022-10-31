@@ -156,7 +156,9 @@ export const unplugin = createUnplugin((config: UnpluginConfigInterface|Unplugin
 			await bundler.waitOnBundlesProcessed();
 
 			if (transformCompiler === null) {
-				transformCompiler = new Compiler;
+				transformCompiler = new Compiler({
+					mangleSelectors: true
+				});
 			}
 
 			return transformCompiler.rewriteSelectors(code);

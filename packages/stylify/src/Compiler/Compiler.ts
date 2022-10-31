@@ -267,7 +267,7 @@ export class Compiler {
 			matchSelectorsWithPrefixes = options.matchSelectorsWithPrefixes ?? matchSelectorsWithPrefixes;
 		}
 
-		if (this.dev && !this.mangleSelectors) {
+		if (!this.mangleSelectors) {
 			return content;
 		}
 
@@ -546,10 +546,12 @@ export class Compiler {
 						selectorsMap[customSelector] = '';
 					}
 
-					const selectorsToAdd = selectorsMap[customSelector].split(' ');
+					const selectorsToAdd = selectorsMap[customSelector].length
+						? selectorsMap[customSelector].split(' ')
+						: [];
 
 					customSelectorSelectors.split(' ').forEach((selector) => {
-						if (!selectorsToAdd.includes(selector) && selector.trim().length !== 0) {
+						if (!selectorsToAdd.includes(selector)) {
 							selectorsToAdd.push(selector);
 						}
 					});
@@ -560,7 +562,7 @@ export class Compiler {
 							rewriteOnlyInSelectorsAreas: false,
 							matchSelectorsWithPrefixes: true
 						})
-					] = selectorsToAdd.join(' ').replace(/\s/g, ' ').trim();
+					] = selectorsToAdd.filter((item) => item.trim().length > 0).join(' ').replace(/\s/g, ' ').trim();
 				}
 			}
 		}
