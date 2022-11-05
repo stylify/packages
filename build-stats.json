@@ -39,22 +39,22 @@
   },
   "stylify": {
     "/esm/index.js": {
-      "size": 63817
+      "size": 63718
     },
     "/esm/index.min.js": {
-      "size": 33057
+      "size": 32984
     },
     "/esm/index.mjs": {
-      "size": 64929
+      "size": 64830
     },
     "/lib/index.cjs": {
-      "size": 66506
+      "size": 66407
     },
     "/dist/stylify.js": {
-      "size": 65892
+      "size": 65793
     },
     "/dist/stylify.min.js": {
-      "size": 32653
+      "size": 32580
     }
   },
   "unplugin": {

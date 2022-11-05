@@ -8,10 +8,10 @@
 		"repo:init": "yarn install && yarn link && yarn install",
 		"repo:pack": "lerna run pack",
 		"publish:preflight": "yarn build && yarn build:generate-stats && npm login",
-		"publish:patch": "yarn publish:preflight && yarn version:patch && yarn npm publish",
-		"publish:minor": "yarn publish:preflight && yarn version:minor && yarn npm publish",
-		"version:patch": "yarn version --patch --no-git-tag-version",
-		"version:minor": "yarn version --minor --no-git-tag-version",
+		"publish:patch": "yarn publish:preflight && yarn version:patch && lerna publish --no-push --no-git-tag-version --yes",
+		"publish:minor": "yarn publish:preflight && yarn version:minor && lerna publish --no-push --no-git-tag-version --yes",
+		"version:patch": "lerna version patch --no-push --no-git-tag-version --yes",
+		"version:minor": "lerna version minor --no-push --no-git-tag-version --yes",
 		"watch": "cross-env watch=true yarn build",
 		"build": "ts-node scripts/build.ts",
 		"build:notypes": "cross-env typesDisabled=true ts-node scripts/build.ts",
@@ -96,6 +96,7 @@
 		"jest": "^28.1",
 		"jest-environment-jsdom": "^28.1",
 		"jest-environment-node": "^28.1",
+		"lerna": "^6.0",
 		"node-sass": "^7.0",
 		"postcss": "^8.4.14",
 		"postcss-url": "^10.1",
@@ -106,5 +107,7 @@
 		"typescript": "^4.5",
 		"v8-compile-cache": "^2.3.0"
 	},
-	"workspaces": ["packages/*"]
+	"workspaces": [
+		"packages/*"
+	]
 }
