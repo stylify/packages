@@ -1,15 +1,17 @@
 {
 	"name": "@stylify/packages",
 	"description": "Stylify monorepo",
+	"private": true,
 	"author": "Vladimír Macháček",
 	"license": "MIT",
 	"scripts": {
-		"repo:init": "yarn install && yarn link && yarn bootstrap",
+		"repo:init": "yarn install && yarn link && yarn install",
 		"repo:pack": "lerna run pack",
-		"repo:publish": "yarn build && yarn build:generate-stats && npm login && lerna publish --no-push --no-git-tag-version --yes",
-		"lerna:patch": "lerna version patch --no-push --no-git-tag-version --yes",
-		"lerna:minor": "lerna version minor --no-push --no-git-tag-version --yes",
-		"bootstrap": "lerna bootstrap --force-local",
+		"publish:preflight": "yarn build && yarn build:generate-stats && npm login",
+		"publish:patch": "yarn publish:preflight && yarn version:patch && yarn npm publish",
+		"publish:minor": "yarn publish:preflight && yarn version:minor && yarn npm publish",
+		"version:patch": "yarn version --patch --no-git-tag-version",
+		"version:minor": "yarn version --minor --no-git-tag-version",
 		"watch": "cross-env watch=true yarn build",
 		"build": "ts-node scripts/build.ts",
 		"build:notypes": "cross-env typesDisabled=true ts-node scripts/build.ts",
@@ -94,7 +96,6 @@
 		"jest": "^28.1",
 		"jest-environment-jsdom": "^28.1",
 		"jest-environment-node": "^28.1",
-		"lerna": "^4.0",
 		"node-sass": "^7.0",
 		"postcss": "^8.4.14",
 		"postcss-url": "^10.1",
@@ -104,5 +105,6 @@
 		"tslib": "^2.0",
 		"typescript": "^4.5",
 		"v8-compile-cache": "^2.3.0"
-	}
+	},
+	"workspaces": ["packages/*"]
 }
