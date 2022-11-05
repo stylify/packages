@@ -352,7 +352,7 @@ export class Compiler {
 			})
 			.replace(/&amp;/ig, '&');
 
-		content = this.dev ? content.replace(/\r\n/, '\n') : content.replace(/\r\n|\r|\n|\t/ig, ' ');
+		content = content.replace(/\r\n|\r/ig, '\n');
 
 		this.configure(this.processOptionsFromContent(this.getOptionsFromContent(content)));
 		content = content.replace(new RegExp(this.contentOptionsRegExp.source, 'g'), '');
@@ -429,7 +429,7 @@ export class Compiler {
 			}
 
 			const option = optionMatch[1];
-			const optionValue = this.dev ? optionMatch[2] : optionMatch[2].replace(/\n|\t/g, ' ');
+			const optionValue = optionMatch[2];
 
 			if (!(option in contentOptions)) {
 				contentOptions[option] = [];

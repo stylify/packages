@@ -129,3 +129,14 @@ test('Components - nested syntax - mangled', (): void => {
 	testUtils.testCssFileToBe(compilationResult.generateCss(), testFileName);
 	testUtils.testHtmlFileToBe(compiler.rewriteSelectors(input), testFileName);
 });
+
+test('Components from comment', (): void => {
+	const testFileName = 'comment-components';
+	const compiler = new Compiler({
+		dev: true
+	});
+
+	console.log(testUtils.getHtmlInputFile(testFileName));
+	let compilationResult = compiler.compile(testUtils.getHtmlInputFile(testFileName));
+	testUtils.testCssFileToBe(compilationResult.generateCss(), testFileName);
+});
