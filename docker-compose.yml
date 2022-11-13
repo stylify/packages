@@ -8,5 +8,6 @@ services:
             - ./.:/usr/share/nginx/html:delegated
         ports:
             - 80:80
-            - 3000:300
+            - 3000:3000
+            - 4000:4000
         tty: true

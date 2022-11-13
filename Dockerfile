@@ -6,4 +6,4 @@ RUN node -v &&\
 	npm -v &&\
 	yarn -v
 
-EXPOSE 80 3000
+EXPOSE 80 3000 4000
