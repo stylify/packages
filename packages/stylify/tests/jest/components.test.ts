@@ -136,7 +136,6 @@ test('Components from comment', (): void => {
 		dev: true
 	});
 
-	console.log(testUtils.getHtmlInputFile(testFileName));
 	let compilationResult = compiler.compile(testUtils.getHtmlInputFile(testFileName));
 	testUtils.testCssFileToBe(compilationResult.generateCss(), testFileName);
 });
