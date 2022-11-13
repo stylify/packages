@@ -20,7 +20,6 @@ import {
 	addWebpackPlugin,
 	addVitePlugin
 } from '@nuxt/kit';
-import { fileURLToPath } from 'url';
 
 export interface NuxtModuleConfigInterface {
 	dev?: boolean,
@@ -117,6 +116,7 @@ export default defineNuxtModule<NuxtModuleConfigInterface>({
 			nuxt.options.css.push(assetsStylifyCssPath);
 		}
 
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-return
 		const getPluginConfig = (): UnpluginConfigInterface => defineUnpluginConfig({
 			configFile: configFiles,
 			dev: nuxtIsInDevMode,

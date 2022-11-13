@@ -46,19 +46,12 @@
 		"LICENSE",
 		"README.md"
 	],
-	"scripts": {
-		"pack": "yarn pack"
-	},
 	"dependencies": {
-		"@stylify/bundler": "^0.5.31",
-		"@stylify/stylify": "^0.5.31",
+		"@stylify/bundler": "workspace:^",
+		"@stylify/stylify": "workspace:^",
 		"loader-utils": "^2.0"
 	},
 	"devDependencies": {
-		"@rollup/plugin-commonjs": "^21.0.1"
-	},
-	"publishConfig": {
-		"access": "public"
-	},
-	"gitHead": "a900b73132f964b56e1fc3423648b104d851dd59"
+		"@rollup/plugin-commonjs": "^21.0"
+	}
 }

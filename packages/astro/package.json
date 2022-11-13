@@ -47,18 +47,11 @@
 		"LICENSE",
 		"README.md"
 	],
-	"scripts": {
-		"pack": "yarn pack"
-	},
 	"dependencies": {
-		"@stylify/unplugin": "^0.5.31",
-		"normalize-path": "^3.0.0"
+		"@stylify/unplugin": "workspace:^",
+		"normalize-path": "^3.0"
 	},
 	"devDependencies": {
-		"astro": "^1.1"
-	},
-	"publishConfig": {
-		"access": "public"
-	},
-	"gitHead": "a900b73132f964b56e1fc3423648b104d851dd59"
+		"astro": "^2.1"
+	}
 }

@@ -179,7 +179,7 @@ const runEsbuild = async (config: BuildConfigConfigurationInterface): Promise<Bu
 	if (!mergedConfig.watch && generateTypes) {
 		typescriptTypesBuilds.push(new Promise((resolve) => {
 			const tscCommand = [
-				`yarn tsc ${typesDirsString}`,
+				`pnpm tsc ${typesDirsString}`,
 				'-d --emitDeclarationOnly',
 				`--outDir ${typesOutputDir}`
 			];

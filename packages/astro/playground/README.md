@@ -1,5 +1,5 @@
 # Playground usage
-- Run `yarn install`
-- Than you can run `yarn dev` for dev mode
-- For production `yarn build` && `yarn start`
+- Run `pnpm i`
+- Then you can run `pnpm dev` for dev mode
+- For production `pnpm build` && `pnpm start`
 - App should be running on `http://localhost:3000`

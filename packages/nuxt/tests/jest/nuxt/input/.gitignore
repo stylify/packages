@@ -7,3 +7,5 @@ node_modules
 .env
 dist
 workspaces
+stylify.css
+package-lock.json

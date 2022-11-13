@@ -17,43 +17,16 @@ if (!fs.existsSync(buildTmpDir)) {
 
 fse.copySync(path.join(bundleTestDir, 'input'), buildTmpDir);
 
-execSync(`cd ${buildTmpDir} && yarn install && yarn build`);
+execSync(`cd ${buildTmpDir} && npm install && npm run build`);
 
-const indexPageContentPart = `
-var render = function render() {
-  var _vm = this,
-      _c = _vm._self._c;
+const indexPageContentPart = 'staticClass: "h g"'.trim();
 
-  return _c('h2', {
-    staticClass: "h g"
-  }, [_vm._ssrNode("Smaller Subtitle")]);
-};
-`.trim();
+const smallerSubtitleComponentPart = 'staticClass: "h g"'.trim();
 
-const smallerSubtitleComponentPart = `
-var render = function render() {
-  var _vm = this,
-      _c = _vm._self._c;
-
-  return _c('h2', {
-    staticClass: "h g"
-  }, [_vm._ssrNode("Smaller Subtitle")]);
-};
-`.trim();
-
-const subtitleComponentPart = `
-var render = function render() {
-  var _vm = this,
-      _c = _vm._self._c;
-
-  return _c('h2', {
-    staticClass: "h"
-  }, [_vm._ssrNode("Subtitle")]);
-};
-`.trim();
+const subtitleComponentPart = 'staticClass: "h"'.trim();
 
 const serverFilePart = `
-___CSS_LOADER_EXPORT___.push([module.i, ":root{--red:#8b0000;--blue:#00008b;--green:#006400;--yellow:#ff0}.a{text-align:center}.b{font-size:24px}.c{color:#8b0000}.d{max-width:640px}.e{margin:0 auto}.f{color:#006400}.g{font-size:12px}.h{color:#00008b}", ""]);
+___CSS_LOADER_EXPORT___.push([module.i, ":root{--red:darkred;--blue:#00008b;--green:#006400;--yellow:#ff0}.a{text-align:center}.b{font-size:24px}.c{color:darkred}.d{max-width:640px}.e{margin:0 auto}.f{color:#006400}.g{font-size:12px}.h{color:#00008b}", ""]);
 `.trim();
 
 const serverFilePart2 = 'staticClass: "d e"';

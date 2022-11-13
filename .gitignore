@@ -5,9 +5,9 @@
 /coverage
 /scripts/build.js
 lerna-debug.log
-**/yarn-error.log
 .idea
 /.idea
+.pnpm-store
 
 #Packages
 /packages/**/*.lerna_backup

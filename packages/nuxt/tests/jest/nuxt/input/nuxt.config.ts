@@ -1,4 +1,4 @@
-import { defineConfig } from '../../esm/module.mjs';
+import { defineConfig } from '@stylify/nuxt';
 import { defineNuxtConfig } from 'nuxt/config';
 
 export default defineNuxtConfig({
@@ -18,9 +18,7 @@ export default defineNuxtConfig({
 		}
 	}),
 	modules: [
-		['@nuxt/content'],
-	],
-	buildModules: [
-		'../../esm/module.mjs'
+		'@nuxt/content',
+		'@stylify/nuxt',
 	]
 });

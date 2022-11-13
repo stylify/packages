@@ -47,12 +47,5 @@
 		"package.json",
 		"LICENSE",
 		"README.md"
-	],
-	"scripts": {
-		"pack": "yarn pack"
-	},
-	"publishConfig": {
-		"access": "public"
-	},
-	"gitHead": "a900b73132f964b56e1fc3423648b104d851dd59"
+	]
 }
