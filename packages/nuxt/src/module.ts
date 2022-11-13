@@ -106,6 +106,7 @@ export default defineNuxtModule<NuxtModuleConfigInterface>({
 			moduleConfig = mergeObjects(moduleConfig, requireModule(configPath) as Partial<NuxtModuleConfigInterface>);
 
 			if (nuxtIsInDevMode) {
+				nuxt.options.watch = nuxt.options.watch ?? [];
 				nuxt.options.watch.push(configPath);
 			}
 		}
