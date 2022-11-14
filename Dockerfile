@@ -1,10 +1,9 @@
-FROM nginx
+FROM nginx:alpine
 
-RUN apt-get update && apt-get install -y --no-install-recommends git curl openssh-client
+RUN apk update && apk add --update git zip unzip curl openssh-client npm yarn nodejs=16.17.1-r0
 
-RUN curl -sL https://deb.nodesource.com/setup_14.x | bash - && \
-	apt-get update && apt-get install -y --no-install-recommends nodejs &&\
-	npm install --global yarn &&\
-	node -v &&\
+RUN node -v &&\
 	npm -v &&\
 	yarn -v
+
+EXPOSE 80 3000 4000

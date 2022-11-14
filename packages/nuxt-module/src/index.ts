@@ -112,6 +112,7 @@ export default function Stylify(): void {
 		);
 
 		if (nuxtIsInDevMode) {
+			nuxt.options.watch = nuxt.options.watch ?? [];
 			nuxt.options.watch.push(configPath);
 		}
 	}

@@ -106,6 +106,7 @@ export default defineNuxtModule<NuxtModuleConfigInterface>({
 			moduleConfig = mergeObjects(moduleConfig, requireModule(configPath) as Partial<NuxtModuleConfigInterface>);
 
 			if (nuxtIsInDevMode) {
+				nuxt.options.watch = nuxt.options.watch ?? [];
 				nuxt.options.watch.push(configPath);
 			}
 		}
@@ -174,12 +175,14 @@ export default defineNuxtModule<NuxtModuleConfigInterface>({
 			const pluginConfig = mergeObjects(
 				getPluginConfig(),
 				{
+					id: 'nuxtRollup',
 					dev: nuxtIsInDevMode,
 					compiler: {
 						selectorsAreas: ['"className":\\[([^\\]]+)\\]']
 					}
 				}
 			);
+
 			nitroConfig.rollupConfig.plugins.unshift(stylifyRollup(pluginConfig));
 		});
 
