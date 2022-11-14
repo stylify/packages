@@ -8,6 +8,7 @@ import {
 import { createUnplugin } from 'unplugin';
 
 export interface UnpluginConfigInterface extends DefaultConfigInterface {
+	id?: string,
 	configFile?: string,
 	bundles?: BundleConfigInterface[];
 	dev?: boolean;
@@ -51,13 +52,12 @@ export const defineConfig = (config: UnpluginConfigInterface): UnpluginConfigInt
 
 const defaultAllowedTypesRegExp = new RegExp(`\\.(?:${defaultAllowedFileTypes.join('|')})\\b`);
 const defaultIgnoredDirectoriesRegExp = new RegExp(`/${defaultIgnoredDirectories.join('|')}/`);
-let transformCompiler: Compiler = null;
+const bundlers: Record<string, Bundler> = {};
+const transformCompilers: Record<string, Compiler> = {};
 
 export const unplugin = createUnplugin((config: UnpluginConfigInterface|UnpluginConfigInterface[]) => {
-
 	const pluginName = 'stylify';
 	let pluginConfig: UnpluginConfigInterface = {};
-	let bundler: Bundler = null;
 	let configured = false;
 	let configurationLoadingPromise: Promise<void> | null = null;
 
@@ -81,12 +81,11 @@ export const unplugin = createUnplugin((config: UnpluginConfigInterface|Unplugin
 			};
 		});
 
-		const pluginCustomConfig: UnpluginConfigInterface = mergeObjects(
-			...Array.isArray(config) ? config : [config]
-		);
+		const pluginCustomConfig: UnpluginConfigInterface = mergeObjects(...Array.isArray(config) ? config : [config]);
 
 		const configsToProcess: (UnpluginConfigInterface|string)[] = [
 			{
+				id: 'default',
 				bundles: [],
 				bundler: {
 					compiler: {}
@@ -121,6 +120,8 @@ export const unplugin = createUnplugin((config: UnpluginConfigInterface|Unplugin
 				?? !pluginConfig.dev;
 		}
 
+		let bundler = bundlers[pluginConfig.id] ?? null;
+
 		if (pluginConfig.dev || !bundler) {
 			bundler = new Bundler(mergeObjects(
 				{
@@ -129,25 +130,27 @@ export const unplugin = createUnplugin((config: UnpluginConfigInterface|Unplugin
 				},
 				pluginConfig.bundler
 			) as BundleConfigInterface);
+			bundlers[pluginConfig.id] = bundler;
 		}
 
 		return bundler;
 	};
 
 	const runBundler = async () => {
-		if (bundler) {
-			await bundler.waitOnBundlesProcessed();
+		if (typeof bundlers[pluginConfig.id] !== 'undefined') {
+			await getBundler().waitOnBundlesProcessed();
 		}
 
+		const bundlerRunner = getBundler();
 		// eslint-disable-next-line @typescript-eslint/no-floating-promises
-		getBundler().bundle();
-		await bundler.waitOnBundlesProcessed();
+		bundlerRunner.bundle();
+		await bundlerRunner.waitOnBundlesProcessed();
 	};
 
 	return {
 		name: pluginName,
 		transformInclude(id) { return pluginConfig.transformIncludeFilter(id); },
-		async transform(code): Promise<string> {
+		async transform(code) {
 			if (pluginConfig.dev) {
 				return code;
 			}
@@ -155,13 +158,21 @@ export const unplugin = createUnplugin((config: UnpluginConfigInterface|Unplugin
 			const bundler = getBundler();
 			await bundler.waitOnBundlesProcessed();
 
+			let transformCompiler = transformCompilers[pluginConfig.id] ?? null;
+
 			if (transformCompiler === null) {
 				transformCompiler = new Compiler({
-					mangleSelectors: true
+					mangleSelectors: true,
+					selectorsAreas: bundler.compilerConfig.selectorsAreas
 				});
+
+				transformCompilers[pluginConfig.id] = transformCompiler;
 			}
 
-			return transformCompiler.rewriteSelectors(code);
+			return {
+				code: transformCompiler.rewriteSelectors(code),
+				map: null
+			};
 		},
 		esbuild: {
 			async setup() {
