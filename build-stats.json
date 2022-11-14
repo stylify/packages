@@ -17,21 +17,21 @@
   },
   "nuxt": {
     "/esm/module.mjs": {
-      "size": 5328
+      "size": 5411
     },
     "/lib/module.cjs": {
-      "size": 7178
+      "size": 7261
     }
   },
   "nuxt-module": {
     "/esm/index.mjs": {
-      "size": 5067
+      "size": 5120
     },
     "/esm/webpack-loader.mjs": {
       "size": 795
     },
     "/lib/index.cjs": {
-      "size": 6669
+      "size": 6722
     },
     "/lib/webpack-loader.cjs": {
       "size": 1823
@@ -59,10 +59,10 @@
   },
   "unplugin": {
     "/esm/index.mjs": {
-      "size": 6262
+      "size": 6704
     },
     "/lib/index.cjs": {
-      "size": 7519
+      "size": 7961
     }
   }
 }
