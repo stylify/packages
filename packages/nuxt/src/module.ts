@@ -175,12 +175,14 @@ export default defineNuxtModule<NuxtModuleConfigInterface>({
 			const pluginConfig = mergeObjects(
 				getPluginConfig(),
 				{
+					id: 'nuxtRollup',
 					dev: nuxtIsInDevMode,
 					compiler: {
 						selectorsAreas: ['"className":\\[([^\\]]+)\\]']
 					}
 				}
 			);
+
 			nitroConfig.rollupConfig.plugins.unshift(stylifyRollup(pluginConfig));
 		});
 

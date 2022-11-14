@@ -19,27 +19,16 @@ fse.copySync(path.join(bundleTestDir, 'input'), buildTmpDir);
 
 execSync(`cd ${buildTmpDir} && yarn install && yarn build`);
 
-const frontFileContentPart = `const l={},i={class:"h"};function d(n,_){return t(),c("h2",i,"Subtitle")}const u=e(l,[["render",d]]),f={},m={class:"h g"};function h(n,_){return t(),c("h2",m,"Smaller Subtitle")}const p=e(f,[["render",h]]),x={},b=a("h1",{class:"a b c"},"Test title",-1);function $(n,_){const o=u,r=p;return t(),c("div",null,[b,s(o),s(r)])}const S=e(x,[["render",$]]);export{S as default};`;
-const serverFileContentPart = '_push(`<h2${serverRenderer.exports.ssrRenderAttrs(vue_cjs_prod.mergeProps({ class: "h g" }, _attrs))}>Smaller Subtitle</h2>`);';
-const serverFileContentPart2 = '_push(`<h2${serverRenderer.exports.ssrRenderAttrs(vue_cjs_prod.mergeProps({ class: "h" }, _attrs))}>Subtitle</h2>`);'
+const frontFileContentPart = `n={class:"h g"};function _(s,r){return t(),c("h2",n,"Smaller Subtitle")}`;
 const serverDefaultFileContentPart = '_push(`<div${serverRenderer.exports.ssrRenderAttrs(vue_cjs_prod.mergeProps({ class: "d e" }, _attrs))}><div class="f">This is layout</div>`);'
 
 test('Nuxt - Stylify options', async (): Promise<void> => {
 	const [cssFileEntry] = FastGlob.sync(path.join(buildTmpDir, '.output', 'public', '_nuxt', 'entry.*.css'));
-	const [frontFileEntry] = FastGlob.sync(path.join(buildTmpDir, '.output', 'public', '_nuxt', 'index.*.mjs'));
-	const [serverFileEntry] = FastGlob.sync(path.join(buildTmpDir, '.output', 'server', 'chunks', 'app', 'server.mjs'));
-	const [serverDefaultFileEntry] = FastGlob.sync(path.join(buildTmpDir, '.output', 'server', 'chunks', 'app', '_nuxt', 'default.*.mjs'));
+	const [subtitleFileEntry] = FastGlob.sync(path.join(buildTmpDir, '.output', 'public', '_nuxt', 'SmallerSubtitle.*.js'));
 
 	const cssFileContent = testUtils.readFile(cssFileEntry);
-	const frontFileContent = testUtils.readFile(frontFileEntry);
-	const serverFileContent = testUtils.readFile(serverFileEntry);
-	const serverDefaultFileContent = testUtils.readFile(serverDefaultFileEntry);
+ 	const frontFileContent = testUtils.readFile(subtitleFileEntry);
 
 	testUtils.testCssFileToBe(cssFileContent, 'output');
-	expect(frontFileContent.includes(frontFileContentPart)).toBeTruthy();
-
-	expect(serverFileContent.includes(serverFileContentPart)).toBeTruthy();
-	expect(serverFileContent.includes(serverFileContentPart2)).toBeTruthy();
-
-	expect(serverDefaultFileContent.includes(serverDefaultFileContentPart)).toBeTruthy();
+ 	expect(frontFileContent.includes(frontFileContentPart)).toBeTruthy();
 });

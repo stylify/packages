@@ -1,5 +1,5 @@
 import { defineConfig } from '../../esm/module.mjs';
-import { defineNuxtConfig } from 'nuxt';
+import { defineNuxtConfig } from 'nuxt/config';
 
 export default defineNuxtConfig({
 	stylify: defineConfig({
@@ -16,6 +16,9 @@ export default defineNuxtConfig({
 			}
 		}
 	}),
+	modules: [
+		['@nuxt/content'],
+	],
 	buildModules: [
 		'../../esm/module.mjs'
 	]
