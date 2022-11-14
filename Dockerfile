@@ -1,6 +1,10 @@
-FROM nginx:alpine
+FROM nginx
 
-RUN apk update && apk add --update git zip unzip curl openssh-client npm yarn nodejs=16.17.1-r0
+RUN apt-get update && apt-get install -y --no-install-recommends git zip unzip curl npm openssh-client &&\
+	apt remove cmdtest
+
+RUN npm i -g n yarn &&\
+	n 16.17.1
 
 RUN node -v &&\
 	npm -v &&\
