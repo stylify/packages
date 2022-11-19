@@ -8,7 +8,7 @@
 		"repo:init": "yarn install",
 		"repo:pack": "lerna run pack",
 		"publish:preflight": "yarn build && yarn build:generate-stats && npm login",
-		"publish:patch": "yarn publish:preflight && yarn version:patch && lerna publish --no-push --no-git-tag-version --yes",
+		"publish:patch": "yarn publish:preflight && lerna publish --no-push --no-git-tag-version --yes",
 		"publish:minor": "yarn publish:preflight && yarn version:minor && lerna publish --no-push --no-git-tag-version --yes",
 		"version:patch": "lerna version patch --no-push --no-git-tag-version --yes",
 		"version:minor": "lerna version minor --no-push --no-git-tag-version --yes",
