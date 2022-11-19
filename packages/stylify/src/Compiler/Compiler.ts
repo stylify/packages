@@ -98,7 +98,7 @@ export class Compiler {
 
 	private readonly dollarPlaceholder = '_DOLLAR_';
 
-	private readonly variableRegExp = /\$([\w-_]+)/;
+	private readonly variableRegExp = /\$([\w-_]+)/g;
 
 	private readonly contentOptionsRegExp = /stylify-([a-zA-Z-_0-9]+)\s([\s\S]+?)\s\/stylify-[a-zA-Z-_0-9]+/;
 
