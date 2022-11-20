@@ -23,10 +23,11 @@
 <a href="https://github.com/stylify/packages"><img alt="GitHub contributors" src="https://img.shields.io/github/contributors/stylify/packages"></a>
 </p>
 
-## Introduction
+## 💎 Introduction
 
-Stylify is a library that generates utility-first CSS dynamically based on what you write.<br>
-Write HTML. Get CSS
+Stylify is a library that uses CSS-like selectors to generate utility-first CSS dynamically based on what you write.<br> 
+It also brings features like components, custom selectors, variables, helpers and etc. <br>
+Don't study framework. Focus on coding.
 
 <p align="center">
 <img src="https://raw.githubusercontent.com/stylify/packages/master/stylify-intro-v2.gif" height="244" width="600" alt="Stylify preview">
@@ -34,18 +35,7 @@ Write HTML. Get CSS
 
 <p align="center"><a href="https://stylifycss.com"><img src="https://user-images.githubusercontent.com/14016808/132552680-ae877b45-5796-42df-b507-c0f6b9cf4706.png"></a></p>
 
-### Want to know more?
-- Live examples and tutorials can be found in [documentation](https://stylifycss.com/docs/get-started).
-- Information about each release can be found in [releases](https://github.com/stylify/packages/releases).
-- Have an idea? Found a bug? Feel free to create an [issue](https://github.com/stylify/packages/issues).
-
-#### Compatibility
-| Environment | Version                                                                                                                                                          | Note                                                                                                          |
-|-------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------|
-| Browser     | [ES5-compliant browsers](https://caniuse.com/?search=ES5), [Intersection Observer support](https://caniuse.com/?search=intersection%20observer) is required.     | Stylify doesn't need to be included in the browser. All CSS can be pregenerated on server or during a build.  |
-| Node        | >= 14                                                                                                                                                            | In case Stylify will be used during an application build or in an SSR application.                            |
-
-## Packages
+## 📦 Packages
 
 | Project               | Status                                                       | Description                                                                          |
 | --------------------- | ------------------------------------------------------------ | -------------------------------------------------------------------------------------|
@@ -80,14 +70,27 @@ Write HTML. Get CSS
 [unplugin-status]: https://img.shields.io/npm/v/@stylify/unplugin?color=%2301befe&label=Version&style=for-the-badge
 [unplugin-package]: https://npmjs.com/package/@stylify/unplugin
 
+#### Compatibility
+| Environment | Version                                                                                                                                                          | Note                                                                                                          |
+|-------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------|
+| Browser     | [ES5-compliant browsers](https://caniuse.com/?search=ES5), [Intersection Observer support](https://caniuse.com/?search=intersection%20observer) is required.     | Stylify doesn't need to be included in the browser. All CSS can be pregenerated on server or during a build.  |
+| Node        | >= 14                                                                                                                                                            | In case Stylify will be used during an application build or in an SSR application.                            |
 
-## Stay In Touch
+## 💡 Examples, Changelog, Issues
+- Live examples and tutorials: [documentation](https://stylifycss.com/docs/get-started)
+- Changelog and release changes: [releases](https://github.com/stylify/packages/releases)
+- Have an idea? Found a bug? Feel free to create an [issue](https://github.com/stylify/packages/issues)
+
+## 🤟 Stay In Touch
 
 - Visit Stylify website [https://stylifycss.com](https://stylifycss.com).
 - Follow Stylify on [Twitter](https://twitter.com/stylify_dev).
 - Join Stylify community on [Discord](https://discord.gg/NuJsk5SMDz).
 
-## License
+## 👷 Contributing
+Please make sure to read the [Contributing Guide](https://github.com/stylify/packages/blob/master/.github/CODE_OF_CONDUCT.md) before making a pull request.
+
+## 📝 License
 
 [MIT](https://opensource.org/licenses/MIT)
 
