@@ -121,7 +121,13 @@ export class Configurator {
 	}
 
 	private addConfigs(configs: (ConfiguratorConfigsType | string)[]): void {
-		this.rawConfigs = [...this.rawConfigs, ...configs];
+		for (const config of configs) {
+			if (typeof config === 'string' && this.rawConfigs.includes(config)) {
+				continue;
+			}
+
+			this.rawConfigs.push(config);
+		}
 	}
 
 	public async loadConfigFile<T extends Record<string, any> = Record<string, any>>(configPath: string): Promise<T> {
