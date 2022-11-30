@@ -6,6 +6,7 @@ import {
 } from '.';
 
 import { hooks } from '../Hooks';
+import { createUId } from '../Utilities';
 
 export interface ConfigurCssRecordHookDataInterface {
 	compilationResult: CompilationResult,
@@ -49,7 +50,7 @@ export interface SelectorsComponentsMapInterface {
 
 export class CompilationResult {
 
-	public readonly id = Date.now().toString(36) + Math.random().toString(36).substring(2);
+	public readonly id: string;
 
 	private screensList: ScreensListMapType = new Map();
 
@@ -70,6 +71,7 @@ export class CompilationResult {
 	public defaultCss = '';
 
 	public constructor(config: CompilationResultConfigInterface = {}) {
+		this.id = createUId();
 		this.addScreen('_');
 		this.configure(config);
 	}
