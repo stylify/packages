@@ -1,4 +1,4 @@
-import { existsSync, FSWatcher, watch } from 'fs';
+import { existsSync } from 'fs';
 import { join } from 'path';
 import type { CompilerConfigInterface } from './Compiler';
 import { mergeObjects } from '.';
@@ -16,7 +16,6 @@ interface ConfigsQueueInterface {
 }
 
 export interface ConfiguratorConfigInterface {
-	onConfigChanged?: OnConfigChangedCallbackType,
 	configs?: (ConfiguratorConfigsType | string)[]
 }
 
@@ -38,17 +37,12 @@ export class Configurator {
 
 	private rawConfigs: (ConfiguratorConfigsType | string)[] = [];
 
-	private configFilesToWatch: Record<string, FSWatcher> = {};
-
-	private onConfigChanged: OnConfigChangedCallbackType = null;
-
 	constructor(config: ConfiguratorConfigInterface = {}) {
 		// eslint-disable-next-line @typescript-eslint/no-floating-promises
 		this.configure(config);
 	}
 
 	public configure(config: ConfiguratorConfigInterface = {}): void {
-		this.onConfigChanged = config.onConfigChanged ?? this.onConfigChanged;
 		this.addConfigs(config.configs ?? []);
 	}
 
@@ -104,23 +98,16 @@ export class Configurator {
 			const configsLoadingPromisesLength = configsLoadingPromises.length;
 			configToAdd.promisePosition = configsLoadingPromisesLength > 0 ? configsLoadingPromisesLength - 1 : 0;
 			configsLoadingPromises.push(this.loadConfigFile<ConfiguratorConfigsType>(config));
-
-			if (!(config in this.configFilesToWatch) && this.onConfigFileChangedHook) {
-				this.configFilesToWatch[config] = watch(config, () => {
-					if (this.configsAreProcessedPromise !== null) {
-						return;
-					}
-					// eslint-disable-next-line @typescript-eslint/no-floating-promises
-					this.onConfigFileChangedHook();
-				});
-			}
 		}
 
 		const configsFromFiles = await Promise.all(configsLoadingPromises);
-
 		const configsToMerge: ConfiguratorConfigsType[] = configsToAdd.map((config): DefaultConfigInterface => {
 			if (config.promisePosition !== null) {
 				config.config = configsFromFiles[config.promisePosition];
+			}
+
+			if (typeof config.config === 'function') {
+				config.config = config.config();
 			}
 
 			return config.config;
@@ -131,11 +118,6 @@ export class Configurator {
 		configsProcessed();
 
 		return mergedConfig as T;
-	}
-
-	private async onConfigFileChangedHook(): Promise<void> {
-		const config = await this.processConfigs();
-		this.onConfigChanged(config);
 	}
 
 	private addConfigs(configs: (ConfiguratorConfigsType | string)[]): void {
