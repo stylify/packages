@@ -1,5 +1,5 @@
 const path = require('path');
-const { stylifyWebpack } = require('../lib');
+const { stylifyWebpack } = require('../../lib/index.cjs');
 
 module.exports = {
 	entry: path.join(__dirname, 'index.js'),
@@ -12,14 +12,7 @@ module.exports = {
 		]
 	},
 	plugins: [
-		stylifyWebpack({
-			bundles: [
-				{
-					outputFile: './index.css',
-					files: ['./index.html']
-				}
-			]
-		})
+		stylifyWebpack()
 	],
 
 	mode: 'development',
