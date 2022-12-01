@@ -1,6 +1,6 @@
 {
 	"name": "@stylify/stylify",
-	"version": "0.5.5",
+	"version": "0.5.6",
 	"description": "Stylify generates utility-first CSS dynamically based on what you write. Write HTML. Get CSS.",
 	"keywords": [
 		"stylify",
@@ -54,5 +54,5 @@
 	"publishConfig": {
 		"access": "public"
 	},
-	"gitHead": "5623d95bd53fa0a425378082f65bb3e8c640862d"
+	"gitHead": "87fe3802cc575a15731f37ac4ec252bc34149c33"
 }
