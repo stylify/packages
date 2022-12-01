@@ -5,6 +5,7 @@ import {
 	DefaultConfigInterface,
 	mergeObjects
 } from '@stylify/stylify';
+import process from 'process';
 import { createUnplugin } from 'unplugin';
 
 export interface UnpluginConfigInterface extends DefaultConfigInterface {
@@ -55,7 +56,7 @@ const defaultIgnoredDirectoriesRegExp = new RegExp(`/${defaultIgnoredDirectories
 const bundlers: Record<string, Bundler> = {};
 const transformCompilers: Record<string, Compiler> = {};
 
-export const unplugin = createUnplugin((config: UnpluginConfigInterface|UnpluginConfigInterface[]) => {
+export const unplugin = createUnplugin((config: UnpluginConfigInterface|UnpluginConfigInterface[] = {}) => {
 	const pluginName = 'stylify';
 	let pluginConfig: UnpluginConfigInterface = {};
 	let configured = false;
@@ -83,7 +84,7 @@ export const unplugin = createUnplugin((config: UnpluginConfigInterface|Unplugin
 
 		const pluginCustomConfig: UnpluginConfigInterface = mergeObjects(...Array.isArray(config) ? config : [config]);
 
-		const configsToProcess: (UnpluginConfigInterface|string)[] = [
+		let configsToProcess: (UnpluginConfigInterface|string)[] = [
 			{
 				id: 'default',
 				bundles: [],
@@ -96,12 +97,15 @@ export const unplugin = createUnplugin((config: UnpluginConfigInterface|Unplugin
 			pluginCustomConfig
 		];
 
+		const configurator = new Configurator();
+		const defaultConfigFiles = Configurator.getDefaultExistingConfigFiles(process.cwd());
+
+		configsToProcess = [...configsToProcess, ...Object.values(defaultConfigFiles)];
+
 		if (pluginCustomConfig.configFile) {
 			configsToProcess.push(pluginCustomConfig.configFile);
 			delete pluginCustomConfig.configFile;
 		}
-
-		const configurator = new Configurator();
 
 		pluginConfig = await configurator.processConfigs(configsToProcess);
 

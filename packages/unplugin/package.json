@@ -48,7 +48,9 @@
 		"README.md"
 	],
 	"scripts": {
-		"pack": "yarn pack"
+		"pack": "yarn pack",
+		"plg:webpack:build": "cd playground/webpack && yarn build",
+		"plg:webpack:watch": "cd playground/webpack && yarn watch"
 	},
 	"dependencies": {
 		"@stylify/bundler": "^0.5.5",
@@ -65,7 +67,7 @@
 		"rollup-plugin-postcss": "^4.0",
 		"style-loader": "^3.3",
 		"vite": "^2.8",
-		"webpack": "^5.66"
+		"webpack": "^5.75"
 	},
 	"publishConfig": {
 		"access": "public"
