@@ -1,12 +1,12 @@
-<br><br>
+<br>
 
 <p align="center">
 	<a href="https://stylifycss.com" target="_blank" rel="noopener noreferrer">
-		<img src="https://stylifycss.com/images/logo.svg" height="100" alt="Stylify logo">
+		<img src="https://stylifycss.com/images/logo/horizontal.svg" height="100" alt="Stylify logo">
 	</a>
 </p>
 
-<br><br>
+<br>
 
 <p align="center">
 <a href="https://discord.gg/NuJsk5SMDz"><img src="https://img.shields.io/badge/chat-on%20discord-7289da.svg?sanitize=true" alt="Chat"></a>
@@ -26,12 +26,31 @@
 ## 💎 Introduction
 
 Stylify is a library that uses CSS-like selectors to generate utility-first CSS dynamically based on what you write.<br> 
-It also brings features like components, custom selectors, variables, helpers and etc. <br>
 Don't study framework. Focus on coding.
 
 <p align="center">
-<img src="https://raw.githubusercontent.com/stylify/packages/master/stylify-intro-v2.gif" height="244" width="600" alt="Stylify preview">
+<img src="https://raw.githubusercontent.com/stylify/packages/master/stylify-intro-v2.gif" alt="Stylify preview">
 </p>
+
+## ✨ Features
+
+- 🔗 Define [Variables](https://stylifycss.com/docs/stylify/compiler#variables), [Components](https://stylifycss.com/docs/stylify/compiler#components), [Custom selectors](https://stylifycss.com/docs/stylify/compiler#customselectors)
+- 🔁 [Add custom macros](https://stylifycss.com/docs/stylify/compiler#macros) like ml:2
+- 💲 Variables can be injected into css as CSS variables
+- 🌃 CSS [variables can differ for each screen](https://stylifycss.com/docs/stylify/compiler#variables)
+- 🖌️ Simplify coding with [helpers](https://stylifycss.com/docs/stylify/compiler#helpers) like `color:lighten(#000,10)`
+- 🖥️ Style any device with dynamic [screens](https://stylifycss.com/docs/stylify/compiler#screens)
+- ✋ You can mark areas for which CSS should not be
+- 📦 Split bundles for page/layout/component
+- 🧰 Selectors are minified from long .color:blue to short .a
+- ✨ No purge needed. CSS is generated only when something is matched
+- 🔗 Components & Custom selectors are attached to utilities. No duplicated property:value
+- 🪝 Hooks can modify CSS or output for example wrap it in CSS layers
+- 👀 Mangled (hidden/unreadable) HTML classes in production (if mangled)
+- 🚀 [Try it with frameworks](https://stylifycss.com/docs/integrations) like, Next.js, Astro. SolidJS, Qwik Symfony, Nette, Laravel
+- ⚒️ Works with bundlers like Webpack, Rollup, Vite.js
+- ⛓️ Generated CSS can be used within SCSS, Less, Stylus
+- 🎨 CSS variables can be exported into external file and reused
 
 <p align="center"><a href="https://stylifycss.com"><img src="https://user-images.githubusercontent.com/14016808/132552680-ae877b45-5796-42df-b507-c0f6b9cf4706.png"></a></p>
 
