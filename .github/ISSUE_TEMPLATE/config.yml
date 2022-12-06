@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: ❤️ Sponsor
+    url: https://github.com/sponsors/Machy8
+    about: Do you like Stylify? I will be happy if you buy me a coffee once in a while ☕.
+  - name: ✉️ Discussion on Github
+    url: https://github.com/stylify/packages/discussions
+    about: Ask questions and discuss with other Stylify CSS users.
+  - name: 💬 Discord Chat
+    url: https://discord.gg/NuJsk5SMDz
+    about: Ask questions and discuss with other Stylify CSS users in real time.
