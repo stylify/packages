@@ -1,5 +1,5 @@
 name: "🐞 Bug report"
-description: Report an issue with Stylify CSS
+description: Report an issue with Stylify CSS.
 labels: ["bug"]
 body:
   - type: markdown

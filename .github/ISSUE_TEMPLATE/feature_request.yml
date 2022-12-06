@@ -1,6 +1,6 @@
 name: "💎 Feature Request"
-description: Request a new Stylify CSS feature
-labels: [enhancement]
+description: Request a new Stylify CSS feature.
+labels: [feature]
 body:
   - type: markdown
     attributes:
