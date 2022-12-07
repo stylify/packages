@@ -1,4 +1,4 @@
-import { existsSync, fstat, readFileSync } from 'fs';
+import { existsSync, readFileSync } from 'fs';
 import http from 'http';
 import path from 'path';
 import { handler as ssrHandler } from './dist/server/entry.mjs';
