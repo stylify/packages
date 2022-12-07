@@ -40,6 +40,7 @@ export interface BundlerHooksListInterface extends DefaultHooksListInterface {
 		bundleConfig: BundleConfigInterface,
 		filePath: string,
 		contentOptions: ContentOptionsInterface,
+		isRoot: boolean,
 		content: string
 	}
 }
@@ -81,7 +82,14 @@ export interface BundleConfigInterface {
 	outputFile: string,
 	scope?: string,
 	files: string[],
-	compiler?: CompilerConfigInterface
+	compiler?: CompilerConfigInterface,
+	cssLayer?: string,
+}
+
+export interface CSSLayersOrderInterface {
+	order: string,
+	exportLayer?: string[],
+	exportFile?: string
 }
 
 export interface BundlerConfigInterface {
@@ -97,13 +105,21 @@ export interface BundlerConfigInterface {
 	sassVarsDirPath?: string,
 	lessVarsDirPath?: string,
 	stylusVarsDirPath?: string,
-	bundles?: BundleConfigInterface[]
+	bundles?: BundleConfigInterface[],
+	cssLayersOrder?: CSSLayersOrderInterface
 }
 
 export interface WatchedFilesInterface {
 	watcher: fs.FSWatcher,
 	processing: boolean,
 	bundlesIndexes: string[]
+}
+
+export interface GetFilesToProcessOptionsInterface {
+	bundleConfig: BundleConfigInterface,
+	compiler: Compiler,
+	fileMasks: string[]
+	isRoot: boolean
 }
 
 const postCssPrefixer = postcss([autoprefixer()]);
@@ -132,11 +148,6 @@ export class Bundler {
 
 	private configFileWatcherInitialized = false;
 
-	/**
-	 * @internal
-	 */
-	public compilerConfig: CompilerConfigInterface = {};
-
 	private dev = false;
 
 	private filesBaseDir: string = null;
@@ -159,16 +170,23 @@ export class Bundler {
 
 	private autoprefixerEnabled = true;
 
-	public bundlesBuildCache: BundlesBuildCacheType = {};
-
 	private createdFilesContentCache: Record<string, string> = {};
+
+	private cssLayersOrder: CSSLayersOrderInterface = null;
+
+	/**
+	 * @internal
+	 */
+	public compilerConfig: CompilerConfigInterface = {};
+
+	public bundlesBuildCache: BundlesBuildCacheType = {};
 
 	public constructor(config: BundlerConfigInterface) {
 		this.configurationLoadingPromise = this.configure(config);
 	}
 
 	private mergeConfigs(config: Partial<BundlerConfigInterface>) {
-		this.configFile = config.configFile || this.configFile;
+		this.configFile = config.configFile ?? this.configFile;
 		this.dev = config.dev ?? this.dev;
 		this.compilerConfig.dev = this.dev;
 		this.compilerConfig = mergeObjects(this.compilerConfig, config.compiler ?? {});
@@ -176,13 +194,13 @@ export class Bundler {
 		this.sync = config.sync ?? this.sync;
 		this.watchFiles = config.watchFiles ?? this.watchFiles;
 		this.filesBaseDir = config.filesBaseDir ?? this.filesBaseDir;
+		this.autoprefixerEnabled = config.autoprefixerEnabled ?? this.autoprefixerEnabled;
+		this.cssLayersOrder = config.cssLayersOrder ?? this.cssLayersOrder;
 
 		this.cssVarsDirPath = config.cssVarsDirPath ?? this.cssVarsDirPath;
 		this.sassVarsDirPath = config.sassVarsDirPath ?? this.sassVarsDirPath;
 		this.lessVarsDirPath = config.lessVarsDirPath ?? this.lessVarsDirPath;
 		this.stylusVarsDirPath = config.stylusVarsDirPath ?? this.stylusVarsDirPath;
-
-		this.autoprefixerEnabled = config.autoprefixerEnabled ?? this.autoprefixerEnabled;
 
 		if ('bundles' in config) {
 			this.addBundles(config.bundles);
@@ -253,7 +271,15 @@ export class Bundler {
 			}
 		}
 
+		if (this.cssLayersOrder && typeof this.cssLayersOrder.exportFile !== 'undefined') {
+			this.dumpCssLayersOrderIntoFile();
+		}
+
 		this.configurationLoadingPromise = null;
+	}
+
+	private dumpCssLayersOrderIntoFile() {
+		this.writeFile(this.cssLayersOrder.exportFile, `@layer ${this.cssLayersOrder.order};`);
 	}
 
 	private dumpVariablesIntoFile(options: DumpVariablesIntoFileOptionsInterface): void {
@@ -465,7 +491,12 @@ export class Bundler {
 			const bundleBuildCache = this.bundlesBuildCache[bundleConfig.outputFile];
 			const compiler = bundleBuildCache.compiler;
 
-			const filesToProcess = await this.getFilesToProcess(bundleConfig, compiler, bundleConfig.files);
+			const filesToProcess = await this.getFilesToProcess({
+				bundleConfig,
+				compiler,
+				fileMasks: bundleConfig.files,
+				isRoot: true
+			});
 
 			if (!filesToProcess.length) {
 				this.log(`No files found for "${bundleConfig.outputFile}". Skipping.`, 'textRed');
@@ -566,7 +597,20 @@ export class Bundler {
 				'bundler:beforeCssFileCreated', { content: cssToSave, bundleConfig }
 			);
 
-			this.writeFile(hookData.bundleConfig.outputFile, hookData.content, bundleBuildCache.compiler.dev);
+			let outputFileContent = hookData.content;
+			const isDev = bundleBuildCache.compiler.dev;
+			const whiteSpace = isDev ? '\n' : '';
+
+			if (typeof bundleConfig.cssLayer !== 'undefined') {
+				const layerName = this.cssLayersOrder.exportLayer;
+				let layerContent = typeof layerName === 'undefined' || !layerName.includes(bundleConfig.cssLayer)
+					? ''
+					: `@layer ${this.cssLayersOrder.order};${whiteSpace.repeat(2)}`;
+				layerContent += `@layer ${bundleConfig.cssLayer} {${whiteSpace}${outputFileContent}${whiteSpace}}`;
+				outputFileContent = layerContent;
+			}
+
+			this.writeFile(hookData.bundleConfig.outputFile, outputFileContent, isDev);
 
 			bundleBuildCache.buildTime = ((performance.now() - startTime)/1000).toFixed(2);
 			this.log(`Created "${bundleConfig.outputFile}" (${bundleBuildCache.buildTime} s).`, 'textGreen');
@@ -585,12 +629,10 @@ export class Bundler {
 		}
 	}
 
-	private async getFilesToProcess(
-		bundleConfig: BundleConfigInterface,
-		compiler: Compiler,
-		filesMasks: string[] = []
-	): Promise<BundleFileDataInterface[]> {
-		filesMasks = filesMasks.map((fileMask: string): string => {
+	private async getFilesToProcess(options: GetFilesToProcessOptionsInterface): Promise<BundleFileDataInterface[]> {
+		const { bundleConfig, isRoot, compiler } = options;
+		let { fileMasks } = options;
+		fileMasks = fileMasks.map((fileMask: string): string => {
 			return normalize(fileMask) as string;
 		});
 
@@ -598,7 +640,7 @@ export class Bundler {
 			? normalize(bundleConfig.filesBaseDir)
 			: null;
 
-		const filePaths = FastGlob.sync(filesMasks);
+		const filePaths = FastGlob.sync(fileMasks);
 
 		let filesToProcess: BundleFileDataInterface[] = [];
 		const processedFilePaths: Promise<void>[] = [];
@@ -618,6 +660,7 @@ export class Bundler {
 						bundleConfig,
 						filePath,
 						contentOptions,
+						isRoot,
 						content: fileContent
 					}
 				);
@@ -651,9 +694,12 @@ export class Bundler {
 							filePathsToProcess.push(normalize(filePathToNormalize) as string);
 						});
 
-					const nestedFilePaths = await this.getFilesToProcess(
-						bundleConfig, compiler, this.clearFilePaths(filePathsToProcess)
-					);
+					const nestedFilePaths = await this.getFilesToProcess({
+						bundleConfig,
+						compiler,
+						fileMasks: this.clearFilePaths(filePathsToProcess),
+						isRoot: false
+					});
 					filesToProcess = [...filesToProcess, ...nestedFilePaths];
 				}
 
