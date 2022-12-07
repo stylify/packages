@@ -22,7 +22,7 @@ execSync(`cd ${buildTmpDir} && yarn install && yarn build`);
 const indexHtmlPart = `
 	<body class="c d">
 		<h1 class="e f g">Layout</h1>
-		<h1 class="g">Hello World!</h1><h2 class="j h k i"></h2><h2 class="a b">Subtitle</h2>
+		<h1 class="g">Hello World!</h1><h2 class="j h k i"></h2><h3 class="e">Another text</h3><h2 class="a b">Subtitle</h2>
 	</body></html>
 `.trim();
 

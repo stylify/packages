@@ -3,6 +3,7 @@ import { UnpluginConfigInterface, stylifyVite, defineConfig as stylifyUnpluginCo
 import { Configurator } from '@stylify/stylify';
 import { fileURLToPath } from 'url';
 import { join } from 'path';
+import type { BundleConfigInterface } from '@stylify/bundler';
 
 export const defineConfig = stylifyUnpluginConfig;
 
@@ -19,16 +20,27 @@ export const stylify = (options: UnpluginConfigInterface = {}): AstroIntegration
 					|| command === 'dev'
 					|| null);
 
+				const includeDefaultBundle = typeof options.bundles === 'undefined';
 				const defaultConfig: UnpluginConfigInterface = {
 					dev: options?.dev ?? isDev,
+					bundler: {
+						autoprefixerEnabled: false
+					},
 					compiler: {
 						mangleSelectors: options?.compiler?.mangleSelectors ?? !isDev,
-						selectorsAreas: ['(?:^|\\s+)class:list=\\{\\[((?:.|\\n)+)\\]\\}']
+						selectorsAreas: [
+							'(?:^|\\s+)class:list=\\{\\[((?:.|\\n)+)\\]\\}',
+							`addAttribute\\(([\\s\\S]+), (?:"|\\')class:list(?:"|\\')\\)`,
+							`addAttribute\\(([\\s\\S]+), (?:"|')class(?:"|')\\)`
+						]
 					},
-					bundles: options?.bundles ? [] : [{
-						outputFile: singleBundleOutputFilePath,
-						files: [join(srcDir, `**`, `*.{astro,html,js,jsx,svelte,ts,tsx,vue}`)]
-					}]
+					bundles: includeDefaultBundle
+						? [{
+							outputFile: singleBundleOutputFilePath,
+							rewriteSelectorsInFiles: false,
+							files: [join(srcDir, `**`, `*.{astro,html,js,jsx,svelte,ts,tsx,vue}`)]
+						}]
+						: []
 				};
 
 				const configs = Configurator.getDefaultExistingConfigFiles(fileURLToPath(config.root));
@@ -38,15 +50,36 @@ export const stylify = (options: UnpluginConfigInterface = {}): AstroIntegration
 					defaultConfig.configFile = configs[configsTypes[0]];
 				}
 
+				const optionsConfig = options ?? {};
+
+				const configureBundles = <T = BundleConfigInterface>(bundlesConfigs: T[]): T[] => {
+					return bundlesConfigs.map((bundleConfig: T) => {
+						bundleConfig.rewriteSelectorsInFiles = false;
+						return bundleConfig;
+					});
+				};
+
+				if (Object.keys(optionsConfig).length) {
+					if (!includeDefaultBundle) {
+						optionsConfig.bundles = configureBundles(optionsConfig.bundles);
+					}
+
+					if (typeof optionsConfig?.bundler?.bundles !== 'undefined') {
+						optionsConfig.bundler.bundles = configureBundles(optionsConfig.bundles);
+					}
+				}
+
 				updateConfig({
 					vite: {
 						plugins: [
-							stylifyVite([defaultConfig, options ?? {}])
+							stylifyVite([defaultConfig, optionsConfig])
 						]
 					}
 				});
 
-				injectScript('page-ssr', `import '${singleBundleOutputFilePath}';`);
+				if (includeDefaultBundle) {
+					injectScript('page-ssr', `import '${singleBundleOutputFilePath}';`);
+				}
 			}
 		}
 	};
