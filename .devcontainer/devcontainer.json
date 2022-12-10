@@ -36,7 +36,8 @@
 		"whatwedo.twig",
 		"xabikos.JavaScriptSnippets",
 		"Zignd.html-css-class-completion",
-		"dbaeumer.vscode-eslint"
+		"dbaeumer.vscode-eslint",
+		"astro-build.astro-vscode"
 	],
 	"service": "server",
 	"dockerComposeFile": "../docker-compose.yml",
