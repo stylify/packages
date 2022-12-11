@@ -18,7 +18,7 @@ import { performance } from 'perf_hooks';
 import autoprefixer from 'autoprefixer';
 import postcss from 'postcss';
 
-interface BundleFileDataInterface {
+export interface BundleFileDataInterface {
 	filePath: string,
 	content: string
 }
