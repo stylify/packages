@@ -3,6 +3,7 @@ import micromatch from 'micromatch';
 import {
 	CompilerConfigInterface,
 	CompilerContentOptionsInterface,
+	createUId,
 	DefaultHooksListInterface
 } from '@stylify/stylify';
 import {
@@ -43,6 +44,9 @@ export interface BundlerHooksListInterface extends DefaultHooksListInterface {
 		contentOptions: ContentOptionsInterface,
 		isRoot: boolean,
 		content: string
+	},
+	'bundler:initialized': {
+		bundler: Bundler
 	}
 }
 
@@ -94,6 +98,7 @@ export interface CSSLayersOrderInterface {
 }
 
 export interface BundlerConfigInterface {
+	id?: string,
 	dev?: boolean,
 	configFile?: string,
 	autoprefixerEnabled?: boolean,
@@ -134,6 +139,8 @@ export const defineConfig = (config: BundlerConfigInterface): BundlerConfigInter
 export class Bundler {
 
 	private readonly WATCH_FILE_DOUBLE_TRIGGER_BLOCK_TIMEOUT = 500;
+
+	public id: string = createUId();
 
 	private processedBundlesQueue: Promise<void>[] = [];
 
@@ -184,6 +191,9 @@ export class Bundler {
 
 	public constructor(config: BundlerConfigInterface) {
 		this.configurationLoadingPromise = this.configure(config);
+		this.configurationLoadingPromise.finally(() => {
+			hooks.callHook('bundler:initialized', {bundler: this});
+		});
 	}
 
 	private mergeConfigs(config: Partial<BundlerConfigInterface>) {
@@ -217,6 +227,8 @@ export class Bundler {
 	}
 
 	public async configure(config: BundlerConfigInterface): Promise<void> {
+		this.id = config.id ?? this.id;
+
 		if ('configFile' in config && !this.configFile) {
 			this.configFile = config.configFile;
 
@@ -512,11 +524,11 @@ export class Bundler {
 						&& !this.watchedFiles[pathToWatch].bundlesIndexes.includes(bundleConfig.outputFile)
 					) {
 						this.watchedFiles[pathToWatch].bundlesIndexes.push(bundleConfig.outputFile);
-						return;
+						continue;
 					}
 
 					if (isFileInWatchedFiles) {
-						return;
+						continue;
 					}
 
 					this.watchedFiles[pathToWatch] = {
@@ -527,15 +539,17 @@ export class Bundler {
 								return;
 							}
 
+							const fullFilePath = pathToWatch === fileName
+								? fileName
+								: path.join(pathToWatch, fileName);
+
 							const bundlesIndexes = this.watchedFiles[pathToWatch].bundlesIndexes;
 							let changedInfoLogged = false;
 							this.watchedFiles[pathToWatch].processing = true;
 
 							for (const bundleToProcessIndex of bundlesIndexes) {
 								const bundleConfig = this.bundles[bundleToProcessIndex];
-								const fullFilePath = pathToWatch === fileName
-									? fileName
-									: path.join(pathToWatch, fileName);
+
 								if (!micromatch.isMatch(fullFilePath, bundleConfig.files)) {
 									continue;
 								}
@@ -588,7 +602,7 @@ export class Bundler {
 
 				} catch (error) {
 					this.logOrError(error);
-					return;
+					continue;
 				}
 
 				if (bundleConfig.rewriteSelectorsInFiles) {
@@ -612,19 +626,19 @@ export class Bundler {
 			}
 
 			if (filesToWatch.length) {
-				const pathsToWatch: string[] = [];
+				const dirsToWatch: string[] = [];
 
 				for (const fileToWatch of filesToWatch) {
 					const parsedPath = path.parse(fileToWatch);
 					const dirName = parsedPath.dir.length ? parsedPath.dir : fileToWatch;
 
-					if (dirName in pathsToWatch) {
+					if (dirName in dirsToWatch) {
 						continue;
 					}
 
 					let similarPathIndex: number = null;
 
-					const similarPath = pathsToWatch.find((dirToWatch, index) => {
+					const similarPath = dirsToWatch.find((dirToWatch, index) => {
 						const isSimilarPath = dirToWatch.startsWith(dirName);
 						if (isSimilarPath) {
 							similarPathIndex = index;
@@ -633,14 +647,14 @@ export class Bundler {
 					});
 
 					if (similarPath && dirName.length < similarPath.length) {
-						pathsToWatch[similarPathIndex] = dirName;
+						dirsToWatch[similarPathIndex] = dirName;
 						continue;
 					} else if (!similarPath) {
-						pathsToWatch.push(dirName);
+						dirsToWatch.push(dirName);
 					}
 				}
 
-				setupBundleWatcher(pathsToWatch);
+				setupBundleWatcher([...filesToWatch, ...dirsToWatch]);
 			}
 
 			await Promise.all(filesToProcessPromises);
