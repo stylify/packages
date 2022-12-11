@@ -1,13 +1,13 @@
 import FastGlob from 'fast-glob';
 import micromatch from 'micromatch';
-import {
+import type {
 	CompilerConfigInterface,
 	CompilerContentOptionsInterface,
-	createUId,
 	DefaultHooksListInterface
 } from '@stylify/stylify';
 import {
 	mergeObjects,
+	createUId,
 	CompilationResult,
 	Compiler,
 	Hooks
