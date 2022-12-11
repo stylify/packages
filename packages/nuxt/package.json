@@ -1,6 +1,6 @@
 {
 	"name": "@stylify/nuxt",
-	"version": "0.5.6",
+	"version": "0.5.7",
 	"description": "Module for Nuxt v3+ for easier Stylify integration.",
 	"keywords": [
 		"stylify",
@@ -46,9 +46,9 @@
 	},
 	"dependencies": {
 		"@nuxt/kit": "npm:@nuxt/kit-edge@latest",
-		"@stylify/bundler": "^0.5.6",
-		"@stylify/stylify": "^0.5.6",
-		"@stylify/unplugin": "^0.5.6"
+		"@stylify/bundler": "^0.5.7",
+		"@stylify/stylify": "^0.5.7",
+		"@stylify/unplugin": "^0.5.7"
 	},
 	"devDependencies": {
 		"@nuxt/content": "^2.0.1",
@@ -58,5 +58,5 @@
 		"fast-glob": "^3.2.11",
 		"nuxt": "npm:nuxt3@latest"
 	},
-	"gitHead": "87fe3802cc575a15731f37ac4ec252bc34149c33"
+	"gitHead": "7f677db6b657072775edee74c7cc325137b44504"
 }
