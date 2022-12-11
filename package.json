@@ -7,8 +7,8 @@
 	"scripts": {
 		"repo:init": "yarn install && lerna exec -- yarn link",
 		"repo:pack": "lerna run pack",
-		"publish:preflight": "yarn build && yarn build:generate-stats && npm login",
-		"publish": "yarn publish:preflight && lerna publish --no-push --no-git-tag-version --yes",
+		"repo:publish:preflight": "yarn build && yarn build:generate-stats && npm login",
+		"repo:publish": "yarn repo:publish:preflight && lerna publish --no-push --no-git-tag-version --yes",
 		"watch": "cross-env watch=true yarn build",
 		"build": "ts-node scripts/build.ts",
 		"build:notypes": "cross-env typesDisabled=true ts-node scripts/build.ts",
