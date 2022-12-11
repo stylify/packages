@@ -277,11 +277,13 @@ export class Compiler {
 
 		const placeholderInserter = (matched: string) => {
 			const placeholderKey = `${placeholderTextPart}${Object.keys(contentPlaceholders).length}`;
-			contentPlaceholders[placeholderKey] = matched.replace(/\$/g, this.dollarPlaceholder);
+			contentPlaceholders[placeholderKey] = matched;
 			return placeholderKey;
 		};
 
-		content = content
+		const replaceDollarsByPlaceholder = (content: string) => content.replace(/\$/g, this.dollarPlaceholder);
+
+		content = replaceDollarsByPlaceholder(content)
 			.replace(new RegExp(this.ignoredAreasRegExpString, 'g'), (...args): string => {
 				const matchArguments = args.filter((value) => typeof value === 'string');
 				const fullMatch: string = matchArguments[0];
@@ -297,8 +299,10 @@ export class Compiler {
 		const selectorsListKeys = Object.keys(minifiedSelectorGenerator.processedSelectors)
 			.sort((a: string, b: string): number => b.length - a.length);
 
-		for (let selector of selectorsListKeys) {
-			if (!content.includes(selector)) {
+		for (const selector of selectorsListKeys) {
+			let selectorToReplace = replaceDollarsByPlaceholder(selector);
+
+			if (!content.includes(selectorToReplace)) {
 				continue;
 			}
 
@@ -306,30 +310,34 @@ export class Compiler {
 			const selectorPrefix = matchSelectorsWithPrefixes
 				? minifiedSelectorGenerator.getSelectorPrefix(selector)
 				: '';
-			selector = this.escapeCssSelector(
-				minifiedSelectorGenerator.getStringToMatch(selector, matchSelectorsWithPrefixes)
+
+			selectorToReplace = this.escapeCssSelector(
+				minifiedSelectorGenerator.getStringToMatch(
+					selectorToReplace, matchSelectorsWithPrefixes
+				)
 			);
 
 			const replacement = `${selectorPrefix}${mangledSelector}`;
 
 			if (rewriteOnlyInSelectorsAreas === false) {
-				content = content.replace(new RegExp(selector, 'g'), replacement);
+				content = content.replace(new RegExp(selectorToReplace, 'g'), replacement);
 				continue;
 			}
 
 			for (const rewriteSelectorAreaRegExpString of this.selectorsAreas) {
 				const regExp = new RegExp(rewriteSelectorAreaRegExpString, 'g');
 				content = content.replace(regExp, (fullMatch: string, selectorMatch: string): string => {
-					const selectorReplacement = selectorMatch.replace(new RegExp(selector, 'g'), replacement);
+					const selectorReplacement = selectorMatch.replace(new RegExp(selectorToReplace, 'g'), replacement);
 					return fullMatch.replace(selectorMatch, selectorReplacement);
 				});
 			}
 		}
 
 		for (const [placeholderKey, contentPlaceholder] of Object.entries(contentPlaceholders)) {
-			content = content.replace(placeholderKey, contentPlaceholder.replace(dollarPlaceholderRegExp, '$$$$'));
+			content = content.replace(placeholderKey, contentPlaceholder);
 		}
 
+		content = content.replace(dollarPlaceholderRegExp, '$$');
 		return content;
 	}
 

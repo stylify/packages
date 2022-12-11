@@ -1,0 +1,10 @@
+@layer layout,page;
+
+@layer layout {
+.color\:blue{
+	color: blue
+}
+.font-size\:24px{
+	font-size: 24px
+}
+}

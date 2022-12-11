@@ -1,0 +1,28 @@
+# Root
+/node_modules/
+*.lerna_backup
+*.tgz
+/coverage
+/scripts/build.js
+lerna-debug.log
+**/yarn-error.log
+.idea
+/.idea
+
+#Packages
+/packages/**/*.lerna_backup
+/packages/**/node_modules
+/packages/**/dist
+/packages/**/esm
+/packages/**/lib
+/packages/**/tmp
+/packages/**/types
+
+# @stylify/nuxt
+/packages/nuxt/.nuxt
+/packages/nuxt/.output
+/packages/nuxt/.output
+/packages/nuxt/playground/assets
+/packages/nuxt/playground/.nuxt
+/packages/nuxt/playground/.output
+/packages/nuxt/playground/workspaces
