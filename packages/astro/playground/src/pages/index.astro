@@ -1,8 +1,10 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import Title from '/src/components/title.astro';
+import '/src/styles/page/index.css';
 ---
 
 <Layout title="Hello World!">
-	<h1 class="color:$blue">Hello World!</h1>
+	<Title />
 	<a href="/second">Second page</a>
 </Layout>

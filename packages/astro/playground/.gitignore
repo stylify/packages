@@ -1,7 +1,7 @@
 # build output
 dist/
 .output/
-src/styles/stylify.css
+src/styles
 
 # dependencies
 node_modules/

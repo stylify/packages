@@ -10,10 +10,6 @@
     "astro": "astro"
   },
   "dependencies": {
-	"@stylify/stylify": "file:../../../stylify",
-	"@stylify/bundler": "file:../../../bundler",
-	"@stylify/unplugin": "file:../../../unplugin",
-	"@stylify/astro": "file:../../",
     "astro": "^1.2"
   }
 }
