@@ -1,6 +1,6 @@
 {
 	"name": "@stylify/bundler",
-	"version": "0.5.7",
+	"version": "0.5.8",
 	"description": "CSS bundler for @stylify/stylify.",
 	"keywords": [
 		"stylify",
@@ -48,7 +48,7 @@
 		"pack": "yarn pack"
 	},
 	"dependencies": {
-		"@stylify/stylify": "^0.5.7",
+		"@stylify/stylify": "^0.5.8",
 		"autoprefixer": "^10.4",
 		"fast-glob": "^3.2",
 		"micromatch": "^4.0.4",
@@ -58,5 +58,5 @@
 	"publishConfig": {
 		"access": "public"
 	},
-	"gitHead": "7f677db6b657072775edee74c7cc325137b44504"
+	"gitHead": "c1f36b56205eb2e43dae71b689c0bed4ec520bcb"
 }
