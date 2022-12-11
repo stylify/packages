@@ -5,7 +5,7 @@
 	"author": "Vladimír Macháček",
 	"license": "MIT",
 	"scripts": {
-		"repo:init": "yarn install",
+		"repo:init": "yarn install && lerna exec -- yarn link",
 		"repo:pack": "lerna run pack",
 		"publish:preflight": "yarn build && yarn build:generate-stats && npm login",
 		"publish": "yarn publish:preflight && lerna publish --no-push --no-git-tag-version --yes",
