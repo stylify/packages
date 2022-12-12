@@ -67,7 +67,7 @@ hooks.addListener('bundler:fileToProcessOpened', (data) => {
   let { content, filePath } = data;
 
   // 3.1 Only for root files
-  if (data.isRoot) {
+  if (filePath.includes('/pages/') || filePath.includes('/layouts/')) {
     const cssFileName = path.parse(filePath).name;
     const cssFilePathImport = `import '/src/styles/${getFileCssLayerName(
       filePath

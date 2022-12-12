@@ -42,7 +42,6 @@ export interface BundlerHooksListInterface extends DefaultHooksListInterface {
 		bundleConfig: BundleConfigInterface,
 		filePath: string,
 		contentOptions: ContentOptionsInterface,
-		isRoot: boolean,
 		content: string
 	},
 	'bundler:initialized': {
@@ -125,7 +124,6 @@ export interface GetFilesToProcessOptionsInterface {
 	bundleConfig: BundleConfigInterface,
 	compiler: Compiler,
 	fileMasks: string[]
-	isRoot: boolean
 }
 
 const postCssPrefixer = postcss([autoprefixer()]);
@@ -507,8 +505,7 @@ export class Bundler {
 			const filesToProcess = await this.getFilesToProcess({
 				bundleConfig,
 				compiler,
-				fileMasks: bundleConfig.files,
-				isRoot: true
+				fileMasks: bundleConfig.files
 			});
 
 			if (!filesToProcess.length) {
@@ -719,7 +716,7 @@ export class Bundler {
 	}
 
 	private async getFilesToProcess(options: GetFilesToProcessOptionsInterface): Promise<BundleFileDataInterface[]> {
-		const { bundleConfig, isRoot, compiler } = options;
+		const { bundleConfig, compiler } = options;
 		let { fileMasks } = options;
 		fileMasks = fileMasks.map((fileMask: string): string => {
 			return normalize(fileMask) as string;
@@ -749,7 +746,6 @@ export class Bundler {
 						bundleConfig,
 						filePath,
 						contentOptions,
-						isRoot,
 						content: fileContent
 					}
 				);
@@ -786,8 +782,7 @@ export class Bundler {
 					const nestedFilePaths = await this.getFilesToProcess({
 						bundleConfig,
 						compiler,
-						fileMasks: this.clearFilePaths(filePathsToProcess),
-						isRoot: false
+						fileMasks: this.clearFilePaths(filePathsToProcess)
 					});
 					filesToProcess = [...filesToProcess, ...nestedFilePaths];
 				}
