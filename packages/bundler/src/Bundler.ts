@@ -539,10 +539,10 @@ export class Bundler {
 								return;
 							}
 
-							const fullFilePath = pathToWatch === fileName
-								? fileName
-								: path.join(pathToWatch, fileName);
-
+							const parsedFilePath = path.parse(fileName);
+							const parsedPathToWatch = path.parse(pathToWatch);
+							const fullFilePath = path.join(parsedPathToWatch.dir, fileName);
+							const hasExtension = parsedFilePath.ext !== '';
 							const bundlesIndexes = this.watchedFiles[pathToWatch].bundlesIndexes;
 							let changedInfoLogged = false;
 							this.watchedFiles[pathToWatch].processing = true;
@@ -550,7 +550,7 @@ export class Bundler {
 							for (const bundleToProcessIndex of bundlesIndexes) {
 								const bundleConfig = this.bundles[bundleToProcessIndex];
 
-								if (!micromatch.isMatch(fullFilePath, bundleConfig.files)) {
+								if (!hasExtension && !micromatch.isMatch(fullFilePath, bundleConfig.files)) {
 									continue;
 								}
 
@@ -654,7 +654,7 @@ export class Bundler {
 					}
 				}
 
-				setupBundleWatcher([...filesToWatch, ...dirsToWatch]);
+				setupBundleWatcher([...new Set([...filesToWatch, ...dirsToWatch])]);
 			}
 
 			await Promise.all(filesToProcessPromises);
