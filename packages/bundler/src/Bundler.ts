@@ -1,4 +1,5 @@
 import FastGlob from 'fast-glob';
+import crypto from 'crypto';
 import micromatch from 'micromatch';
 import type {
 	CompilerConfigInterface,
@@ -176,7 +177,7 @@ export class Bundler {
 
 	private autoprefixerEnabled = true;
 
-	private createdFilesContentCache: Record<string, string> = {};
+	private createdFilesContentHashes: Record<string, string> = {};
 
 	private cssLayersOrder: CSSLayersOrderInterface = null;
 
@@ -810,20 +811,27 @@ export class Bundler {
 			newLine = '';
 		}
 
+		const getFileContentHash = (content: string) => crypto.createHash('md5').update(content).digest('base64');
+
 		const newFileContent = fileContent.trim() + newLine;
+		const newFileContentHash = getFileContentHash(newFileContent);
 
 		try {
-			const actualFileContent = this.createdFilesContentCache[filePath]
-				?? fs.readFileSync(filePath).toString('utf-8');
+			let actualFileContentHash = this.createdFilesContentHashes[filePath] ?? null;
 
-			if (actualFileContent === newFileContent) {
+			if (!actualFileContentHash) {
+				const actualFileContent = fs.readFileSync(filePath).toString('utf-8');
+				actualFileContentHash = getFileContentHash(actualFileContent);
+			}
+
+			if (actualFileContentHash === newFileContentHash) {
 				return;
 			}
 		} catch (e) {
 			this.log(`Stylify Bundler: File "${filePath}" not found. It will be created.`);
 		}
 
-		this.createdFilesContentCache[filePath] = newFileContent;
+		this.createdFilesContentHashes[filePath] = newFileContentHash;
 		fs.writeFileSync(filePath, newFileContent);
 	}
 
