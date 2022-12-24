@@ -32,6 +32,9 @@ Don't study framework. Focus on coding.
 <img src="https://raw.githubusercontent.com/stylify/packages/master/stylify-intro-v2.gif" alt="Stylify preview">
 </p>
 
+## ⚡ Why Stylify instead of CSS or inline styles?
+Because of [fewer CSS headaches](https://stylifycss.com/docs/get-started/why-stylify-css#problems-stylify-css-tries-to-solve), [faster coding](https://stylifycss.com/docs/get-started/why-stylify-css#faster-coding) and [extremely optimized output](https://stylifycss.com/docs/get-started/why-stylify-css#output-optimization).
+
 ## ✨ Features
 
 - 🔗 Define [Variables](https://stylifycss.com/docs/stylify/compiler#variables), [Components](https://stylifycss.com/docs/stylify/compiler#components), [Custom selectors](https://stylifycss.com/docs/stylify/compiler#customselectors)
