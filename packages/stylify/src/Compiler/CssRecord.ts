@@ -27,6 +27,8 @@ export class CssRecord {
 
 	private changed = false;
 
+	private utilityShouldBeGenerated = true;
+
 	public cache: string = null;
 
 	public selector: string = null;
@@ -162,7 +164,7 @@ export class CssRecord {
 					});
 					classSelectors = [
 						...classSelectors,
-						...[`${cssRecordSelector}${pseudoClassSuffix}`],
+						...[this.utilityShouldBeGenerated ? `${cssRecordSelector}${pseudoClassSuffix}` : ''],
 						...componentsSelectors.map((selector): string => {
 							return `${selector}${pseudoClassSuffix}`;
 						})
@@ -171,17 +173,15 @@ export class CssRecord {
 
 			} else {
 				customSelectors = this.customSelectors;
-				classSelectors = [cssRecordSelector, ...componentsSelectors];
+				classSelectors = [this.utilityShouldBeGenerated ? cssRecordSelector : '', ...componentsSelectors];
 			}
+
+			const removeEmptyItemsFromArray = (items: string[]) => items.filter(item => item);
 
 			const scopePart = this.scope ? this.scope : '';
 			const selectors = [
-				...customSelectors.map((selector): string => {
-					return `${scopePart}${selector}`;
-				}),
-				...classSelectors.map((selector): string => {
-					return `${scopePart}.${selector}`;
-				})
+				...removeEmptyItemsFromArray(customSelectors).map(selector => `${scopePart}${selector}`),
+				...removeEmptyItemsFromArray(classSelectors).map(selector=> `${scopePart}.${selector}`)
 			];
 
 			const indentation = config.minimize ? '' : '\t';

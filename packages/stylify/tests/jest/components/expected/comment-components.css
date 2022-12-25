@@ -1,26 +1,20 @@
 .badge,
-.badge__number,
-.display\:inline-flex{
+.badge__number{
 	display: inline-flex
 }
-.badge,
-.align-items\:center{
+.badge{
 	align-items: center
 }
 .badge--primary,
-.badge--secondary,
-.color\:\#fff{
+.badge--secondary{
 	color: #fff
 }
-.badge--primary,
-.background\:red{
+.badge--primary{
 	background: red
 }
-.badge--secondary,
-.background\:orange{
+.badge--secondary{
 	background: orange
 }
-.badge__number,
-.border-radius\:50\%{
+.badge__number{
 	border-radius: 50%
 }

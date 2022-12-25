@@ -1,49 +1,38 @@
-.button:hover,
-.hover\:color\:blue:hover{
+.button:hover{
 	color: blue
 }
-.button,
-.padding\:8px{
+.button{
 	padding: 8px
 }
-.button,
-.background-color\:\#000{
+.button{
 	background-color: #000
 }
-.button,
-.display\:inline-block{
+.button{
 	display: inline-block
 }
 .button,
 .button.button--big,
-.title,
-.font-size\:24px{
+.title{
 	font-size: 24px
 }
-.button.button--big,
-.padding\:12px{
+.button.button--big{
 	padding: 12px
 }
-.container_wrapper,
-.padding\:4px{
+.container_wrapper{
 	padding: 4px
 }
-.container,
-.max-width\:800px{
+.container{
 	max-width: 800px
 }
-.container,
-.margin\:0_auto{
+.container{
 	margin: 0 auto
 }
-.title,
-.color\:green{
+.title{
 	color: green
 }
 
 @media (min-width: 768px) {
-.title,
-.md\:font-size\:32px{
+.title{
 	font-size: 32px
 }
 }

@@ -1,126 +1,100 @@
 .n:hover{
 	text-decoration: none
 }
-.p{
+.o{
 	text-decoration: none
 }
-.q{
+.p{
 	display: flex
 }
 #wrapper .not-minified-2,
-.l .not-minified,
-.r{
+.l .not-minified{
 	color: darkred
 }
-#wrapper .m,
-.s{
+#wrapper .m{
 	color: green
 }
 #wrapper header,
 .b+input[type='text'],
 .c .orange,
-header .l,
-.t{
+header .l{
 	color: orange
 }
 header .a,
-.l span,
-.u{
+.l span{
 	font-weight: bold
 }
-.b+input[type='text'],
-.v{
+.b+input[type='text']{
 	margin-left: 24px
 }
-.d .orange.large,
-.w{
+.d .orange.large{
 	font-size: 48px
 }
 .e>div,
-.f span,
-.x{
+.f span{
 	color: blue
 }
 header .g>span,
-.m + #header,
-.y{
+.m + #header{
 	color: purple
 }
-.h:hover span,
-.z{
+.h:hover span{
 	text-decoration: underline
 }
-.i div,
-.aa{
+.i div{
 	width: 24px
 }
-.i div,
-.ab{
+.i div{
 	height: 24px
 }
-.i div,
-.ac{
+.i div{
 	background: blue
 }
 .j div:last-of-type,
 .j div:nth-child(2):hover,
-.j div:first-of-type,
-.ad{
+.j div:first-of-type{
 	background: black
 }
-.k,
-.ae{
+.k{
 	font-size: 24px
 }
-.k span,
-.af{
+.k span{
 	border-left: 4px solid red
 }
-.l,
-.ag{
+.l{
 	background: #000
 }
-.l,
-.ah{
+.l{
 	color: #fff
 }
-.l,
-.ai{
+.l{
 	border: none
 }
-.l,
-.aj{
+.l{
 	transition: background 0.3s
 }
-.l:hover,
-.ak{
+.l:hover{
 	background: #888
 }
 .l > span,
-.l >  i,
-.al{
+.l >  i{
 	vertical-align: middle
 }
-header .l,
-.am{
+header .l{
 	padding: 12px
 }
-.l.k,
-.an{
+.l.k{
 	padding: 24px
 }
-.l.k span,
-.ao{
+.l.k span{
 	border-left: 8px solid red
 }
-.m,
-.ap{
+.m{
 	font-style: italic
 }
 
 @media (min-width: 768px) {
-header .l,
-.o{
+header .l{
 	margin: 12px
 }
 }

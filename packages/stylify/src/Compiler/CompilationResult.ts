@@ -154,7 +154,11 @@ export class CompilationResult {
 		return css.trim();
 	}
 
-	public addCssRecord(macroMatch: MacroMatch, selectorProperties: SelectorProperties): void {
+	public addCssRecord(
+		macroMatch: MacroMatch,
+		selectorProperties: SelectorProperties,
+		utilityShouldBeGenerated = true
+	): void {
 		if (macroMatch.fullMatch in this.selectorsList) {
 			return;
 		}
@@ -169,7 +173,8 @@ export class CompilationResult {
 		const newCssRecord = new CssRecord({
 			screenId: this.screensList.get(screen),
 			selector: selector,
-			pseudoClasses: macroMatch.pseudoClasses
+			pseudoClasses: macroMatch.pseudoClasses,
+			utilityShouldBeGenerated
 		});
 
 		hooks.callHook('compilationResult:configureCssRecord', {compilationResult: this, cssRecord: newCssRecord});
