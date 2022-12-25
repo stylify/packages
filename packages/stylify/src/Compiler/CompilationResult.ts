@@ -32,7 +32,6 @@ export interface CompilationResultConfigInterface {
 	reconfigurable?: boolean,
 	screensSortingFunction?: ScreenSortingFunctionType,
 	screensList?: ScreensListRecordType,
-	selectorsList?: SelectorsListType,
 	mangleSelectors?: boolean,
 	defaultCss?: string
 }
@@ -85,17 +84,6 @@ export class CompilationResult {
 		this.reconfigurable = config.reconfigurable ?? this.reconfigurable;
 		this.mangleSelectors = config.mangleSelectors ?? this.mangleSelectors;
 		this.defaultCss = config.defaultCss || this.defaultCss;
-
-		if ('selectorsList' in config) {
-			for (const selector in config.selectorsList) {
-				const selectorData = config.selectorsList[selector];
-				if (selector in this.selectorsList) {
-					this.selectorsList[selector].configure(selectorData);
-				} else {
-					this.selectorsList[selector] = new CssRecord(selectorData);
-				}
-			}
-		}
 
 		this.screensSortingFunction = config.screensSortingFunction ?? screensSorter.sortCssTreeMediaQueries;
 		this.addScreens(config.screensList || {});
