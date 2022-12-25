@@ -384,17 +384,37 @@ export class Compiler {
 		if (this.matchCustomSelectors) {
 			contentToProcess = contentToProcess.replace(
 				/\[([^{}\s]+)\]{([^{}]+)}/g,
-				(fullMatch: string, selector: string, selectors: string) => {
-					const customSelector = MacroMatch.replaceCharactersAliases(selector);
+				(fullMatch: string, cssSelectors: string, stylifySelectors: string) => {
+					const customSelector = MacroMatch.replaceCharactersAliases(cssSelectors);
 					const customSelectorSelector = this.mangleSelectors
 						? minifiedSelectorGenerator.getMangledSelector(fullMatch, null)
 						: fullMatch;
 
 					this.addCustomSelector(
 						`.${this.escapeCssSelector(customSelectorSelector, true)}`,
-						`${customSelector}{${selectors.replace(/;/g, ' ')}}`,
+						`${customSelector}{${stylifySelectors.replace(/;/g, ' ')}}`,
 						false
 					);
+
+					return '';
+				}
+			);
+
+			contentToProcess = contentToProcess.replace(
+				/(\S+):{([^{}]+)}/g,
+				(fullMatch: string, screenAndPseudoClasses: string, stylifySelectors: string) => {
+					const customSelectorSelector = this.mangleSelectors
+						? minifiedSelectorGenerator.getMangledSelector(fullMatch, null)
+						: fullMatch;
+
+					this.addCustomSelector(
+						`.${this.escapeCssSelector(customSelectorSelector, true)}`,
+						stylifySelectors.split(';')
+							.map((stylifySelector) => `${screenAndPseudoClasses}:${stylifySelector}`)
+							.join(' '),
+						false
+					);
+
 					return '';
 				}
 			);
