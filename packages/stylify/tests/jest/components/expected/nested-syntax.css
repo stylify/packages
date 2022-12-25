@@ -8,108 +8,84 @@
 	display: flex
 }
 header .\[header\_\&\]\{font\-weight\:bold\},
-.button span,
-.font-weight\:bold{
+.button span{
 	font-weight: bold
 }
-.\[\&\+input\[type\=\^text\^\]\]\{margin\-left\:24px\;color\:orange\}+input[type='text'],
-.margin-left\:24px{
+.\[\&\+input\[type\=\^text\^\]\]\{margin\-left\:24px\;color\:orange\}+input[type='text']{
 	margin-left: 24px
 }
 .\[\&\+input\[type\=\^text\^\]\]\{margin\-left\:24px\;color\:orange\}+input[type='text'],
 .\[\.orange\]\{color\:orange\} .orange,
-header .button,
-.color\:orange{
+header .button{
 	color: orange
 }
-.\[\.orange\.large\]\{font\-size\:48px\} .orange.large,
-.font-size\:48px{
+.\[\.orange\.large\]\{font\-size\:48px\} .orange.large{
 	font-size: 48px
 }
 .\[\&\>div\]\{color\:blue\}>div,
-.\[\&\_span\]\{color\:blue\} span,
-.color\:blue{
+.\[\&\_span\]\{color\:blue\} span{
 	color: blue
 }
-header .\[header\_\&\>span\]\{color\:purple\}>span,
-.color\:purple{
+header .\[header\_\&\>span\]\{color\:purple\}>span{
 	color: purple
 }
-.\[\&\:hover\_span\]\{text\-decoration\:underline\}:hover span,
-.text-decoration\:underline{
+.\[\&\:hover\_span\]\{text\-decoration\:underline\}:hover span{
 	text-decoration: underline
 }
-.\[div\]\{width\:24px\;height\:24px\;background\:blue\} div,
-.width\:24px{
+.\[div\]\{width\:24px\;height\:24px\;background\:blue\} div{
 	width: 24px
 }
-.\[div\]\{width\:24px\;height\:24px\;background\:blue\} div,
-.height\:24px{
+.\[div\]\{width\:24px\;height\:24px\;background\:blue\} div{
 	height: 24px
 }
-.\[div\]\{width\:24px\;height\:24px\;background\:blue\} div,
-.background\:blue{
+.\[div\]\{width\:24px\;height\:24px\;background\:blue\} div{
 	background: blue
 }
 .\[div\:last\-of\-type\,div\:nth\-child\(2\)\:hover\,div\:first\-of\-type\]\{background\:black\} div:last-of-type,
 .\[div\:last\-of\-type\,div\:nth\-child\(2\)\:hover\,div\:first\-of\-type\]\{background\:black\} div:nth-child(2):hover,
-.\[div\:last\-of\-type\,div\:nth\-child\(2\)\:hover\,div\:first\-of\-type\]\{background\:black\} div:first-of-type,
-.background\:black{
+.\[div\:last\-of\-type\,div\:nth\-child\(2\)\:hover\,div\:first\-of\-type\]\{background\:black\} div:first-of-type{
 	background: black
 }
-.button--big,
-.font-size\:24px{
+.button--big{
 	font-size: 24px
 }
-.button--big span,
-.border-left\:4px_solid_red{
+.button--big span{
 	border-left: 4px solid red
 }
-.button,
-.background\:\#000{
+.button{
 	background: #000
 }
-.button,
-.color\:\#fff{
+.button{
 	color: #fff
 }
-.button,
-.border\:none{
+.button{
 	border: none
 }
-.button,
-.transition\:background_0\.3s{
+.button{
 	transition: background 0.3s
 }
-.button:hover,
-.background\:\#888{
+.button:hover{
 	background: #888
 }
 .button > span,
-.button >  i,
-.vertical-align\:middle{
+.button >  i{
 	vertical-align: middle
 }
-.button .not-minified,
-.color\:darkred{
+.button .not-minified{
 	color: darkred
 }
-header .button,
-.padding\:12px{
+header .button{
 	padding: 12px
 }
-.button.button--big,
-.padding\:24px{
+.button.button--big{
 	padding: 24px
 }
-.button.button--big span,
-.border-left\:8px_solid_red{
+.button.button--big span{
 	border-left: 8px solid red
 }
 
 @media (min-width: 768px) {
-header .button,
-.md\:margin\:12px{
+header .button{
 	margin: 12px
 }
 }

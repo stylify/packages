@@ -404,13 +404,12 @@ export class Compiler {
 
 		const customSelectorsSelectorsMap: Record<string, string> = this.processCustomSelectors();
 
-		contentToProcess += ` ${Object.values(customSelectorsSelectorsMap).join(' ')}`;
-
 		compilationResult = compilationResult ?? new CompilationResult();
 
 		hooks.callHook('compiler:beforeMacrosProcessed', compilationResult);
 
 		this.processMacros(contentToProcess, compilationResult);
+		this.processMacros(Object.values(customSelectorsSelectorsMap).join(' '), compilationResult, false);
 
 		hooks.callHook('compiler:afterMacrosProcessed', compilationResult);
 
@@ -603,7 +602,7 @@ export class Compiler {
 		}
 	}
 
-	private processMacros(content: string, compilationResult: CompilationResult) {
+	private processMacros(content: string, compilationResult: CompilationResult, utilitiesShouldBeGenerated = true) {
 		const regExpEndPart = `(?=['"\`{}\\[\\]<>\\s]|$)`;
 		const regExpGenerators = [
 			// Match with media query and without pseudo class
@@ -620,7 +619,6 @@ export class Compiler {
 					const macroMatch = new MacroMatch(macroMatches, this.screens);
 
 					if (macroMatch.fullMatch in compilationResult.selectorsList) {
-						compilationResult.selectorsList[macroMatch.fullMatch].shouldBeGenerated = true;
 						return '';
 					}
 
@@ -644,13 +642,14 @@ export class Compiler {
 
 					hooks.callHook('compiler:newMacroMatch', {
 						macroMatch,
+						utilityShouldBeGenerated: utilitiesShouldBeGenerated,
 						selectorProperties,
 						dev: this.dev,
 						variables: this.variables,
 						helpers: this.helpers
 					});
 
-					compilationResult.addCssRecord(macroMatch, selectorProperties);
+					compilationResult.addCssRecord(macroMatch, selectorProperties, utilitiesShouldBeGenerated);
 
 					return '';
 				});

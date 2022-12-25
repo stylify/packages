@@ -11,14 +11,11 @@ export type CssRecordComponentsType = Record<string, string[]>;
 export type PropertiesType = Record<string, string>;
 
 export interface CssRecordConfigInterface {
-	screenId?: number,
-	selector?: string,
-	properties?: Record<string, string | number>,
-	customSelectors?: string[],
-	components?: CssRecordComponentsType,
-	pseudoClasses?: string[],
+	screenId: number,
+	selector: string,
+	pseudoClasses: string[],
+	utilityShouldBeGenerated: boolean,
 	scope?: string,
-	shouldBeGenerated?: boolean
 }
 
 export interface CssRecordCompileParametersConfig {
@@ -30,9 +27,9 @@ export class CssRecord {
 
 	private changed = false;
 
-	public cache: string = null;
+	private utilityShouldBeGenerated = true;
 
-	public shouldBeGenerated = false;
+	public cache: string = null;
 
 	public selector: string = null;
 
@@ -50,28 +47,28 @@ export class CssRecord {
 
 	public pseudoClasses: string[] = [];
 
-	constructor(config: CssRecordConfigInterface = {}) {
+	constructor(config: CssRecordConfigInterface) {
 		this.configure(config);
 	}
 
-	public configure(config: CssRecordConfigInterface = {}): void {
+	public configure(config: Partial<CssRecordConfigInterface> = {}): void {
 		if (!Object.keys(config).length) {
 			return;
 		}
 
-		this.mangledSelector = minifiedSelectorGenerator.getMangledSelector(config.selector);
-		this.screenId = config.screenId;
-		this.selector = config.selector.replace(/([^-_a-zA-Z\d])/g, '\\$1');
+		this.mangledSelector = config.selector
+			? minifiedSelectorGenerator.getMangledSelector(config.selector)
+			: this.mangledSelector;
+		this.screenId = config.screenId ?? this.screenId;
+		this.selector = config.selector?.replace(/([^-_a-zA-Z\d])/g, '\\$1') ?? this.selector;
+		this.scope = config.scope ?? null;
+		this.utilityShouldBeGenerated = config.utilityShouldBeGenerated ?? this.utilityShouldBeGenerated;
 
 		if ((/^\d/gm).test(this.selector[0])) {
 			this.selector = '\\3' + this.selector;
 		}
 
-		this.scope = config.scope || null;
-		this.shouldBeGenerated = 'shouldBeGenerated' in config ? config.shouldBeGenerated : this.shouldBeGenerated;
-		this.addComponents(config.components || {});
-		this.addProperties(config.properties || {});
-		this.addPseudoClasses(config.pseudoClasses || []);
+		this.addPseudoClasses(config.pseudoClasses ?? []);
 		this.changed = true;
 	}
 
@@ -167,7 +164,7 @@ export class CssRecord {
 					});
 					classSelectors = [
 						...classSelectors,
-						...[`${cssRecordSelector}${pseudoClassSuffix}`],
+						...[this.utilityShouldBeGenerated ? `${cssRecordSelector}${pseudoClassSuffix}` : ''],
 						...componentsSelectors.map((selector): string => {
 							return `${selector}${pseudoClassSuffix}`;
 						})
@@ -176,17 +173,15 @@ export class CssRecord {
 
 			} else {
 				customSelectors = this.customSelectors;
-				classSelectors = [cssRecordSelector, ...componentsSelectors];
+				classSelectors = [this.utilityShouldBeGenerated ? cssRecordSelector : '', ...componentsSelectors];
 			}
+
+			const removeEmptyItemsFromArray = (items: string[]) => items.filter(item => item);
 
 			const scopePart = this.scope ? this.scope : '';
 			const selectors = [
-				...customSelectors.map((selector): string => {
-					return `${scopePart}${selector}`;
-				}),
-				...classSelectors.map((selector): string => {
-					return `${scopePart}.${selector}`;
-				})
+				...removeEmptyItemsFromArray(customSelectors).map(selector => `${scopePart}${selector}`),
+				...removeEmptyItemsFromArray(classSelectors).map(selector=> `${scopePart}.${selector}`)
 			];
 
 			const indentation = config.minimize ? '' : '\t';

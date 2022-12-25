@@ -490,7 +490,7 @@ export class Bundler {
 						'compilationResult:configureCssRecord',
 						({compilationResult, cssRecord}) => {
 							if (compilationResult.id === bundleCompilationResult.id) {
-								cssRecord.scope = bundleConfig.scope;
+								cssRecord.configure({ scope: bundleConfig.scope });
 							}
 						});
 				} catch (error) {

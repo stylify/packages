@@ -1,37 +1,29 @@
 .button,
-.title,
-.font-size\:24px{
+.title{
 	font-size: 24px
 }
 .button,
-.title,
-.padding\:24px{
+.title{
 	padding: 24px
 }
 .button,
-.wrapper,
-.background\:blue{
+.wrapper{
 	background: blue
 }
-.button,
-.margin\:11px{
+.button{
 	margin: 11px
 }
-.title,
-.color\:red{
+.title{
 	color: red
 }
 .header.button.title,
-.header.button.wrapper,
-.display\:flex{
+.header.button.wrapper{
 	display: flex
 }
 .header.button.title,
-.header.button.wrapper,
-.justify-content\:space-between{
+.header.button.wrapper{
 	justify-content: space-between
 }
-.wrapper,
-.outline\:none{
+.wrapper{
 	outline: none
 }

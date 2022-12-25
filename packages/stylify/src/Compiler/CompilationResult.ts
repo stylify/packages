@@ -32,7 +32,6 @@ export interface CompilationResultConfigInterface {
 	reconfigurable?: boolean,
 	screensSortingFunction?: ScreenSortingFunctionType,
 	screensList?: ScreensListRecordType,
-	selectorsList?: SelectorsListType,
 	mangleSelectors?: boolean,
 	defaultCss?: string
 }
@@ -86,17 +85,6 @@ export class CompilationResult {
 		this.mangleSelectors = config.mangleSelectors ?? this.mangleSelectors;
 		this.defaultCss = config.defaultCss || this.defaultCss;
 
-		if ('selectorsList' in config) {
-			for (const selector in config.selectorsList) {
-				const selectorData = config.selectorsList[selector];
-				if (selector in this.selectorsList) {
-					this.selectorsList[selector].configure(selectorData);
-				} else {
-					this.selectorsList[selector] = new CssRecord(selectorData);
-				}
-			}
-		}
-
 		this.screensSortingFunction = config.screensSortingFunction ?? screensSorter.sortCssTreeMediaQueries;
 		this.addScreens(config.screensList || {});
 	}
@@ -129,7 +117,7 @@ export class CompilationResult {
 		this.screensListSorted = false;
 	}
 
-	public generateCss(all = false): string {
+	public generateCss(): string {
 		let css = this.defaultCss;
 
 		const newLine = this.dev ? '\n' : '';
@@ -137,11 +125,6 @@ export class CompilationResult {
 
 		for (const selector in this.selectorsList) {
 			const cssRecord = this.selectorsList[selector];
-
-			if (!all && !cssRecord.shouldBeGenerated) {
-				continue;
-			}
-
 			const screen = this.getScreenById(cssRecord.screenId);
 
 			if (!(screen in cssTree)) {
@@ -171,9 +154,12 @@ export class CompilationResult {
 		return css.trim();
 	}
 
-	public addCssRecord(macroMatch: MacroMatch, selectorProperties: SelectorProperties): void {
+	public addCssRecord(
+		macroMatch: MacroMatch,
+		selectorProperties: SelectorProperties,
+		utilityShouldBeGenerated = true
+	): void {
 		if (macroMatch.fullMatch in this.selectorsList) {
-			this.selectorsList[macroMatch.fullMatch].shouldBeGenerated = true;
 			return;
 		}
 
@@ -188,7 +174,7 @@ export class CompilationResult {
 			screenId: this.screensList.get(screen),
 			selector: selector,
 			pseudoClasses: macroMatch.pseudoClasses,
-			shouldBeGenerated: true
+			utilityShouldBeGenerated
 		});
 
 		hooks.callHook('compilationResult:configureCssRecord', {compilationResult: this, cssRecord: newCssRecord});
