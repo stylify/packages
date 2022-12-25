@@ -620,7 +620,6 @@ export class Compiler {
 					const macroMatch = new MacroMatch(macroMatches, this.screens);
 
 					if (macroMatch.fullMatch in compilationResult.selectorsList) {
-						compilationResult.selectorsList[macroMatch.fullMatch].shouldBeGenerated = true;
 						return '';
 					}
 

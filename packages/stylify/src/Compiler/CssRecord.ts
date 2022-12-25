@@ -17,8 +17,7 @@ export interface CssRecordConfigInterface {
 	customSelectors?: string[],
 	components?: CssRecordComponentsType,
 	pseudoClasses?: string[],
-	scope?: string,
-	shouldBeGenerated?: boolean
+	scope?: string
 }
 
 export interface CssRecordCompileParametersConfig {
@@ -31,8 +30,6 @@ export class CssRecord {
 	private changed = false;
 
 	public cache: string = null;
-
-	public shouldBeGenerated = false;
 
 	public selector: string = null;
 
@@ -68,7 +65,6 @@ export class CssRecord {
 		}
 
 		this.scope = config.scope || null;
-		this.shouldBeGenerated = 'shouldBeGenerated' in config ? config.shouldBeGenerated : this.shouldBeGenerated;
 		this.addComponents(config.components || {});
 		this.addProperties(config.properties || {});
 		this.addPseudoClasses(config.pseudoClasses || []);

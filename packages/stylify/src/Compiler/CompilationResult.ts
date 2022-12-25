@@ -129,7 +129,7 @@ export class CompilationResult {
 		this.screensListSorted = false;
 	}
 
-	public generateCss(all = false): string {
+	public generateCss(): string {
 		let css = this.defaultCss;
 
 		const newLine = this.dev ? '\n' : '';
@@ -137,11 +137,6 @@ export class CompilationResult {
 
 		for (const selector in this.selectorsList) {
 			const cssRecord = this.selectorsList[selector];
-
-			if (!all && !cssRecord.shouldBeGenerated) {
-				continue;
-			}
-
 			const screen = this.getScreenById(cssRecord.screenId);
 
 			if (!(screen in cssTree)) {
@@ -173,7 +168,6 @@ export class CompilationResult {
 
 	public addCssRecord(macroMatch: MacroMatch, selectorProperties: SelectorProperties): void {
 		if (macroMatch.fullMatch in this.selectorsList) {
-			this.selectorsList[macroMatch.fullMatch].shouldBeGenerated = true;
 			return;
 		}
 
@@ -187,8 +181,7 @@ export class CompilationResult {
 		const newCssRecord = new CssRecord({
 			screenId: this.screensList.get(screen),
 			selector: selector,
-			pseudoClasses: macroMatch.pseudoClasses,
-			shouldBeGenerated: true
+			pseudoClasses: macroMatch.pseudoClasses
 		});
 
 		hooks.callHook('compilationResult:configureCssRecord', {compilationResult: this, cssRecord: newCssRecord});
