@@ -11,13 +11,11 @@ export type CssRecordComponentsType = Record<string, string[]>;
 export type PropertiesType = Record<string, string>;
 
 export interface CssRecordConfigInterface {
-	screenId?: number,
-	selector?: string,
-	properties?: Record<string, string | number>,
-	customSelectors?: string[],
-	components?: CssRecordComponentsType,
-	pseudoClasses?: string[],
-	scope?: string
+	screenId: number,
+	selector: string,
+	pseudoClasses: string[],
+	utilityShouldBeGenerated: boolean,
+	scope?: string,
 }
 
 export interface CssRecordCompileParametersConfig {
@@ -47,27 +45,28 @@ export class CssRecord {
 
 	public pseudoClasses: string[] = [];
 
-	constructor(config: CssRecordConfigInterface = {}) {
+	constructor(config: CssRecordConfigInterface) {
 		this.configure(config);
 	}
 
-	public configure(config: CssRecordConfigInterface = {}): void {
+	public configure(config: Partial<CssRecordConfigInterface> = {}): void {
 		if (!Object.keys(config).length) {
 			return;
 		}
 
-		this.mangledSelector = minifiedSelectorGenerator.getMangledSelector(config.selector);
-		this.screenId = config.screenId;
-		this.selector = config.selector.replace(/([^-_a-zA-Z\d])/g, '\\$1');
+		this.mangledSelector = config.selector
+			? minifiedSelectorGenerator.getMangledSelector(config.selector)
+			: this.mangledSelector;
+		this.screenId = config.screenId ?? this.screenId;
+		this.selector = config.selector?.replace(/([^-_a-zA-Z\d])/g, '\\$1') ?? this.selector;
+		this.scope = config.scope ?? null;
+		this.utilityShouldBeGenerated = config.utilityShouldBeGenerated ?? this.utilityShouldBeGenerated;
 
 		if ((/^\d/gm).test(this.selector[0])) {
 			this.selector = '\\3' + this.selector;
 		}
 
-		this.scope = config.scope || null;
-		this.addComponents(config.components || {});
-		this.addProperties(config.properties || {});
-		this.addPseudoClasses(config.pseudoClasses || []);
+		this.addPseudoClasses(config.pseudoClasses ?? []);
 		this.changed = true;
 	}
 
