@@ -139,3 +139,27 @@ test('Components from comment', (): void => {
 	let compilationResult = compiler.compile(testUtils.getHtmlInputFile(testFileName));
 	testUtils.testCssFileToBe(compilationResult.generateCss(), testFileName);
 });
+
+test('Multiple components', (): void => {
+	const compiler = new Compiler({
+		dev: true,
+		components: {
+			'button, title': 'font-size:24px padding:24px',
+			'button, wrapper': 'background:blue',
+			'title, wrapper': `
+				.header.button& {
+					display:flex justify-content:space-between
+				}
+			`,
+			'title': 'color:red',
+			'button': 'margin:11px',
+			'wrapper': 'outline:none',
+			'not-used': 'color:steelblue',
+		}
+	});
+
+	const input = testUtils.getHtmlInputFile('multiple-components');
+	let compilationResult = compiler.compile(input);
+
+	testUtils.testCssFileToBe(compilationResult.generateCss(), 'multiple-components');
+});
