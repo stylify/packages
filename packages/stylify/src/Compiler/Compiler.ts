@@ -623,6 +623,10 @@ export class Compiler {
 	}
 
 	private processMacros(content: string, compilationResult: CompilationResult, utilitiesShouldBeGenerated = true) {
+		if (!content.trim()) {
+			return;
+		}
+
 		const regExpEndPart = `(?=['"\`{}\\[\\]<>\\s]|$)`;
 		const regExpGenerators = [
 			// Match with media query and without pseudo class
