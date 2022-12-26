@@ -53,6 +53,8 @@ export class CompilationResult {
 
 	private screensList: ScreensListMapType = new Map();
 
+	private selectorsList: Record<string, CssRecord> = {};
+
 	private screensListSorted = false;
 
 	public reconfigurable = true;
@@ -62,8 +64,6 @@ export class CompilationResult {
 	public mangleSelectors = false;
 
 	public dev = false;
-
-	public selectorsList: Record<string, CssRecord> = {};
 
 	public screensSortingFunction: ScreenSortingFunctionType = null;
 
@@ -152,6 +152,10 @@ export class CompilationResult {
 		this.changed = false;
 
 		return css.trim();
+	}
+
+	public getCssRecord(macroMatch: MacroMatch): CssRecord|null {
+		return this.selectorsList[macroMatch.fullMatch] ?? null;
 	}
 
 	public addCssRecord(

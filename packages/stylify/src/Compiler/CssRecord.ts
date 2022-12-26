@@ -27,7 +27,7 @@ export class CssRecord {
 
 	private changed = false;
 
-	private utilityShouldBeGenerated = true;
+	public utilityShouldBeGenerated = true;
 
 	public cache: string = null;
 

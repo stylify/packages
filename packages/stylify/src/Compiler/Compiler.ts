@@ -641,8 +641,12 @@ export class Compiler {
 				content = content.replace(regExpGenerator(macroKey), (...args) => {
 					const macroMatches: string[] = args.slice(0, args.length - 2);
 					const macroMatch = new MacroMatch(macroMatches, this.screens);
+					const existingCssRecord = compilationResult.getCssRecord(macroMatch);
 
-					if (macroMatch.fullMatch in compilationResult.selectorsList) {
+					if (existingCssRecord) {
+						if (utilitiesShouldBeGenerated) {
+							existingCssRecord.utilityShouldBeGenerated = utilitiesShouldBeGenerated;
+						}
 						return '';
 					}
 
