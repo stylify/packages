@@ -46,7 +46,7 @@ test('Vite', async (): Promise<void> => {
 			}
 		});
 
-		indexHtmlOutput = indexHtmlOutput.replace(/index\.[^\.]+\.(css|js)/g, (fullMatch, fileType) => {
+		indexHtmlOutput = indexHtmlOutput.replace(/index-[^\.]+\.(css|js)/g, (fullMatch, fileType) => {
 			return `index.${fileType}`;
 		});
 
@@ -60,9 +60,7 @@ test('Vite', async (): Promise<void> => {
 		logLevel: 'error',
 		plugins: [
 			stylifyVite({
-				transformIncludeFilter(id) {
-					return id.endsWith('html');
-				},
+				transformIncludeFilter: (id) => id.endsWith('html'),
 				bundles: [
 					{
 						outputFile: path.join(buildTmpDir, 'index.css'),

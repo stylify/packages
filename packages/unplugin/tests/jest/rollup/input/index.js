@@ -1,3 +1,3 @@
 import './index.css';
 
-alert('Hello World!');
+alert('<div class="color:purple"></div>');

@@ -6,10 +6,9 @@ import path from 'path';
 import fs from 'fs';
 import fse from 'fs-extra';
 import { stylifyRollup } from '../../src';
-import type { MacroMatch, SelectorProperties } from '@stylify/stylify';
 import TestUtils from '../../../../tests/TestUtils';
 import { rollup } from 'rollup';
-import postcss from 'rollup-plugin-postcss';
+import css from 'rollup-plugin-import-css';
 
 const testName = 'rollup';
 const testUtils = new TestUtils('unplugin', testName);
@@ -28,14 +27,15 @@ async function build() {
 		input: path.join(buildTmpDir, 'index.js'),
 		plugins: [
 			stylifyRollup({
-				transformIncludeFilter(id) {
-					return id.endsWith('html');
-				},
+				transformIncludeFilter: (id) => id.endsWith('html'),
 				dev: false,
 				bundles: [
 					{
 						outputFile: path.join(buildTmpDir, 'index.css'),
-						files: [path.join(buildTmpDir, 'index.html')]
+						files: [
+							path.join(buildTmpDir, 'index.html'),
+							path.join(buildTmpDir, 'index.js')
+						]
 					}
 				],
 				bundler: {
@@ -51,7 +51,7 @@ async function build() {
 					}
 				}
 			}),
-			postcss()
+			css()
 		]
 	});
 	await bundle.write({
