@@ -2,7 +2,7 @@
 
 <p align="center">
 	<a href="https://stylifycss.com" target="_blank" rel="noopener noreferrer">
-		<img src="https://stylifycss.com/images/logo.svg" height="100" alt="Stylify logo">
+		<img src="https://stylifycss.com/images/logo/horizontal.svg?v2" height="100" alt="Stylify logo">
 	</a>
 </p>
 
