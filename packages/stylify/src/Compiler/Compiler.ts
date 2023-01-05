@@ -311,6 +311,7 @@ export class Compiler {
 				? minifiedSelectorGenerator.getSelectorPrefix(selector)
 				: '';
 
+			selectorToReplace = selectorToReplace.replace(/\\/g, '\\\\');
 			selectorToReplace = this.escapeCssSelector(
 				minifiedSelectorGenerator.getStringToMatch(
 					selectorToReplace, matchSelectorsWithPrefixes
@@ -318,18 +319,21 @@ export class Compiler {
 			);
 
 			const replacement = `${selectorPrefix}${mangledSelector}`;
+			const selectorToReplaceRegExp = new RegExp(selectorToReplace, 'g');
 
 			if (rewriteOnlyInSelectorsAreas === false) {
-				content = content.replace(new RegExp(selectorToReplace, 'g'), replacement);
+				content = content.replace(selectorToReplaceRegExp, replacement);
 				continue;
 			}
 
 			for (const rewriteSelectorAreaRegExpString of this.selectorsAreas) {
-				const regExp = new RegExp(rewriteSelectorAreaRegExpString, 'g');
-				content = content.replace(regExp, (fullMatch: string, selectorMatch: string): string => {
-					const selectorReplacement = selectorMatch.replace(new RegExp(selectorToReplace, 'g'), replacement);
-					return fullMatch.replace(selectorMatch, selectorReplacement);
-				});
+				content = content.replace(
+					new RegExp(rewriteSelectorAreaRegExpString, 'g'),
+					(fullMatch: string, selectorMatch: string): string => {
+						const selectorReplacement = selectorMatch.replace(selectorToReplaceRegExp, replacement);
+						return fullMatch.replace(selectorMatch, selectorReplacement);
+					}
+				);
 			}
 		}
 
@@ -469,7 +473,25 @@ export class Compiler {
 	}
 
 	private escapeCssSelector(selector: string, all = false): string {
-		return selector.replace(all ? /[^a-zA-Z0-9]/g : /[.*+?^${}()|[\]\\]/g, '\\$&');
+		const selectorLength = selector.length;
+		let result = '';
+		const regExp = all ? /[^a-zA-Z0-9]/ : /[.*+?^${}()|[\]\\]/;
+
+		for (let i = 0; i < selectorLength; i++) {
+			const char = selector[i];
+			const escapeCharacter = '\\';
+			if ([escapeCharacter, '-', '_'].includes(char)
+				|| !regExp.test(char)
+				|| selector[i - 1] === escapeCharacter
+			) {
+				result += char;
+				continue;
+			}
+
+			result += `\\${char}`;
+		}
+
+		return result;
 	}
 
 	private configureCompilationResult(compilationResult: CompilationResult): CompilationResult

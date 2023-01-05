@@ -1,10 +1,10 @@
 a:hover{
 	color: red
 }
-.hover\:\{color\:blue\;font\-size\:24px\}:hover{
+.hover\:\{color\:blue\;font-size\:24px\}:hover{
 	color: blue
 }
-.hover\:\{color\:blue\;font\-size\:24px\}:hover{
+.hover\:\{color\:blue\;font-size\:24px\}:hover{
 	font-size: 24px
 }
 *{
@@ -22,19 +22,19 @@ h2:hover{
 }
 
 @media (min-width: 400px), (orientation: landscape) {
-.minw400px\|\|landscape\:hover\:\{color\:lightblue\;text\-decoration\:underline\}:hover{
+.minw400px\|\|landscape\:hover\:\{color\:lightblue\;text-decoration\:underline\}:hover{
 	color: lightblue
 }
-.minw400px\|\|landscape\:hover\:\{color\:lightblue\;text\-decoration\:underline\}:hover{
+.minw400px\|\|landscape\:hover\:\{color\:lightblue\;text-decoration\:underline\}:hover{
 	text-decoration: underline
 }
 }
 
 @media (min-width: 768px) {
-.md\:\{color\:blue\;font\-size\:24px\}{
+.md\:\{color\:blue\;font-size\:24px\}{
 	color: blue
 }
-.md\:\{color\:blue\;font\-size\:24px\}{
+.md\:\{color\:blue\;font-size\:24px\}{
 	font-size: 24px
 }
 }

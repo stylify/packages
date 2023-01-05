@@ -70,7 +70,9 @@ export class MacroMatch {
 		};
 
 		for (const [characterToReplace, replacement] of alias ? aliases[alias] : Object.values(aliases)) {
-			content = content.replace(new RegExp(`\\${characterToReplace}`, 'g'), replacement);
+			content = content.replace(new RegExp(`(\\\\)?\\${characterToReplace}`, 'g'), (fullMatch, escapeCharacter) => {
+				return escapeCharacter ? fullMatch.replace(/\\/, '') : replacement;
+			});
 		}
 
 		return content;
