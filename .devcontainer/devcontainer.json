@@ -37,7 +37,8 @@
 		"xabikos.JavaScriptSnippets",
 		"Zignd.html-css-class-completion",
 		"dbaeumer.vscode-eslint",
-		"astro-build.astro-vscode"
+		"astro-build.astro-vscode",
+		"ritwickdey.LiveServer"
 	],
 	"service": "server",
 	"dockerComposeFile": "../docker-compose.yml",
