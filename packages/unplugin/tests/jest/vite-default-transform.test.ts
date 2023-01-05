@@ -46,7 +46,7 @@ test('Vite - with default transform', async (): Promise<void> => {
 			}
 		});
 
-		indexHtmlOutput = indexHtmlOutput.replace(/index\.[^\.]+\.(css|js)/g, (fullMatch, fileType) => {
+		indexHtmlOutput = indexHtmlOutput.replace(/index-[^\.]+\.(css|js)/g, (fullMatch, fileType) => {
 			return `index.${fileType}`;
 		});
 

@@ -5,9 +5,6 @@ import path from 'path';
 import { exec } from 'child_process';
 import fse from 'fs-extra';
 import packageJson from '../../package.json';
-import { sassPlugin } from 'esbuild-sass-plugin';
-import postcss from 'postcss';
-import autoprefixer from 'autoprefixer';
 import { env, exit } from 'process';
 import esbuild, { BuildOptions, BuildResult, Format, Platform } from 'esbuild';
 import { compareBuildStats } from './output-stats';
@@ -164,15 +161,6 @@ const runEsbuild = async (config: BuildConfigConfigurationInterface): Promise<Bu
 						'.woff': 'base64',
 						'.svg': 'dataurl'
 					},
-					plugins: [
-						sassPlugin({
-							type: 'style',
-							async transform(source) {
-								const { css } = await postcss([autoprefixer]).process(source, {from: 'undefined'});
-								return css;
-							}
-						})
-					],
 					outfile: path.join(
 						packageDir,
 						outputDirs[format],
