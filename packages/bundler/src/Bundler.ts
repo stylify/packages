@@ -80,12 +80,12 @@ export interface BundlesBuildStatsInterface {
 }
 
 export interface BundleConfigInterface {
+	outputFile: string,
+	files: string[],
 	id?: string,
 	rewriteSelectorsInFiles?: boolean,
 	filesBaseDir?: string,
-	outputFile: string,
 	scope?: string,
-	files: string[],
 	compiler?: CompilerConfigInterface,
 	cssLayer?: string,
 }
@@ -453,7 +453,7 @@ export class Bundler {
 
 	private processBundle(bundleConfig: BundleConfigInterface): void {
 		const bundleRunner = async (): Promise<void> => {
-			if (!('files' in bundleConfig)) {
+			if (typeof bundleConfig.files === 'undefined') {
 				this.log(`No files defined for "${bundleConfig.outputFile}". Skipping.`, 'textRed');
 				return;
 			}
