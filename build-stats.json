@@ -1,7 +1,7 @@
 {
   "astro": {
     "/esm/index.mjs": {
-      "size": 2936
+      "size": 2937
     },
     "/lib/index.cjs": {
       "size": 4075
@@ -9,29 +9,29 @@
   },
   "bundler": {
     "/esm/index.mjs": {
-      "size": 23881
+      "size": 23943
     },
     "/lib/index.cjs": {
-      "size": 25605
+      "size": 25953
     }
   },
   "nuxt": {
     "/esm/module.mjs": {
-      "size": 5411
+      "size": 5412
     },
     "/lib/module.cjs": {
-      "size": 7261
+      "size": 7547
     }
   },
   "nuxt-module": {
     "/esm/index.mjs": {
-      "size": 5120
+      "size": 5121
     },
     "/esm/webpack-loader.mjs": {
-      "size": 795
+      "size": 796
     },
     "/lib/index.cjs": {
-      "size": 6722
+      "size": 7008
     },
     "/lib/webpack-loader.cjs": {
       "size": 1823
@@ -39,30 +39,30 @@
   },
   "stylify": {
     "/esm/index.js": {
-      "size": 64087
+      "size": 65796
     },
     "/esm/index.min.js": {
-      "size": 33052
+      "size": 33461
     },
     "/esm/index.mjs": {
-      "size": 64818
+      "size": 66418
     },
     "/lib/index.cjs": {
-      "size": 66417
+      "size": 68017
     },
     "/dist/stylify.js": {
-      "size": 66167
+      "size": 67940
     },
     "/dist/stylify.min.js": {
-      "size": 32632
+      "size": 33041
     }
   },
   "unplugin": {
     "/esm/index.mjs": {
-      "size": 6912
+      "size": 6787
     },
     "/lib/index.cjs": {
-      "size": 8574
+      "size": 8734
     }
   }
 }
