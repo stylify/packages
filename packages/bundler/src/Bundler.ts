@@ -20,7 +20,6 @@ import autoprefixer from 'autoprefixer';
 import postcss from 'postcss';
 
 export interface BundleFileDataInterface {
-	filePath: string,
 	content: string
 }
 
@@ -123,7 +122,8 @@ export interface WatchedFilesInterface {
 export interface GetFilesToProcessOptionsInterface {
 	bundleConfig: BundleConfigInterface,
 	compiler: Compiler,
-	fileMasks: string[]
+	filePaths?: string[],
+	fileMasks?: string[],
 }
 
 const postCssPrefixer = postcss([autoprefixer()]);
@@ -451,7 +451,7 @@ export class Bundler {
 		bundleMethodPromiseResolve();
 	}
 
-	private processBundle(bundleConfig: BundleConfigInterface): void {
+	private processBundle(bundleConfig: BundleConfigInterface, processBundleFilesNotMask = false): void {
 		const bundleRunner = async (): Promise<void> => {
 			if (typeof bundleConfig.files === 'undefined') {
 				this.log(`No files defined for "${bundleConfig.outputFile}". Skipping.`, 'textRed');
@@ -505,10 +505,10 @@ export class Bundler {
 			const filesToProcess = await this.getFilesToProcess({
 				bundleConfig,
 				compiler,
-				fileMasks: bundleConfig.files
+				[processBundleFilesNotMask ? 'filePaths' : 'fileMasks']: bundleConfig.files
 			});
 
-			if (!filesToProcess.length) {
+			if (!Object.keys(filesToProcess).length) {
 				this.log(`No files found for "${bundleConfig.outputFile}". Skipping.`, 'textRed');
 				return;
 			}
@@ -532,13 +532,24 @@ export class Bundler {
 						bundlesIndexes: [bundleConfig.outputFile],
 						processing: false,
 						watcher: fs.watch(pathToWatch, (eventType, fileName) => {
-							if (eventType !== 'change' || this.watchedFiles[pathToWatch].processing) {
+							let isDir: boolean;
+
+							try {
+								isDir = fs.lstatSync(pathToWatch).isDirectory();
+							} catch (e) {
+								return;
+							}
+
+							if (
+								isDir && eventType !== 'rename'
+								|| !isDir && eventType !== 'change'
+								|| this.watchedFiles[pathToWatch].processing
+							) {
 								return;
 							}
 
 							const parsedFilePath = path.parse(fileName);
-							const parsedPathToWatch = path.parse(pathToWatch);
-							const fullFilePath = path.join(parsedPathToWatch.dir, fileName);
+							const fullFilePath = isDir ? path.join(pathToWatch, fileName) : pathToWatch;
 							const hasExtension = parsedFilePath.ext !== '';
 							const bundlesIndexes = this.watchedFiles[pathToWatch].bundlesIndexes;
 							let changedInfoLogged = false;
@@ -557,10 +568,18 @@ export class Bundler {
 								}
 
 								const bundleHasCache = bundleToProcessIndex in this.bundlesBuildCache;
-								this.processBundle({
-									...bundleConfig,
-									...bundleHasCache ? {files: [fullFilePath]} : {}
-								});
+
+								if (!this.checkIfFileExists(fullFilePath)) {
+									continue;
+								}
+
+								this.processBundle(
+									{
+										...bundleConfig,
+										...bundleHasCache ? {files: [fullFilePath]} : {}
+									},
+									true
+								);
 							}
 
 							this.waitOnBundlesProcessed().finally(() => {
@@ -580,9 +599,7 @@ export class Bundler {
 			const filesToProcessPromises: Promise<any>[] = [];
 			const filesToWatch: string[] = [];
 
-			for (const fileToProcessConfig of filesToProcess) {
-				const fileToProcessPath = fileToProcessConfig.filePath;
-
+			for (const [fileToProcessPath, fileToProcessConfig] of Object.entries(filesToProcess)) {
 				if (!(fileToProcessPath in bundleBuildCache)) {
 					bundleBuildCache.files.push(fileToProcessPath);
 
@@ -611,7 +628,7 @@ export class Bundler {
 							{
 								bundleConfig,
 								content: processedContent,
-								filePath: fileToProcessConfig.filePath
+								filePath: fileToProcessPath
 							}
 						);
 
@@ -620,38 +637,6 @@ export class Bundler {
 
 					filesToProcessPromises.push(beforeInputFileRewrittenHook());
 				}
-			}
-
-			if (filesToWatch.length) {
-				const dirsToWatch: string[] = [];
-
-				for (const fileToWatch of filesToWatch) {
-					const parsedPath = path.parse(fileToWatch);
-					const dirName = parsedPath.dir.length ? parsedPath.dir : fileToWatch;
-
-					if (dirName in dirsToWatch) {
-						continue;
-					}
-
-					let similarPathIndex: number = null;
-
-					const similarPath = dirsToWatch.find((dirToWatch, index) => {
-						const isSimilarPath = dirToWatch.startsWith(dirName);
-						if (isSimilarPath) {
-							similarPathIndex = index;
-						}
-						return isSimilarPath;
-					});
-
-					if (similarPath && dirName.length < similarPath.length) {
-						dirsToWatch[similarPathIndex] = dirName;
-						continue;
-					} else if (!similarPath) {
-						dirsToWatch.push(dirName);
-					}
-				}
-
-				setupBundleWatcher([...new Set([...filesToWatch, ...dirsToWatch])]);
 			}
 
 			await Promise.all(filesToProcessPromises);
@@ -693,6 +678,38 @@ export class Bundler {
 			this.log(`Created "${bundleConfig.outputFile}" (${bundleBuildCache.buildTime} s).`, 'textGreen');
 
 			await hooks.callAsyncHook('bundler:bundleProcessed', { bundleConfig, bundleBuildCache });
+
+			if (filesToWatch.length) {
+				const dirsToWatch: string[] = [];
+
+				for (const fileToWatch of filesToWatch) {
+					const parsedPath = path.parse(fileToWatch);
+					const dirName = parsedPath.dir.length ? parsedPath.dir : fileToWatch;
+
+					if (dirName in dirsToWatch) {
+						continue;
+					}
+
+					let similarPathIndex: number = null;
+
+					const similarPath = dirsToWatch.find((dirToWatch, index) => {
+						const isSimilarPath = dirToWatch.startsWith(dirName);
+						if (isSimilarPath) {
+							similarPathIndex = index;
+						}
+						return isSimilarPath;
+					});
+
+					if (similarPath && dirName.length < similarPath.length) {
+						dirsToWatch[similarPathIndex] = dirName;
+						continue;
+					} else if (!similarPath) {
+						dirsToWatch.push(dirName);
+					}
+				}
+
+				setupBundleWatcher([...new Set([...filesToWatch, ...dirsToWatch])]);
+			}
 		};
 
 		const execBundleRunner = async () => {
@@ -715,22 +732,37 @@ export class Bundler {
 		}
 	}
 
-	private async getFilesToProcess(options: GetFilesToProcessOptionsInterface): Promise<BundleFileDataInterface[]> {
+	private async getFilesToProcess(
+		options: GetFilesToProcessOptionsInterface
+	): Promise<Record<string, BundleFileDataInterface>> {
 		const { bundleConfig, compiler } = options;
-		let { fileMasks } = options;
-		fileMasks = [...new Set([
-			...fileMasks,
-			...fileMasks.map((fileMask: string): string => normalize(fileMask) as string)
-		])];
+		let { fileMasks, filePaths } = options;
 
+		if (typeof fileMasks !== 'undefined') {
+			fileMasks = [...new Set([
+				...fileMasks,
+				...fileMasks.map((fileMask: string): string => normalize(fileMask) as string)
+			])];
+
+			filePaths = FastGlob.sync(fileMasks);
+		}
+
+		filePaths = filePaths ?? [];
+
+		const filesToProcess: Record<string, BundleFileDataInterface> = {};
+
+		const addFileToProcess = (path: string, data: BundleFileDataInterface) => {
+			if (path in filesToProcess) {
+				return;
+			}
+
+			filesToProcess[path] = data;
+		};
+
+		const processedFilePaths: Promise<void>[] = [];
 		const filesBaseDir: string = typeof bundleConfig.filesBaseDir === 'string'
 			? normalize(bundleConfig.filesBaseDir)
 			: null;
-
-		const filePaths = FastGlob.sync(fileMasks);
-
-		let filesToProcess: BundleFileDataInterface[] = [];
-		const processedFilePaths: Promise<void>[] = [];
 
 		for (const filePath of filePaths) {
 			const processFilePath = async (filePath: string) => {
@@ -740,7 +772,6 @@ export class Bundler {
 
 				const fileContent = fs.readFileSync(filePath).toString();
 				const contentOptions = compiler.getOptionsFromContent<ContentOptionsInterface>(fileContent);
-
 				const hookData = await hooks.callAsyncHook(
 					'bundler:fileToProcessOpened',
 					{
@@ -751,10 +782,11 @@ export class Bundler {
 					}
 				);
 
-				filesToProcess.push({
-					filePath: filePath,
-					content: hookData.content
-				});
+				if (this.checkIfFileExists(hookData.filePath)) {
+					addFileToProcess(hookData.filePath, {
+						content: hookData.content
+					});
+				}
 
 				const filePathsFromContent: string[] = hookData.contentOptions.files ?? [];
 
@@ -785,14 +817,9 @@ export class Bundler {
 						compiler,
 						fileMasks: this.clearFilePaths(filePathsToProcess)
 					});
-					filesToProcess = [...filesToProcess, ...nestedFilePaths];
-				}
-
-				if (this.checkIfFileExists(hookData.filePath)) {
-					filesToProcess.push({
-						filePath: hookData.filePath,
-						content: hookData.content
-					});
+					for (const path in nestedFilePaths) {
+						addFileToProcess(path, nestedFilePaths[path]);
+					}
 				}
 			};
 
@@ -833,6 +860,7 @@ export class Bundler {
 
 		if (!exists) {
 			this.log(`File "${filePath}" not found. Skipping.`, 'textRed');
+			this.watchedFiles[filePath]?.watcher.close();
 		}
 
 		return exists;
