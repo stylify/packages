@@ -66,6 +66,8 @@ export type CustomSelectorType = Record<string, string>;
 
 export type PregenerateType = string[]|string;
 
+export type ComponentType = Record<string, string|ComponentGeneratorFunctionType>;
+
 export interface CompilerConfigInterface {
 	dev?: boolean,
 	macros?: MacrosType,
@@ -76,7 +78,7 @@ export interface CompilerConfigInterface {
 	customSelectors?: CustomSelectorType,
 	mangleSelectors?: boolean,
 	pregenerate?: PregenerateType,
-	components?: Record<string, string>,
+	components?: ComponentType,
 	ignoredAreas?: RegExp[],
 	selectorsAreas?: string[],
 	replaceVariablesByCssVariables?: boolean,
@@ -88,11 +90,22 @@ export interface CustomSelectorsInterface {
 	customSelectors: CustomSelector[]
 }
 
+export interface ComponentGeneratorFunctionDataInterface {
+	dev: boolean,
+	helpers: HelpersType,
+	variables: VariablesType,
+	matches: RegExpExecArray
+}
+
+export type ComponentGeneratorFunctionType = (data: ComponentGeneratorFunctionDataInterface) => string;
+
 export interface ComponentsInterface {
-	customSelectors: CustomSelector[],
+	selectorsOrGenerators: (string|ComponentGeneratorFunctionType)[]
 }
 
 export class Compiler {
+
+	private readonly macroRegExpEndPart = `(?=['"\`{}\\[\\]<>\\s]|$)`;
 
 	private readonly textPlaceholder = '_TEXT_';
 
@@ -184,8 +197,8 @@ export class Compiler {
 			this.addCustomSelector(selector, selectorsToGenerate);
 		}
 
-		for (const [componentSelector, componentString] of Object.entries(config.components ?? {})) {
-			this.addComponent(componentSelector, componentString);
+		for (const [componentSelector, componentStringOrGenerator] of Object.entries(config.components ?? {})) {
+			this.addComponent(componentSelector, componentStringOrGenerator);
 		}
 
 		return this;
@@ -228,19 +241,18 @@ export class Compiler {
 		this.customSelectors[selector].customSelectors.push(new CustomSelector(selectors));
 	}
 
-	public addComponent(selector: string, selectors: string): Compiler {
+	public addComponent(selector: string, selectorsOrGenerator: string|ComponentGeneratorFunctionType): Compiler {
 		if (selector.includes(',')) {
-			selector.split(',').forEach((selector) => this.addComponent(selector.trim(), selectors));
+			selector.split(',').forEach((selector) => this.addComponent(selector.trim(), selectorsOrGenerator));
 			return;
 		}
 
 		if (!(selector in this.components)) {
 			this.components[selector] = {
-				customSelectors: []
+				selectorsOrGenerators: []
 			};
 		}
-
-		this.components[selector].customSelectors.push(new CustomSelector(selectors));
+		this.components[selector].selectorsOrGenerators.push(selectorsOrGenerator);
 
 		return this;
 	}
@@ -621,17 +633,27 @@ export class Compiler {
 
 	private processComponents(content: string): void {
 		for (const [componentName, config] of Object.entries(this.components)) {
-			const regExp = new RegExp(componentName, 'g');
-			let componentMatches: RegExpExecArray;
+			const regExp = new RegExp(`\\b${componentName + this.macroRegExpEndPart}`, 'g');
+			let componentMatch: RegExpExecArray;
 
-			while ((componentMatches = regExp.exec(content))) {
+			while ((componentMatch = regExp.exec(content))) {
 				const componentClassSelector = `.${
 					this.mangleSelectors
-						? minifiedSelectorGenerator.getMangledSelector(componentMatches[0])
-						: componentMatches[0]
+						? minifiedSelectorGenerator.getMangledSelector(componentMatch[0])
+						: this.escapeCssSelector(componentMatch[0], true)
 				}`;
 
-				for (const customSelector of config.customSelectors) {
+				for (const selectorsOrGenerator of config.selectorsOrGenerators) {
+					const componentSelectors = typeof selectorsOrGenerator === 'function'
+						? selectorsOrGenerator({
+							matches: componentMatch,
+							dev: this.dev,
+							variables: this.variables,
+							helpers: this.helpers
+						})
+						: selectorsOrGenerator;
+
+					const customSelector = new CustomSelector(componentSelectors);
 					const generatedCssEntries = Object.entries(
 						customSelector.generateSelectors(componentClassSelector)
 					);
@@ -649,13 +671,12 @@ export class Compiler {
 			return;
 		}
 
-		const regExpEndPart = `(?=['"\`{}\\[\\]<>\\s]|$)`;
 		const regExpGenerators = [
 			// Match with media query and without pseudo class
-			(macroKey: string): RegExp => new RegExp(`\\b(?:([a-zA-Z0-9-:&|]+):)${macroKey}${regExpEndPart}`, 'g'),
+			(macroKey: string): RegExp => new RegExp(`\\b(?:([a-zA-Z0-9-:&|]+):)${macroKey}${this.macroRegExpEndPart}`, 'g'),
 			// Match without media query and without pseudo class
 			// () - empty pseudo class and media query match
-			(macroKey: string): RegExp => new RegExp(`\\b()${macroKey}${regExpEndPart}`, 'g')
+			(macroKey: string): RegExp => new RegExp(`\\b()${macroKey}${this.macroRegExpEndPart}`, 'g')
 		];
 
 		for (const regExpGenerator of regExpGenerators) {

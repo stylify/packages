@@ -1,0 +1,13 @@
+:root {
+--red: darkred;
+}
+.a,
+.b{
+	font-size: 24px
+}
+.a{
+	color: #000
+}
+.b{
+	color: darkred
+}

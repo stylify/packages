@@ -154,7 +154,7 @@ test('Multiple components', (): void => {
 			'title': 'color:red',
 			'button': 'margin:11px',
 			'wrapper': 'outline:none',
-			'not-used': 'color:steelblue',
+			'not-used': 'color:steelblue'
 		}
 	});
 
@@ -162,4 +162,47 @@ test('Multiple components', (): void => {
 	let compilationResult = compiler.compile(input);
 
 	testUtils.testCssFileToBe(compilationResult.generateCss(), 'multiple-components');
+});
+
+
+test('Dynamic components', (): void => {
+	const compiler = new Compiler({
+		dev: true,
+		variables: {
+			red: 'darkred'
+		},
+		components: {
+			'title(?:--(\\S+))?': ({ matches }) => {
+				const color = matches[1] ?? '#000';
+				return `font-size:24px${color ? ` color:${color}` : ''}`;
+			},
+		}
+	});
+
+	const input = testUtils.getHtmlInputFile('dynamic-components');
+	let compilationResult = compiler.compile(input);
+
+	testUtils.testCssFileToBe(compilationResult.generateCss(), 'dynamic-components');
+});
+
+test('Mangle Dynamic components', (): void => {
+	const compiler = new Compiler({
+		dev: true,
+		mangleSelectors: true,
+		variables: {
+			red: 'darkred'
+		},
+		components: {
+			'title(?:--(\\S+))?': ({ matches }) => {
+				const color = matches[1] ?? '#000';
+				return `font-size:24px${color ? ` color:${color}` : ''}`;
+			},
+		}
+	});
+
+	const input = testUtils.getHtmlInputFile('mangle-dynamic-components');
+	let compilationResult = compiler.compile(input);
+
+	testUtils.testCssFileToBe(compilationResult.generateCss(), 'mangle-dynamic-components');
+	testUtils.testHtmlFileToBe(compiler.rewriteSelectors(input), 'mangle-dynamic-components');
 });
