@@ -8,7 +8,7 @@ const bundler = new Bundler({
 	bundles: [
 		{
 			outputFile: path.join(outputDir, 'index.css'),
-			files: 'index.html'
+			files: ['src/**/*.html']
 		}
 	]
 });

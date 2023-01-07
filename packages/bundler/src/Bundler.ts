@@ -13,6 +13,7 @@ import {
 	Hooks
 } from '@stylify/stylify';
 import fs from 'fs';
+import chokidar from 'chokidar';
 import { default as normalize } from 'normalize-path';
 import path from 'path';
 import { performance } from 'perf_hooks';
@@ -357,7 +358,9 @@ export class Bundler {
 			this.configFileWatcherInitialized = true;
 			this.log(`Watching config file "${this.configFile}" for changes...`, 'textYellow');
 
-			fs.watch(this.configFile, () => {
+			chokidar.watch(this.configFile, {
+				ignoreInitial: true
+			}).on('change', () => {
 				if (this.isReloadingConfiguration) {
 					return;
 				}
@@ -531,9 +534,10 @@ export class Bundler {
 					this.watchedFiles[pathToWatch] = {
 						bundlesIndexes: [bundleConfig.outputFile],
 						processing: false,
-						watcher: fs.watch(pathToWatch, (eventType, fileName) => {
+						watcher: chokidar.watch(pathToWatch, {
+							ignoreInitial: true
+						}).on('all', (eventType, fileName) => {
 							let isDir: boolean;
-
 							try {
 								isDir = fs.lstatSync(pathToWatch).isDirectory();
 							} catch (e) {
@@ -541,16 +545,12 @@ export class Bundler {
 							}
 
 							if (
-								isDir && eventType !== 'rename'
-								|| !isDir && eventType !== 'change'
+								isDir && eventType === 'change'
 								|| this.watchedFiles[pathToWatch].processing
 							) {
 								return;
 							}
 
-							const parsedFilePath = path.parse(fileName);
-							const fullFilePath = isDir ? path.join(pathToWatch, fileName) : pathToWatch;
-							const hasExtension = parsedFilePath.ext !== '';
 							const bundlesIndexes = this.watchedFiles[pathToWatch].bundlesIndexes;
 							let changedInfoLogged = false;
 							this.watchedFiles[pathToWatch].processing = true;
@@ -558,25 +558,25 @@ export class Bundler {
 							for (const bundleToProcessIndex of bundlesIndexes) {
 								const bundleConfig = this.bundles[bundleToProcessIndex];
 
-								if (!hasExtension && !micromatch.isMatch(fullFilePath, bundleConfig.files)) {
+								if (!micromatch.isMatch(fileName, bundleConfig.files)) {
 									continue;
 								}
 
 								if (!changedInfoLogged) {
-									this.log(`"${pathToWatch}" changed.`, null, 2);
+									this.log(`"${fileName}" changed.`, null, 2);
 									changedInfoLogged = true;
 								}
 
 								const bundleHasCache = bundleToProcessIndex in this.bundlesBuildCache;
 
-								if (!this.checkIfFileExists(fullFilePath)) {
+								if (!this.checkIfFileExists(fileName)) {
 									continue;
 								}
 
 								this.processBundle(
 									{
 										...bundleConfig,
-										...bundleHasCache ? {files: [fullFilePath]} : {}
+										...bundleHasCache ? {files: [fileName]} : {}
 									},
 									true
 								);

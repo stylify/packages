@@ -49,6 +49,7 @@
 	},
 	"dependencies": {
 		"@stylify/stylify": "^0.5.13",
+		"chokidar": "^3.5",
 		"autoprefixer": "^10.4",
 		"fast-glob": "^3.2",
 		"micromatch": "^4.0.4",
