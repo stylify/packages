@@ -718,9 +718,10 @@ export class Bundler {
 	private async getFilesToProcess(options: GetFilesToProcessOptionsInterface): Promise<BundleFileDataInterface[]> {
 		const { bundleConfig, compiler } = options;
 		let { fileMasks } = options;
-		fileMasks = fileMasks.map((fileMask: string): string => {
-			return normalize(fileMask) as string;
-		});
+		fileMasks = [...new Set([
+			...fileMasks,
+			...fileMasks.map((fileMask: string): string => normalize(fileMask) as string)
+		])];
 
 		const filesBaseDir: string = typeof bundleConfig.filesBaseDir === 'string'
 			? normalize(bundleConfig.filesBaseDir)

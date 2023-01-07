@@ -164,7 +164,6 @@ test('Multiple components', (): void => {
 	testUtils.testCssFileToBe(compilationResult.generateCss(), 'multiple-components');
 });
 
-
 test('Dynamic components', (): void => {
 	const compiler = new Compiler({
 		dev: true,
