@@ -9,10 +9,10 @@
   },
   "bundler": {
     "/esm/index.mjs": {
-      "size": 23943
+      "size": 23988
     },
     "/lib/index.cjs": {
-      "size": 25953
+      "size": 25998
     }
   },
   "nuxt": {
