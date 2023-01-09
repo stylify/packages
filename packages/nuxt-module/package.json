@@ -1,6 +1,6 @@
 {
 	"name": "@stylify/nuxt-module",
-	"version": "0.5.14",
+	"version": "0.5.15",
 	"description": "Module for Nuxt v2 for easier Stylify integration.",
 	"keywords": [
 		"stylify",
@@ -50,8 +50,8 @@
 		"pack": "yarn pack"
 	},
 	"dependencies": {
-		"@stylify/bundler": "^0.5.14",
-		"@stylify/stylify": "^0.5.14",
+		"@stylify/bundler": "^0.5.15",
+		"@stylify/stylify": "^0.5.15",
 		"loader-utils": "^2.0"
 	},
 	"devDependencies": {
@@ -60,5 +60,5 @@
 	"publishConfig": {
 		"access": "public"
 	},
-	"gitHead": "c68066f968fd7a84ee7394be682aefe48b855144"
+	"gitHead": "8c528d2f5daf83aef5ee97452b5b28bb2dfdc92c"
 }
