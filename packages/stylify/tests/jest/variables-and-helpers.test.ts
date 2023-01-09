@@ -97,3 +97,37 @@ test('Variables and helpers - replaceVariablesByCssVariables', (): void => {
 	let compilationResult = compiler.compile(testUtils.getHtmlInputFile('second'));
 	testUtils.testCssFileToBe(compilationResult.generateCss(), 'second');
 });
+
+test('External Variables', (): void => {
+	const compiler = new Compiler({
+		dev: true,
+		replaceVariablesByCssVariables: true,
+		externalVariables: [
+			'test',
+			(variable) => variable.startsWith('md-') ? true : undefined
+		]
+	});
+
+	let compilationResult = compiler.compile(testUtils.getHtmlInputFile('third'));
+	testUtils.testCssFileToBe(compilationResult.generateCss(), 'third');
+});
+
+test('External Variables - helpers exception', (): void => {
+	const compiler = new Compiler({
+		dev: true,
+		replaceVariablesByCssVariables: true,
+		externalVariables: ['test']
+	});
+
+	expect(() => compiler.compile('<div class="color:lighten($test)"></div>'))
+		.toThrow('Helpers cannot use external variables. Processing helper "lighten" and variable "$test"');
+});
+
+test('Variable missing', (): void => {
+	const compiler = new Compiler({
+		dev: true
+	});
+
+	expect(() => compiler.compile('<div class="color:lighten($test)"></div>'))
+		.toThrow('Variable "$test" not found when processing helper "lighten".');
+});

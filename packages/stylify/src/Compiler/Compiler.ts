@@ -60,6 +60,15 @@ type VariablesTypeValue = string;
 
 export type VariablesType = Record<string, VariablesTypeValue|Record<string, string>>;
 
+export type ExternalVariableCallbackType = (variable: string) => boolean|void;
+
+export type ExternalVariablesType = (string|ExternalVariableCallbackType)[];
+
+export interface IsVariableDefinedInterface {
+	defined: boolean,
+	isExternal: boolean
+}
+
 export type KeyframesType = Record<string, string>;
 
 export type CustomSelectorType = Record<string, string>;
@@ -73,6 +82,7 @@ export interface CompilerConfigInterface {
 	macros?: MacrosType,
 	helpers?: HelpersType,
 	variables?: VariablesType,
+	externalVariables?: ExternalVariablesType,
 	keyframes?: KeyframesType,
 	screens?: ScreensType,
 	customSelectors?: CustomSelectorType,
@@ -138,6 +148,8 @@ export class Compiler {
 
 	public variables: VariablesType = {};
 
+	public externalVariables: ExternalVariablesType = [];
+
 	public keyframes: KeyframesType = {};
 
 	public components: ComponentsType = {};
@@ -159,11 +171,9 @@ export class Compiler {
 	constructor(config: CompilerConfigInterface = {}) {
 		this.configure(defaultPreset);
 
-		if (!Object.keys(config).length) {
-			return;
+		if (Object.keys(config).length) {
+			this.configure(config);
 		}
-
-		this.configure(config);
 	}
 
 	public configure(config: CompilerConfigInterface): Compiler {
@@ -178,6 +188,10 @@ export class Compiler {
 		this.mangleSelectors = config.mangleSelectors ?? this.mangleSelectors;
 		this.replaceVariablesByCssVariables =
 			config.replaceVariablesByCssVariables ?? this.replaceVariablesByCssVariables;
+		this.externalVariables = [
+			...this.externalVariables,
+			...config.externalVariables ?? []
+		];
 		this.addVariables(config.variables ?? {});
 
 		if (typeof config.pregenerate !== 'undefined') {
@@ -758,10 +772,17 @@ export class Compiler {
 							});
 
 						if (helperArgument.startsWith('$')) {
-							const helperValue = this.variables[helperArgument.slice(1)];
+							const variableName = helperArgument.slice(1);
+							const { defined, isExternal } = this.isVariableDefined(variableName);
+							const helperValue = defined && !isExternal
+								? this.variables[variableName]
+								: undefined;
 
-							if (!helperValue) {
-								throw new Error( `Variable "${helperArgument}" not found when processing helper "${helperName}".`);
+							if (!defined || isExternal) {
+								throw new Error(isExternal
+									? `Helpers cannot use external variables. Processing helper "${helperName}" and variable "${helperArgument}".`
+									: `Variable "${helperArgument}" not found when processing helper "${helperName}".`
+								);
 							} else if (['string', 'number'].includes(typeof helperValue)) {
 								helperArgument = String(helperValue);
 
@@ -791,14 +812,50 @@ export class Compiler {
 		return string.replace(
 			this.variableRegExp,
 			(match, substring: string): string => {
-				if (!(substring in this.variables)) {
+				const variableIsDefined = this.isVariableDefined(substring).defined;
+
+				if (!variableIsDefined) {
 					throw new Error(`Stylify: Variable "${substring}" not found when processing "${string}".`);
 				}
+
 				return this.replaceVariablesByCssVariables
 					? `var(--${substring})`
-					: this.variables[substring] as VariablesTypeValue;
+					: this.variables[substring] as VariablesTypeValue ?? `$${substring}`;
 			}
 		);
+	}
+
+	private isVariableDefined(variable: string): IsVariableDefinedInterface {
+		let defined = false;
+		let isExternal = false;
+
+		if (variable in this.variables) {
+			defined = true;
+		} else {
+			defined = this.externalVariables.includes(variable);
+
+			if (!defined) {
+				for (const externalVariableChecker of this.externalVariables) {
+					if (typeof externalVariableChecker !== 'function') {
+						continue;
+					}
+
+					const exists = externalVariableChecker(variable);
+					defined = typeof exists === 'boolean' ? exists : false;
+
+					if (defined) {
+						break;
+					}
+				}
+			}
+
+			isExternal = defined;
+		}
+
+		return {
+			defined,
+			isExternal
+		};
 	}
 
 	private processOptionsFromContent(options: Record<string, string[]>) {

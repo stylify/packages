@@ -1,0 +1,6 @@
+.color\:\$md-sys-color-primary{
+	color: var(--md-sys-color-primary)
+}
+.background-color\:\$test{
+	background-color: var(--test)
+}
