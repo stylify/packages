@@ -313,14 +313,17 @@ export class Compiler {
 			.replace(new RegExp(this.ignoredAreasRegExpString, 'g'), (...args): string => {
 				const matchArguments = args.filter((value) => typeof value === 'string');
 				const fullMatch: string = matchArguments[0];
-				const innerHtml: string = matchArguments[1];
-				return typeof innerHtml === 'undefined' || innerHtml.length === 0
+				const innerMatch: string = matchArguments[1];
+
+				return typeof innerMatch === 'undefined' || innerMatch.length === 0
 					? fullMatch
-					: fullMatch.replace(innerHtml, placeholderInserter(innerHtml));
-			})
-			.replace(new RegExp(this.contentOptionsRegExp.source, 'g'), (matched: string) => {
-				return placeholderInserter(matched);
-			});
+					: fullMatch.replace(innerMatch, placeholderInserter(innerMatch));
+				}
+			)
+			.replace(
+				new RegExp(this.contentOptionsRegExp.source, 'g'),
+				(matched: string) => placeholderInserter(matched)
+			);
 
 		const selectorsListKeys = Object.keys(minifiedSelectorGenerator.processedSelectors)
 			.sort((a: string, b: string): number => b.length - a.length);
