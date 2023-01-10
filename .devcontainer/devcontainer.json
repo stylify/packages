@@ -38,7 +38,8 @@
 		"Zignd.html-css-class-completion",
 		"dbaeumer.vscode-eslint",
 		"astro-build.astro-vscode",
-		"ritwickdey.LiveServer"
+		"ritwickdey.LiveServer",
+		"Orta.vscode-jest"
 	],
 	"service": "server",
 	"dockerComposeFile": "../docker-compose.yml",
