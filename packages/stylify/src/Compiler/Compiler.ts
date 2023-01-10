@@ -318,8 +318,7 @@ export class Compiler {
 				return typeof innerMatch === 'undefined' || innerMatch.length === 0
 					? fullMatch
 					: fullMatch.replace(innerMatch, placeholderInserter(innerMatch));
-				}
-			)
+			})
 			.replace(
 				new RegExp(this.contentOptionsRegExp.source, 'g'),
 				(matched: string) => placeholderInserter(matched)
