@@ -659,15 +659,16 @@ export class Bundler {
 				'bundler:beforeCssFileCreated', { content: generatedCss, bundleConfig }
 			);
 
-			let outputFileContent = hookData.content;
+			let outputFileContent = hookData.content as string;
 			const isDev = bundleBuildCache.compiler.dev;
 			const whiteSpace = isDev ? '\n' : '';
 
 			if (typeof bundleConfig.cssLayer !== 'undefined') {
-				const layerName = this.cssLayersOrder.exportLayer;
-				let layerContent = typeof layerName === 'undefined' || !layerName.includes(bundleConfig.cssLayer)
-					? ''
-					: `@layer ${this.cssLayersOrder.order};${whiteSpace.repeat(2)}`;
+				const exportLayerName = this.cssLayersOrder?.exportLayer;
+				let layerContent =
+					typeof exportLayerName === 'undefined' || !exportLayerName.includes(bundleConfig.cssLayer)
+						? ''
+						: `@layer ${this.cssLayersOrder.order};${whiteSpace.repeat(2)}`;
 				layerContent += `@layer ${bundleConfig.cssLayer} {${whiteSpace}${outputFileContent}${whiteSpace}}`;
 				outputFileContent = layerContent;
 			}
