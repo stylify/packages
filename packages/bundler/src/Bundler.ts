@@ -81,7 +81,7 @@ export interface BundlesBuildStatsInterface {
 
 export interface BundleConfigInterface {
 	outputFile: string,
-	files: string[],
+	files: string|string[],
 	id?: string,
 	rewriteSelectorsInFiles?: boolean,
 	filesBaseDir?: string,
