@@ -659,7 +659,7 @@ export class Bundler {
 				'bundler:beforeCssFileCreated', { content: generatedCss, bundleConfig }
 			);
 
-			let outputFileContent = hookData.content as string;
+			let outputFileContent = hookData.content;
 			const isDev = bundleBuildCache.compiler.dev;
 			const whiteSpace = isDev ? '\n' : '';
 
@@ -669,7 +669,7 @@ export class Bundler {
 					typeof exportLayerName === 'undefined' || !exportLayerName.includes(bundleConfig.cssLayer)
 						? ''
 						: `@layer ${this.cssLayersOrder.order};${whiteSpace.repeat(2)}`;
-				layerContent += `@layer ${bundleConfig.cssLayer} {${whiteSpace}${outputFileContent}${whiteSpace}}`;
+				layerContent += `@layer ${bundleConfig.cssLayer} {${whiteSpace + outputFileContent + whiteSpace}}`;
 				outputFileContent = layerContent;
 			}
 

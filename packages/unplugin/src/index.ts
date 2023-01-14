@@ -149,7 +149,9 @@ export const unplugin = createUnplugin((config: UnpluginConfigInterface|Unplugin
 		await bundlerRunner.waitOnBundlesProcessed();
 	};
 
-	const shouldMangleSelectors = () => pluginConfig?.compiler?.mangleSelectors
+
+	// eslint-disable-next-line @typescript-eslint/no-unsafe-return
+	const shouldMangleSelectors = (): boolean => pluginConfig?.compiler?.mangleSelectors
 		?? pluginConfig?.bundler?.compiler?.mangleSelectors
 		?? (!pluginConfig.dev && !pluginConfig.bundler.watchFiles);
 

@@ -16,16 +16,16 @@ if (!fs.existsSync(buildTmpDir)) {
 
 fse.copySync(path.join(bundleTestDir, 'input'), buildTmpDir);
 
-test('Single file', (): void => {
-	return;
-	new Bundler({
+test('Single file', async (): Promise<void> => {
+	const bundler = new Bundler({
 		dev: true,
 		cssLayersOrder: {
 			order: ['layout', 'page'].join(','),
 			exportLayer: ['layout'],
 			exportFile: path.join(buildTmpDir, 'stylify-css-layers.css')
 		}
-	}).bundle([
+	})
+	bundler.bundle([
 		{
 			outputFile: path.join(buildTmpDir, 'layout.css'),
 			files: [ path.join(buildTmpDir, 'layout.html') ],
@@ -37,6 +37,8 @@ test('Single file', (): void => {
 			cssLayer: 'page'
 		},
 	]);
+
+	await bundler.waitOnBundlesProcessed();
 
 	const layoutCssOutput = testUtils.readFile(path.join(buildTmpDir, 'layout.css'));
 	const pageCssOutput = testUtils.readFile(path.join(buildTmpDir, 'page.css'));
