@@ -9,46 +9,92 @@ on:
         - main
 
 jobs:
-  tests:
-    name: Tests build
-    runs-on: ubuntu-latest
+    tests-ubuntu:
+        name: Tests - Ubuntu
+        runs-on: ubuntu-latest
 
-    steps:
-        - uses: actions/checkout@v3
+        steps:
+            - uses: actions/checkout@v3
 
-        - uses: pnpm/action-setup@v2
+            - uses: pnpm/action-setup@v2
 
-        - uses: actions/setup-node@v3
-          with:
-            node-version: 18
-            cache: pnpm
+            - uses: actions/setup-node@v3
+              with:
+                node-version: 18
+                cache: pnpm
 
-        - name: Versions
-          run: node -v && pnpm -v
+            - name: Versions
+              run: node -v && pnpm -v
 
-        - name: Install packages
-          run: pnpm repo:init
+            - name: Install packages
+              run: pnpm repo:init
 
-        - name: Build
-          run: pnpm build
+            - name: Build
+              run: pnpm build
 
-        - name: Eslint
-          run: pnpm eslint:check
+            - name: Eslint
+              run: pnpm eslint:check
 
-        - name: Jest tests
-          run: pnpm jest:test+coverage
+            - name: Jest tests
+              run: pnpm jest:test+coverage
 
-        - name: 'Upload Artifacts'
-          if: ${{ failure() }}
-          uses: actions/upload-artifact@v3
-          with:
-            name: artifacts
-            path: |
-              packages
-              !node_modules
-              !packages/*/**/node_modules
+            - name: 'Upload Artifacts'
+              if: ${{ failure() }}
+              uses: actions/upload-artifact@v3
+              with:
+                  name: artifacts
+                  path: |
+                    packages
+                    !node_modules
+                    !packages/*/**/node_modules
 
-        - name: Upload coverage to Codecov
-          uses: codecov/codecov-action@v1
-          with:
-            token: ${{ secrets.CODECOV_TOKEN }}
+            - name: Upload coverage to Codecov
+              uses: codecov/codecov-action@v1
+              with:
+                  token: ${{ secrets.CODECOV_TOKEN }}
+
+    tests-macos:
+        name: Tests - Mac OS
+        runs-on: macos-latest
+
+        steps:
+            - uses: actions/checkout@v3
+
+            - uses: pnpm/action-setup@v2
+
+            - uses: actions/setup-node@v3
+              with:
+                  node-version: 18
+                  cache: pnpm
+
+            - name: Install packages
+              run: pnpm repo:init
+
+            - name: Build
+              run: pnpm build
+
+            - name: Jest tests
+              run: pnpm jest:test
+
+    tests-windows:
+        name: Tests - Windows
+        runs-on: windows-latest
+
+        steps:
+            - uses: actions/checkout@v3
+
+            - uses: pnpm/action-setup@v2
+
+            - uses: actions/setup-node@v3
+              with:
+                  node-version: 18
+                  cache: pnpm
+
+            - name: Install packages
+              run: pnpm repo:init
+
+            - name: Build
+              run: pnpm build
+
+            - name: Jest tests
+              run: pnpm jest:test

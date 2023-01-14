@@ -1,11 +1,14 @@
 const fs = require('fs');
 const path = require('path');
+const os = require('os')
 
 export default class TestUtils {
 
 	private packageName: string|null = null;
 
 	private testName: string|null = null;
+
+	private isWindowsEnv = os.platform() === 'win32'
 
 	constructor(packageName: string, testName: string) {
 		this.packageName = packageName;
@@ -89,13 +92,18 @@ export default class TestUtils {
 		fs.writeFileSync(tmpFilePath, `${fileContentToSave.trim()}\n`);
 	}
 
-	public testToBe(actual: any, expected: any, tmpFileName: string = null): void {
-		this.saveTmpFile(tmpFileName, actual);
-		expect(actual).toBe(expected);
+	public testToBe(actual: any, expected: any, tmpFileName: string|null = null): void {
+		if (tmpFileName) {
+			this.saveTmpFile(tmpFileName, actual);
+		}
+		expect(this.unitWhiteSpace(actual)).toBe(this.unitWhiteSpace(expected));
 	}
 
-	public testMatchObject(actual: Record<any, any>, expected: Record<any, any>, tmpFileName: string = null): void {
-		this.saveTmpFile(tmpFileName, actual);
+	public testMatchObject(actual: Record<any, any>, expected: Record<any, any>, tmpFileName: string|null = null): void {
+		if (tmpFileName) {
+			this.saveTmpFile(tmpFileName, actual);
+		}
+
 		expect(actual).toMatchObject(expected);
 	}
 
@@ -118,6 +126,14 @@ export default class TestUtils {
 	public testFileToBe(actualContent: any, suffix: string, expectedFileName: string = 'index') {
 		const expecedFile = `${expectedFileName}.${suffix}`;
 		this.testToBe(actualContent, this.getExpectedFile(expecedFile), expecedFile);
+	}
+
+	private unitWhiteSpace(content: string) {
+		if (typeof content !== 'string' || !this.isWindowsEnv) {
+			return content;
+		};
+
+		return content.replace(/\s+/g, ' ');
 	}
 
 }
