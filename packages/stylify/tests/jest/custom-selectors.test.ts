@@ -1,19 +1,23 @@
 import TestUtils from '../../../../tests/TestUtils';
-import { Compiler } from '../../src';
+import { Compiler, minifiedSelectorGenerator } from '../../src';
 
 const testName = 'custom-selectors';
 const testUtils = new TestUtils('stylify', testName);
 
-const customSelectorsSet = {
-	'*': 'box-sizing:border-box',
-	'body': 'font-size:16px',
-	'article h1': 'font-size:16px',
-	'::selection': 'color:#fff',
-	a: 'hover:color:red',
-	'h2:hover': 'color:green'
-}
+beforeEach(() => {
+	minifiedSelectorGenerator.processedSelectors = {};
+});
 
 test('Custom selectors - only set', (): void => {
+	const customSelectorsSet = {
+		'*': 'box-sizing:border-box',
+		'body': 'font-size:16px',
+		'article h1': 'font-size:16px',
+		'::selection': 'color:#fff',
+		a: 'hover:color:red',
+		'h2:hover': 'color:green'
+	};
+
 	const compiler = new Compiler({
 		dev: true,
 		customSelectors: customSelectorsSet
@@ -22,4 +26,33 @@ test('Custom selectors - only set', (): void => {
 	let compilationResult = compiler.compile(testUtils.getHtmlInputFile());
 
 	testUtils.testCssFileToBe(compilationResult.generateCss());
+});
+
+test('Random order', (): void => {
+	const compiler = new Compiler({
+		dev: true,
+		components: {
+			'btn:(\\S+)': ({matches}) => {
+				const types = {
+					'orange': `
+						color:#fff
+						&:focus { background:darkorange }
+						font-size:16px
+					`
+				};
+
+				const typeUtilities = types[matches[1]] ?? undefined;
+
+				if (typeof typeUtilities === 'undefined') {
+					throw new Error(`Button type "${matches[1]}" not found.`);
+				}
+
+				return typeUtilities;
+			}
+		}
+	});
+
+	let compilationResult = compiler.compile('btn:orange', undefined, false);
+
+	testUtils.testCssFileToBe(compilationResult.generateCss(), 'random-order');
 });

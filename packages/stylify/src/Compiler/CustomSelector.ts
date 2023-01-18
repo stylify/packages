@@ -84,19 +84,19 @@ export class CustomSelector {
 					if (!nestedTreeSelector) {
 						throw new Error(`Selector levels cannot be created without selector. Processing "${content}".`);
 					}
-					actualTree.selectors += tokenQueue.replace(nestedTreeSelector[0], '').trim();
+					actualTree.selectors += tokenQueue.replace(nestedTreeSelector[0], '');
 					tokenQueue = '';
 					actualTree.children[nestedTreeSelector[1].trim()] = parseContent(content, createTree());
 
 				} else if (character === '}') {
-					actualTree.selectors += tokenQueue.trim();
+					actualTree.selectors += tokenQueue;
 					break;
 
 				} else {
 					tokenQueue += character;
 
 					if (contentIterator === contentlength) {
-						actualTree.selectors += tokenQueue.trim();
+						actualTree.selectors += tokenQueue;
 						tokenQueue = '';
 						break;
 					}
