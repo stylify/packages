@@ -1,0 +1,9 @@
+.btn\:orange{
+	color: #fff
+}
+.btn\:orange{
+	font-size: 16px
+}
+.btn\:orange:focus{
+	background: darkorange
+}
