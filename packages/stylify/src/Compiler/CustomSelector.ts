@@ -32,7 +32,7 @@ export class CustomSelector {
 						continue;
 					}
 
-					selectors[selectorToAdd] = selectorsOrChildren;
+					selectors[selectorToAdd] = [selectors[selectorToAdd] ?? '', selectorsOrChildren].join(' ');
 					continue;
 				}
 
@@ -59,7 +59,7 @@ export class CustomSelector {
 		};
 
 		processTree(rootSelector, this.tree);
-
+		console.log(selectors);
 		return selectors;
 	}
 
@@ -72,7 +72,10 @@ export class CustomSelector {
 		let contentIterator = 0;
 		const contentlength = content.length;
 
-		const parseContent = (content: string, actualTree: CustomSelectorTreeItemInterface): any => {
+		const parseContent = (
+			content: string,
+			actualTree: CustomSelectorTreeItemInterface
+		): CustomSelectorTreeItemInterface => {
 			let tokenQueue = '';
 
 			while (contentIterator < contentlength) {

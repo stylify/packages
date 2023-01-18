@@ -9,7 +9,7 @@ beforeEach(() => {
 });
 
 test('Custom selectors - only set', (): void => {
-	const customSelectorsSet = {
+	const customSelectors = {
 		'*': 'box-sizing:border-box',
 		'body': 'font-size:16px',
 		'article h1': 'font-size:16px',
@@ -20,7 +20,7 @@ test('Custom selectors - only set', (): void => {
 
 	const compiler = new Compiler({
 		dev: true,
-		customSelectors: customSelectorsSet
+		customSelectors
 	});
 
 	let compilationResult = compiler.compile(testUtils.getHtmlInputFile());
@@ -55,4 +55,28 @@ test('Random order', (): void => {
 	let compilationResult = compiler.compile('btn:orange', undefined, false);
 
 	testUtils.testCssFileToBe(compilationResult.generateCss(), 'random-order');
+});
+
+test('Duplicate definition', (): void => {
+	const customSelectors = {
+		'article': `
+			h1, h2 {
+				color:blue
+				span { margin:24px }
+			}
+			h2 {
+				font-size:24px
+				span { font-weight:bold }
+			}
+		`
+	};
+
+	const compiler = new Compiler({
+		dev: true,
+		customSelectors
+	});
+
+	let compilationResult = compiler.compile('<article></article>');
+
+	testUtils.testCssFileToBe(compilationResult.generateCss(), 'duplicate-definition');
 });

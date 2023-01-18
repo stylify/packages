@@ -1,0 +1,14 @@
+article h1,
+article  h2{
+	color: blue
+}
+article h1 span,
+article  h2 span{
+	margin: 24px
+}
+article h2{
+	font-size: 24px
+}
+article h2 span{
+	font-weight: bold
+}
