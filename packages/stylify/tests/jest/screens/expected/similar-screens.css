@@ -1,0 +1,11 @@
+@media (min-width: 123px) {
+.tablet\:color\:blue{
+	color: blue
+}
+}
+
+@media (min-width: 345px) {
+.tablet-deprecated\:color\:red{
+	color: red
+}
+}

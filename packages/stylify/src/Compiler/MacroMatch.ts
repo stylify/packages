@@ -30,32 +30,51 @@ export class MacroMatch {
 
 		if (this.screenAndPseudoClassesMatch) {
 			const screenAndPseudoClassesMatchArray = this.screenAndPseudoClassesMatch.split(':');
-			let possibleScreenMatch = screenAndPseudoClassesMatchArray[0]
-				.replace(/&&/ig, ' and ')
-				.replace(/\|\|/ig, ', ');
+			const operators: string[] = [];
+			const possibleScreenMatchItems = screenAndPseudoClassesMatchArray[0]
+				.replace(/&&/ig, () => {
+					operators.push(' and ');
+					return '__OPERATOR__';
+				})
+				.replace(/\|\|/ig, () => {
+					operators.push(', ');
+					return '__OPERATOR__';
+				})
+				.split('__OPERATOR__');
 
 			let screenMatched = false;
+			let possibleScreenMatchString = '';
 
-			for (const key in screens) {
-				const screenRegExp = new RegExp('\\b' + key, 'g');
-				const screenMatches = screenRegExp.exec(possibleScreenMatch);
+			possibleScreenMatchItems.forEach((possibleScreenMatch) => {
+				for (const key in screens) {
+					const screenRegExp = new RegExp(`\\b${key}$`, 'g');
+					const screenMatches = screenRegExp.exec(possibleScreenMatch);
 
-				if (screenMatches === null) {
-					continue;
+					if (screenMatches === null) {
+						continue;
+					}
+
+					let screenData = screens[key];
+
+					if (typeof screenData === 'function') {
+						screenData = screenData(screenMatches[0]);
+					}
+
+					possibleScreenMatch = possibleScreenMatch.replace(screenRegExp, screenData);
+					screenMatched = true;
 				}
 
-				let screenData = screens[key];
+				const operator = operators[0] ?? '';
 
-				if (typeof screenData === 'function') {
-					screenData = screenData(screenMatches[0]);
+				if (operator) {
+					operators.shift();
 				}
 
-				possibleScreenMatch = possibleScreenMatch.replace(screenRegExp, screenData);
-				screenMatched = true;
-			}
+				possibleScreenMatchString += `${possibleScreenMatch}${operator}`;
+			});
 
 			if (screenMatched) {
-				this.screen = possibleScreenMatch;
+				this.screen = possibleScreenMatchString;
 				screenAndPseudoClassesMatchArray.shift();
 			}
 
