@@ -59,7 +59,7 @@ export class CustomSelector {
 		};
 
 		processTree(rootSelector, this.tree);
-		console.log(selectors);
+
 		return selectors;
 	}
 
