@@ -87,7 +87,12 @@ export default function Stylify(): void {
 	}
 
 	const getConfigPath = (configPath: string) => nuxt.resolver.resolveAlias(configPath) as string;
-	const configsPaths = [getConfigPath('stylify.config.js'), getConfigPath('stylify.config.ts')];
+	const configsPaths = [
+		getConfigPath('stylify.config.js'),
+		getConfigPath('stylify.config.mjs'),
+		getConfigPath('stylify.config.cjs'),
+		getConfigPath('stylify.config.ts')
+	];
 
 	let configFileExists = false;
 

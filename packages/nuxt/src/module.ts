@@ -14,10 +14,11 @@ import {
 } from '@stylify/unplugin';
 import {
 	defineNuxtModule,
-	extendViteConfig,
-	extendWebpackConfig,
 	resolveAlias,
-	requireModule
+	requireModule,
+	findPath,
+	addWebpackPlugin,
+	addVitePlugin
 } from '@nuxt/kit';
 import { fileURLToPath } from 'url';
 
@@ -75,7 +76,7 @@ export default defineNuxtModule<NuxtModuleConfigInterface>({
 		};
 	},
 
-	setup(moduleConfig, nuxt): void {
+	async setup(moduleConfig, nuxt): Promise<void> {
 		const nuxtIsInDevMode = nuxt.options.dev ?? moduleConfig.dev;
 		moduleConfig.dev = nuxtIsInDevMode;
 
@@ -84,11 +85,15 @@ export default defineNuxtModule<NuxtModuleConfigInterface>({
 			moduleConfig = mergeObjects(moduleConfig, (<any>nuxt).options.stylify ?? {});
 		}
 
-		const getConfigPath = (configPath: string): string => path.join(nuxt.options.rootDir, resolveAlias(configPath));
-		const configsPaths = [getConfigPath('stylify.config.js'), getConfigPath('stylify.config.ts')];
+		const configsPaths = await Promise.all([
+			findPath('stylify.config.js'),
+			findPath('stylify.config.mjs'),
+			findPath('stylify.config.cjs'),
+			findPath('stylify.config.ts')
+		]);
 
 		if (moduleConfig.configPath) {
-			moduleConfig.configPath = getConfigPath(moduleConfig.configPath);
+			moduleConfig.configPath = await findPath(moduleConfig.configPath);
 
 			if (fs.existsSync(moduleConfig.configPath)) {
 				configsPaths.push(moduleConfig.configPath);
@@ -186,16 +191,11 @@ export default defineNuxtModule<NuxtModuleConfigInterface>({
 			nitroConfig.rollupConfig.plugins.unshift(stylifyRollup(pluginConfig));
 		});
 
-		extendWebpackConfig((config) => {
-			const plugin = stylifyWebpack(getPluginConfig());
-			config.plugins = config.plugins || [];
-			config.plugins.push(plugin);
-		});
-
-		extendViteConfig((config) => {
-			const plugin = stylifyVite(getPluginConfig());
-			config.plugins = config.plugins || [];
-			config.plugins.push(plugin);
-		});
+		addWebpackPlugin(stylifyWebpack(getPluginConfig()));
+		addVitePlugin(
+			// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+			// @ts-ignore
+			stylifyVite(getPluginConfig())
+		);
 	}
 });
