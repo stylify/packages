@@ -57,8 +57,8 @@
 		"unplugin:test": "yarn jest:test packages/unplugin/tests/jest",
 		"eslint:check": "eslint packages/**/src/**/*.{js,ts}",
 		"eslint:fix": "yarn eslint:check --fix",
-		"jest:test": "jest --clearCache && node --experimental-vm-modules node_modules/jest/bin/jest --maxWorkers 1 --detectOpenHandles",
-		"jest:test+coverage": "node --experimental-vm-modules node_modules/jest/bin/jest jest --collect-coverage --detectOpenHandles --coverageProvider=v8"
+		"jest:test": "jest --clearCache && node --experimental-vm-modules node_modules/jest/bin/jest --maxWorkers 1",
+		"jest:test+coverage": "yarn jest:test --collect-coverage --coverageProvider=v8"
 	},
 	"repository": {
 		"type": "git",

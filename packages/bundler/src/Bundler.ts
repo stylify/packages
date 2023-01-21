@@ -573,10 +573,14 @@ export class Bundler {
 									continue;
 								}
 
+								const bundleCache = this.bundlesBuildCache[bundleConfig.outputFile];
 								this.processBundle(
 									{
 										...bundleConfig,
-										...bundleHasCache ? {files: [fileName]} : {}
+										...bundleHasCache ? {files: bundleCache.compilationResult
+											? [fileName]
+											: bundleCache.files
+										} : {}
 									},
 									true
 								);
@@ -717,7 +721,7 @@ export class Bundler {
 			try {
 				await bundleRunner();
 			} catch (error) {
-				delete this.bundlesBuildCache[bundleConfig.outputFile];
+				this.bundlesBuildCache[bundleConfig.outputFile].compilationResult = null;
 				console.error(error);
 			}
 		};
