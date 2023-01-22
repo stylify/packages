@@ -473,33 +473,28 @@ export class Bundler {
 					? this.compilerConfig
 					: mergeObjects(this.compilerConfig, bundleConfig.compiler);
 
-				try {
-					const compiler = new Compiler(bundleCompilerConfig);
+				const compiler = new Compiler(bundleCompilerConfig);
 
-					const bundleCompilationResult = new CompilationResult({
-						mangleSelectors: bundleCompilerConfig.mangleSelectors,
-						reconfigurable: false
+				const bundleCompilationResult = new CompilationResult({
+					mangleSelectors: bundleCompilerConfig.mangleSelectors,
+					reconfigurable: false
+				});
+
+				this.bundlesBuildCache[bundleConfig.outputFile] = {
+					id: bundleConfig.id || null,
+					compiler: compiler,
+					compilationResult: bundleCompilationResult,
+					buildTime: null,
+					files: []
+				};
+
+				hooks.addListener(
+					'compilationResult:configureCssRecord',
+					({compilationResult, cssRecord}) => {
+						if (compilationResult.id === bundleCompilationResult.id) {
+							cssRecord.configure({ scope: bundleConfig.scope });
+						}
 					});
-
-					this.bundlesBuildCache[bundleConfig.outputFile] = {
-						id: bundleConfig.id || null,
-						compiler: compiler,
-						compilationResult: bundleCompilationResult,
-						buildTime: null,
-						files: []
-					};
-
-					hooks.addListener(
-						'compilationResult:configureCssRecord',
-						({compilationResult, cssRecord}) => {
-							if (compilationResult.id === bundleCompilationResult.id) {
-								cssRecord.configure({ scope: bundleConfig.scope });
-							}
-						});
-				} catch (error) {
-					this.logOrError(error);
-					return;
-				}
 			}
 
 			const bundleBuildCache = this.bundlesBuildCache[bundleConfig.outputFile];
@@ -567,22 +562,15 @@ export class Bundler {
 									changedInfoLogged = true;
 								}
 
-								const bundleHasCache = bundleToProcessIndex in this.bundlesBuildCache;
-
 								if (!this.checkIfFileExists(fileName)) {
 									continue;
 								}
 
-								const bundleCache = this.bundlesBuildCache[bundleConfig.outputFile];
+								const bundleCache = this.bundlesBuildCache[bundleConfig.outputFile] ?? null;
+
 								this.processBundle(
-									{
-										...bundleConfig,
-										...bundleHasCache ? {files: bundleCache.compilationResult
-											? [fileName]
-											: bundleCache.files
-										} : {}
-									},
-									true
+									{ ...bundleConfig, ...bundleCache ? {files: [fileName]} : {} },
+									bundleCache !== null
 								);
 							}
 
@@ -612,16 +600,10 @@ export class Bundler {
 					}
 				}
 
-				try {
-					bundleBuildCache.compilationResult = compiler.compile(
-						fileToProcessConfig.content,
-						bundleBuildCache.compilationResult ?? null
-					);
-
-				} catch (error) {
-					this.logOrError(error);
-					continue;
-				}
+				bundleBuildCache.compilationResult = compiler.compile(
+					fileToProcessConfig.content,
+					bundleBuildCache.compilationResult ?? null
+				);
 
 				if (bundleConfig.rewriteSelectorsInFiles) {
 					const processedContent = compiler.rewriteSelectors(fileToProcessConfig.content);
@@ -721,7 +703,7 @@ export class Bundler {
 			try {
 				await bundleRunner();
 			} catch (error) {
-				this.bundlesBuildCache[bundleConfig.outputFile].compilationResult = null;
+				delete this.bundlesBuildCache[bundleConfig.outputFile];
 				console.error(error);
 			}
 		};
