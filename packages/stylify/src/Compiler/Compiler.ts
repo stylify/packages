@@ -266,6 +266,25 @@ export class Compiler {
 				selectorsOrGenerators: []
 			};
 		}
+
+		const isGenerator = typeof selectorsOrGenerator === 'function';
+		const definedSelectorsOrGenerators = this.components[selector].selectorsOrGenerators;
+
+		if (!isGenerator && definedSelectorsOrGenerators.includes(selectorsOrGenerator)) {
+			return;
+
+		} else if (isGenerator) {
+			for (const definedSelectorOrGenerator of definedSelectorsOrGenerators) {
+				if (typeof definedSelectorOrGenerator !== 'function') {
+					continue;
+				}
+
+				if (definedSelectorOrGenerator.toString() === selectorsOrGenerator.toString()) {
+					return;
+				}
+			}
+		}
+
 		this.components[selector].selectorsOrGenerators.push(selectorsOrGenerator);
 
 		return this;
