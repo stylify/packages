@@ -9,10 +9,10 @@
   },
   "bundler": {
     "/esm/index.mjs": {
-      "size": 24706
+      "size": 24080
     },
     "/lib/index.cjs": {
-      "size": 26705
+      "size": 26079
     }
   },
   "nuxt": {
@@ -39,22 +39,22 @@
   },
   "stylify": {
     "/esm/index.js": {
-      "size": 68288
+      "size": 69096
     },
     "/esm/index.min.js": {
-      "size": 34496
+      "size": 34800
     },
     "/esm/index.mjs": {
-      "size": 68781
+      "size": 69589
     },
     "/lib/index.cjs": {
-      "size": 70380
+      "size": 71188
     },
     "/dist/stylify.js": {
-      "size": 70558
+      "size": 71404
     },
     "/dist/stylify.min.js": {
-      "size": 34076
+      "size": 34380
     }
   },
   "unplugin": {
