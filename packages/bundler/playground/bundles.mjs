@@ -3,6 +3,7 @@ import { Bundler } from '../esm/index.mjs';
 
 const outputDir = path.join('.', path.sep, 'css');
 const bundler = new Bundler({
+	dev: true,
 	verbose: true,
 	watchFiles: true,
 	bundles: [
