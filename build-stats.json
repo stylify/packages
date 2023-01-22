@@ -9,29 +9,29 @@
   },
   "bundler": {
     "/esm/index.mjs": {
-      "size": 24508
+      "size": 24706
     },
     "/lib/index.cjs": {
-      "size": 26507
+      "size": 26705
     }
   },
   "nuxt": {
     "/esm/module.mjs": {
-      "size": 5412
+      "size": 5373
     },
     "/lib/module.cjs": {
-      "size": 7547
+      "size": 7397
     }
   },
   "nuxt-module": {
     "/esm/index.mjs": {
-      "size": 5121
+      "size": 5215
     },
     "/esm/webpack-loader.mjs": {
       "size": 796
     },
     "/lib/index.cjs": {
-      "size": 7008
+      "size": 7102
     },
     "/lib/webpack-loader.cjs": {
       "size": 1823

@@ -1,6 +1,6 @@
 {
 	"name": "@stylify/unplugin",
-	"version": "0.5.18",
+	"version": "0.5.19",
 	"description": "Universal plugin for Rollup.js, Vite.js and Webpack for easier Stylify integration.",
 	"keywords": [
 		"stylify",
@@ -53,8 +53,8 @@
 		"plg:webpack:watch": "cd playground/webpack && yarn watch"
 	},
 	"dependencies": {
-		"@stylify/bundler": "^0.5.18",
-		"@stylify/stylify": "^0.5.18",
+		"@stylify/bundler": "^0.5.19",
+		"@stylify/stylify": "^0.5.19",
 		"unplugin": "^1.0"
 	},
 	"devDependencies": {
@@ -71,5 +71,5 @@
 	"publishConfig": {
 		"access": "public"
 	},
-	"gitHead": "8d298b4787d5a521accce08dd99502f81f67babc"
+	"gitHead": "d971db09f20b8524d5ffc9a1d97df58aec2ff91b"
 }
