@@ -5,11 +5,15 @@ export interface CustomSelectorTreeItemInterface {
 	children: CustomSelectorTreeItemListType;
 }
 
+export type GeneratedSelectorsType = Record<string, string>;
+
 export class CustomSelector {
 
 	private readonly placeholderCharacter = '&';
 
 	private readonly placeholderCharacterRegExp = new RegExp(this.placeholderCharacter, 'g');
+
+	private generatedSelectors: Record<string, GeneratedSelectorsType> = {};
 
 	private tree!: CustomSelectorTreeItemInterface;
 
@@ -17,7 +21,11 @@ export class CustomSelector {
 		this.parseTree(content);
 	}
 
-	public generateSelectors(rootSelector = ''): Record<string, string> {
+	public generateSelectors(rootSelector = ''): GeneratedSelectorsType {
+		if (rootSelector in this.generatedSelectors) {
+			return this.generatedSelectors[rootSelector];
+		}
+
 		const selectors = {};
 
 		const replaceRootPlaceholder = (selector: string, rootSelector: string): string => selector.replace(
@@ -59,6 +67,8 @@ export class CustomSelector {
 		};
 
 		processTree(rootSelector, this.tree);
+
+		this.generatedSelectors[rootSelector] = selectors;
 
 		return selectors;
 	}
