@@ -97,10 +97,12 @@ export class CssRecord {
 		}
 
 		for (const pseudoClass of pseudoClasses) {
-			if (!this.pseudoClasses.includes(pseudoClass)) {
-				this.changed = true;
-				this.pseudoClasses.push(pseudoClass);
+			if (this.pseudoClasses.includes(pseudoClass)) {
+				continue;
 			}
+
+			this.changed = true;
+			this.pseudoClasses.push(pseudoClass);
 		}
 	}
 
@@ -109,6 +111,7 @@ export class CssRecord {
 			return;
 		}
 
+		this.changed = true;
 		this.customSelectors.push(selector);
 	}
 
