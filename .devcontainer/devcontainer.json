@@ -43,7 +43,6 @@
 	],
 	"service": "server",
 	"dockerComposeFile": "../docker-compose.yml",
-	"postCreateCommand": "yarn install",
 	"workspaceFolder": "/usr/share/nginx/html",
 	"shutdownAction": "stopCompose",
 	"remoteUser": "root"

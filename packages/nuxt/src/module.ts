@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { name } from '../package.json';
+import { name, version } from '../package.json';
 import {
 	CompilerConfigInterface,
 	mergeObjects
@@ -52,10 +52,7 @@ export default defineNuxtModule<NuxtModuleConfigInterface>({
 		configKey: 'stylify'
 	},
 	defaults: (nuxt): NuxtModuleConfigInterface => {
-		const pagesDir = resolveAlias(nuxt.options.dir.pages);
-		const layoutsDir = resolveAlias(nuxt.options.dir.layouts);
-		const componentsDir = resolveAlias('components');
-		const contentDir = resolveAlias('content');
+		const rootDir = nuxt.options.rootDir;
 
 		return {
 			dev: false,
@@ -66,12 +63,16 @@ export default defineNuxtModule<NuxtModuleConfigInterface>({
 			lessVarsDirPath: null,
 			stylusVarsDirPath: null,
 			filesMasks: [
-				path.join(nuxt.options.rootDir, 'app.vue'),
-				path.join(nuxt.options.rootDir, pagesDir, '**', '*.vue'),
-				path.join(nuxt.options.rootDir, layoutsDir, '**', '*.vue'),
-				path.join(nuxt.options.rootDir, componentsDir, '**', '*.vue'),
-				path.join(nuxt.options.rootDir, contentDir, '**', '*.vue'),
-				path.join(nuxt.options.rootDir, contentDir, '**', '*.md')
+				`${rootDir}/components/**/*.{vue,js,ts}`,
+				`${rootDir}/layouts/**/*.vue`,
+				`${rootDir}/pages/**/*.vue`,
+				`${rootDir}/composables/**/*.{js,ts}`,
+				`${rootDir}/content/**/*.{vue,md}`,
+				`${rootDir}/plugins/**/*.{js,ts}`,
+				`${rootDir}/App.{js,ts,vue}`,
+				`${rootDir}/app.{js,ts,vue}`,
+				`${rootDir}/Error.{js,ts,vue}`,
+				`${rootDir}/error.{js,ts,vue}`
 			]
 		};
 	},
@@ -85,12 +86,12 @@ export default defineNuxtModule<NuxtModuleConfigInterface>({
 			moduleConfig = mergeObjects(moduleConfig, (<any>nuxt).options.stylify ?? {});
 		}
 
-		const configsPaths = await Promise.all([
+		const configsPaths = (await Promise.all([
 			findPath('stylify.config.js'),
 			findPath('stylify.config.mjs'),
 			findPath('stylify.config.cjs'),
 			findPath('stylify.config.ts')
-		]);
+		])).filter((config) => config !== null);
 
 		if (moduleConfig.configPath) {
 			moduleConfig.configPath = await findPath(moduleConfig.configPath);
@@ -108,7 +109,9 @@ export default defineNuxtModule<NuxtModuleConfigInterface>({
 				continue;
 			}
 
-			moduleConfig = mergeObjects(moduleConfig, requireModule(configPath) as Partial<NuxtModuleConfigInterface>);
+			moduleConfig = mergeObjects(
+				moduleConfig, requireModule(configPath, { clearCache: true }) as Partial<NuxtModuleConfigInterface>
+			);
 
 			if (nuxtIsInDevMode) {
 				nuxt.options.watch = nuxt.options.watch ?? [];
@@ -167,6 +170,11 @@ export default defineNuxtModule<NuxtModuleConfigInterface>({
 					: null,
 				compiler: moduleConfig.compiler
 			}
+		});
+
+		nuxt.hook('build:before', () => {
+			// eslint-disable-next-line no-console
+			console.info(`Stylify: "v${version}" is running with configs "${configsPaths.join(', ')}".`);
 		});
 
 		/**
