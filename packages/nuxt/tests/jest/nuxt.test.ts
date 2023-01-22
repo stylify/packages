@@ -19,7 +19,7 @@ fse.copySync(path.join(bundleTestDir, 'input'), buildTmpDir);
 
 execSync(`cd ${buildTmpDir} && yarn install && yarn build`);
 
-const frontFileContentPart = `n={class:"h g"};function _(s,r){return t(),c("h2",n,"Smaller Subtitle")}`;
+const frontFileContentPart = `n={class:"b a"};function _(s,r){return t(),c("h2",n,"Smaller Subtitle")}`;
 const serverDefaultFileContentPart = '_push(`<div${serverRenderer.exports.ssrRenderAttrs(vue_cjs_prod.mergeProps({ class: "d e" }, _attrs))}><div class="f">This is layout</div>`);'
 
 test('Nuxt - Stylify options', async (): Promise<void> => {
@@ -30,5 +30,5 @@ test('Nuxt - Stylify options', async (): Promise<void> => {
  	const frontFileContent = testUtils.readFile(subtitleFileEntry);
 
 	testUtils.testCssFileToBe(cssFileContent, 'output');
- 	expect(frontFileContent.includes(frontFileContentPart)).toBeTruthy();
+	expect(frontFileContent.includes(frontFileContentPart)).toBeTruthy();
 });
