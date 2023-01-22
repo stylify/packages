@@ -17,10 +17,10 @@
   },
   "nuxt": {
     "/esm/module.mjs": {
-      "size": 5373
+      "size": 5335
     },
     "/lib/module.cjs": {
-      "size": 7397
+      "size": 7359
     }
   },
   "nuxt-module": {
@@ -39,22 +39,22 @@
   },
   "stylify": {
     "/esm/index.js": {
-      "size": 68250
+      "size": 68288
     },
     "/esm/index.min.js": {
-      "size": 34478
+      "size": 34496
     },
     "/esm/index.mjs": {
-      "size": 68743
+      "size": 68781
     },
     "/lib/index.cjs": {
-      "size": 70342
+      "size": 70380
     },
     "/dist/stylify.js": {
-      "size": 70516
+      "size": 70558
     },
     "/dist/stylify.min.js": {
-      "size": 34058
+      "size": 34076
     }
   },
   "unplugin": {
