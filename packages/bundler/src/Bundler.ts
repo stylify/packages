@@ -711,14 +711,6 @@ export class Bundler {
 		this.processedBundlesQueue.push(execBundleRunner());
 	}
 
-	private logOrError(message: string): void {
-		if (this.watchFiles) {
-			console.error(message);
-		} else {
-			throw new Error(message);
-		}
-	}
-
 	private async getFilesToProcess(
 		options: GetFilesToProcessOptionsInterface
 	): Promise<Record<string, BundleFileDataInterface>> {
