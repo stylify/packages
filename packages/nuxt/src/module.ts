@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { name, version } from '../package.json';
+import { name } from '../package.json';
 import {
 	CompilerConfigInterface,
 	mergeObjects
@@ -174,7 +174,7 @@ export default defineNuxtModule<NuxtModuleConfigInterface>({
 
 		nuxt.hook('build:before', () => {
 			// eslint-disable-next-line no-console
-			console.info(`Stylify: "v${version}" is running with configs "${configsPaths.join(', ')}".`);
+			console.info(`Stylify: is running with configs "${configsPaths.join(', ')}".`);
 		});
 
 		/**
