@@ -1,3 +1,9 @@
-.a{
+.b{
 	color: blue
+}
+.a::before{
+	content: '\2022'
+}
+.a::before{
+	position: absolute
 }

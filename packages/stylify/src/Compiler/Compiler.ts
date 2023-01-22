@@ -121,6 +121,8 @@ export class Compiler {
 
 	private readonly dollarPlaceholder = '_DOLLAR_';
 
+	private readonly backslashPlaceholder = '_BACKSLASH_';
+
 	private readonly variableRegExp = /\$([\w-_]+)/g;
 
 	private readonly contentOptionsRegExp = /stylify-([a-zA-Z-_0-9]+)\s([\s\S]+?)\s\/stylify-[a-zA-Z-_0-9]+/;
@@ -317,6 +319,7 @@ export class Compiler {
 		}
 
 		const dollarPlaceholderRegExp = new RegExp(this.dollarPlaceholder, 'g');
+		const backslashPlaceholderRegExp = new RegExp(this.backslashPlaceholder, 'g');
 		const placeholderTextPart = this.textPlaceholder;
 		const contentPlaceholders: Record<string, string> = {};
 
@@ -326,9 +329,15 @@ export class Compiler {
 			return placeholderKey;
 		};
 
-		const replaceDollarsByPlaceholder = (content: string) => content.replace(/\$/g, this.dollarPlaceholder);
+		// This replaces special characters used within regular expression
+		// so their are not processed during replacing
+		// $ => because $$ causes $
+		// \ => because \u or \v for example are predefined character sets
+		const replaceSpecialCharacters = (content: string) => content
+			.replace(/\$/g, this.dollarPlaceholder)
+			.replace(/\\/g, this.backslashPlaceholder);
 
-		content = replaceDollarsByPlaceholder(content)
+		content = replaceSpecialCharacters(content)
 			.replace(new RegExp(this.ignoredAreasRegExpString, 'g'), (...args): string => {
 				const matchArguments = args.filter((value) => typeof value === 'string');
 				const fullMatch: string = matchArguments[0];
@@ -347,7 +356,7 @@ export class Compiler {
 			.sort((a: string, b: string): number => b.length - a.length);
 
 		for (const selector of selectorsListKeys) {
-			let selectorToReplace = replaceDollarsByPlaceholder(selector);
+			let selectorToReplace = replaceSpecialCharacters(selector);
 
 			if (!content.includes(selectorToReplace)) {
 				continue;
@@ -388,7 +397,10 @@ export class Compiler {
 			content = content.replace(placeholderKey, contentPlaceholder);
 		}
 
-		content = content.replace(dollarPlaceholderRegExp, '$$');
+		content = content
+			.replace(dollarPlaceholderRegExp, '$$')
+			.replace(backslashPlaceholderRegExp, '\\');
+
 		return content;
 	}
 
@@ -527,7 +539,7 @@ export class Compiler {
 		for (let i = 0; i < selectorLength; i++) {
 			const char = selector[i];
 			const escapeCharacter = '\\';
-			if ([escapeCharacter, '-', '_'].includes(char)
+			if (['-', '_'].includes(char)
 				|| !regExp.test(char)
 				|| selector[i - 1] === escapeCharacter
 			) {
