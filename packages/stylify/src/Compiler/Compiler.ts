@@ -227,7 +227,11 @@ export class Compiler {
 				continue;
 			}
 
-			const processedValue = this.replaceVariableString(this.processHelpers(String(valueOrVariables), false));
+			const processedValue = this.replaceVariableString(this.processHelpers({
+				content: String(valueOrVariables),
+				replaceByVariable: false,
+				variablesScope: screen
+			}));
 
 			if (screen) {
 				if (!(screen in this.variables)) {
@@ -751,7 +755,7 @@ export class Compiler {
 					});
 
 					for (const [property, propertyValue] of Object.entries(selectorProperties.properties)) {
-						selectorProperties.properties[property] = this.processHelpers(propertyValue);
+						selectorProperties.properties[property] = this.processHelpers({ content: propertyValue });
 					}
 
 					for (const [property, value] of Object.entries(selectorProperties.properties)) {
@@ -775,20 +779,29 @@ export class Compiler {
 		}
 	}
 
-	private processHelpers(content: string, replaceByVariable = true): string {
+	private processHelpers({
+		content,
+		replaceByVariable,
+		variablesScope
+	}: {
+		content: string,
+		replaceByVariable?: boolean,
+		variablesScope?: string
+	}): string {
+		const helperArgumentPlaceholderStart = '_ARG';
+		const helperArgumentPlaceholderEnd = '_';
+		const helperArgumentRegExp = new RegExp(`${helperArgumentPlaceholderStart}(\\d+)${helperArgumentPlaceholderEnd}`);
+		const cssVariableEnabled = this.replaceVariablesByCssVariables && (replaceByVariable ?? true);
+
 		return content.replace(/(?:^|\s+)(\S+)\(([^)]+)\)/g, (fullMatch, helperName: string, helperArguments: string) => {
 			if (!(helperName in this.helpers)) {
 				return fullMatch;
 			}
 
-			const cssVariableEnabled = this.replaceVariablesByCssVariables && replaceByVariable;
 			const helperResultVariableName = `${helperName}${helperArguments}`.replace(/[^a-zA-Z0-9]/g, '-').replace(/[^a-zA-Z0-9]$/g, '');
 			let matchedHelperResult = this.processedHelpers[helperResultVariableName] ?? null;
 
 			if (!matchedHelperResult) {
-				const helperArgumentPlaceholderStart = '_ARG';
-				const helperArgumentPlaceholderEnd = '_';
-				const helperArgumentRegExp = new RegExp(`${helperArgumentPlaceholderStart}(\\d+)${helperArgumentPlaceholderEnd}`);
 				const helperArgumentsPlaceholders: string[] =[];
 				const helperArgumentsArray: (string|number)[] = helperArguments
 					.replace(/'([^']+)'/g, (fullMatch, helperArgument: string): string => {
@@ -806,10 +819,11 @@ export class Compiler {
 
 						if (helperArgument.startsWith('$')) {
 							const variableName = helperArgument.slice(1);
-							const { defined, isExternal } = this.isVariableDefined(variableName);
-							const helperValue = defined && !isExternal
-								? this.variables[variableName]
-								: undefined;
+							const { defined, isExternal } = this.isVariableDefined(variableName, variablesScope);
+							const definedVariables = variablesScope
+								? this.variables[variablesScope][variableName]
+								: this.variables[variableName];
+							const helperValue = defined && !isExternal ? definedVariables : undefined;
 
 							if (!defined || isExternal) {
 								throw new Error(isExternal
@@ -858,11 +872,15 @@ export class Compiler {
 		);
 	}
 
-	private isVariableDefined(variable: string): IsVariableDefinedInterface {
+	private isVariableDefined(variable: string, variablesScope: string = null): IsVariableDefinedInterface {
 		let defined = false;
 		let isExternal = false;
 
-		if (variable in this.variables) {
+		const definedVariables = variablesScope
+			? this.variables[variablesScope] as Record<string, string>
+			: this.variables;
+
+		if (variable in definedVariables) {
 			defined = true;
 		} else {
 			defined = this.externalVariables.includes(variable);

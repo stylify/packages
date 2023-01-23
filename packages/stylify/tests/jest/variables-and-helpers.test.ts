@@ -131,3 +131,21 @@ test('Variable missing', (): void => {
 	expect(() => compiler.compile('<div class="color:lighten($test)"></div>'))
 		.toThrow('Variable "$test" not found when processing helper "lighten".');
 });
+
+test('Scoped variables', (): void => {
+	const compiler = new Compiler({
+		dev: true,
+		replaceVariablesByCssVariables: true,
+		variables: {
+			background: '#000',
+			dark: {
+				background: '#444',
+				backgroundHover: 'lighten($background,20)'
+			}
+		}
+	});
+
+	testUtils.testCssFileToBe(
+		compiler.compile('<input>').generateCss(), 'scoped-variables'
+	);
+});
