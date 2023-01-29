@@ -8,77 +8,102 @@ export class MacroMatch {
 
 	public static readonly selectorQuoteAlias = '^';
 
-	public fullMatch: string = null;
+	private readonly logicalOperandsReplacementMap = {
+		'&&': ' and ',
+		'||': ', '
+	};
 
-	public screenAndPseudoClassesMatch: string = null;
+	private readonly logicalOperandsList = Object.keys(this.logicalOperandsReplacementMap);
+
+	public fullMatch: string = null;
 
 	public selector: string = null;
 
 	public screen = '_';
 
-	public pseudoClasses: string[] = [];
+	public pseudoClasses: string = null;
 
 	public captures: string[] = [];
 
 	constructor(match: string[], screens: ScreensType) {
 		this.fullMatch = match[0].trim();
-		this.screenAndPseudoClassesMatch = match[1]?.trim() ?? null;
+		const screenAndPseudoClassesMatch = match[1]?.trim() ?? null;
 		this.selector = this.fullMatch;
-		this.pseudoClasses = [];
 		match.splice(0, 2);
 		this.captures = match.filter(matchToFilter => typeof matchToFilter !== 'undefined');
 
-		if (this.screenAndPseudoClassesMatch) {
-			const screenAndPseudoClassesMatchArray = this.screenAndPseudoClassesMatch.split(':');
-			const operators: string[] = [];
-			const possibleScreenMatchItems = screenAndPseudoClassesMatchArray[0]
-				.replace(/&&/ig, () => {
-					operators.push(' and ');
-					return '__OPERATOR__';
-				})
-				.replace(/\|\|/ig, () => {
-					operators.push(', ');
-					return '__OPERATOR__';
-				})
-				.split('__OPERATOR__');
+		if (!screenAndPseudoClassesMatch) {
+			return;
+		}
 
-			let screenMatched = false;
-			let possibleScreenMatchString = '';
+		const screensAndPseudoClassesParts = [];
+		const screensAndPseudoClassesTokens = screenAndPseudoClassesMatch.split('');
+		const tokensLength = screensAndPseudoClassesTokens.length;
 
-			possibleScreenMatchItems.forEach((possibleScreenMatch) => {
-				for (const key in screens) {
-					const screenRegExp = new RegExp(`\\b${key}$`, 'g');
-					const screenMatches = screenRegExp.exec(possibleScreenMatch);
+		let tokenQueue = '';
+		let screenMatched = false;
+		let pseudoClassesPart = screenAndPseudoClassesMatch;
 
-					if (screenMatches === null) {
-						continue;
-					}
+		for (let i = 0; i <= tokensLength; i ++) {
+			const token = screensAndPseudoClassesTokens[i];
+			const previousToken = screensAndPseudoClassesTokens[i - 1] ?? '';
+			const nextToken = screensAndPseudoClassesTokens[i + 1] ?? '';
 
-					let screenData = screens[key];
+			const nextSequence = token + nextToken;
+			const nextSequenceIsLogicalSeparator = this.logicalOperandsList.includes(nextSequence);
+			const nextSequenceIsColonSeparator = token === '\\' && nextToken !== ':';
+			const isLastToken = i === tokensLength;
 
-					if (typeof screenData === 'function') {
-						screenData = screenData(screenMatches[0]);
-					}
-
-					possibleScreenMatch = possibleScreenMatch.replace(screenRegExp, screenData);
-					screenMatched = true;
-				}
-
-				const operator = operators[0] ?? '';
-
-				if (operator) {
-					operators.shift();
-				}
-
-				possibleScreenMatchString += `${possibleScreenMatch}${operator}`;
-			});
-
-			if (screenMatched) {
-				this.screen = possibleScreenMatchString;
-				screenAndPseudoClassesMatchArray.shift();
+			if (!(nextSequenceIsColonSeparator
+				|| nextSequenceIsLogicalSeparator
+				|| token === ':' && previousToken !== '\\'
+				|| isLastToken
+			)) {
+				tokenQueue += token;
+				continue;
 			}
 
-			this.pseudoClasses = screenAndPseudoClassesMatchArray;
+			for (const key in screens) {
+				const screenRegExp = new RegExp(`^${key}$`, 'g');
+				const screenMatches = screenRegExp.exec(tokenQueue);
+
+				if (screenMatches === null) {
+					continue;
+				}
+
+				let screenData = screens[key];
+
+				if (typeof screenData === 'function') {
+					screenData = screenData(screenMatches[0]);
+				}
+
+				if (screenData) {
+					pseudoClassesPart = pseudoClassesPart.substring(screenMatches[0].length);
+					screensAndPseudoClassesParts.push(screenData);
+					screenMatched = true;
+					break;
+				}
+			}
+
+			tokenQueue += token;
+
+			if (nextSequenceIsLogicalSeparator) {
+				pseudoClassesPart = pseudoClassesPart.substring(2);
+				screensAndPseudoClassesParts.push(this.logicalOperandsReplacementMap[nextSequence]);
+				i ++;
+				tokenQueue = '';
+				continue;
+			}
+		}
+
+		if (screenMatched) {
+			this.screen = screensAndPseudoClassesParts.join('');
+		}
+
+		const pseudoClasses = pseudoClassesPart.replace(/^:/, '');
+
+		if (pseudoClasses.trim().length) {
+			this.pseudoClasses = pseudoClasses;
 		}
 	}
 

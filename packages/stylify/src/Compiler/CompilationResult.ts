@@ -177,7 +177,7 @@ export class CompilationResult {
 		const newCssRecord = new CssRecord({
 			screenId: this.screensList.get(screen),
 			selector: selector,
-			pseudoClasses: macroMatch.pseudoClasses,
+			pseudoClasses: macroMatch.pseudoClasses ? [macroMatch.pseudoClasses] : [],
 			utilityShouldBeGenerated
 		});
 
