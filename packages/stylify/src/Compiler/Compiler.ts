@@ -127,6 +127,14 @@ export class Compiler {
 
 	private readonly contentOptionsRegExp = /stylify-([a-zA-Z-_0-9]+)\s([\s\S]+?)\s\/stylify-[a-zA-Z-_0-9]+/;
 
+	private readonly macrosRegExpGenerators = [
+		// Match with media query and without pseudo class
+		(macroKey: string): RegExp => new RegExp(`(?:([a-zA-Z0-9\\-:&\\|]+):)${macroKey}${this.macroRegExpEndPart}`, 'g'),
+		// Match without media query and without pseudo class
+		// () - empty pseudo class and media query match
+		(macroKey: string): RegExp => new RegExp(`\\b()${macroKey}${this.macroRegExpEndPart}`, 'g')
+	];
+
 	private ignoredAreasRegExpString: string = null;
 
 	public ignoredAreas = [
@@ -722,15 +730,7 @@ export class Compiler {
 			return;
 		}
 
-		const regExpGenerators = [
-			// Match with media query and without pseudo class
-			(macroKey: string): RegExp => new RegExp(`\\b(?:([a-zA-Z0-9-:&|]+):)${macroKey}${this.macroRegExpEndPart}`, 'g'),
-			// Match without media query and without pseudo class
-			// () - empty pseudo class and media query match
-			(macroKey: string): RegExp => new RegExp(`\\b()${macroKey}${this.macroRegExpEndPart}`, 'g')
-		];
-
-		for (const regExpGenerator of regExpGenerators) {
+		for (const regExpGenerator of this.macrosRegExpGenerators) {
 			for (const macroKey in this.macros) {
 				content = content.replace(regExpGenerator(macroKey), (...args) => {
 					const macroMatches: string[] = args.slice(0, args.length - 2);
