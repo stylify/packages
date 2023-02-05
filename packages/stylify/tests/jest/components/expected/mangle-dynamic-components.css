@@ -2,12 +2,12 @@
 --red: darkred;
 }
 .a,
-.b{
+.c{
 	font-size: 24px
 }
 .a{
 	color: #000
 }
-.b{
+.c{
 	color: darkred
 }

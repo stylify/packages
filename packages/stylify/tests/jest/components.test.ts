@@ -112,17 +112,19 @@ test('Components - nested syntax - mangled', (): void => {
 		...nestedSyntaxCompilerConfig
 	});
 
+	// This order is on purpose.
+	// This selector uses component .header (below) that was not yet defined.
 	compiler.addCustomSelector('#wrapper', `
 		.not-minified-2 { color:darkred }
 		.header { color:green }
 		header { color:orange }
-	`)
+	`);
 
 	compiler.addComponent('header', `
 		font-style:italic
 
 		+ #header { color:purple }
-	`)
+	`);
 
 	const input = testUtils.getHtmlInputFile(testFileName);
 	let compilationResult = compiler.compile(input);

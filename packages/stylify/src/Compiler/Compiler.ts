@@ -10,6 +10,7 @@ import {
 } from '.';
 
 import { hooks } from '../Hooks';
+import { escapeCssSelector, getStringOriginalStateAfterReplace, prepareStringForReplace, tokenize } from '../Utilities';
 
 export interface CompilerContentOptionsInterface {
 	pregenerate: PregenerateType,
@@ -96,8 +97,11 @@ export interface CompilerConfigInterface {
 	matchCustomSelectors?: boolean
 }
 
+export type CustomSelectorTypeType = 'custom' | 'customMatchedInClass' | 'component' | 'utilitiesGroup';
+
 export interface CustomSelectorsInterface {
-	customSelectors: CustomSelector[]
+	customSelectors: CustomSelector[],
+	type: CustomSelectorTypeType
 }
 
 export interface ComponentGeneratorFunctionDataInterface {
@@ -118,10 +122,6 @@ export class Compiler {
 	private readonly macroRegExpEndPart = `(?=['"\`{}\\[\\]<>\\s]|$)`;
 
 	private readonly textPlaceholder = '_TEXT_';
-
-	private readonly dollarPlaceholder = '_DOLLAR_';
-
-	private readonly backslashPlaceholder = '_BACKSLASH_';
 
 	private readonly variableRegExp = /\$([\w-_]+)/g;
 
@@ -254,7 +254,12 @@ export class Compiler {
 		}
 	}
 
-	public addCustomSelector(selector: string, selectors: string, selectorCanBeSplit = true): void {
+	public addCustomSelector(
+		selector: string,
+		selectors: string,
+		selectorCanBeSplit = true,
+		type: CustomSelectorTypeType = 'custom'
+	): void {
 		if (selectorCanBeSplit && selector.includes(',')) {
 			selector.split(',').forEach((selectorSplit) => this.addCustomSelector(selectorSplit.trim(), selectors));
 			return;
@@ -262,7 +267,8 @@ export class Compiler {
 
 		if (!(selector in this.customSelectors)) {
 			this.customSelectors[selector] = {
-				customSelectors: []
+				customSelectors: [],
+				type
 			};
 		}
 
@@ -330,8 +336,6 @@ export class Compiler {
 			return content;
 		}
 
-		const dollarPlaceholderRegExp = new RegExp(this.dollarPlaceholder, 'g');
-		const backslashPlaceholderRegExp = new RegExp(this.backslashPlaceholder, 'g');
 		const placeholderTextPart = this.textPlaceholder;
 		const contentPlaceholders: Record<string, string> = {};
 
@@ -341,15 +345,7 @@ export class Compiler {
 			return placeholderKey;
 		};
 
-		// This replaces special characters used within regular expression
-		// so their are not processed during replacing
-		// $ => because $$ causes $
-		// \ => because \u or \v for example are predefined character sets
-		const replaceSpecialCharacters = (content: string) => content
-			.replace(/\$/g, this.dollarPlaceholder)
-			.replace(/\\/g, this.backslashPlaceholder);
-
-		content = replaceSpecialCharacters(content)
+		content = prepareStringForReplace(content)
 			.replace(new RegExp(this.ignoredAreasRegExpString, 'g'), (...args): string => {
 				const matchArguments = args.filter((value) => typeof value === 'string');
 				const fullMatch: string = matchArguments[0];
@@ -368,7 +364,7 @@ export class Compiler {
 			.sort((a: string, b: string): number => b.length - a.length);
 
 		for (const selector of selectorsListKeys) {
-			let selectorToReplace = replaceSpecialCharacters(selector);
+			let selectorToReplace = prepareStringForReplace(selector);
 
 			if (!content.includes(selectorToReplace)) {
 				continue;
@@ -380,10 +376,8 @@ export class Compiler {
 				: '';
 
 			selectorToReplace = selectorToReplace.replace(/\\/g, '\\\\');
-			selectorToReplace = this.escapeCssSelector(
-				minifiedSelectorGenerator.getStringToMatch(
-					selectorToReplace, matchSelectorsWithPrefixes
-				)
+			selectorToReplace = escapeCssSelector(
+				minifiedSelectorGenerator.getStringToMatch(selectorToReplace, matchSelectorsWithPrefixes)
 			);
 
 			const replacement = `${selectorPrefix}${mangledSelector}`;
@@ -409,9 +403,7 @@ export class Compiler {
 			content = content.replace(placeholderKey, contentPlaceholder);
 		}
 
-		content = content
-			.replace(dollarPlaceholderRegExp, '$$')
-			.replace(backslashPlaceholderRegExp, '\\');
+		content = getStringOriginalStateAfterReplace(content);
 
 		return content;
 	}
@@ -466,9 +458,10 @@ export class Compiler {
 						: fullMatch;
 
 					this.addCustomSelector(
-						`.${this.escapeCssSelector(customSelectorSelector, true)}`,
+						customSelectorSelector,
 						`${customSelector}{${stylifySelectors.replace(/;/g, ' ')}}`,
-						false
+						false,
+						'customMatchedInClass'
 					);
 
 					return '';
@@ -483,11 +476,12 @@ export class Compiler {
 						: fullMatch;
 
 					this.addCustomSelector(
-						`.${this.escapeCssSelector(customSelectorSelector, true)}`,
+						customSelectorSelector,
 						stylifySelectors.split(';')
 							.map((stylifySelector) => `${screenAndPseudoClasses}:${stylifySelector}`)
 							.join(' '),
-						false
+						false,
+						'utilitiesGroup'
 					);
 
 					return '';
@@ -541,28 +535,6 @@ export class Compiler {
 		}
 
 		return contentOptions as Data;
-	}
-
-	private escapeCssSelector(selector: string, all = false): string {
-		const selectorLength = selector.length;
-		let result = '';
-		const regExp = all ? /[^a-zA-Z0-9]/ : /[.*+?^${}()|[\]\\]/;
-
-		for (let i = 0; i < selectorLength; i++) {
-			const char = selector[i];
-			const escapeCharacter = '\\';
-			if (['-', '_'].includes(char)
-				|| !regExp.test(char)
-				|| selector[i - 1] === escapeCharacter
-			) {
-				result += char;
-				continue;
-			}
-
-			result += `\\${char}`;
-		}
-
-		return result;
 	}
 
 	private configureCompilationResult(compilationResult: CompilationResult): CompilationResult
@@ -658,31 +630,66 @@ export class Compiler {
 		const selectorsMap: Record<string, string> = {};
 
 		for (const [selector, config] of Object.entries(this.customSelectors)) {
-			for (const customSelector of config.customSelectors) {
-				const generatedCssEntries = customSelector.generateSelectors(selector);
+			const isComponent = config.type === 'component';
+			const isUtilitiesGroup = config.type === 'utilitiesGroup';
+			const isCustomSelectorMatchedInClass = config.type === 'customMatchedInClass';
+			const isClassSelector = isComponent || isUtilitiesGroup || isCustomSelectorMatchedInClass;
+			const preparedEscapedSelector = config.type === 'custom'
+				? selector
+				: escapeCssSelector(selector, isComponent || isUtilitiesGroup || isCustomSelectorMatchedInClass);
 
-				for (const [customSelector, customSelectorSelectors] of Object.entries(generatedCssEntries)) {
-					if (!(customSelector in selectorsMap)) {
-						selectorsMap[customSelector] = '';
+			for (const customSelector of config.customSelectors) {
+				const generatedCssEntries = customSelector.generateSelectors(
+					`${isClassSelector ? '.':''}${preparedEscapedSelector}`
+				);
+
+				let cssSelector: string;
+				let stylifySelectors: string;
+				for ([cssSelector, stylifySelectors] of Object.entries(generatedCssEntries)) {
+					if (this.mangleSelectors && isComponent) {
+						const preparedCssSelector = prepareStringForReplace(cssSelector);
+						const preparedSelector = prepareStringForReplace(preparedEscapedSelector);
+
+						cssSelector = preparedCssSelector.replace(
+							new RegExp(`\\.(${preparedSelector}\\S*)`),
+							(fullMatch: string, componentSelector: string) => {
+								let clearedComponentName = '';
+								const tokenizableComponentSelector = getStringOriginalStateAfterReplace(
+									componentSelector
+								);
+
+								tokenize(tokenizableComponentSelector, ({ token, previousToken }) => {
+									const isCorrectToken = (/\w|-|\\|\$/).test(token);
+
+									if (!isCorrectToken && previousToken !== '\\') {
+										return true;
+									}
+
+									clearedComponentName += token;
+								});
+
+								return fullMatch.substring(1).replace(
+									prepareStringForReplace(clearedComponentName),
+									`.${minifiedSelectorGenerator.getMangledSelector(clearedComponentName)}`
+								);
+							});
 					}
 
-					const selectorsToAdd = selectorsMap[customSelector].length
-						? selectorsMap[customSelector].split(' ')
-						: [];
-
-					customSelectorSelectors.split(' ').forEach((selector) => {
-						if (!selectorsToAdd.includes(selector)) {
-							selectorsToAdd.push(selector);
-						}
-					});
-
-					selectorsMap[
-						this.rewriteSelectors({
-							content: customSelector,
+					if (this.mangleSelectors) {
+						cssSelector = this.rewriteSelectors({
+							content: cssSelector,
 							rewriteOnlyInSelectorsAreas: false,
 							matchSelectorsWithPrefixes: true
+						});
+					}
+
+					selectorsMap[cssSelector] = [selectorsMap[cssSelector] ?? '', ...stylifySelectors.split(' ')]
+						.filter((item, index, self) => {
+							return item.trim().length > 0 && self.indexOf(item) === index;
 						})
-					] = selectorsToAdd.filter((item) => item.trim().length > 0).join(' ').replace(/\s/g, ' ').trim();
+						.join(' ')
+						.replace(/\s/g, ' ')
+						.trim();
 				}
 			}
 		}
@@ -696,11 +703,7 @@ export class Compiler {
 			let componentMatch: RegExpExecArray;
 
 			while ((componentMatch = regExp.exec(content))) {
-				const componentClassSelector = `.${
-					this.mangleSelectors
-						? minifiedSelectorGenerator.getMangledSelector(componentMatch[0])
-						: this.escapeCssSelector(componentMatch[0], true)
-				}`;
+				const componentSelector = componentMatch[0];
 
 				for (const selectorsOrGenerator of config.selectorsOrGenerators) {
 					const componentSelectors = typeof selectorsOrGenerator === 'function'
@@ -712,14 +715,9 @@ export class Compiler {
 						})
 						: selectorsOrGenerator;
 
-					const customSelector = new CustomSelector(componentSelectors);
-					const generatedCssEntries = Object.entries(
-						customSelector.generateSelectors(componentClassSelector)
-					);
+					minifiedSelectorGenerator.getMangledSelector(componentSelector);
 
-					for (const [componentCustomSelector, selectorsToAttach] of generatedCssEntries) {
-						this.addCustomSelector(componentCustomSelector, selectorsToAttach);
-					}
+					this.addCustomSelector(componentSelector, componentSelectors, false, 'component');
 				}
 			}
 		}
