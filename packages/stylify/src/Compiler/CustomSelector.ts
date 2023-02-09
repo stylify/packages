@@ -54,9 +54,8 @@ export class CustomSelector {
 
 						} else {
 							actualTreeSelector += ` ${replaceRootPlaceholder(
-								selectorIncludesPlaceholder
-									? selectorSplitPart.substring(1)
-									: selectorSplitPart, actualTreeSelector
+								selectorIncludesPlaceholder ? selectorSplitPart.substring(1) : selectorSplitPart,
+								actualTreeSelector
 							)}`;
 						}
 
