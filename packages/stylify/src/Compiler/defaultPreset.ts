@@ -99,6 +99,10 @@ export const defaultPreset = {
 		'(?:^|\\s+)className="([^"]+)"',
 		'(?:^|\\s+)className=\'([^\']+)\'',
 		'(?:^|\\s+)className=\\{((?:.|\\n)+)\\}',
+		// JSX compiled
+		'(?:^|\\s+)className:\\s*`((?:.|\\n)+)`',
+		'(?:^|\\s+)className:\\s*"([^"]+)"',
+		'(?:^|\\s+)className:\\s*\'([^\']+)"',
 		// Vue and alpinejs
 		'(?:^|\\s+)(?:v-bind|x-bind)?:class="([^"]+)"',
 		'(?:^|\\s+)(?:v-bind|x-bind)?:class=\'([^\']+)\'',
