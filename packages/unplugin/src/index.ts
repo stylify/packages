@@ -159,7 +159,7 @@ export const unplugin = createUnplugin((config: UnpluginConfigInterface|Unplugin
 		name: pluginName,
 		transformInclude(id) { return pluginConfig.transformIncludeFilter(id); },
 		async transform(code) {
-			if (pluginConfig.dev) {
+			if (!shouldMangleSelectors()) {
 				return code;
 			}
 
