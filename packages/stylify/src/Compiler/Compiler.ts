@@ -915,6 +915,13 @@ export class Compiler {
 				try {
 					if (option === 'pregenerate') {
 						contentOptions[option] += ` ${optionValue}`;
+					}
+
+					else if (option === 'externalVariables') {
+						contentOptions[option] = [
+							...contentOptions[option] ?? [],
+							...optionValue.split(/\s/).filter((item) => item.trim().length)
+						];
 
 					} else if (
 						['components', 'variables', 'keyframes', 'customSelectors', 'screens'].includes(option)
