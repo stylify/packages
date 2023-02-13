@@ -8,14 +8,14 @@ beforeEach(() => {
 	minifiedSelectorGenerator.processedSelectors = {};
 });
 
-/* test('Dynamic screens', (): void => {
+test('Dynamic screens', (): void => {
 	const inputIndex = testUtils.getHtmlInputFile();
 
 	const compiler = new Compiler({ dev: true });
 	let compilationResult = compiler.compile(inputIndex);
 
 	testUtils.testCssFileToBe(compilationResult.generateCss());
-}); */
+});
 
 test('Similar screens', (): void => {
 	const compiler = new Compiler({

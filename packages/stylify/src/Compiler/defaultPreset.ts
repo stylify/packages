@@ -113,7 +113,12 @@ export const defaultPreset = {
 		'(?:^|\\s+)\\[(?:ngClass|className)\\]=\'([^\']+)',
 		// Nette
 		'(?:^|\\s+)n:class="([^"]+)"',
-		'(?:^|\\s+)n:class=\'([^\']+)\''
+		'(?:^|\\s+)n:class=\'([^\']+)\'',
+		// Twig form widgets
+		'\'class\':\\s*\'([^\']+)\'',
+		'\'class\':\\s*"([^"]+)"',
+		'"class":\\s*"([^"]+)"',
+		'"class":\\s*\'([^\']+)\''
 	],
 	screens: {
 		tosm: maxWidthScreen('639px'),

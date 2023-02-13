@@ -12,7 +12,6 @@ beforeEach(() => {
  * This test is here, because dollars were removed when content was mangled. It is becuase $$ is replaced by $
  * and it broke some of the functionality in some codes when mangled.
  */
-
 test('Mangle with special characters - dollars should stay as they are and non should removed.', (): void => {
 	const fileName = 'mangle-with-special-characters';
  	const inputContent = testUtils.getHtmlInputFile(fileName);
@@ -74,6 +73,18 @@ test('Component selector similar to custom selector', (): void => {
 			link: 'color:blue'
 		}
 	});
+	let compilationResult = compiler.compile(inputContent);
+
+	testUtils.testCssFileToBe(compilationResult.generateCss(), fileName);
+	testUtils.testHtmlFileToBe(compiler.rewriteSelectors(inputContent), fileName);
+});
+
+
+test('Chained classes from custom selector', (): void => {
+	const fileName = 'chained-classes-from-custom-selector';
+	const inputContent = testUtils.getHtmlInputFile(fileName);
+
+	const compiler = new Compiler({ dev: true, mangleSelectors: true });
 	let compilationResult = compiler.compile(inputContent);
 
 	testUtils.testCssFileToBe(compilationResult.generateCss(), fileName);
