@@ -452,14 +452,9 @@ export class Compiler {
 			contentToProcess = contentToProcess.replace(
 				/\[([^{}\s]+)\]{([^{}]+)}/g,
 				(fullMatch: string, cssSelectors: string, stylifySelectors: string) => {
-					const customSelector = MacroMatch.replaceCharactersAliases(cssSelectors);
-					const customSelectorSelector = this.mangleSelectors
-						? minifiedSelectorGenerator.generateMangledSelector(fullMatch, null)
-						: fullMatch;
-
 					this.addCustomSelector(
-						customSelectorSelector,
-						`${customSelector}{${stylifySelectors.replace(/;/g, ' ')}}`,
+						this.generateMangledSelector(fullMatch, null),
+						`${MacroMatch.replaceCharactersAliases(cssSelectors)}{${stylifySelectors.replace(/;/g, ' ')}}`,
 						false,
 						'customMatchedInClass'
 					);
@@ -471,12 +466,8 @@ export class Compiler {
 			contentToProcess = contentToProcess.replace(
 				/(\S+):{([^{}]+)}/g,
 				(fullMatch: string, screenAndPseudoClasses: string, stylifySelectors: string) => {
-					const customSelectorSelector = this.mangleSelectors
-						? minifiedSelectorGenerator.generateMangledSelector(fullMatch, null)
-						: fullMatch;
-
 					this.addCustomSelector(
-						customSelectorSelector,
+						this.generateMangledSelector(fullMatch, null),
 						stylifySelectors.split(';')
 							.map((stylifySelector) => `${screenAndPseudoClasses}:${stylifySelector}`)
 							.join(' '),
@@ -535,6 +526,14 @@ export class Compiler {
 		}
 
 		return contentOptions as Data;
+	}
+
+	private generateMangledSelector(selector: string, prefix: string|null = '.'): string {
+		if (!this.mangleSelectors) {
+			return selector;
+		}
+
+		return minifiedSelectorGenerator.generateMangledSelector(selector, prefix);
 	}
 
 	private configureCompilationResult(compilationResult: CompilationResult): CompilationResult
@@ -634,7 +633,7 @@ export class Compiler {
 			const isUtilitiesGroup = config.type === 'utilitiesGroup';
 			const isCustomSelectorMatchedInClass = config.type === 'customMatchedInClass';
 			const isClassSelector = isComponent || isUtilitiesGroup || isCustomSelectorMatchedInClass;
- 			const preparedEscapedSelector = this.mangleSelectors || config.type === 'custom'
+			const preparedEscapedSelector = this.mangleSelectors || config.type === 'custom'
 				? selector
 				: escapeCssSelector(selector, isComponent || isUtilitiesGroup || isCustomSelectorMatchedInClass);
 
@@ -670,7 +669,7 @@ export class Compiler {
 
 								return fullMatch.substring(1).replace(
 									prepareStringForReplace(clearedComponentName),
-									`.${minifiedSelectorGenerator.generateMangledSelector(clearedComponentName)}`
+									`.${this.generateMangledSelector(clearedComponentName)}`
 								);
 							});
 					}
@@ -715,8 +714,7 @@ export class Compiler {
 						})
 						: selectorsOrGenerator;
 
-					minifiedSelectorGenerator.generateMangledSelector(componentSelector);
-
+					this.generateMangledSelector(componentSelector);
 					this.addCustomSelector(componentSelector, componentSelectors, false, 'component');
 				}
 			}
