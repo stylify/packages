@@ -21,7 +21,7 @@ export class MinifiedSelectorGenerator {
 		return addPrefix ? `${this.processedSelectors[selector].prefix ?? ''}${selector}`: selector;
 	}
 
-	public getMangledSelector(selector: string, prefix: string|null = '.') {
+	public generateMangledSelector(selector: string, prefix: string|null = '.') {
 		if (!(selector in this.processedSelectors)) {
 			this.processedSelectors[selector] = {
 				mangledSelector: this.divideLengthAndGetLetter(
@@ -32,6 +32,10 @@ export class MinifiedSelectorGenerator {
 		}
 
 		return this.processedSelectors[selector].mangledSelector;
+	}
+
+	public getMangledSelector(selector: string) {
+		return this.processedSelectors[selector]?.mangledSelector ?? null;
 	}
 
 	private divideLengthAndGetLetter(length: number): string {

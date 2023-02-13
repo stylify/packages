@@ -57,7 +57,7 @@ export class CssRecord {
 		}
 
 		this.mangledSelector = config.selector
-			? minifiedSelectorGenerator.getMangledSelector(config.selector)
+			? minifiedSelectorGenerator.generateMangledSelector(config.selector)
 			: this.mangledSelector;
 		this.screenId = config.screenId ?? this.screenId;
 		this.selector = config.selector?.replace(/([^-_a-zA-Z\d])/g, '\\$1') ?? this.selector;
