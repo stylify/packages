@@ -454,7 +454,7 @@ export class Compiler {
 				(fullMatch: string, cssSelectors: string, stylifySelectors: string) => {
 					const customSelector = MacroMatch.replaceCharactersAliases(cssSelectors);
 					const customSelectorSelector = this.mangleSelectors
-						? minifiedSelectorGenerator.getMangledSelector(fullMatch, null)
+						? minifiedSelectorGenerator.generateMangledSelector(fullMatch, null)
 						: fullMatch;
 
 					this.addCustomSelector(
@@ -472,7 +472,7 @@ export class Compiler {
 				/(\S+):{([^{}]+)}/g,
 				(fullMatch: string, screenAndPseudoClasses: string, stylifySelectors: string) => {
 					const customSelectorSelector = this.mangleSelectors
-						? minifiedSelectorGenerator.getMangledSelector(fullMatch, null)
+						? minifiedSelectorGenerator.generateMangledSelector(fullMatch, null)
 						: fullMatch;
 
 					this.addCustomSelector(
@@ -634,7 +634,7 @@ export class Compiler {
 			const isUtilitiesGroup = config.type === 'utilitiesGroup';
 			const isCustomSelectorMatchedInClass = config.type === 'customMatchedInClass';
 			const isClassSelector = isComponent || isUtilitiesGroup || isCustomSelectorMatchedInClass;
-			const preparedEscapedSelector = config.type === 'custom'
+ 			const preparedEscapedSelector = this.mangleSelectors || config.type === 'custom'
 				? selector
 				: escapeCssSelector(selector, isComponent || isUtilitiesGroup || isCustomSelectorMatchedInClass);
 
@@ -670,7 +670,7 @@ export class Compiler {
 
 								return fullMatch.substring(1).replace(
 									prepareStringForReplace(clearedComponentName),
-									`.${minifiedSelectorGenerator.getMangledSelector(clearedComponentName)}`
+									`.${minifiedSelectorGenerator.generateMangledSelector(clearedComponentName)}`
 								);
 							});
 					}
@@ -715,7 +715,7 @@ export class Compiler {
 						})
 						: selectorsOrGenerator;
 
-					minifiedSelectorGenerator.getMangledSelector(componentSelector);
+					minifiedSelectorGenerator.generateMangledSelector(componentSelector);
 
 					this.addCustomSelector(componentSelector, componentSelectors, false, 'component');
 				}
