@@ -39,30 +39,30 @@
   },
   "stylify": {
     "/esm/index.js": {
-      "size": 70574
+      "size": 73078
     },
     "/esm/index.min.js": {
-      "size": 35355
+      "size": 36331
     },
     "/esm/index.mjs": {
-      "size": 71032
+      "size": 73411
     },
     "/lib/index.cjs": {
-      "size": 72631
+      "size": 75320
     },
     "/dist/stylify.js": {
-      "size": 72942
+      "size": 75443
     },
     "/dist/stylify.min.js": {
-      "size": 34936
+      "size": 35755
     }
   },
   "unplugin": {
     "/esm/index.mjs": {
-      "size": 6787
+      "size": 6795
     },
     "/lib/index.cjs": {
-      "size": 8734
+      "size": 8742
     }
   }
 }
