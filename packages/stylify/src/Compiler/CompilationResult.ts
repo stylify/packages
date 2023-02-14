@@ -2,7 +2,8 @@ import {
 	CssRecord,
 	MacroMatch,
 	SelectorProperties,
-	screensSorter
+	screensSorter,
+	CssRecordConfigInterface
 } from '.';
 
 import { hooks } from '../Hooks';
@@ -156,6 +157,11 @@ export class CompilationResult {
 
 	public getCssRecord(macroMatch: MacroMatch): CssRecord|null {
 		return this.selectorsList[macroMatch.fullMatch] ?? null;
+	}
+
+	public configureCssRecord(cssRecord: CssRecord, config: Partial<CssRecordConfigInterface>): void {
+		cssRecord.configure(config);
+		this.changed = true;
 	}
 
 	public addCssRecord(

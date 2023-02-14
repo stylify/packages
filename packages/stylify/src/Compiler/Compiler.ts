@@ -734,8 +734,10 @@ export class Compiler {
 					const existingCssRecord = compilationResult.getCssRecord(macroMatch);
 
 					if (existingCssRecord) {
-						if (utilitiesShouldBeGenerated) {
-							existingCssRecord.utilityShouldBeGenerated = utilitiesShouldBeGenerated;
+						if (utilitiesShouldBeGenerated && !existingCssRecord.utilityShouldBeGenerated) {
+							compilationResult.configureCssRecord(existingCssRecord, {
+								utilityShouldBeGenerated: utilitiesShouldBeGenerated
+							});
 						}
 						return '';
 					}
