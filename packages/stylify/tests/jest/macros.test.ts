@@ -48,8 +48,7 @@ test('Selectors areas', (): void => {
 
 	const compiler = new Compiler({ dev: true });
 
-	console.log(inputIndex);
 	let compilationResult = compiler.compile(inputIndex);
-	console.log(compilationResult);
+
 	testUtils.testCssFileToBe(compilationResult.generateCss(), 'selectors-areas');
 });
