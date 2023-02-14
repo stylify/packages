@@ -86,6 +86,9 @@ Start using Stylify with your favorite tool in a minute.
 <a href="https://stylifycss.com/docs/integrations/rollupjs"><img src="https://stylifycss.com//images/brands/rollupjs.svg" height="45" alt=""></a>
 <a href="https://stylifycss.com/docs/integrations/nodejs"><img src="https://stylifycss.com//images/brands/nodejs.svg" height="50" alt=""></a>
 
+## 🔥 Prepared Copy&Paste Headless Components
+<a href="https://stylifycss.com/snippets/components"><img src="https://stylifycss.com/images/snippets/components/og-image.jpg"></a>
+
 ### PHP
 <a href="https://stylifycss.com/docs/integrations/symfony"><img src="https://stylifycss.com//images/brands/symfony.svg" height="70" alt=""></a>
 <a href="https://stylifycss.com/docs/integrations/laravel"><img src="https://stylifycss.com//images/brands/laravel.svg" height="45" alt=""></a>
@@ -94,12 +97,12 @@ Start using Stylify with your favorite tool in a minute.
 
 
 
-### Want to know more?
+## Want to know more?
 - Live examples and tutorials can be found in [documentation](https://stylifycss.com/docs/unplugin).
 - Information about each release can be found in [releases](https://github.com/stylify/packages/releases).
 - Have an idea? Found a bug? Feel free to create an [issue](https://github.com/stylify/packages/issues).
 
-#### Compatibility
+## Compatibility
 | Environment | Version                                                                                                                                                          | Note                                                                                                          |
 |-------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------|
 | Node        | >= 14                                                                                                                                                            | In case Stylify will be used during an application build or in an SSR application.                            |

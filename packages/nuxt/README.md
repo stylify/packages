@@ -70,12 +70,15 @@ Because of [fewer CSS headaches](https://stylifycss.com/docs/get-started/why-sty
 
 <p align="center"><a href="https://stylifycss.com"><img src="https://user-images.githubusercontent.com/14016808/132552680-ae877b45-5796-42df-b507-c0f6b9cf4706.png"></a></p>
 
-### Want to know more?
+## 🔥 Prepared Copy&Paste Headless Components
+<a href="https://stylifycss.com/snippets/components"><img src="https://stylifycss.com/images/snippets/components/og-image.jpg"></a>
+
+## Want to know more?
 - Live examples and tutorials can be found in [documentation](https://stylifycss.com/docs/nuxt).
 - Information about each release can be found in [releases](https://github.com/stylify/packages/releases).
 - Have an idea? Found a bug? Feel free to create an [issue](https://github.com/stylify/packages/issues).
 
-#### Compatibility
+## Compatibility
 | Environment | Version |
 |-------------|---------|
 | Node        | >= 14   |

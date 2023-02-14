@@ -93,12 +93,15 @@ Start using Stylify with your favorite tool in a minute.
 <a href="https://stylifycss.com/docs/integrations/nette"><img src="https://stylifycss.com//images/brands/nette.png" height="50" alt=""></a>
 <a href="https://stylifycss.com/docs/integrations/cakephp"><img src="https://stylifycss.com//images/brands/cakephp.png" height="55" alt=""></a>
 
-### Want to know more?
+## 🔥 Prepared Copy&Paste Headless Components
+<a href="https://stylifycss.com/snippets/components"><img src="https://stylifycss.com/images/snippets/components/og-image.jpg"></a>
+
+## Want to know more?
 - Live examples and tutorials can be found in [documentation](https://stylifycss.com/docs/stylify).
 - Information about each release can be found in [releases](https://github.com/stylify/packages/releases).
 - Have an idea? Found a bug? Feel free to create an [issue](https://github.com/stylify/packages/issues).
 
-#### Compatibility
+## Compatibility
 | Environment | Version                                                                                                                                                          | Note                                                                                                          |
 |-------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------|
 | Browser     | [ES5-compliant browsers](https://caniuse.com/?search=ES5), [Intersection Observer support](https://caniuse.com/?search=intersection%20observer) is required.     | Stylify doesn't need to be included in the browser. All CSS can be pregenerated on server or during a build.  |

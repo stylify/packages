@@ -92,14 +92,15 @@ Start using Stylify with your favorite tool in a minute.
 <a href="https://stylifycss.com/docs/integrations/nette"><img src="https://stylifycss.com//images/brands/nette.png" height="50" alt=""></a>
 <a href="https://stylifycss.com/docs/integrations/cakephp"><img src="https://stylifycss.com//images/brands/cakephp.png" height="55" alt=""></a>
 
+## 🔥 Prepared Copy&Paste Headless Components
+<a href="https://stylifycss.com/snippets/components"><img src="https://stylifycss.com/images/snippets/components/og-image.jpg"></a>
 
-
-### Want to know more?
+## Want to know more?
 - Live examples and tutorials can be found in [documentation](https://stylifycss.com/docs/bundler).
 - Information about each release can be found in [releases](https://github.com/stylify/packages/releases).
 - Have an idea? Found a bug? Feel free to create an [issue](https://github.com/stylify/packages/issues).
 
-#### Compatibility
+## Compatibility
 | Environment | Version                                                                                                                                                          | Note                                                                                                          |
 |-------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------|
 | Node        | >= 14                                                                                                                                                            | In case Stylify will be used during an application build or in an SSR application.                            |
