@@ -369,9 +369,7 @@ export class Bundler {
 					this.bundlesBuildCache = {};
 					this.processedBundlesQueue = [];
 
-					for (const watchedFile in this.watchedFiles) {
-						this.watchedFiles[watchedFile].watcher.close();
-					}
+					this.stop();
 
 					this.watchedFiles = {};
 
@@ -452,6 +450,21 @@ export class Bundler {
 		}
 
 		bundleMethodPromiseResolve();
+	}
+
+	public stop(watchedFile: WatchedFilesInterface = null): void {
+		const stopWatcher = (watcher: fs.FSWatcher) => {
+			watcher.close();
+		};
+
+		if (watchedFile) {
+			stopWatcher(watchedFile.watcher);
+			return;
+		}
+
+		for (const watchedFile of Object.values(this.watchedFiles)) {
+			stopWatcher(watchedFile.watcher);
+		}
 	}
 
 	private processBundle(bundleConfig: BundleConfigInterface, processBundleFilesNotMask = false): void {
