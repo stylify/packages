@@ -90,3 +90,36 @@ test('Chained classes from custom selector', (): void => {
 	testUtils.testCssFileToBe(compilationResult.generateCss(), fileName);
 	testUtils.testHtmlFileToBe(compiler.rewriteSelectors(inputContent), fileName);
 });
+
+
+test('Mangled selector with prefix', (): void => {
+	const fileName = 'mangled-selectors-prefix';
+	const inputContent = testUtils.getHtmlInputFile(fileName);
+
+	const compiler = new Compiler({
+		mangleSelectors: true,
+		dev: true,
+		mangledSelectorsPrefix: 's'
+	});
+
+	let compilationResult = compiler.compile(inputContent);
+
+	testUtils.testCssFileToBe(compilationResult.generateCss(), fileName);
+	testUtils.testHtmlFileToBe(compiler.rewriteSelectors(inputContent), fileName);
+});
+
+test('Mangled selectors with selector prefix', (): void => {
+	const fileName = 'selectors-prefix';
+	const inputContent = testUtils.getHtmlInputFile(fileName);
+
+	const compiler = new Compiler({
+		mangleSelectors: true,
+		dev: true,
+		selectorsPrefix: 'u-'
+	});
+
+	let compilationResult = compiler.compile(inputContent);
+
+	testUtils.testCssFileToBe(compilationResult.generateCss(), fileName);
+	testUtils.testHtmlFileToBe(compiler.rewriteSelectors(inputContent), fileName);
+});

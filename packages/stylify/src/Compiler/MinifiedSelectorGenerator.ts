@@ -34,8 +34,14 @@ export class MinifiedSelectorGenerator {
 		return this.processedSelectors[selector].mangledSelector;
 	}
 
-	public getMangledSelector(selector: string) {
-		return this.processedSelectors[selector]?.mangledSelector ?? null;
+	public getMangledSelector(selector: string, prefix = '') {
+		let mangledSelector = this.processedSelectors[selector]?.mangledSelector ?? null;
+
+		if (mangledSelector && prefix.length) {
+			mangledSelector = prefix + mangledSelector;
+		}
+
+		return mangledSelector;
 	}
 
 	private divideLengthAndGetLetter(length: number): string {

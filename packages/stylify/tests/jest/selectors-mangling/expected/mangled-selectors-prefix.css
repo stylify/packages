@@ -1,0 +1,18 @@
+.se:hover{
+	color: red
+}
+.sf{
+	color: blue
+}
+.sb:focus{
+	color: orange
+}
+.sa a{
+	color: green
+}
+.sc{
+	color: yellow
+}
+.sd{
+	font-size: 24px
+}

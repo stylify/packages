@@ -1,0 +1,18 @@
+.e:hover{
+	color: red
+}
+.f{
+	color: blue
+}
+.b:focus{
+	color: orange
+}
+.a a{
+	color: green
+}
+.c{
+	color: yellow
+}
+.d{
+	font-size: 24px
+}

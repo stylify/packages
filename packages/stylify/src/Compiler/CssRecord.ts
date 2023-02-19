@@ -1,4 +1,3 @@
-import { minifiedSelectorGenerator } from '.';
 import { hooks } from '../Hooks';
 
 export interface CssRecordHooksListInterface {
@@ -13,6 +12,7 @@ export type PropertiesType = Record<string, string>;
 export interface CssRecordConfigInterface {
 	screenId: number,
 	selector: string,
+	mangledSelector: string,
 	pseudoClasses: string[],
 	utilityShouldBeGenerated: boolean,
 	scope?: string,
@@ -21,6 +21,7 @@ export interface CssRecordConfigInterface {
 export interface CssRecordCompileParametersConfig {
 	minimize: boolean
 	mangleSelectors?: boolean
+	mangledSelectorsPrefix?: string
 }
 
 export class CssRecord {
@@ -56,9 +57,7 @@ export class CssRecord {
 			return;
 		}
 
-		this.mangledSelector = config.selector
-			? minifiedSelectorGenerator.generateMangledSelector(config.selector)
-			: this.mangledSelector;
+		this.mangledSelector = config.mangledSelector ?? this.mangledSelector;
 		this.screenId = config.screenId ?? this.screenId;
 		this.selector = config.selector?.replace(/([^-_a-zA-Z\d])/g, '\\$1') ?? this.selector;
 		this.scope = config.scope ?? null;
@@ -136,7 +135,9 @@ export class CssRecord {
 		if (this.changed || !this.cache) {
 			const newLine = config.minimize ? '' : '\n';
 
-			const cssRecordSelector = config.mangleSelectors ? this.mangledSelector : this.selector;
+			const cssRecordSelector = config.mangleSelectors
+				? `${config.mangledSelectorsPrefix ?? ''}${this.mangledSelector}`
+				: this.selector;
 
 			let customSelectors: string[] = [];
 			let classSelectors: string[] = [];

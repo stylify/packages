@@ -88,6 +88,8 @@ export interface CompilerConfigInterface {
 	screens?: ScreensType,
 	customSelectors?: CustomSelectorType,
 	mangleSelectors?: boolean,
+	mangledSelectorsPrefix?: string,
+	selectorsPrefix?: string,
 	pregenerate?: PregenerateType,
 	components?: ComponentType,
 	ignoredAreas?: RegExp[],
@@ -148,6 +150,10 @@ export class Compiler {
 
 	public mangleSelectors = false;
 
+	public mangledSelectorsPrefix = '';
+
+	public selectorsPrefix = '';
+
 	public dev = false;
 
 	public macros: MacrosType = {};
@@ -196,6 +202,8 @@ export class Compiler {
 		this.injectVariablesIntoCss = config.injectVariablesIntoCss ?? this.injectVariablesIntoCss;
 		this.selectorsAreas = [...this.selectorsAreas, ...config.selectorsAreas ?? []];
 		this.mangleSelectors = config.mangleSelectors ?? this.mangleSelectors;
+		this.mangledSelectorsPrefix = config.mangledSelectorsPrefix ?? this.mangledSelectorsPrefix;
+		this.selectorsPrefix = config.selectorsPrefix ?? this.selectorsPrefix;
 		this.replaceVariablesByCssVariables =
 			config.replaceVariablesByCssVariables ?? this.replaceVariablesByCssVariables;
 		this.externalVariables = [
@@ -370,7 +378,7 @@ export class Compiler {
 				continue;
 			}
 
-			const mangledSelector = minifiedSelectorGenerator.getMangledSelector(selector);
+			const mangledSelector = minifiedSelectorGenerator.getMangledSelector(selector, this.mangledSelectorsPrefix);
 			const selectorPrefix = matchSelectorsWithPrefixes
 				? minifiedSelectorGenerator.getSelectorPrefix(selector)
 				: '';
@@ -533,7 +541,8 @@ export class Compiler {
 			return selector;
 		}
 
-		return minifiedSelectorGenerator.generateMangledSelector(selector, prefix);
+		minifiedSelectorGenerator.generateMangledSelector(selector, prefix);
+		return minifiedSelectorGenerator.getMangledSelector(selector, this.mangledSelectorsPrefix);
 	}
 
 	private configureCompilationResult(compilationResult: CompilationResult): CompilationResult
@@ -617,6 +626,7 @@ export class Compiler {
 		compilationResult.configure({
 			dev: this.dev,
 			mangleSelectors: this.mangleSelectors,
+			mangledSelectorsPrefix: this.mangledSelectorsPrefix,
 			defaultCss: `${[variablesCss, keyframesCss].join(newLine).trim()}${newLine}`
 		});
 
@@ -728,7 +738,7 @@ export class Compiler {
 
 		for (const regExpGenerator of this.macrosRegExpGenerators) {
 			for (const macroKey in this.macros) {
-				content = content.replace(regExpGenerator(macroKey), (...args) => {
+				content = content.replace(regExpGenerator(`${this.selectorsPrefix}${macroKey}`), (...args) => {
 					const macroMatches: string[] = args.slice(0, args.length - 2);
 					const macroMatch = new MacroMatch(macroMatches, this.screens);
 					const existingCssRecord = compilationResult.getCssRecord(macroMatch);
