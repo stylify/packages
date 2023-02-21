@@ -118,7 +118,10 @@ export const defaultPreset = {
 		'\'class\':\\s*\'([^\']+)\'',
 		'\'class\':\\s*"([^"]+)"',
 		'"class":\\s*"([^"]+)"',
-		'"class":\\s*\'([^\']+)\''
+		'"class":\\s*\'([^\']+)\'',
+		// Escaped default areas
+		'(?:^|\\s+)class=\\\\"([^"]+)\\\\"',
+		`(?:^|\\s+)class=\\\\'([^']+)\\\\'`
 	],
 	screens: {
 		tosm: maxWidthScreen('639px'),

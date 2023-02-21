@@ -346,12 +346,19 @@ export class Compiler {
 
 		const placeholderTextPart = this.textPlaceholder;
 		const contentPlaceholders: Record<string, string> = {};
+		const matchContentPlaceholderKey: Record<string, string> = {};
 
 		const placeholderInserter = (matched: string) => {
 			const placeholderKey = `${placeholderTextPart}${Object.keys(contentPlaceholders).length}`;
+
 			contentPlaceholders[placeholderKey] = matched;
+			matchContentPlaceholderKey[matched] = placeholderKey;
+
 			return placeholderKey;
 		};
+
+		let originalMatchedAreas: string[] = [];
+		let rawContent = content;
 
 		content = prepareStringForReplace(content)
 			.replace(new RegExp(this.ignoredAreasRegExpString, 'g'), (...args): string => {
@@ -368,8 +375,36 @@ export class Compiler {
 				(matched: string) => placeholderInserter(matched)
 			);
 
+		rawContent = rawContent
+			.replace(new RegExp(this.ignoredAreasRegExpString, 'g'), (...args): string => {
+				const matchArguments = args.filter((value) => typeof value === 'string');
+				const fullMatch: string = matchArguments[0];
+				const innerMatch: string = matchArguments[1];
+
+				return typeof innerMatch === 'undefined' || innerMatch.length === 0
+					? fullMatch
+					: matchContentPlaceholderKey[innerMatch];
+			})
+			.replace(new RegExp(this.contentOptionsRegExp.source, 'g'), '');
+
+		if (rewriteOnlyInSelectorsAreas) {
+			for (const rewriteSelectorAreaRegExpString of this.selectorsAreas) {
+				rawContent = rawContent.replace(new RegExp(rewriteSelectorAreaRegExpString, 'g'), (fullMatch) => {
+					originalMatchedAreas.push(fullMatch);
+					return '';
+				});
+			}
+		} else {
+			originalMatchedAreas = [content];
+		}
+
+		rawContent = '';
+
 		const selectorsListKeys = Object.keys(minifiedSelectorGenerator.processedSelectors)
 			.sort((a: string, b: string): number => b.length - a.length);
+
+		const matchedAreasSeparator = '_MATCHED_AREA_SEPARATOR_';
+		let matchedAreasString = prepareStringForReplace(originalMatchedAreas.join(matchedAreasSeparator));
 
 		for (const selector of selectorsListKeys) {
 			let selectorToReplace = prepareStringForReplace(selector);
@@ -391,20 +426,15 @@ export class Compiler {
 			const replacement = `${selectorPrefix}${mangledSelector}`;
 			const selectorToReplaceRegExp = new RegExp(selectorToReplace, 'g');
 
-			if (rewriteOnlyInSelectorsAreas === false) {
-				content = content.replace(selectorToReplaceRegExp, replacement);
-				continue;
-			}
+			matchedAreasString = matchedAreasString.replace(selectorToReplaceRegExp, replacement);
+		}
 
-			for (const rewriteSelectorAreaRegExpString of this.selectorsAreas) {
-				content = content.replace(
-					new RegExp(rewriteSelectorAreaRegExpString, 'g'),
-					(fullMatch: string, selectorMatch: string): string => {
-						const selectorReplacement = selectorMatch.replace(selectorToReplaceRegExp, replacement);
-						return fullMatch.replace(selectorMatch, selectorReplacement);
-					}
-				);
-			}
+		const processedMatchedAreas: string[] = matchedAreasString
+			.split(matchedAreasSeparator)
+			.filter((item) => item.trim().length);
+
+		for (const [index, processedArea] of Object.entries(processedMatchedAreas)) {
+			content = content.replace(prepareStringForReplace(originalMatchedAreas[index] as string), processedArea);
 		}
 
 		for (const [placeholderKey, contentPlaceholder] of Object.entries(contentPlaceholders)) {

@@ -123,3 +123,40 @@ test('Mangled selectors with selector prefix', (): void => {
 	testUtils.testCssFileToBe(compilationResult.generateCss(), fileName);
 	testUtils.testHtmlFileToBe(compiler.rewriteSelectors(inputContent), fileName);
 });
+
+test('Mangling similar areas right behind each other', (): void => {
+	const fileName = 'similar-areas-behind-each-other';
+	const inputContent = testUtils.getHtmlInputFile(fileName);
+
+	const compiler = new Compiler({
+		mangleSelectors: true,
+		dev: true,
+		selectorsAreas: [
+			`addAttribute\\(([\\s\\S]+), (?:"|\\')class:list(?:"|\\')\\)`,
+			`addAttribute\\(([\\s\\S]+), (?:"|')class(?:"|')\\)`
+		]
+	});
+
+	let compilationResult = compiler.compile(inputContent);
+
+	testUtils.testCssFileToBe(compilationResult.generateCss(), fileName);
+	testUtils.testHtmlFileToBe(compiler.rewriteSelectors(inputContent), fileName);
+});
+
+test('Escaped match area', (): void => {
+	const fileName = 'escaped-match-area';
+	const inputContent = testUtils.getInputFile(`${fileName}.yaml`);
+
+	const compiler = new Compiler({
+		mangleSelectors: true,
+		dev: true,
+		selectorsAreas: [
+			'class=\\\\"([^"]+)\\\\"'
+		]
+	});
+
+	let compilationResult = compiler.compile(inputContent);
+
+	testUtils.testCssFileToBe(compilationResult.generateCss(), fileName);
+	testUtils.testFileToBe(compiler.rewriteSelectors(inputContent), 'yaml', fileName);
+});
