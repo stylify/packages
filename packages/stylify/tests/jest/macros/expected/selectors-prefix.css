@@ -1,0 +1,18 @@
+.hover\:u-color\:red:hover{
+	color: red
+}
+.u-color\:blue{
+	color: blue
+}
+.focus\:\{u-color\:orange\}:focus{
+	color: orange
+}
+.\[a\]\{u-color\:green\} a{
+	color: green
+}
+.button{
+	color: yellow
+}
+.button--big{
+	font-size: 24px
+}

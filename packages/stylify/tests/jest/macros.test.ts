@@ -52,3 +52,16 @@ test('Selectors areas', (): void => {
 
 	testUtils.testCssFileToBe(compilationResult.generateCss(), 'selectors-areas');
 });
+
+test('Selectors prefix', (): void => {
+	const fileName = 'selectors-prefix';
+	const inputIndex = testUtils.getHtmlInputFile(fileName);
+
+	const compiler = new Compiler({
+		dev: true,
+		selectorsPrefix: 'u-'
+	});
+
+	let compilationResult = compiler.compile(inputIndex);
+	testUtils.testCssFileToBe(compilationResult.generateCss(), fileName);
+});

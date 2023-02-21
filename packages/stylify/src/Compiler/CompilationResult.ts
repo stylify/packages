@@ -3,7 +3,8 @@ import {
 	MacroMatch,
 	SelectorProperties,
 	screensSorter,
-	CssRecordConfigInterface
+	CssRecordConfigInterface,
+	minifiedSelectorGenerator
 } from '.';
 
 import { hooks } from '../Hooks';
@@ -34,6 +35,7 @@ export interface CompilationResultConfigInterface {
 	screensSortingFunction?: ScreenSortingFunctionType,
 	screensList?: ScreensListRecordType,
 	mangleSelectors?: boolean,
+	mangledSelectorsPrefix?: string,
 	defaultCss?: string
 }
 
@@ -64,6 +66,8 @@ export class CompilationResult {
 
 	public mangleSelectors = false;
 
+	public mangledSelectorsPrefix = '';
+
 	public dev = false;
 
 	public screensSortingFunction: ScreenSortingFunctionType = null;
@@ -84,6 +88,7 @@ export class CompilationResult {
 		this.dev = config.dev ?? this.dev;
 		this.reconfigurable = config.reconfigurable ?? this.reconfigurable;
 		this.mangleSelectors = config.mangleSelectors ?? this.mangleSelectors;
+		this.mangledSelectorsPrefix = config.mangledSelectorsPrefix ?? this.mangledSelectorsPrefix;
 		this.defaultCss = config.defaultCss || this.defaultCss;
 
 		this.screensSortingFunction = config.screensSortingFunction ?? screensSorter.sortCssTreeMediaQueries;
@@ -134,7 +139,8 @@ export class CompilationResult {
 
 			cssTree[screen] += this.selectorsList[selector].generateCss({
 				minimize: !this.dev,
-				mangleSelectors: this.mangleSelectors
+				mangleSelectors: this.mangleSelectors,
+				mangledSelectorsPrefix: this.mangledSelectorsPrefix
 			});
 		}
 
@@ -183,6 +189,7 @@ export class CompilationResult {
 		const newCssRecord = new CssRecord({
 			screenId: this.screensList.get(screen),
 			selector: selector,
+			mangledSelector: `${this.mangledSelectorsPrefix}${minifiedSelectorGenerator.generateMangledSelector(selector)}`,
 			pseudoClasses: macroMatch.pseudoClasses ? [macroMatch.pseudoClasses] : [],
 			utilityShouldBeGenerated
 		});

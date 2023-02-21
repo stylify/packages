@@ -36,5 +36,5 @@ test('Vite - React', async (): Promise<void> => {
 
 	testUtils.testCssFileToBe(cssFileContent, 'output');
 	expect(jsFileContent.includes(jsFileContentPart)).toBeTruthy();
-	expect(jsFileContent.includes(jsFileContentPart2)).toBeTruthy();
+	expect(/className:(?:"|`)\s*e\s*(?:"|`)/.test(jsFileContent)).toBeTruthy();
 });

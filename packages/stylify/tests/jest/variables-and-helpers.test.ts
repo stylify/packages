@@ -1,5 +1,5 @@
 import TestUtils from '../../../../tests/TestUtils';
-import { Compiler, CompilerConfigInterface, MacroMatch, SelectorProperties } from '../../src';
+import { Compiler, CompilerConfigInterface } from '../../src';
 
 const testName = 'variables-and-helpers';
 const testUtils = new TestUtils('stylify', testName);

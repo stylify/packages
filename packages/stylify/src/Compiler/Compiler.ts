@@ -88,6 +88,8 @@ export interface CompilerConfigInterface {
 	screens?: ScreensType,
 	customSelectors?: CustomSelectorType,
 	mangleSelectors?: boolean,
+	mangledSelectorsPrefix?: string,
+	selectorsPrefix?: string,
 	pregenerate?: PregenerateType,
 	components?: ComponentType,
 	ignoredAreas?: RegExp[],
@@ -148,6 +150,10 @@ export class Compiler {
 
 	public mangleSelectors = false;
 
+	public mangledSelectorsPrefix = '';
+
+	public selectorsPrefix = '';
+
 	public dev = false;
 
 	public macros: MacrosType = {};
@@ -196,6 +202,8 @@ export class Compiler {
 		this.injectVariablesIntoCss = config.injectVariablesIntoCss ?? this.injectVariablesIntoCss;
 		this.selectorsAreas = [...this.selectorsAreas, ...config.selectorsAreas ?? []];
 		this.mangleSelectors = config.mangleSelectors ?? this.mangleSelectors;
+		this.mangledSelectorsPrefix = config.mangledSelectorsPrefix ?? this.mangledSelectorsPrefix;
+		this.selectorsPrefix = config.selectorsPrefix ?? this.selectorsPrefix;
 		this.replaceVariablesByCssVariables =
 			config.replaceVariablesByCssVariables ?? this.replaceVariablesByCssVariables;
 		this.externalVariables = [
@@ -338,12 +346,19 @@ export class Compiler {
 
 		const placeholderTextPart = this.textPlaceholder;
 		const contentPlaceholders: Record<string, string> = {};
+		const matchContentPlaceholderKey: Record<string, string> = {};
 
 		const placeholderInserter = (matched: string) => {
 			const placeholderKey = `${placeholderTextPart}${Object.keys(contentPlaceholders).length}`;
+
 			contentPlaceholders[placeholderKey] = matched;
+			matchContentPlaceholderKey[matched] = placeholderKey;
+
 			return placeholderKey;
 		};
+
+		let originalMatchedAreas: string[] = [];
+		let rawContent = content;
 
 		content = prepareStringForReplace(content)
 			.replace(new RegExp(this.ignoredAreasRegExpString, 'g'), (...args): string => {
@@ -360,8 +375,36 @@ export class Compiler {
 				(matched: string) => placeholderInserter(matched)
 			);
 
+		rawContent = rawContent
+			.replace(new RegExp(this.ignoredAreasRegExpString, 'g'), (...args): string => {
+				const matchArguments = args.filter((value) => typeof value === 'string');
+				const fullMatch: string = matchArguments[0];
+				const innerMatch: string = matchArguments[1];
+
+				return typeof innerMatch === 'undefined' || innerMatch.length === 0
+					? fullMatch
+					: matchContentPlaceholderKey[innerMatch];
+			})
+			.replace(new RegExp(this.contentOptionsRegExp.source, 'g'), '');
+
+		if (rewriteOnlyInSelectorsAreas) {
+			for (const rewriteSelectorAreaRegExpString of this.selectorsAreas) {
+				rawContent = rawContent.replace(new RegExp(rewriteSelectorAreaRegExpString, 'g'), (fullMatch) => {
+					originalMatchedAreas.push(fullMatch);
+					return '';
+				});
+			}
+		} else {
+			originalMatchedAreas = [content];
+		}
+
+		rawContent = '';
+
 		const selectorsListKeys = Object.keys(minifiedSelectorGenerator.processedSelectors)
 			.sort((a: string, b: string): number => b.length - a.length);
+
+		const matchedAreasSeparator = '_MATCHED_AREA_SEPARATOR_';
+		let matchedAreasString = prepareStringForReplace(originalMatchedAreas.join(matchedAreasSeparator));
 
 		for (const selector of selectorsListKeys) {
 			let selectorToReplace = prepareStringForReplace(selector);
@@ -370,7 +413,7 @@ export class Compiler {
 				continue;
 			}
 
-			const mangledSelector = minifiedSelectorGenerator.getMangledSelector(selector);
+			const mangledSelector = minifiedSelectorGenerator.getMangledSelector(selector, this.mangledSelectorsPrefix);
 			const selectorPrefix = matchSelectorsWithPrefixes
 				? minifiedSelectorGenerator.getSelectorPrefix(selector)
 				: '';
@@ -383,20 +426,18 @@ export class Compiler {
 			const replacement = `${selectorPrefix}${mangledSelector}`;
 			const selectorToReplaceRegExp = new RegExp(selectorToReplace, 'g');
 
-			if (rewriteOnlyInSelectorsAreas === false) {
-				content = content.replace(selectorToReplaceRegExp, replacement);
-				continue;
-			}
+			matchedAreasString = matchedAreasString.replace(selectorToReplaceRegExp, replacement);
+		}
 
-			for (const rewriteSelectorAreaRegExpString of this.selectorsAreas) {
-				content = content.replace(
-					new RegExp(rewriteSelectorAreaRegExpString, 'g'),
-					(fullMatch: string, selectorMatch: string): string => {
-						const selectorReplacement = selectorMatch.replace(selectorToReplaceRegExp, replacement);
-						return fullMatch.replace(selectorMatch, selectorReplacement);
-					}
-				);
-			}
+		const processedMatchedAreas: string[] = matchedAreasString
+			.split(matchedAreasSeparator)
+			.filter((item) => item.trim().length);
+
+		for (const [index, processedArea] of Object.entries(processedMatchedAreas)) {
+			content = content.replace(
+				prepareStringForReplace(originalMatchedAreas[index] as string),
+				this.dev ? processedArea : processedArea.replace(/\n/g, ' ').replace(/\s{2,}/g, ' ')
+			);
 		}
 
 		for (const [placeholderKey, contentPlaceholder] of Object.entries(contentPlaceholders)) {
@@ -533,7 +574,8 @@ export class Compiler {
 			return selector;
 		}
 
-		return minifiedSelectorGenerator.generateMangledSelector(selector, prefix);
+		minifiedSelectorGenerator.generateMangledSelector(selector, prefix);
+		return minifiedSelectorGenerator.getMangledSelector(selector, this.mangledSelectorsPrefix);
 	}
 
 	private configureCompilationResult(compilationResult: CompilationResult): CompilationResult
@@ -617,6 +659,7 @@ export class Compiler {
 		compilationResult.configure({
 			dev: this.dev,
 			mangleSelectors: this.mangleSelectors,
+			mangledSelectorsPrefix: this.mangledSelectorsPrefix,
 			defaultCss: `${[variablesCss, keyframesCss].join(newLine).trim()}${newLine}`
 		});
 
@@ -728,7 +771,7 @@ export class Compiler {
 
 		for (const regExpGenerator of this.macrosRegExpGenerators) {
 			for (const macroKey in this.macros) {
-				content = content.replace(regExpGenerator(macroKey), (...args) => {
+				content = content.replace(regExpGenerator(`${this.selectorsPrefix}${macroKey}`), (...args) => {
 					const macroMatches: string[] = args.slice(0, args.length - 2);
 					const macroMatch = new MacroMatch(macroMatches, this.screens);
 					const existingCssRecord = compilationResult.getCssRecord(macroMatch);
