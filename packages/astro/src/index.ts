@@ -29,6 +29,7 @@ export const stylify = (options: UnpluginConfigInterface = {}): AstroIntegration
 					compiler: {
 						mangleSelectors: options?.compiler?.mangleSelectors ?? !isDev,
 						selectorsAreas: [
+							'(?:^|\\s+)class=\\{((?:.|\\n)+)\\}',
 							'(?:^|\\s+)class:list=\\{\\[((?:.|\\n)+)\\]\\}',
 							`addAttribute\\(([\\s\\S]+), (?:"|\\')class:list(?:"|\\')\\)`,
 							`addAttribute\\(([\\s\\S]+), (?:"|')class(?:"|')\\)`
