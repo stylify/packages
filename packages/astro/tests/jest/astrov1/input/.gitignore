@@ -2,6 +2,7 @@
 dist/
 .output/
 src/styles/stylify.css
+yarn.lock
 
 # dependencies
 node_modules/

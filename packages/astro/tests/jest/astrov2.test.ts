@@ -5,7 +5,7 @@ import fse from 'fs-extra';
 import TestUtils from '../../../../tests/TestUtils';
 import { execSync } from 'child_process';
 
-const testName = 'astro';
+const testName = 'astrov2';
 const testUtils = new TestUtils('astro', testName);
 
 const bundleTestDir = testUtils.getTestDir();
@@ -35,10 +35,10 @@ const secondHtmlPart = `
 
 const cssFilePart = ':root{--blue: darkblue}.a{color:orange}.b{font-size:24px}.c{text-align:center}.d{color:#00008b}.e{font-size:48px}.f{margin-top:24px}.g{color:purple}.j{font-weight:700}.k{font-size:12px}.l{color:lightpurple}@media (min-width: 1024px){.h{color:darkpurple}.i{font-size:24px}}';
 
-test('Astro build', async (): Promise<void> => {
+test('Astro v2', async (): Promise<void> => {
  	const [indexHtmlFileEntry] = FastGlob.sync(path.join(buildTmpDir, 'dist', 'index.html'));
 	const [secondHtmlFileEntry] = FastGlob.sync(path.join(buildTmpDir, 'dist', 'second', 'index.html'));
-	const [cssFileEntry] = FastGlob.sync(path.join(buildTmpDir, 'dist', 'assets', '*.css'));
+	const [cssFileEntry] = FastGlob.sync(path.join(buildTmpDir, 'dist', '_astro', '*.css'));
 
 	const indexHtmlFileContent = testUtils.readFile(indexHtmlFileEntry);
 	const secondHtmlFileContent = testUtils.readFile(secondHtmlFileEntry);

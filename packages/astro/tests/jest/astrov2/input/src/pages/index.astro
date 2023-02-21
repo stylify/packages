@@ -1,0 +1,11 @@
+---
+import Subtitle from '../components/Subtitle.astro';
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Hello World!">
+	<h1 class="color:purple">Hello World!</h1>
+	<h2 class:list={['font-weight:bold', {'lg:color:darkpurple': true}, ['font-size:12px', 'lg:font-size:24px']]}></h2>
+	<h3 class={`font-size:48px`}>Another text</h3>
+	<Subtitle />
+</Layout>
