@@ -434,7 +434,10 @@ export class Compiler {
 			.filter((item) => item.trim().length);
 
 		for (const [index, processedArea] of Object.entries(processedMatchedAreas)) {
-			content = content.replace(prepareStringForReplace(originalMatchedAreas[index] as string), processedArea);
+			content = content.replace(
+				prepareStringForReplace(originalMatchedAreas[index] as string),
+				this.dev ? processedArea : processedArea.replace(/\n/g, ' ').replace(/\s{2,}/g, ' ')
+			);
 		}
 
 		for (const [placeholderKey, contentPlaceholder] of Object.entries(contentPlaceholders)) {

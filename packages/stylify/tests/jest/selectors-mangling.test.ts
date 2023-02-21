@@ -160,3 +160,16 @@ test('Escaped match area', (): void => {
 	testUtils.testCssFileToBe(compilationResult.generateCss(), fileName);
 	testUtils.testFileToBe(compiler.rewriteSelectors(inputContent), 'yaml', fileName);
 });
+
+test('Remove whitespaces from mangled attribute', (): void => {
+	const fileName = 'whitespace-removal';
+	const inputContent = testUtils.getHtmlInputFile(fileName);
+
+	const compiler = new Compiler({
+		mangleSelectors: true
+	});
+
+	compiler.compile(inputContent);
+
+	testUtils.testHtmlFileToBe(compiler.rewriteSelectors(inputContent), fileName);
+});
