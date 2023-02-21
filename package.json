@@ -54,7 +54,7 @@
 		"unplugin:build": "cross-env packages=unplugin yarn build",
 		"unplugin:build:notypes": "cross-env packages=unplugin yarn build:notypes",
 		"unplugin:watch": "cross-env packages=unplugin watch=true yarn watch",
-		"unplugin:test": "yarn jest:test packages/unplugin/tests/jest/vite-react",
+		"unplugin:test": "yarn jest:test packages/unplugin/tests/jest",
 		"eslint:check": "eslint packages/**/src/**/*.{js,ts}",
 		"eslint:fix": "yarn eslint:check --fix",
 		"jest:test": "jest --clearCache && node --experimental-vm-modules node_modules/jest/bin/jest --maxWorkers 1",

@@ -1,10 +1,10 @@
 {
   "astro": {
     "/esm/index.mjs": {
-      "size": 2937
+      "size": 2989
     },
     "/lib/index.cjs": {
-      "size": 4075
+      "size": 4127
     }
   },
   "bundler": {
@@ -39,22 +39,22 @@
   },
   "stylify": {
     "/esm/index.js": {
-      "size": 73301
+      "size": 75602
     },
     "/esm/index.min.js": {
-      "size": 36437
+      "size": 37658
     },
     "/esm/index.mjs": {
-      "size": 73634
+      "size": 75812
     },
     "/lib/index.cjs": {
-      "size": 75543
+      "size": 77721
     },
     "/dist/stylify.js": {
-      "size": 75678
+      "size": 78051
     },
     "/dist/stylify.min.js": {
-      "size": 35861
+      "size": 37081
     }
   },
   "unplugin": {
