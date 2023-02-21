@@ -35,6 +35,16 @@ jobs:
         - name: Jest tests
           run: yarn jest:test+coverage
 
+        - name: 'Upload Artifacts'
+          if: ${{ failure() }}
+          uses: actions/upload-artifact@v3
+          with:
+            name: artifacts
+            path: |
+              packages
+              !node_modules
+              !packages/*/**/node_modules
+
         - name: Upload coverage to Codecov
           uses: codecov/codecov-action@v1
           with:
