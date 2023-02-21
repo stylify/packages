@@ -173,3 +173,18 @@ test('Remove whitespaces from mangled attribute', (): void => {
 
 	testUtils.testHtmlFileToBe(compiler.rewriteSelectors(inputContent), fileName);
 });
+
+test('Identical ignored areas', (): void => {
+	const fileName = 'identical-ignored-areas';
+	const inputContent = testUtils.getHtmlInputFile(fileName);
+
+	const compiler = new Compiler({
+		mangleSelectors: true,
+		ignoredAreas: [
+			/(menu-link)/
+		]
+	});
+
+	compiler.compile(inputContent);
+	testUtils.testHtmlFileToBe(compiler.rewriteSelectors(inputContent), fileName);
+});

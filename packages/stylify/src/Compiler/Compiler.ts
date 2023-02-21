@@ -346,15 +346,14 @@ export class Compiler {
 
 		const placeholderTextPart = this.textPlaceholder;
 		const contentPlaceholders: Record<string, string> = {};
-		const matchContentPlaceholderKey: Record<string, string> = {};
 
 		const placeholderInserter = (matched: string) => {
-			const placeholderKey = `${placeholderTextPart}${Object.keys(contentPlaceholders).length}`;
+			if (!(matched in contentPlaceholders)) {
+				const placeholderKey = `${placeholderTextPart}${Object.keys(contentPlaceholders).length}`;
+				contentPlaceholders[matched] = placeholderKey;
+			}
 
-			contentPlaceholders[placeholderKey] = matched;
-			matchContentPlaceholderKey[matched] = placeholderKey;
-
-			return placeholderKey;
+			return contentPlaceholders[matched];
 		};
 
 		let originalMatchedAreas: string[] = [];
@@ -383,7 +382,7 @@ export class Compiler {
 
 				return typeof innerMatch === 'undefined' || innerMatch.length === 0
 					? fullMatch
-					: matchContentPlaceholderKey[innerMatch];
+					: contentPlaceholders[innerMatch];
 			})
 			.replace(new RegExp(this.contentOptionsRegExp.source, 'g'), '');
 
@@ -440,8 +439,8 @@ export class Compiler {
 			);
 		}
 
-		for (const [placeholderKey, contentPlaceholder] of Object.entries(contentPlaceholders)) {
-			content = content.replace(placeholderKey, contentPlaceholder);
+		for (const [originalContent, contentPlaceholder] of Object.entries(contentPlaceholders)) {
+			content = content.replace(new RegExp(contentPlaceholder, 'g'), originalContent);
 		}
 
 		content = getStringOriginalStateAfterReplace(content);
