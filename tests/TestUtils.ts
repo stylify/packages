@@ -36,7 +36,7 @@ export default class TestUtils {
 	}
 
 	public readFile(filePath: string): string {
-		return fs.readFileSync(filePath, 'utf8').toString().trim();
+		return fs.readFileSync(filePath, 'utf8').trim();
 	}
 
 	public getTestFile(fileType: string, fileName: string): string {
@@ -116,7 +116,8 @@ export default class TestUtils {
 	}
 
 	public testFileToBe(actualContent: any, suffix: string, expectedFileName: string = 'index') {
-		this.testToBe(actualContent, this.getExpectedFile(`${expectedFileName}.${suffix}`), `${expectedFileName}.${suffix}`);
+		const expecedFile = `${expectedFileName}.${suffix}`;
+		this.testToBe(actualContent, this.getExpectedFile(expecedFile), expecedFile);
 	}
 
 }
