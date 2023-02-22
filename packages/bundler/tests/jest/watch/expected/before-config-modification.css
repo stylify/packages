@@ -2,7 +2,7 @@
 	--fontSize: 24px;
 }
 .font-size\:\$fontSize{
-	font-size: 24px
+	font-size: var(--fontSize)
 }
 .container,
 .color\:blue{

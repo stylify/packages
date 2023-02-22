@@ -172,6 +172,7 @@ test('Dynamic components', (): void => {
 		variables: {
 			red: 'darkred'
 		},
+		cssVariablesEnabled: false,
 		components: {
 			'title(?:--(\\S+))?': ({ matches }) => {
 				const color = matches[1] ?? '#000';
@@ -193,6 +194,7 @@ test('Mangle Dynamic components', (): void => {
 		variables: {
 			red: 'darkred'
 		},
+		cssVariablesEnabled: false,
 		components: {
 			'title(?:--(\\S+))?': ({ matches }) => {
 				const color = matches[1] ?? '#000';

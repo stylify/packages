@@ -1,12 +1,11 @@
 /* eslint-disable no-console */
 /* eslint-disable @typescript-eslint/no-floating-promises */
-import 'v8-compile-cache';
 import path from 'path';
 import { exec } from 'child_process';
 import fse from 'fs-extra';
 import packageJson from '../../package.json';
 import { env, exit } from 'process';
-import esbuild, { BuildOptions, BuildResult, Format, Platform } from 'esbuild';
+import esbuild, { BuildOptions, BuildContext, BuildResult, Format, Platform } from 'esbuild';
 import { compareBuildStats } from './output-stats';
 
 export type BundleFormatType = Format | 'esm-browser' | 'esm-lib';
@@ -43,7 +42,7 @@ const filesBanner = `
 
 const packagesDir = path.join(__dirname, '..', '..', 'packages');
 const typescriptTypesBuilds: Promise<void>[] = [];
-const bundles: Promise<BuildResult[]>[] = [];
+const bundles: Promise<(BuildContext|BuildResult)[]>[] = [];
 const processedPackages: string[] = [];
 
 export const getPackageDir = (packageName: string) => path.join(packagesDir, packageName);
@@ -66,7 +65,7 @@ export const runBuild = async (buildFunction): Promise<void> => {
 	compareBuildStats(processedPackages.length > 1 ? null : processedPackages[0]);
 };
 
-const runEsbuild = async (config: BuildConfigConfigurationInterface): Promise<BuildResult[]> => {
+const runEsbuild = async (config: BuildConfigConfigurationInterface): Promise<(BuildContext|BuildResult)[]> => {
 	if (selectedPackages.length && !selectedPackages.includes(config.package)) {
 		return;
 	}
@@ -75,7 +74,7 @@ const runEsbuild = async (config: BuildConfigConfigurationInterface): Promise<Bu
 		processedPackages.push(config.package);
 	}
 
-	const buildsResults: Promise<BuildResult>[] = [];
+	const buildsResults: Promise<BuildContext|BuildResult>[] = [];
 
 	const defaultConfig: Partial<BuildConfigConfigurationInterface> = {
 		watch: isWatchMode
@@ -146,7 +145,6 @@ const runEsbuild = async (config: BuildConfigConfigurationInterface): Promise<Bu
 				const parsedOutputFilePath = path.parse(bundleConfig.outfile);
 				const buildConfig: BuildOptions = {
 					entryPoints: bundleConfig.entryPoints.map((filePath) => path.join(packageDir, filePath)),
-					watch: mergedConfig.watch,
 					format: ['esm-browser', 'esm-lib'].includes(format) ? 'esm' : format as Format,
 					bundle: bundleConfig.bundle ?? true,
 					minify: shouldMinify && suffix === '.min',
@@ -168,7 +166,22 @@ const runEsbuild = async (config: BuildConfigConfigurationInterface): Promise<Bu
 						`${parsedOutputFilePath.base}${suffix}${'.' + outputSuffixes[format]}`
 					)
 				};
-				buildsResults.push(esbuild.build(buildConfig));
+
+				let buildPromise: BuildContext|BuildResult;
+
+				if (mergedConfig.watch) {
+					const contextPromise = esbuild.context(buildConfig);
+
+					contextPromise.then((context) => {
+						context.watch();
+					});
+
+					buildsResults.push(contextPromise);
+				} else {
+					esbuild.build(buildConfig);
+					buildsResults.push(esbuild.build(buildConfig));
+				}
+
 			}
 		}
 	}
@@ -207,13 +220,13 @@ const runEsbuild = async (config: BuildConfigConfigurationInterface): Promise<Bu
 	return result;
 };
 
-export const bundle = async (config: BuildConfigConfigurationInterface): Promise<BuildResult[]> => {
+export const bundle = async (config: BuildConfigConfigurationInterface): Promise<(BuildContext|BuildResult)[]> => {
 	const bundle = runEsbuild(config);
 	bundles.push(bundle);
 	return bundle;
 };
 
-export const bundleSync = async (config: BuildConfigConfigurationInterface): Promise<BuildResult[]> => {
+export const bundleSync = async (config: BuildConfigConfigurationInterface): Promise<(BuildContext|BuildResult)[]> => {
 	const reusult = await bundle(config);
 	return reusult;
 };

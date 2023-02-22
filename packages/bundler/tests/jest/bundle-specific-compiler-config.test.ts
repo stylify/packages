@@ -22,13 +22,12 @@ new Bundler({
 		variables: {
 			red: 'darkred',
 			blue: 'steelblue'
-		}
+		},
 	}
 }).bundle([
 	{
 		outputFile: path.join(buildTmpDir, 'index.css'),
 		compiler: {
-			replaceVariablesByCssVariables: true,
 			components: {
 				button: 'background:blue color:white'
 			},

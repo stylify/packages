@@ -6,5 +6,5 @@
 	color: blue
 }
 .font-size\:\$fontSize{
-	font-size: 32px
+	font-size: var(--fontSize)
 }
