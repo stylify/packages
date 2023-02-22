@@ -193,7 +193,7 @@ export class Compiler {
 		}
 	}
 
-	public configure(config: CompilerConfigInterface): Compiler {
+	public configure(config: CompilerConfigInterface): void {
 		this.dev = config.dev ?? this.dev;
 		this.matchCustomSelectors = config.matchCustomSelectors ?? this.matchCustomSelectors;
 		this.macros = {...this.macros, ...config.macros ?? {}};
@@ -231,8 +231,6 @@ export class Compiler {
 		for (const [componentSelector, componentStringOrGenerator] of Object.entries(config.components ?? {})) {
 			this.addComponent(componentSelector, componentStringOrGenerator);
 		}
-
-		return this;
 	}
 
 	public addVariables(variables: VariablesType, screen: string = null): void {
@@ -317,13 +315,10 @@ export class Compiler {
 		}
 
 		this.components[selector].selectorsOrGenerators.push(selectorsOrGenerator);
-
-		return this;
 	}
 
-	public addMacro(re: string, callback: MacroCallbackType): Compiler {
+	public addMacro(re: string, callback: MacroCallbackType): void {
 		this.macros[re] = callback;
-		return this;
 	}
 
 	public rewriteSelectors(options: {
