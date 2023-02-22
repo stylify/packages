@@ -171,7 +171,10 @@ export const unplugin = createUnplugin((config: UnpluginConfigInterface|Unplugin
 			if (transformCompiler === null) {
 				transformCompiler = new Compiler({
 					mangleSelectors: true,
-					selectorsAreas: bundler.compilerConfig.selectorsAreas
+					mangledSelectorsPrefix: bundler.compilerConfig.mangledSelectorsPrefix,
+					selectorsPrefix: bundler.compilerConfig.selectorsPrefix,
+					selectorsAreas: bundler.compilerConfig.selectorsAreas,
+					ignoredAreas: bundler.compilerConfig.ignoredAreas
 				});
 
 				transformCompilers[pluginConfig.id] = transformCompiler;
