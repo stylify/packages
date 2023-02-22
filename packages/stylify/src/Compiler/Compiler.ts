@@ -139,14 +139,7 @@ export class Compiler {
 
 	private ignoredAreasRegExpString: string = null;
 
-	public ignoredAreas = [
-		/stylify-ignore([\s\S]*?)\/stylify-ignore/,
-		/<code[\s]*?>([\s\S]*?)<\/code>/,
-		/<head[\s]*?>([\s\S]*?)<\/head>/,
-		/<pre[\s]*?>([\s\S]*?)<\/pre>/,
-		/<script[\s]*?>([\s\S]*?)<\/script>/,
-		/<style[\s]*?>([\s\S]*?)<\/style>/
-	];
+	public ignoredAreas = [];
 
 	public mangleSelectors = false;
 
@@ -172,7 +165,7 @@ export class Compiler {
 
 	public pregenerate = '';
 
-	public selectorsAreas = ['(?:^|\\s+)class="([^"]+)"', '(?:^|\\s+)class=\'([^\']+)\''];
+	public selectorsAreas = [];
 
 	public customSelectors: Record<string, CustomSelectorsInterface> = {};
 
