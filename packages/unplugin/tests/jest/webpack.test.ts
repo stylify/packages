@@ -50,6 +50,7 @@ test('Webpack', async (): Promise<void> => {
 							variables: {
 								blue: 'steelblue'
 							},
+							cssVariablesEnabled: false,
 							macros: {
 								'm:(\\S+?)': ({macroMatch, selectorProperties}) => {
 									selectorProperties.add('margin', macroMatch.getCapture(0));

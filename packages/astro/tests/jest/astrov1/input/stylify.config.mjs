@@ -4,6 +4,7 @@ export default defineConfig({
 	compiler: {
 		variables: {
 			blue: 'darkblue'
-		}
+		},
+		cssVariablesEnabled: false
 	}
 });

@@ -84,9 +84,8 @@ test('Variables and helpers', (): void => {
 	testUtils.testCssFileToBe(compilationResult.generateCss());
 });
 
-test('Variables and helpers - replaceVariablesByCssVariables', (): void => {
+test('Variables and helpers - cssVariablesEnabled', (): void => {
 	const compilerConfig = getCompilerConfig();
-	compilerConfig.replaceVariablesByCssVariables = true;
 	compilerConfig.variables = {
 		lightblack: 'lighten(#000,5)',
 		black: 'lighten($lightblack,5)',
@@ -101,12 +100,11 @@ test('Variables and helpers - replaceVariablesByCssVariables', (): void => {
 test('External Variables', (): void => {
 	const compiler = new Compiler({
 		dev: true,
-		replaceVariablesByCssVariables: true,
 		externalVariables: [
 			'test',
 			/^ext-/,
 			(variable) => variable.startsWith('md-') ? true : undefined
-		]
+		],
 	});
 
 	let compilationResult = compiler.compile(testUtils.getHtmlInputFile('third'));
@@ -116,8 +114,8 @@ test('External Variables', (): void => {
 test('External Variables - helpers exception', (): void => {
 	const compiler = new Compiler({
 		dev: true,
-		replaceVariablesByCssVariables: true,
-		externalVariables: ['test']
+		cssVariablesEnabled: true,
+		externalVariables: ['test'],
 	});
 
 	expect(() => compiler.compile('<div class="color:lighten($test)"></div>'))
@@ -145,7 +143,7 @@ test('Undefined variable - warning only', (): void => {
 test('Scoped variables', (): void => {
 	const compiler = new Compiler({
 		dev: true,
-		replaceVariablesByCssVariables: true,
+		cssVariablesEnabled: true,
 		variables: {
 			background: '#000',
 			dark: {

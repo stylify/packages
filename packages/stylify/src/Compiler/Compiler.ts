@@ -95,7 +95,7 @@ export interface CompilerConfigInterface {
 	components?: ComponentType,
 	ignoredAreas?: RegExp[],
 	selectorsAreas?: string[],
-	replaceVariablesByCssVariables?: boolean,
+	cssVariablesEnabled?: boolean,
 	injectVariablesIntoCss?: boolean
 	matchCustomSelectors?: boolean
 }
@@ -176,14 +176,12 @@ export class Compiler {
 
 	private matchCustomSelectors = true;
 
-	private processedHelpers = {};
+	public cssVariablesEnabled = true;
+
+	public injectVariablesIntoCss = true;
 
 	/** @internal */
 	public ignoredAreasRegExpString: string = null;
-
-	public replaceVariablesByCssVariables = false;
-
-	public injectVariablesIntoCss = true;
 
 	constructor(config: CompilerConfigInterface = {}) {
 		this.configure(defaultPreset);
@@ -206,9 +204,8 @@ export class Compiler {
 		this.mangledSelectorsPrefix = config.mangledSelectorsPrefix ?? this.mangledSelectorsPrefix;
 		this.selectorsPrefix = config.selectorsPrefix ?? this.selectorsPrefix;
 		this.undefinedVariableWarningLevel = config.undefinedVariableWarningLevel ?? this.undefinedVariableWarningLevel;
-		this.replaceVariablesByCssVariables =
-			config.replaceVariablesByCssVariables ?? this.replaceVariablesByCssVariables;
 		this.externalVariables = [...this.externalVariables, ...config.externalVariables ?? []];
+		this.cssVariablesEnabled = config.cssVariablesEnabled ?? this.cssVariablesEnabled;
 		this.addVariables(config.variables ?? {});
 
 		if (typeof config.pregenerate !== 'undefined') {
@@ -842,7 +839,7 @@ export class Compiler {
 		const helperArgumentPlaceholderStart = '_ARG';
 		const helperArgumentPlaceholderEnd = '_';
 		const helperArgumentRegExp = new RegExp(`${helperArgumentPlaceholderStart}(\\d+)${helperArgumentPlaceholderEnd}`);
-		const cssVariableEnabled = this.replaceVariablesByCssVariables && (replaceByVariable ?? true);
+		const cssVariableEnabled = this.cssVariablesEnabled && (replaceByVariable ?? true);
 
 		return content.replace(/(?:^|\s+)(\S+)\(([^)]+)\)/g, (fullHelperMatch, helperName: string, helperArguments: string) => {
 			if (!(helperName in this.helpers)) {
@@ -915,7 +912,7 @@ export class Compiler {
 			(match, substring: string): string => {
 				this.isVariableDefined(substring, contentContext);
 
-				return this.replaceVariablesByCssVariables
+				return this.cssVariablesEnabled
 					? `var(--${substring})`
 					: this.variables[substring] as VariablesTypeValue ?? match;
 			}
