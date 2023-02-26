@@ -19,4 +19,5 @@ const bundler = new Bundler({
 	]
 });
 
+// eslint-disable-next-line @typescript-eslint/no-floating-promises
 bundler.bundle();
