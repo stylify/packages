@@ -1,9 +1,9 @@
 :root {
---background: #000;
+	--background: #000;
 }
 @media (prefers-color-scheme: dark) {
 :root {
---background: #444;
---backgroundHover: #585858;
+	--background: #444;
+	--backgroundHover: #585858;
 }
 }

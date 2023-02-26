@@ -1,10 +1,10 @@
 :root {
---lightblack: #050505;
---black: #0a0a0a;
---border2: border 1px solid var(--black);
---lighten-black-10: #141414;
---lighten-black-20: #1e1e1e;
---myContent-Super---Content: "Super Content";
+	--lightblack: #050505;
+	--black: #0a0a0a;
+	--border2: border 1px solid var(--black);
+	--lighten-black-10: #141414;
+	--lighten-black-20: #1e1e1e;
+	--myContent-Super---Content: "Super Content";
 }
 .color\:lighten\(\$black\,10\){
 	color: var(--lighten-black-10)

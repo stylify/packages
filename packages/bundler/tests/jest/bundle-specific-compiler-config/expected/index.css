@@ -1,6 +1,6 @@
 :root {
---red: darkred;
---blue: steelblue;
+	--red: darkred;
+	--blue: steelblue;
 }
 .color\:\$red{
 	color: var(--red)

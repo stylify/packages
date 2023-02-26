@@ -1,37 +1,37 @@
 :root {
---blue: #0000FF;
---border: border 1px solid #0a0aff;
---bg: white;
---color: black;
---fontSize: 12px;
+	--blue: #0000FF;
+	--border: border 1px solid #0a0aff;
+	--bg: white;
+	--color: black;
+	--fontSize: 12px;
 }
 @media (min-width: 450px) {
 :root {
---fontSize: 18px;
+	--fontSize: 18px;
 }
 }
 @media (min-width: 1024px) {
 :root {
---fontSize: 24px;
+	--fontSize: 24px;
 }
 }
 @media (prefers-color-scheme: dark) {
 :root {
---bg: black;
---color: white;
+	--bg: black;
+	--color: white;
 }
 }
 html[theme="dark"] {
---bg: black;
---color: white;
+	--bg: black;
+	--color: white;
 }
 .dark-theme {
---bg: black;
---color: white;
+	--bg: black;
+	--color: white;
 }
 :root.dark {
---bg: black;
---color: white;
+	--bg: black;
+	--color: white;
 }
 .color\:lighten\(\#000\,10\){
 	color: #0a0a0a
