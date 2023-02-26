@@ -582,7 +582,7 @@ export class Compiler {
 
 			for (const [variableOrScreen, value] of Object.entries(this.variables)) {
 				if (['string', 'number'].includes(typeof value)) {
-					rootCss += makeVariableString(variableOrScreen, String(value));
+					rootCss += `${this.dev ? '\t' : ''}${makeVariableString(variableOrScreen, String(value))}`;
 					continue;
 				}
 
