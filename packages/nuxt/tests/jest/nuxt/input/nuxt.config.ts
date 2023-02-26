@@ -7,7 +7,8 @@ export default defineNuxtConfig({
 		// TODO tohle prošlo?
 		compiler: {
 			variables: {
-				red: 'darkred'
+				red: 'darkred',
+				green: 'darkgreen'
 			},
 			macros: {
 				'clr:(\\S+?)': function ({macroMatch, selectorProperties}) {

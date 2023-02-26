@@ -99,7 +99,7 @@ export interface CSSLayersOrderInterface {
 export interface BundlerConfigInterface {
 	id?: string,
 	dev?: boolean,
-	configFile?: string,
+	configFile?: string|string[],
 	autoprefixerEnabled?: boolean,
 	compiler?: CompilerConfigInterface,
 	filesBaseDir?: string,
@@ -114,7 +114,7 @@ export interface BundlerConfigInterface {
 	cssLayersOrder?: CSSLayersOrderInterface
 }
 
-export interface WatchedFilesInterface {
+export interface WatchedFileInterface {
 	watcher: fs.FSWatcher,
 	processing: boolean,
 	bundlesIndexes: string[]
@@ -127,6 +127,11 @@ export interface GetFilesToProcessOptionsInterface {
 	fileMasks?: string[],
 }
 
+interface RawConfigurationsInterface {
+	configFile: string|null;
+	config: Partial<BundlerConfigInterface>;
+}
+
 const postCssPrefixer = postcss([autoprefixer()]);
 
 export type BundlerHooksNamesListType = keyof BundlerHooksListInterface;
@@ -137,8 +142,6 @@ export const defineConfig = (config: BundlerConfigInterface): BundlerConfigInter
 
 export class Bundler {
 
-	private readonly WATCH_FILE_DOUBLE_TRIGGER_BLOCK_TIMEOUT = 500;
-
 	public id: string = createUId();
 
 	private processedBundlesQueue: Promise<void>[] = [];
@@ -147,13 +150,17 @@ export class Bundler {
 
 	private isReloadingConfiguration = false;
 
-	private watchedFiles: Record<string, WatchedFilesInterface> = {};
+	private watchedFiles: Record<string, WatchedFileInterface> = {};
+
+	private configFilesWatcher: fs.FSWatcher = null;
 
 	private configurationLoadingPromise: Promise<void> = null;
 
-	private configFile: string = null;
+	private configFiles: string[] = [];
 
-	private configFileWatcherInitialized = false;
+	private rawConfigurations: RawConfigurationsInterface[] = [];
+
+	private configFilesWatcherInitialized = false;
 
 	private dev = false;
 
@@ -196,7 +203,6 @@ export class Bundler {
 	}
 
 	private mergeConfigs(config: Partial<BundlerConfigInterface>) {
-		this.configFile = config.configFile ?? this.configFile;
 		this.dev = config.dev ?? this.dev;
 		this.compilerConfig.dev = this.dev;
 		this.compilerConfig = mergeObjects(this.compilerConfig, config.compiler ?? {});
@@ -217,29 +223,71 @@ export class Bundler {
 		}
 	}
 
-	private async loadFileConfig(): Promise<void> {
-		if (![typeof require, typeof require.cache].includes('undefined')) {
-			delete require.cache[this.configFile];
-		}
-		const fileConfig: Partial<BundlerConfigInterface> = await import(this.configFile);
-		this.mergeConfigs(fileConfig);
-	}
+	private async loadConfigFile(configFile: string): Promise<void> {
+		try {
+			if ([typeof require, typeof require.cache].includes('undefined')) {
+				configFile += `?cache=${new Date().getTime()}`;
 
-	public async configure(config: BundlerConfigInterface): Promise<void> {
-		this.id = config.id ?? this.id;
-
-		if ('configFile' in config && !this.configFile) {
-			this.configFile = config.configFile;
-
-			if (!fs.existsSync(this.configFile)) {
-				this.log(`Configuration file "${this.configFile}" not found.`, 'textRed');
-				return;
+			} else {
+				delete require.cache[configFile];
 			}
 
-			await this.loadFileConfig();
+			const importedModule = await import(configFile);
+			await this.configure(importedModule.default as Partial<BundleConfigInterface>, configFile);
+		} catch (error) {
+			throw new Error(`Error occured while processing config file "${configFile}": ${error as string}`);
+		}
+	}
+
+	public async configure(config: BundlerConfigInterface, fromConfigFile: string = null): Promise<void> {
+		let configFiles: string[] = [];
+		const configOptionType = typeof config.configFile;
+
+		if (configOptionType !== 'undefined') {
+			configFiles = (configOptionType === 'string' ? [config.configFile] : config.configFile) as string[];
+			config.configFile = configFiles;
 		}
 
+		const rawConfig = {
+			config,
+			configFile: fromConfigFile
+		};
+
+		let rawConfigIndex = -1;
+
+		if (fromConfigFile) {
+			rawConfigIndex = this.rawConfigurations.findIndex((rawConfig) => rawConfig.configFile === fromConfigFile);
+		}
+
+		if (rawConfigIndex > -1) {
+			this.rawConfigurations[rawConfigIndex] = rawConfig;
+		} else {
+			this.rawConfigurations.push(rawConfig);
+		}
+
+		this.id = config.id ?? this.id;
+
 		this.mergeConfigs(config);
+
+		const configLoadingPromises = [];
+
+		for (const configFile of configFiles ?? []) {
+			if (this.configFiles.includes(configFile)) {
+				continue;
+			}
+
+			if (!fs.existsSync(configFile)) {
+				this.log(`Configuration file "${configFile}" not found.`, 'textRed');
+				continue;
+			}
+
+			this.configFiles.push(configFile);
+			configLoadingPromises.push(this.loadConfigFile(configFile));
+		}
+
+		if (configLoadingPromises.length) {
+			await Promise.all(configLoadingPromises);
+		}
 
 		if (this.compilerConfig.variables) {
 			if (this.cssVarsDirPath) {
@@ -354,39 +402,6 @@ export class Bundler {
 			await this.configurationLoadingPromise;
 		}
 
-		if (this.configFile && this.watchFiles && !this.configFileWatcherInitialized) {
-			this.configFileWatcherInitialized = true;
-			this.log(`Watching config file "${this.configFile}" for changes...`, 'textYellow');
-
-			chokidar.watch(this.configFile, {
-				ignoreInitial: true
-			}).on('change', () => {
-				if (this.isReloadingConfiguration) {
-					return;
-				}
-				this.configurationLoadingPromise = new Promise((resolveConfigurationLoading) => {
-					this.isReloadingConfiguration = true;
-					this.bundlesBuildCache = {};
-					this.processedBundlesQueue = [];
-
-					this.stop();
-
-					this.watchedFiles = {};
-
-					this.loadFileConfig().finally(() => {
-						setTimeout(() => {
-							resolveConfigurationLoading();
-							this.configurationLoadingPromise = null;
-							this.log('Configuration reloaded.', 'textGreen', null, 2);
-							this.bundle().finally(() => {
-								this.isReloadingConfiguration = false;
-							});
-						}, this.WATCH_FILE_DOUBLE_TRIGGER_BLOCK_TIMEOUT);
-					});
-				});
-			});
-		}
-
 		if (bundles) {
 			this.addBundles(bundles);
 		}
@@ -450,21 +465,101 @@ export class Bundler {
 		}
 
 		bundleMethodPromiseResolve();
+		this.startWatchingConfigFiles();
 	}
 
-	public stop(watchedFile: WatchedFilesInterface = null): void {
-		const stopWatcher = (watcher: fs.FSWatcher) => {
-			watcher.close();
-		};
+	public stop(options: {
+		watchedFile?: WatchedFileInterface,
+		stopConfigFileWatchers?: boolean
+	} = {}): void {
+		const stopWatcher = (watcher: fs.FSWatcher) => watcher.close();
 
-		if (watchedFile) {
-			stopWatcher(watchedFile.watcher);
+		if (typeof options.watchedFile !== 'undefined') {
+			stopWatcher(options.watchedFile.watcher);
 			return;
 		}
 
 		for (const watchedFile of Object.values(this.watchedFiles)) {
 			stopWatcher(watchedFile.watcher);
 		}
+
+		if ((options.stopConfigFileWatchers ?? true) && this.configFilesWatcher) {
+			stopWatcher(this.configFilesWatcher);
+		}
+	}
+
+	public async restart(stopConfigFileWatchers = true) {
+		const rawConfigurations = this.rawConfigurations;
+		this.rawConfigurations = [];
+
+		try {
+			this.isReloadingConfiguration = true;
+			this.stop({ stopConfigFileWatchers });
+			this.compilerConfig = {};
+			this.bundlesBuildCache = {};
+			this.processedBundlesQueue = [];
+			this.watchedFiles = {};
+
+			let resolveConfigurationLoading: CallableFunction;
+			this.configurationLoadingPromise = new Promise((resolve) => {
+				resolveConfigurationLoading = resolve;
+			});
+
+			const configLoadingPromises = [];
+
+			for (const rawConfiguration of rawConfigurations) {
+				if (rawConfiguration.configFile) {
+					configLoadingPromises.push(this.loadConfigFile(rawConfiguration.configFile));
+
+				} else {
+					configLoadingPromises.push(this.configure(rawConfiguration.config));
+				}
+			}
+
+			await Promise.all(configLoadingPromises);
+
+			resolveConfigurationLoading();
+			await this.bundle();
+			this.configurationLoadingPromise = null;
+			this.logInfoAboutWatchingConfigFiles();
+			this.log('Bundler restarted', 'textGreen', null, 1);
+
+		} catch (error) {
+			this.log('Bundler restart failed.', 'textRed');
+			this.log(error as string);
+			this.rawConfigurations = rawConfigurations;
+		}
+
+		this.isReloadingConfiguration = false;
+	}
+
+	private logInfoAboutWatchingConfigFiles() {
+		this.log(
+			`Watching config file${this.configFiles.length > 1 ? 's' : ''} "${this.configFiles.join(', ')}" for changes...`,
+			'textYellow'
+		);
+	}
+
+	private startWatchingConfigFiles() {
+		if (this.configFiles.length === 0 || !this.watchFiles || this.configFilesWatcherInitialized) {
+			return;
+		}
+
+		this.configFilesWatcher = chokidar.watch(this.configFiles, {
+			ignoreInitial: true
+		}).on('change', (file): void => {
+			if (this.isReloadingConfiguration) {
+				return;
+			}
+
+			this.log(`File "${file}" changed. Reloading.`, 'textYellow');
+			// eslint-disable-next-line @typescript-eslint/no-floating-promises
+			this.restart(false);
+		});
+
+		this.logInfoAboutWatchingConfigFiles();
+
+		this.configFilesWatcherInitialized = true;
 	}
 
 	private processBundle(bundleConfig: BundleConfigInterface, processBundleFilesNotMask = false): void {
@@ -571,7 +666,7 @@ export class Bundler {
 								}
 
 								if (!changedInfoLogged) {
-									this.log(`"${fileName}" changed.`, null, 2);
+									this.log(`"${fileName}" changed.`, null, 1);
 									changedInfoLogged = true;
 								}
 
@@ -588,12 +683,10 @@ export class Bundler {
 							}
 
 							this.waitOnBundlesProcessed().finally(() => {
-								setTimeout(() => {
-									this.watchedFiles[pathToWatch].processing = false;
-									if (changedInfoLogged) {
-										this.log(`Watching for changes...`, 'textYellow');
-									}
-								}, this.WATCH_FILE_DOUBLE_TRIGGER_BLOCK_TIMEOUT);
+								this.watchedFiles[pathToWatch].processing = false;
+								if (changedInfoLogged) {
+									this.log(`Watching for changes...`, 'textYellow');
+								}
 							});
 						})
 					};
@@ -840,7 +933,7 @@ export class Bundler {
 				return;
 			}
 		} catch (e) {
-			this.log(`Stylify Bundler: File "${filePath}" not found. It will be created.`);
+			this.log(`File "${filePath}" not found. It will be created.`);
 		}
 
 		this.createdFilesContentCache[filePath] = newFileContent;
@@ -872,7 +965,7 @@ export class Bundler {
 
 	private log(
 		content: string,
-		colorName: string = null,
+		colorName: 'reset'|'textWhite'|'textCyan'|'textRed'|'textGreen'|'textYellow' = null,
 		newLinesBeforeCount: number = null,
 		newLinesAfterCount: number = null
 	): void {
@@ -885,6 +978,7 @@ export class Bundler {
 			textWhite: '\x1b[37m',
 			textCyan: '\x1b[36m',
 			textRed: '\x1b[31m',
+			textGrey: '\x1b[90m',
 			textGreen: '\x1b[32m',
 			textYellow: '\x1b[33m'
 		};
@@ -892,7 +986,7 @@ export class Bundler {
 		const logEmptyLines = (count) => {
 			while (count --) {
 				// eslint-disable-next-line no-console
-				console.log();
+				console.log('\n');
 			}
 		};
 
@@ -900,12 +994,16 @@ export class Bundler {
 			logEmptyLines(newLinesBeforeCount);
 		}
 
-		const logTime = new Date().toISOString().replace(/T/, ' ').replace(/\..+/, '');
+		const logTime = new Date().toLocaleDateString('en-US', {
+			hour: '2-digit',
+			minute: '2-digit',
+			second: '2-digit'
+		}).replace(/^\S+\s+/, '');
 
 		// eslint-disable-next-line no-console
 		console.log(
-			colorName ? colors[colorName] : colors.reset,
-			`[${logTime}] @stylify/bundler: ${content}`,
+			`${colors.textGrey}${logTime}${colors.reset}`,
+			`${colorName ? colors[colorName] : colors.reset}[stylify] ${content}`,
 			colors.reset
 		);
 

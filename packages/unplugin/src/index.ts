@@ -10,7 +10,7 @@ import { createUnplugin } from 'unplugin';
 
 export interface UnpluginConfigInterface extends DefaultConfigInterface {
 	id?: string,
-	configFile?: string,
+	configFile?: string|string[],
 	bundles?: BundleConfigInterface[];
 	dev?: boolean;
 	bundler?: BundlerConfigInterface;
@@ -52,7 +52,7 @@ const defaultIgnoredDirectories = [
 export const defineConfig = (config: UnpluginConfigInterface): UnpluginConfigInterface => config;
 
 const defaultAllowedTypesRegExp = new RegExp(`\\.(?:${defaultAllowedFileTypes.join('|')})\\b`);
-const defaultIgnoredDirectoriesRegExp = new RegExp(`/${defaultIgnoredDirectories.join('|')}/`);
+const defaultIgnoredDirectoriesRegExp = new RegExp(`(?:^|\\/)(?:${defaultIgnoredDirectories.join('|')})(?:\\/|$)`);
 const bundlers: Record<string, Bundler> = {};
 const transformCompilers: Record<string, Compiler> = {};
 
@@ -68,7 +68,7 @@ export const unplugin = createUnplugin((config: UnpluginConfigInterface|Unplugin
 		}
 	};
 
-	const configure = async (): Promise<void> => {
+	const configure = (): void => {
 		if (configured) {
 			return;
 		}
@@ -83,8 +83,11 @@ export const unplugin = createUnplugin((config: UnpluginConfigInterface|Unplugin
 		});
 
 		const pluginCustomConfig: UnpluginConfigInterface = mergeObjects(...Array.isArray(config) ? config : [config]);
+		if (!Array.isArray(pluginCustomConfig.configFile)) {
+			pluginCustomConfig.configFile = [pluginCustomConfig.configFile];
+		}
 
-		let configsToProcess: (UnpluginConfigInterface|string)[] = [
+		pluginConfig = mergeObjects(
 			{
 				id: 'default',
 				bundles: [],
@@ -94,20 +97,11 @@ export const unplugin = createUnplugin((config: UnpluginConfigInterface|Unplugin
 				transformIncludeFilter: (id: string) =>
 					defaultAllowedTypesRegExp.test(id) && !defaultIgnoredDirectoriesRegExp.test(id)
 			},
-			pluginCustomConfig
-		];
-
-		const configurator = new Configurator();
-		const defaultConfigFiles = Configurator.getDefaultExistingConfigFiles(process.cwd());
-
-		configsToProcess = [...configsToProcess, ...Object.values(defaultConfigFiles)];
-
-		if (pluginCustomConfig.configFile) {
-			configsToProcess.push(pluginCustomConfig.configFile);
-			delete pluginCustomConfig.configFile;
-		}
-
-		pluginConfig = await configurator.processConfigs(configsToProcess);
+			pluginCustomConfig,
+			{
+				configFile: Object.values(Configurator.getDefaultExistingConfigFiles(process.cwd())) as string[]
+			}
+		);
 
 		pluginConfigured();
 	};
@@ -128,7 +122,9 @@ export const unplugin = createUnplugin((config: UnpluginConfigInterface|Unplugin
 			bundler = new Bundler(mergeObjects(
 				{
 					compiler: pluginConfig.compiler ?? {},
-					bundles: pluginConfig.bundles
+					bundles: pluginConfig.bundles,
+					configFile: pluginConfig.configFile,
+					verbose: pluginConfig.bundler.verbose ?? pluginConfig.dev
 				},
 				pluginConfig.bundler
 			) as BundleConfigInterface);

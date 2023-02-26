@@ -125,7 +125,7 @@ export default function Stylify(): void {
 	moduleConfig.compiler.dev = moduleConfig.dev;
 	moduleConfig.compiler.mangleSelectors = !moduleConfig.dev;
 
-	const bundleId = 'stylify';
+	const bundleId = 'stylify-default';
 	const createBundlerInstance = (): Bundler => {
 		return new Bundler({
 			compiler: moduleConfig.compiler,
@@ -172,7 +172,6 @@ export default function Stylify(): void {
 				});
 			}
 		}
-
 	});
 
 	let initStyleGenerated = false;

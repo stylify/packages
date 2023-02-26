@@ -15,7 +15,6 @@ import {
 import {
 	defineNuxtModule,
 	resolveAlias,
-	requireModule,
 	findPath,
 	addWebpackPlugin,
 	addVitePlugin
@@ -86,36 +85,20 @@ export default defineNuxtModule<NuxtModuleConfigInterface>({
 			moduleConfig = mergeObjects(moduleConfig, (<any>nuxt).options.stylify ?? {});
 		}
 
-		const configsPaths = (await Promise.all([
+		const configFiles = (await Promise.all([
 			findPath('stylify.config.js'),
 			findPath('stylify.config.mjs'),
-			findPath('stylify.config.cjs'),
-			findPath('stylify.config.ts')
+			findPath('stylify.config.cjs')
 		])).filter((config) => config !== null);
 
 		if (moduleConfig.configPath) {
 			moduleConfig.configPath = await findPath(moduleConfig.configPath);
 
 			if (fs.existsSync(moduleConfig.configPath)) {
-				configsPaths.push(moduleConfig.configPath);
+				configFiles.push(moduleConfig.configPath);
 
 			} else {
 				console.error(`Stylify: Given config "${moduleConfig.configPath}" was not found. Skipping.`);
-			}
-		}
-
-		for (const configPath of configsPaths) {
-			if (!fs.existsSync(configPath)) {
-				continue;
-			}
-
-			moduleConfig = mergeObjects(
-				moduleConfig, requireModule(configPath, { clearCache: true }) as Partial<NuxtModuleConfigInterface>
-			);
-
-			if (nuxtIsInDevMode) {
-				nuxt.options.watch = nuxt.options.watch ?? [];
-				nuxt.options.watch.push(configPath);
 			}
 		}
 
@@ -139,18 +122,11 @@ export default defineNuxtModule<NuxtModuleConfigInterface>({
 			nuxt.options.css.push(assetsStylifyCssPath);
 		}
 
-		const transformIncludeFilterExtensions = [];
-
-		moduleConfig.filesMasks.forEach((fileMask: string) => {
-			transformIncludeFilterExtensions.push(path.extname(fileMask));
-		});
-
 		const getPluginConfig = (): UnpluginConfigInterface => defineUnpluginConfig({
-			transformIncludeFilter: (id: string): boolean => {
-				return transformIncludeFilterExtensions.includes(path.extname(id));
-			},
+			configFile: configFiles,
 			dev: nuxtIsInDevMode,
 			bundles: [{
+				id: 'stylify-default',
 				files: moduleConfig.filesMasks,
 				rewriteSelectorsInFiles: false,
 				outputFile: path.join(nuxt.options.rootDir, assetsDir, stylifyCssFileName)
@@ -174,7 +150,7 @@ export default defineNuxtModule<NuxtModuleConfigInterface>({
 
 		nuxt.hook('build:before', () => {
 			// eslint-disable-next-line no-console
-			console.info(`Stylify: is running with configs "${configsPaths.join(', ')}".`);
+			console.info(`Stylify is running with config${configFiles.length > 1 ? 's' : ''} "${configFiles.join(', ')}".`);
 		});
 
 		/**
