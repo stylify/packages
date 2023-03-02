@@ -20,7 +20,8 @@ test('Watch test - dynamic change', async (): Promise<void> => {
 
 	let bundler: Bundler|null =  new Bundler({
 		dev: true,
-		watchFiles: true
+		watchFiles: true,
+		configFile: `${buildTmpDir}/stylify.config.js`
 	});
 
 	bundler.bundle([
@@ -43,13 +44,35 @@ test('Watch test - dynamic change', async (): Promise<void> => {
 			/stylify-components
 			-->
 			<div class="container color:blue"></div>
+			<div class="font-size:$fontSize"></div>
 		`
 	)
 
 	await bundler.bundle();
 
+	const beforeConfigModification = testUtils.readFile(path.join(buildTmpDir, 'index.css'));
+
+	fs.writeFileSync(
+		`${buildTmpDir}/stylify.config.js`,
+		`
+			export default {
+				compiler: {
+					variables: {
+						fontSize: '32px'
+					}
+				}
+			};
+		`
+	);
+
+	jest.resetModules();
+
+	await bundler.restart();
+
 	bundler.stop();
 
-	const indexCssOutput = testUtils.readFile(path.join(buildTmpDir, 'index.css'));
-	testUtils.testCssFileToBe(indexCssOutput);
+	const afterConfigModification = testUtils.readFile(path.join(buildTmpDir, 'index.css'));
+
+	testUtils.testCssFileToBe(beforeConfigModification, 'before-config-modification');
+	testUtils.testCssFileToBe(afterConfigModification, 'after-config-modification');
 });

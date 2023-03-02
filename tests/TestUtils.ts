@@ -68,7 +68,7 @@ export default class TestUtils {
 	}
 
 	public getTmpDir(): string {
-		return path.join(this.getPackageDir(), 'tmp');
+		return path.join(this.getPackageDir(), 'tests-tmp');
 	}
 
 	public saveTmpFile(fileName: string, fileContent: string|any[]|Record<any, any>): void {

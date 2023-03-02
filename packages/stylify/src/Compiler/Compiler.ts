@@ -580,7 +580,9 @@ export class Compiler {
 	private configureCompilationResult(compilationResult: CompilationResult): CompilationResult
 	{
 		const newLine = this.dev ? '\n' : '';
-		const makeVariableString = (variable: string, value: VariablesTypeValue) => `--${variable}: ${String(value)};${newLine}`;
+		const tab = this.dev ? '\t' : '';
+
+		const makeVariableString = (variable: string, value: VariablesTypeValue) => `${tab}--${variable}: ${String(value)};${newLine}`;
 		let variablesCss = '';
 
 		if (this.injectVariablesIntoCss) {
@@ -589,7 +591,7 @@ export class Compiler {
 
 			for (const [variableOrScreen, value] of Object.entries(this.variables)) {
 				if (['string', 'number'].includes(typeof value)) {
-					rootCss += makeVariableString(variableOrScreen, String(value));
+					rootCss += `${makeVariableString(variableOrScreen, String(value))}`;
 					continue;
 				}
 

@@ -1,0 +1,10 @@
+:root {
+	--fontSize: 32px;
+}
+.container,
+.color\:blue{
+	color: blue
+}
+.font-size\:\$fontSize{
+	font-size: 32px
+}
