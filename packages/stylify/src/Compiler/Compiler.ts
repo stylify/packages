@@ -63,7 +63,7 @@ export type VariablesType = Record<string, VariablesTypeValue|Record<string, str
 
 export type ExternalVariableCallbackType = (variable: string) => boolean|void;
 
-export type ExternalVariablesType = (string|ExternalVariableCallbackType)[];
+export type ExternalVariablesType = (string|RegExp|ExternalVariableCallbackType)[];
 
 export interface IsVariableDefinedInterface {
 	defined: boolean,
@@ -83,6 +83,7 @@ export interface CompilerConfigInterface {
 	macros?: MacrosType,
 	helpers?: HelpersType,
 	variables?: VariablesType,
+	undefinedVariableWarningLevel?: UndefinedVariableWarningLevelType,
 	externalVariables?: ExternalVariablesType,
 	keyframes?: KeyframesType,
 	screens?: ScreensType,
@@ -119,6 +120,8 @@ export interface ComponentsInterface {
 	selectorsOrGenerators: (string|ComponentGeneratorFunctionType)[]
 }
 
+export type UndefinedVariableWarningLevelType = 'silent' | 'warning' | 'error'
+
 export class Compiler {
 
 	private readonly macroRegExpEndPart = `(?=['"\`{}\\[\\]<>\\s]|$)`;
@@ -139,7 +142,9 @@ export class Compiler {
 
 	private ignoredAreasRegExpString: string = null;
 
-	public ignoredAreas = [];
+	private undefinedVariableWarningLevel: UndefinedVariableWarningLevelType = 'error';
+
+	public ignoredAreas: RegExp[] = [];
 
 	public mangleSelectors = false;
 
@@ -197,12 +202,10 @@ export class Compiler {
 		this.mangleSelectors = config.mangleSelectors ?? this.mangleSelectors;
 		this.mangledSelectorsPrefix = config.mangledSelectorsPrefix ?? this.mangledSelectorsPrefix;
 		this.selectorsPrefix = config.selectorsPrefix ?? this.selectorsPrefix;
+		this.undefinedVariableWarningLevel = config.undefinedVariableWarningLevel ?? this.undefinedVariableWarningLevel;
 		this.replaceVariablesByCssVariables =
 			config.replaceVariablesByCssVariables ?? this.replaceVariablesByCssVariables;
-		this.externalVariables = [
-			...this.externalVariables,
-			...config.externalVariables ?? []
-		];
+		this.externalVariables = [...this.externalVariables, ...config.externalVariables ?? []];
 		this.addVariables(config.variables ?? {});
 
 		if (typeof config.pregenerate !== 'undefined') {
@@ -236,11 +239,15 @@ export class Compiler {
 				continue;
 			}
 
-			const processedValue = this.replaceVariableString(this.processHelpers({
-				content: String(valueOrVariables),
-				replaceByVariable: false,
-				variablesScope: screen
-			}));
+			const content = String(valueOrVariables);
+			const processedValue = this.replaceVariableString(
+				this.processHelpers({
+					content,
+					replaceByVariable: false,
+					variablesScope: screen
+				}),
+				content
+			);
 
 			if (screen) {
 				if (!(screen in this.variables)) {
@@ -792,7 +799,7 @@ export class Compiler {
 					}
 
 					for (const [property, value] of Object.entries(selectorProperties.properties)) {
-						selectorProperties.properties[property] = this.replaceVariableString(value);
+						selectorProperties.properties[property] = this.replaceVariableString(value, `${property}:${value}`);
 					}
 
 					hooks.callHook('compiler:newMacroMatch', {
@@ -826,9 +833,9 @@ export class Compiler {
 		const helperArgumentRegExp = new RegExp(`${helperArgumentPlaceholderStart}(\\d+)${helperArgumentPlaceholderEnd}`);
 		const cssVariableEnabled = this.replaceVariablesByCssVariables && (replaceByVariable ?? true);
 
-		return content.replace(/(?:^|\s+)(\S+)\(([^)]+)\)/g, (fullMatch, helperName: string, helperArguments: string) => {
+		return content.replace(/(?:^|\s+)(\S+)\(([^)]+)\)/g, (fullHelperMatch, helperName: string, helperArguments: string) => {
 			if (!(helperName in this.helpers)) {
-				return fullMatch;
+				return fullHelperMatch;
 			}
 
 			const helperResultVariableName = `${helperName}${helperArguments}`.replace(/[^a-zA-Z0-9]/g, '-').replace(/[^a-zA-Z0-9]$/g, '');
@@ -852,17 +859,20 @@ export class Compiler {
 
 						if (helperArgument.startsWith('$')) {
 							const variableName = helperArgument.slice(1);
-							const { defined, isExternal } = this.isVariableDefined(variableName, variablesScope);
+							const { defined, isExternal } = this.isVariableDefined(
+								variableName, fullHelperMatch, variablesScope
+							);
 							const definedVariables = variablesScope
 								? this.variables[variablesScope][variableName]
 								: this.variables[variableName];
 							const helperValue = defined && !isExternal ? definedVariables : undefined;
 
-							if (!defined || isExternal) {
-								throw new Error(isExternal
-									? `Helpers cannot use external variables. Processing helper "${helperName}" and variable "${helperArgument}".`
-									: `Variable "${helperArgument}" not found when processing helper "${helperName}".`
-								);
+							if (!defined) {
+								return `$${variableName}`;
+
+							} else if (isExternal) {
+								throw new Error(`Helpers cannot use external variables. Processing helper "${helperName}" and variable "${helperArgument}".`);
+
 							} else if (['string', 'number'].includes(typeof helperValue)) {
 								helperArgument = String(helperValue);
 
@@ -881,31 +891,31 @@ export class Compiler {
 				}
 			}
 
-			return fullMatch.replace(
+			return fullHelperMatch.replace(
 				`${helperName}(${helperArguments})`,
 				cssVariableEnabled ? `var(--${helperResultVariableName})` : matchedHelperResult as string
 			);
 		});
 	}
 
-	private replaceVariableString(string: string): VariablesTypeValue {
+	private replaceVariableString(string: string, contentContext: string): VariablesTypeValue {
 		return string.replace(
 			this.variableRegExp,
 			(match, substring: string): string => {
-				const variableIsDefined = this.isVariableDefined(substring).defined;
-
-				if (!variableIsDefined) {
-					throw new Error(`Stylify: Variable "${substring}" not found when processing "${string}".`);
-				}
+				this.isVariableDefined(substring, contentContext);
 
 				return this.replaceVariablesByCssVariables
 					? `var(--${substring})`
-					: this.variables[substring] as VariablesTypeValue ?? `$${substring}`;
+					: this.variables[substring] as VariablesTypeValue ?? match;
 			}
 		);
 	}
 
-	private isVariableDefined(variable: string, variablesScope: string = null): IsVariableDefinedInterface {
+	private isVariableDefined(
+		variable: string,
+		contextContent: string,
+		variablesScope: string = null
+	): IsVariableDefinedInterface {
 		let defined = false;
 		let isExternal = false;
 
@@ -920,12 +930,13 @@ export class Compiler {
 
 			if (!defined) {
 				for (const externalVariableChecker of this.externalVariables) {
-					if (typeof externalVariableChecker !== 'function') {
-						continue;
-					}
+					if (typeof externalVariableChecker === 'function') {
+						const exists = externalVariableChecker(variable);
+						defined = typeof exists === 'boolean' ? exists : false;
 
-					const exists = externalVariableChecker(variable);
-					defined = typeof exists === 'boolean' ? exists : false;
+					} else if (externalVariableChecker instanceof RegExp) {
+						defined = externalVariableChecker.test(variable);
+					}
 
 					if (defined) {
 						break;
@@ -934,6 +945,16 @@ export class Compiler {
 			}
 
 			isExternal = defined;
+		}
+
+		const errorMessage = `Stylify: Variable "${variable}" not found while processing "${contextContent}".`;
+
+		if (!defined && this.undefinedVariableWarningLevel !== 'silent') {
+			if (this.dev || this.undefinedVariableWarningLevel === 'warning') {
+				console.warn(errorMessage);
+			} else if (this.undefinedVariableWarningLevel === 'error') {
+				throw new Error(errorMessage);
+			}
 		}
 
 		return {

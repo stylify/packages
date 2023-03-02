@@ -3,6 +3,7 @@ import { UnpluginConfigInterface, stylifyVite, defineConfig as stylifyUnpluginCo
 import { Configurator } from '@stylify/stylify';
 import { fileURLToPath } from 'url';
 import { join } from 'path';
+import { default as normalize } from 'normalize-path';
 import type { BundleConfigInterface } from '@stylify/bundler';
 
 export const defineConfig = stylifyUnpluginConfig;
@@ -13,8 +14,8 @@ export const stylify = (options: UnpluginConfigInterface = {}): AstroIntegration
 		name: '@stylify/astro',
 		hooks: {
 			'astro:config:setup': ({ updateConfig, config, injectScript, command}): void => {
-				const srcDir = join(fileURLToPath(config.root), 'src');
-				const singleBundleOutputFilePath = join(srcDir, 'styles', 'stylify.css');
+				const srcDir: string = normalize(join(fileURLToPath(config.root), 'src'));
+				const singleBundleOutputFilePath: string = normalize(join(srcDir, 'styles', 'stylify.css'));
 				const isDev = options?.dev ?? (import.meta?.env?.DEV === true
 					|| import.meta?.env?.MODE === 'development'
 					|| command === 'dev'
@@ -39,7 +40,7 @@ export const stylify = (options: UnpluginConfigInterface = {}): AstroIntegration
 						? [{
 							outputFile: singleBundleOutputFilePath,
 							rewriteSelectorsInFiles: false,
-							files: [join(srcDir, `**`, `*.{astro,html,js,jsx,svelte,ts,tsx,vue}`)]
+							files: [`${srcDir}/**/*.{astro,html,js,json,jsx,mjs,md,mdx,svelte,ts,tsx,vue,yaml}`]
 						}]
 						: []
 				};

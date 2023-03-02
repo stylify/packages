@@ -188,3 +188,15 @@ test('Identical ignored areas', (): void => {
 	compiler.compile(inputContent);
 	testUtils.testHtmlFileToBe(compiler.rewriteSelectors(inputContent), fileName);
 });
+
+test('Selectors areas', (): void => {
+	const fileName = 'selectors-areas';
+	const inputContent = testUtils.getHtmlInputFile(fileName);
+
+	const compiler = new Compiler({
+		mangleSelectors: true,
+	});
+
+	compiler.compile(inputContent);
+	testUtils.testHtmlFileToBe(compiler.rewriteSelectors(inputContent), fileName);
+});

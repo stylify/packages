@@ -4,3 +4,6 @@
 .background-color\:\$test{
 	background-color: var(--test)
 }
+.font-size\:\$ext-font28{
+	font-size: var(--ext-font28)
+}

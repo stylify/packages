@@ -50,7 +50,9 @@ export const defaultPreset = {
 		'"class":\\s*\'([^\']+)\'',
 		// Escaped default areas
 		'(?:^|\\s+)class=\\\\"([^"]+)\\\\"',
-		`(?:^|\\s+)class=\\\\'([^']+)\\\\'`
+		`(?:^|\\s+)class=\\\\'([^']+)\\\\'`,
+		// Svelte
+		'(?:^|\\s+)class:(\\S+)=[{"\']'
 	],
 	screens: {
 		tosm: maxWidthScreen('639px'),

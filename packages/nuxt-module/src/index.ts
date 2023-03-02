@@ -54,17 +54,18 @@ export const defineConfig = (config: StylifyNuxtModuleConfigInterface): StylifyN
 export default function Stylify(): void {
 	const { nuxt } = this;
 
+	const rootDir: string = nuxt.options.rootDir;
 	const pagesDir: string = nuxt.resolver.resolveAlias(nuxt.options.dir.pages);
 	const layoutsDir: string = nuxt.resolver.resolveAlias(nuxt.options.dir.layouts);
 	const componentsDir: string = nuxt.resolver.resolveAlias('components');
 	const contentDir: string = nuxt.resolver.resolveAlias('content');
 
 	moduleConfig.filesMasks = [
-		path.join(pagesDir, '**', '*.vue'),
-		path.join(layoutsDir, '**', '*.vue'),
-		path.join(componentsDir, '**', '*.vue'),
-		path.join(contentDir, '**', '*.vue'),
-		path.join(contentDir, '**', '*.md')
+		`${pagesDir}/**/*.vue`,
+		`${layoutsDir}/**/*.vue`,
+		`${componentsDir}/**/*.{vue,js,ts}`,
+		`${contentDir}/**/*.{vue,md}`,
+		`${rootDir}/plugins/**/*.{js,ts}`
 	];
 
 	moduleConfig.loaders = [
