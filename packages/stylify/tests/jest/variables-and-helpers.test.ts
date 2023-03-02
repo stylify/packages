@@ -104,6 +104,7 @@ test('External Variables', (): void => {
 		replaceVariablesByCssVariables: true,
 		externalVariables: [
 			'test',
+			/^ext-/,
 			(variable) => variable.startsWith('md-') ? true : undefined
 		]
 	});
@@ -123,13 +124,22 @@ test('External Variables - helpers exception', (): void => {
 		.toThrow('Helpers cannot use external variables. Processing helper "lighten" and variable "$test"');
 });
 
-test('Variable missing', (): void => {
+test('Undefined variable', (): void => {
+	const compiler = new Compiler();
+	expect(() => compiler.compile('<div class="color:lighten($test)"></div>'))
+		.toThrow('Stylify: Variable \"test\" not found while processing \"lighten($test)\".');
+});
+
+test('Undefined variable - warning only', (): void => {
 	const compiler = new Compiler({
-		dev: true
+		dev: true,
+		undefinedVariableWarningLevel: 'warning',
 	});
 
-	expect(() => compiler.compile('<div class="color:lighten($test)"></div>'))
-		.toThrow('Variable "$test" not found when processing helper "lighten".');
+	console.warn = jest.fn();
+	compiler.compile('<div class="color:$test"></div>');
+
+	expect(console.warn).toHaveBeenCalledWith('Stylify: Variable "test" not found while processing "color:$test".');
 });
 
 test('Scoped variables', (): void => {
