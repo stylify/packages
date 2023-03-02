@@ -40,7 +40,7 @@ export const stylify = (options: UnpluginConfigInterface = {}): AstroIntegration
 						? [{
 							outputFile: singleBundleOutputFilePath,
 							rewriteSelectorsInFiles: false,
-							files: [`${srcDir}/**/*.{astro,html,js,jsx,svelte,ts,tsx,vue}`]
+							files: [`${srcDir}/**/*.{astro,html,js,json,jsx,mjs,md,mdx,svelte,ts,tsx,vue,yaml}`]
 						}]
 						: []
 				};
