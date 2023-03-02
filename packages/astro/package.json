@@ -52,7 +52,7 @@
 	},
 	"dependencies": {
 		"@stylify/unplugin": "^0.5.27",
-		"loader-utils": "^2.0"
+		"normalize-path": "^3.0.0"
 	},
 	"devDependencies": {
 		"astro": "^1.1"

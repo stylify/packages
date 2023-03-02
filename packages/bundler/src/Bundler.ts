@@ -331,6 +331,7 @@ export class Bundler {
 	private addBundles(bundles: BundleConfigInterface[]) {
 		for (const bundle of bundles) {
 			const mangleSelectors = bundle?.compiler?.mangleSelectors ?? this.compilerConfig.mangleSelectors;
+			bundle.outputFile = normalize(bundle.outputFile);
 			const bundleToProcess = {
 				...bundle.outputFile in this.bundles ? this.bundles[bundle.outputFile] : {},
 				...bundle,
