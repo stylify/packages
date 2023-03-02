@@ -420,7 +420,7 @@ export class Bundler {
 		if (this.watchFiles) {
 			this.log(`Waching for changes...`, 'textYellow');
 
-		} else if (this.verbose) {
+		} else if (!this.watchFiles) {
 			let buildsInfo = [];
 
 			for (const [bundleOutputFile, bundleBuildCache] of Object.entries(this.bundlesBuildCache)) {
@@ -428,8 +428,19 @@ export class Bundler {
 					continue;
 				}
 
+				let bundleInfoName = bundleBuildCache.id ?? bundleOutputFile;
+				const maxBundleInfoFileNameLength = 60;
+				if (bundleInfoName.length > maxBundleInfoFileNameLength) {
+					bundleInfoName = [
+						bundleInfoName.slice(0, maxBundleInfoFileNameLength / 2),
+						bundleInfoName.slice(
+							bundleInfoName.length - maxBundleInfoFileNameLength / 2, bundleInfoName.length
+						)
+					].join('.....');
+				}
+
 				buildsInfo.push({
-					name: bundleOutputFile,
+					name: bundleInfoName,
 					size: fs.statSync(bundleOutputFile).size / 1024,
 					buildTime: bundleBuildCache.buildTime
 				});
