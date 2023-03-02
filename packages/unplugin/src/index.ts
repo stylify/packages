@@ -35,7 +35,7 @@ const defaultAllowedFileTypes = [
 	// C#, .NET and similar
 	'cs', 'asp', 'aspx',
 	// Other
-	'json', 'md', 'txt'
+	'json', 'yaml', 'neon', 'md', 'mdx', 'txt'
 ];
 
 const defaultIgnoredDirectories = [
@@ -43,7 +43,6 @@ const defaultIgnoredDirectories = [
 	'vendor',
 	'tmp',
 	'log',
-	'cache',
 	'\\.devcontainer',
 	'\\.github',
 	'\\.git'
