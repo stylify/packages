@@ -5,6 +5,7 @@ import {
 	CompilerConfigInterface,
 	mergeObjects
 } from '@stylify/stylify';
+import { default as normalize } from 'normalize-path';
 import {
 	stylifyRollup,
 	stylifyWebpack,
@@ -105,14 +106,8 @@ export default defineNuxtModule<NuxtModuleConfigInterface>({
 		moduleConfig.compiler.dev = moduleConfig.dev;
 		moduleConfig.compiler.mangleSelectors = !moduleConfig.dev;
 
-		const runtimeDir = path.join(
-			typeof __dirname === 'undefined' ? path.dirname(fileURLToPath(import.meta.url)) : __dirname, 'runtime'
-		);
-
 		const assetsDir = resolveAlias(nuxt.options.dir.assets);
-		const assetsStylifyCssPath = path.join(nuxt.options.rootDir, assetsDir, stylifyCssFileName);
-
-		nuxt.options.build.transpile.push(runtimeDir);
+		const assetsStylifyCssPath = normalize(path.join(assetsDir, stylifyCssFileName)) as string;
 
 		if (!fs.existsSync(assetsDir)) {
 			fs.mkdirSync(assetsDir, { recursive: true });
@@ -129,7 +124,7 @@ export default defineNuxtModule<NuxtModuleConfigInterface>({
 				id: 'stylify-default',
 				files: moduleConfig.filesMasks,
 				rewriteSelectorsInFiles: false,
-				outputFile: path.join(nuxt.options.rootDir, assetsDir, stylifyCssFileName)
+				outputFile: path.join(assetsDir, stylifyCssFileName)
 			}],
 			bundler: {
 				cssVarsDirPath: moduleConfig.cssVarsDirPath

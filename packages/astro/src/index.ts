@@ -46,10 +46,10 @@ export const stylify = (options: UnpluginConfigInterface = {}): AstroIntegration
 				};
 
 				const configs = Configurator.getDefaultExistingConfigFiles(fileURLToPath(config.root));
-				const configsTypes = Object.keys(configs);
+				const configsValues = Object.values(configs);
 
-				if (configsTypes.length > 0) {
-					defaultConfig.configFile = configs[configsTypes[0]];
+				if (configsValues.length > 0) {
+					defaultConfig.configFile = configsValues;
 				}
 
 				const optionsConfig = options ?? {};
