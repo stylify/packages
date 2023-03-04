@@ -82,7 +82,7 @@ export const unplugin = createUnplugin((config: UnpluginConfigInterface|Unplugin
 		});
 
 		const pluginCustomConfig: UnpluginConfigInterface = mergeObjects(...Array.isArray(config) ? config : [config]);
-		if (!Array.isArray(pluginCustomConfig.configFile)) {
+		if (typeof pluginCustomConfig.configFile !== 'undefined' && !Array.isArray(pluginCustomConfig.configFile)) {
 			pluginCustomConfig.configFile = [pluginCustomConfig.configFile];
 		}
 
@@ -117,7 +117,7 @@ export const unplugin = createUnplugin((config: UnpluginConfigInterface|Unplugin
 
 		let bundler = bundlers[pluginConfig.id] ?? null;
 
-		if (pluginConfig.dev || !bundler) {
+		if (!bundler) {
 			bundler = new Bundler(mergeObjects(
 				{
 					compiler: pluginConfig.compiler ?? {},

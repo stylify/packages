@@ -12,7 +12,12 @@ module.exports = {
 		]
 	},
 	plugins: [
-		stylifyWebpack()
+		stylifyWebpack({
+			bundles: [{
+				files: [__dirname + '/index.html'],
+				outputFile: __dirname + '/index.css'
+			}]
+		})
 	],
 
 	mode: 'development',

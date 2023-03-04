@@ -225,15 +225,30 @@ export class Bundler {
 
 	private async loadConfigFile(configFile: string): Promise<void> {
 		try {
-			if ([typeof require, typeof require.cache].includes('undefined')) {
-				configFile += `?cache=${new Date().getTime()}`;
+			const isCommonJs = typeof module !== 'undefined' && typeof module.exports !== 'undefined';
+			const isWindows = process.platform === 'win32';
+			// The config must be at first without ?cache=, because require.cache saves pure path without this suffix
+			// so if added before delete, the file cache is not cleaned
+			const configToImport = isWindows ? `file://${configFile.replace(/^\/+/, '')}` : configFile;
+			let importedConfig: any;
 
-			} else {
-				delete require.cache[configFile];
+			if (isCommonJs) {
+				delete require.cache[configToImport];
 			}
 
-			const importedModule = await import(configFile);
-			await this.configure(importedModule.default as Partial<BundleConfigInterface>, configFile);
+			try {
+				importedConfig = await import(`${configToImport}?cache=${new Date().getTime()}`);
+			} catch (importError) {
+				importedConfig = await import(configToImport);
+			}
+
+			importedConfig = importedConfig?.default ?? importedConfig;
+
+			if (typeof importedConfig === 'function') {
+				importedConfig = importedConfig();
+			}
+
+			await this.configure(importedConfig as Partial<BundlerConfigInterface>, configFile);
 		} catch (error) {
 			throw new Error(`Error occured while processing config file "${configFile}": ${error as string}`);
 		}
@@ -245,7 +260,7 @@ export class Bundler {
 
 		if (configOptionType !== 'undefined') {
 			configFiles = (configOptionType === 'string' ? [config.configFile] : config.configFile) as string[];
-			config.configFile = configFiles;
+			config.configFile = configFiles.map((file) => normalize(file) as string);
 		}
 
 		const rawConfig = {
@@ -271,7 +286,7 @@ export class Bundler {
 
 		const configLoadingPromises = [];
 
-		for (const configFile of configFiles ?? []) {
+		for (const configFile of config.configFile ?? []) {
 			if (this.configFiles.includes(configFile)) {
 				continue;
 			}
@@ -410,7 +425,7 @@ export class Bundler {
 		const startTime = performance.now();
 
 		for (const bundleConfig of Object.values(this.bundles)) {
-			this.processBundle(bundleConfig);
+			this.processBundle({ bundleConfig, setupBundleWatcher: true});
 		}
 
 		if (this.sync) {
@@ -574,7 +589,15 @@ export class Bundler {
 		this.configFilesWatcherInitialized = true;
 	}
 
-	private processBundle(bundleConfig: BundleConfigInterface, processBundleFilesNotMask = false): void {
+	private processBundle(config: {
+		bundleConfig: BundleConfigInterface,
+		processBundleFilesNotMask?: boolean,
+		setupBundleWatcher?: boolean
+	}): void {
+		const bundleConfig = config.bundleConfig;
+		const processBundleFilesNotMask = config.processBundleFilesNotMask ?? false;
+		const shouldSetupBundleWatcher = config.setupBundleWatcher ?? false;
+
 		const bundleRunner = async (): Promise<void> => {
 			if (typeof bundleConfig.files === 'undefined') {
 				this.log(`No files defined for "${bundleConfig.outputFile}". Skipping.`, 'textRed');
@@ -688,10 +711,10 @@ export class Bundler {
 
 								const bundleCache = this.bundlesBuildCache[bundleConfig.outputFile] ?? null;
 
-								this.processBundle(
-									{ ...bundleConfig, ...bundleCache ? {files: [fileName]} : {} },
-									bundleCache !== null
-								);
+								this.processBundle({
+									bundleConfig: { ...bundleConfig, ...bundleCache ? {files: [fileName]} : {} },
+									processBundleFilesNotMask: bundleCache !== null
+								});
 							}
 
 							this.waitOnBundlesProcessed().finally(() => {
@@ -813,7 +836,9 @@ export class Bundler {
 					}
 				}
 
-				setupBundleWatcher([...new Set([...filesToWatch, ...dirsToWatch])]);
+				if (shouldSetupBundleWatcher) {
+					setupBundleWatcher([...new Set([...filesToWatch, ...dirsToWatch])]);
+				}
 			}
 		};
 
