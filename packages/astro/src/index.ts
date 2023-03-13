@@ -6,13 +6,13 @@ import { join } from 'path';
 import { default as normalize } from 'normalize-path';
 import type { BundleConfigInterface } from '@stylify/bundler';
 
-export interface OptionsInterface extends UnpluginConfigInterface {
+export interface ConfigInterface extends UnpluginConfigInterface {
 	importDefaultBundle?: false|boolean
 }
 
 export const defineConfig = stylifyUnpluginConfig;
 
-export const stylify = (options: OptionsInterface = {}): AstroIntegration => {
+export const stylify = (options: ConfigInterface = {}): AstroIntegration => {
 
 	return {
 		name: '@stylify/astro',
