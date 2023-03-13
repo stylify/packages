@@ -1,10 +1,10 @@
 {
   "astro": {
     "/esm/index.mjs": {
-      "size": 5547
+      "size": 5444
     },
     "/lib/index.cjs": {
-      "size": 6105
+      "size": 6002
     }
   },
   "bundler": {
