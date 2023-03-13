@@ -3,7 +3,9 @@ import node from '@astrojs/node';
 import stylify from '@stylify/astro';
 
 export default defineConfig({
-	integrations: [stylify()],
+	integrations: [stylify({
+		importDefaultBundle: false
+	})],
 	output: 'server',
 	adapter: node(),
 	server: {
