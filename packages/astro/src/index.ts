@@ -6,9 +6,13 @@ import { join } from 'path';
 import { default as normalize } from 'normalize-path';
 import type { BundleConfigInterface } from '@stylify/bundler';
 
+export interface OptionsInterface extends UnpluginConfigInterface {
+	importDefaultBundle?: false|boolean
+}
+
 export const defineConfig = stylifyUnpluginConfig;
 
-export const stylify = (options: UnpluginConfigInterface = {}): AstroIntegration => {
+export const stylify = (options: OptionsInterface = {}): AstroIntegration => {
 
 	return {
 		name: '@stylify/astro',
@@ -16,19 +20,27 @@ export const stylify = (options: UnpluginConfigInterface = {}): AstroIntegration
 			'astro:config:setup': ({ updateConfig, config, injectScript, command}): void => {
 				const srcDir: string = normalize(join(fileURLToPath(config.root), 'src'));
 				const singleBundleOutputFilePath: string = normalize(join(srcDir, 'styles', 'stylify.css'));
-				const isDev = options?.dev ?? (import.meta?.env?.DEV === true
+				const isDev = options.dev ?? (import.meta?.env?.DEV === true
 					|| import.meta?.env?.MODE === 'development'
 					|| command === 'dev'
 					|| null);
 
-				const includeDefaultBundle = typeof options.bundles === 'undefined';
+				const generateDefaultBundle = typeof options.bundles === 'undefined';
+
+				const configureBundles = <T extends BundleConfigInterface>(bundlesConfigs: T[]): T[] => {
+					return bundlesConfigs.map((bundleConfig: T) => {
+						bundleConfig.rewriteSelectorsInFiles = false;
+						return bundleConfig;
+					});
+				};
+
 				const defaultConfig: UnpluginConfigInterface = {
-					dev: options?.dev ?? isDev,
+					dev: options.dev ?? isDev,
 					bundler: {
 						autoprefixerEnabled: false
 					},
 					compiler: {
-						mangleSelectors: options?.compiler?.mangleSelectors ?? !isDev,
+						mangleSelectors: options.compiler?.mangleSelectors ?? !isDev,
 						selectorsAreas: [
 							'(?:^|\\s+)class=\\{((?:.|\\n)+)\\}',
 							'(?:^|\\s+)class:list=\\{\\[((?:.|\\n)+)\\]\\}',
@@ -36,7 +48,7 @@ export const stylify = (options: UnpluginConfigInterface = {}): AstroIntegration
 							`addAttribute\\(([\\s\\S]+), (?:"|')class(?:"|')\\)`
 						]
 					},
-					bundles: includeDefaultBundle
+					bundles: generateDefaultBundle
 						? [{
 							outputFile: singleBundleOutputFilePath,
 							rewriteSelectorsInFiles: false,
@@ -52,34 +64,23 @@ export const stylify = (options: UnpluginConfigInterface = {}): AstroIntegration
 					defaultConfig.configFile = configsValues;
 				}
 
-				const optionsConfig = options ?? {};
+				if (!generateDefaultBundle) {
+					options.bundles = configureBundles(options.bundles);
+				}
 
-				const configureBundles = <T = BundleConfigInterface>(bundlesConfigs: T[]): T[] => {
-					return bundlesConfigs.map((bundleConfig: T) => {
-						bundleConfig.rewriteSelectorsInFiles = false;
-						return bundleConfig;
-					});
-				};
-
-				if (Object.keys(optionsConfig).length) {
-					if (!includeDefaultBundle) {
-						optionsConfig.bundles = configureBundles(optionsConfig.bundles);
-					}
-
-					if (typeof optionsConfig?.bundler?.bundles !== 'undefined') {
-						optionsConfig.bundler.bundles = configureBundles(optionsConfig.bundles);
-					}
+				if (typeof options.bundler?.bundles !== 'undefined') {
+					options.bundler.bundles = configureBundles(options.bundler.bundles);
 				}
 
 				updateConfig({
 					vite: {
 						plugins: [
-							stylifyVite([defaultConfig, optionsConfig])
+							stylifyVite([defaultConfig, options])
 						]
 					}
 				});
 
-				if (includeDefaultBundle) {
+				if ((options.importDefaultBundle ?? true) && generateDefaultBundle) {
 					injectScript('page-ssr', `import '${singleBundleOutputFilePath}';`);
 				}
 			}
