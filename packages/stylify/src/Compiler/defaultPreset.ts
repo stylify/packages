@@ -52,7 +52,9 @@ export const defaultPreset = {
 		'(?:^|\\s+)class=\\\\"([^"]+)\\\\"',
 		`(?:^|\\s+)class=\\\\'([^']+)\\\\'`,
 		// Svelte
-		'(?:^|\\s+)class:(\\S+)=[{"\']'
+		'(?:^|\\s+)class:(\\S+)=[{"\']',
+		// Objects
+		'(?:^|\\s+)"class":\\s*`([^`]+)`'
 	],
 	screens: {
 		tosm: maxWidthScreen('639px'),
