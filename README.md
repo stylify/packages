@@ -94,7 +94,7 @@ Start using Stylify with your favorite tool in a minute.
 | [nuxt]                | [![nuxt-status]][nuxt-package]                               | Module for [Nuxt.js Framework](https://nuxtjs.org/) v3+.                             |
 | [nuxt-module]         | [![nuxt-module-status]][nuxt-module-package]                 | Module for [Nuxt.js Framework](https://nuxtjs.org/) v2 < v3.                         |
 | [stylify]             | [![stylify-status]][stylify-package]                         | Core package. Generates CSS and minifies selectors.                                  |
-| [unplugin]            | [![unplugin-status]][unplugin-package]                       | Universal plugin for Vite, Webpack, Rollup and Esbuildn.                             |
+| [unplugin]            | [![unplugin-status]][unplugin-package]                       | Universal plugin for Vite, Webpack, Rollup and Esbuild.                              |
 
 [astro]: https://github.com/stylify/packages/tree/master/packages/astro
 [astro-status]: https://img.shields.io/npm/v/@stylify/astro?color=%2301befe&label=Version&style=for-the-badge
