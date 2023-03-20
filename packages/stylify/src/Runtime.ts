@@ -200,7 +200,7 @@ export class Runtime {
 	}
 
 	public injectCss(css: string): void {
-		let el = document.querySelector(`#${Runtime.styleElId}`);
+		let el = document.getElementById(Runtime.styleElId);
 
 		if (el) {
 			el.innerHTML = css;
