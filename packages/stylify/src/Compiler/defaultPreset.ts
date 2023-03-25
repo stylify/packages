@@ -53,6 +53,7 @@ export const defaultPreset = {
 		`(?:^|\\s+)class=\\\\'([^']+)\\\\'`,
 		// Svelte
 		'(?:^|\\s+)class:(\\S+)=[{"\']',
+		'class=\\{`([^`]+)`\\}',
 		// Objects
 		'(?:^|\\s+)"class":\\s*`([^`]+)`'
 	],
