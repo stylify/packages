@@ -59,6 +59,7 @@ export const unplugin = createUnplugin((config: UnpluginConfigInterface|Unplugin
 	const pluginName = 'stylify';
 	let pluginConfig: UnpluginConfigInterface = {};
 	let configured = false;
+	let initialRunExecuted = false;
 	let configurationLoadingPromise: Promise<void> | null = null;
 
 	const waitForConfiguratinToLoad = async (): Promise<void> => {
@@ -134,11 +135,13 @@ export const unplugin = createUnplugin((config: UnpluginConfigInterface|Unplugin
 	};
 
 	const runBundler = async () => {
-		if (typeof bundlers[pluginConfig.id] !== 'undefined') {
-			await getBundler().waitOnBundlesProcessed();
+		if (initialRunExecuted) {
+			return;
 		}
 
+		initialRunExecuted = true;
 		const bundlerRunner = getBundler();
+
 		// eslint-disable-next-line @typescript-eslint/no-floating-promises
 		bundlerRunner.bundle();
 		await bundlerRunner.waitOnBundlesProcessed();
