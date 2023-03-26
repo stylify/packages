@@ -3,7 +3,7 @@
 	"author": "Vladimír Macháček",
 	"license": "MIT",
 	"scripts": {
-		"repo:init": "pnpm i -r",
+		"repo:init": "pnpm i -r && pnpm -r exec pnpm link --global",
 		"repo:publish": "pnpm login && pnpm build && pnpm build:generate-stats",
 		"watch": "cross-env watch=true pnpm build",
 		"build": "ts-node scripts/build.ts",
