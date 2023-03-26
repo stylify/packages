@@ -4,10 +4,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends git zip unzip c
 	apt remove cmdtest
 
 RUN npm i -g n yarn &&\
-	n 16.17.1
+	n 16.17.1 &&\
+	yarn global add pnpm
 
 RUN node -v &&\
-	npm -v &&\
-	yarn -v
+	npm -v
 
 EXPOSE 80 3000 4000

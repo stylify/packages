@@ -14,26 +14,29 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-        - uses: actions/checkout@v2
+        - uses: actions/checkout@v3
+
+        - uses: pnpm/action-setup@v2
 
         - uses: actions/setup-node@v3
           with:
             node-version: 16
+            cache: pnpm
 
         - name: Versions
-          run: node -v && yarn -v
+          run: node -v && pnpm -v
 
         - name: Install packages
-          run: yarn repo:init
+          run: pnpm repo:init
 
         - name: Build
-          run: yarn build
+          run: pnpm build
 
         - name: Eslint
-          run: yarn eslint:check
+          run: pnpm eslint:check
 
         - name: Jest tests
-          run: yarn jest:test+coverage
+          run: pnpm jest:test+coverage
 
         - name: 'Upload Artifacts'
           if: ${{ failure() }}

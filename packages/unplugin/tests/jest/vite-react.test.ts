@@ -18,7 +18,7 @@ if (!fs.existsSync(buildTmpDir)) {
 fse.copySync(path.join(bundleTestDir, 'input'), buildTmpDir);
 
 execSync(
-	`cd ${buildTmpDir} && yarn install && yarn build`
+	`cd ${buildTmpDir} && npm install && npm run build`
 	//,{stdio: 'inherit'}
 );
 

@@ -44,20 +44,13 @@
 		"LICENSE",
 		"README.md"
 	],
-	"scripts": {
-		"pack": "yarn pack"
-	},
 	"dependencies": {
-		"@stylify/stylify": "^0.5.31",
+		"@stylify/stylify": "workspace:^",
 		"autoprefixer": "^10.4",
 		"chokidar": "^3.5",
 		"fast-glob": "^3.2",
-		"micromatch": "^4.0.4",
+		"micromatch": "^4.0",
 		"normalize-path": "^3.0",
 		"postcss": "^8.4"
-	},
-	"publishConfig": {
-		"access": "public"
-	},
-	"gitHead": "a900b73132f964b56e1fc3423648b104d851dd59"
+	}
 }

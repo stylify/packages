@@ -1,4 +1,4 @@
-import { defineConfig } from '../../esm/module.mjs';
+import { defineConfig } from '@stylify/nuxt';
 
 export default defineConfig({
 	compiler: {

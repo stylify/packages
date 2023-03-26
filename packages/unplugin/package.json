@@ -48,13 +48,12 @@
 		"README.md"
 	],
 	"scripts": {
-		"pack": "yarn pack",
-		"plg:webpack:build": "cd playground/webpack && yarn build",
+		"plg:webpack:build": "cd playground/webpack && pnpm build",
 		"plg:webpack:watch": "cd playground/webpack && yarn watch"
 	},
 	"dependencies": {
-		"@stylify/bundler": "^0.5.31",
-		"@stylify/stylify": "^0.5.31",
+		"@stylify/bundler": "workspace:^",
+		"@stylify/stylify": "workspace:^",
 		"unplugin": "^1.0"
 	},
 	"devDependencies": {
@@ -67,9 +66,5 @@
 		"style-loader": "^3.3",
 		"vite": "^4.0",
 		"webpack": "^5.75"
-	},
-	"publishConfig": {
-		"access": "public"
-	},
-	"gitHead": "a900b73132f964b56e1fc3423648b104d851dd59"
+	}
 }

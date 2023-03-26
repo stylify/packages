@@ -17,18 +17,29 @@ if (!fs.existsSync(buildTmpDir)) {
 
 fse.copySync(path.join(bundleTestDir, 'input'), buildTmpDir);
 
-execSync(`cd ${buildTmpDir} && yarn install && yarn build`);
+execSync(`cd ${buildTmpDir} && npm install && npm run build`, {stdio: 'inherit'});
 
-const frontFileContentPart = `n={class:"b a"};function _(s,r){return t(),c("h2",n,"Smaller Subtitle")}`;
+const frontFileContentPart = `{class:"b a"}`;
 const serverDefaultFileContentPart = '_push(`<div${serverRenderer.exports.ssrRenderAttrs(vue_cjs_prod.mergeProps({ class: "d e" }, _attrs))}><div class="f">This is layout</div>`);'
 
 test('Nuxt - Stylify options', async (): Promise<void> => {
 	const [cssFileEntry] = FastGlob.sync(path.join(buildTmpDir, '.output', 'public', '_nuxt', 'entry.*.css'));
-	const [subtitleFileEntry] = FastGlob.sync(path.join(buildTmpDir, '.output', 'public', '_nuxt', 'SmallerSubtitle.*.js'));
-
+	const indexFiles = FastGlob.sync(path.join(buildTmpDir, '.output', 'public', '_nuxt', 'index.*.js'));
+	let jsFileTested = false;
 	const cssFileContent = testUtils.readFile(cssFileEntry);
- 	const frontFileContent = testUtils.readFile(subtitleFileEntry);
+
+	for (const indexFile of indexFiles) {
+		const frontFileContent = testUtils.readFile(indexFile);
+		if (!frontFileContent.includes('Smaller Subtitle')) {
+			continue;
+		}
+		expect(frontFileContent.includes(frontFileContentPart)).toBeTruthy();
+		jsFileTested = true;
+	}
+
+	if (!jsFileTested) {
+		throw new Error('Js file not tested.');
+	}
 
 	testUtils.testCssFileToBe(cssFileContent, 'output');
-	expect(frontFileContent.includes(frontFileContentPart)).toBeTruthy();
 });

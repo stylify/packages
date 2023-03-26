@@ -17,7 +17,7 @@ if (!fs.existsSync(buildTmpDir)) {
 
 fse.copySync(path.join(bundleTestDir, 'input'), buildTmpDir);
 
-execSync(`cd ${buildTmpDir} && yarn install && yarn build`);
+execSync(`cd ${buildTmpDir} && pnpm install . && pnpm build .`, {stdio: 'inherit'});
 
 const indexHtmlPart = `
 	<body class="c d">

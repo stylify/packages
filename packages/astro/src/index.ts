@@ -27,7 +27,7 @@ export const stylify = (options: ConfigInterface = {}): AstroIntegration => {
 
 				const generateDefaultBundle = typeof options.bundles === 'undefined';
 
-				const configureBundles = <T extends BundleConfigInterface>(bundlesConfigs: T[]): T[] => {
+				const configureBundles = <T = BundleConfigInterface>(bundlesConfigs: T[]): T[] => {
 					return bundlesConfigs.map((bundleConfig: T) => {
 						bundleConfig.rewriteSelectorsInFiles = false;
 						return bundleConfig;

@@ -17,7 +17,7 @@ if (!fs.existsSync(buildTmpDir)) {
 
 fse.copySync(path.join(bundleTestDir, 'input'), buildTmpDir);
 
-execSync(`cd ${buildTmpDir} && yarn install && yarn build`);
+execSync(`cd ${buildTmpDir} && npm i && npm run build`);
 
 test('Next - prod build', async (): Promise<void> => {
 	const [cssFileEntry] = FastGlob.sync(path.join(buildTmpDir, '.next', 'static', 'css', '*.css'));

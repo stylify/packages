@@ -1,13 +1,11 @@
 /**
  * @jest-environment node
  */
-
 import path from 'path';
 import fs from 'fs';
 import fse from 'fs-extra';
 import TestUtils from '../../../../tests/TestUtils';
 import esbuild from 'esbuild';
-import { MacroMatch, SelectorProperties } from '@stylify/stylify';
 import { stylifyEsbuild } from '../../src';
 
 const testName = 'esbuild';

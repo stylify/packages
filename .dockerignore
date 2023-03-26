@@ -5,7 +5,6 @@
 /coverage
 /scripts/build.js
 lerna-debug.log
-**/yarn-error.log
 .idea
 /.idea
 

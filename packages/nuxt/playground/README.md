@@ -1,5 +1,5 @@
 # Playground usage
-- Run `yarn install` in above `nuxt` directory
-- Than you can run `yarn dev` for dev mode
-- For production `yarn build` && `yarn start`
+- Run `pnpm i` in above `nuxt` directory
+- Then you can run `pnpm dev` for dev mode
+- For production `pnpm build` && `pnpm start`
 - App should be running on `http://localhost:3000`
