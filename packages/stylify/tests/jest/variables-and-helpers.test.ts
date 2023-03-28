@@ -41,19 +41,19 @@ const getCompilerConfig = (): CompilerConfigInterface => ({
 		}
 	},
 	macros: {
-		'text:(\\S+)': function ({ macroMatch, selectorProperties, helpers}): void {
-			const property = helpers.textPropertyType(macroMatch.getCapture(0));
-			selectorProperties.add(property, macroMatch.getCapture(0));
+		'text:(\\S+)': function ({ match, selectorProperties, helpers}): void {
+			const property = helpers.textPropertyType(match.getCapture(0));
+			selectorProperties.add(property, match.getCapture(0));
 		},
-		'(fs|bgc|zi|clr):(\\S+)': function ({macroMatch, selectorProperties, helpers}): void {
-			const property = helpers.shortcut(macroMatch.getCapture(0));
-			selectorProperties.add(property, macroMatch.getCapture(1));
+		'(fs|bgc|zi|clr):(\\S+)': function ({match, selectorProperties, helpers}): void {
+			const property = helpers.shortcut(match.getCapture(0));
+			selectorProperties.add(property, match.getCapture(1));
 		},
-		'fix:(\\S+)': function ({macroMatch, selectorProperties}): void {
+		'fix:(\\S+)': function ({match, selectorProperties}): void {
 			selectorProperties.addMultiple({
 				position: 'fixed',
-				top: macroMatch.getCapture(0),
-				left: macroMatch.getCapture(0)
+				top: match.getCapture(0),
+				left: match.getCapture(0)
 			});
 		}
 	}

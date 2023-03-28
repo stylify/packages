@@ -33,8 +33,8 @@ new Bundler({
 				button: 'background:blue color:white'
 			},
 			macros: {
-				'm:(\\S+?)': ({macroMatch, selectorProperties}): void => {
-					selectorProperties.add('margin', macroMatch.getCapture(0));
+				'm:(\\S+?)': ({match, selectorProperties}): void => {
+					selectorProperties.add('margin', match.getCapture(0));
 				},
 			},
 		},
