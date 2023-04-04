@@ -113,6 +113,7 @@ export interface BundlerConfigInterface {
 	stylusVarsDirPath?: string,
 	bundles?: BundleConfigInterface[],
 	cssLayersOrder?: CSSLayersOrderInterface,
+	logsDir?: string
 }
 
 export interface WatchedFileInterface {
@@ -127,6 +128,8 @@ export interface GetFilesToProcessOptionsInterface {
 	filePaths?: string[],
 	fileMasks?: string[],
 }
+
+type ConsoleColorsType = 'reset' | 'textWhite' | 'textCyan' | 'textRed' | 'textGreen' | 'textGrey' | 'textYellow';
 
 interface RawConfigurationsInterface {
 	configFile: string|null;
@@ -191,6 +194,10 @@ export class Bundler {
 
 	private cssLayersOrder: CSSLayersOrderInterface = null;
 
+	private logsDir: string = null;
+
+	private logsDirInitialized = false;
+
 	/**
 	 * @internal
 	 */
@@ -206,6 +213,7 @@ export class Bundler {
 	}
 
 	private mergeConfigs(config: Partial<BundlerConfigInterface>) {
+		this.logsDir = config.logsDir ?? this.logsDir;
 		this.dev = config.dev ?? this.dev;
 		this.compilerConfig.dev = this.dev;
 		this.compilerConfig = mergeObjects(this.compilerConfig, config.compiler ?? {});
@@ -296,7 +304,11 @@ export class Bundler {
 			}
 
 			if (!fs.existsSync(configFile)) {
-				this.log(`Configuration file "${configFile}" not found.`, 'textRed');
+				this.log({
+					content: `Configuration file "${configFile}" not found.`,
+					severity: 'error'
+				});
+
 				continue;
 			}
 
@@ -381,7 +393,10 @@ export class Bundler {
 		const variablesFilePath = path.join(options.filePath, `stylify-variables.${options.fileType}`);
 		this.writeFile(variablesFilePath, fileVariablesContent);
 
-		this.log(`Variables file "${variablesFilePath}" created.`, 'textGreen');
+		this.log({
+			content: `Variables file "${variablesFilePath}" created.`,
+			consoleColor: 'textGreen'
+		});
 	}
 
 	public async waitOnBundlesProcessed(): Promise<void> {
@@ -438,7 +453,10 @@ export class Bundler {
 		}
 
 		if (this.watchFiles) {
-			this.log(`Waching for changes...`, 'textYellow');
+			this.log({
+				content: `Waching for changes...`,
+				consoleColor: 'textYellow'
+			});
 
 		} else if (this.showBundlesStats) {
 			let buildsInfo = [];
@@ -489,10 +507,15 @@ export class Bundler {
 				// eslint-disable-next-line no-console
 				console.table(tablesData);
 			} else {
-				this.log('No bundle was processed.', 'textRed');
+				this.log({
+					content: 'No bundle was processed.',
+					severity: 'error'
+				});
 			}
 
-			this.log(`Build done (${((performance.now() - startTime)/1000).toFixed(2)} s).`);
+			this.log({
+				content: `Build done (${((performance.now() - startTime)/1000).toFixed(2)} s).`
+			});
 		}
 
 		bundleMethodPromiseResolve();
@@ -553,11 +576,21 @@ export class Bundler {
 			await this.bundle();
 			this.configurationLoadingPromise = null;
 			this.logInfoAboutWatchingConfigFiles();
-			this.log('Bundler restarted', 'textGreen', null, 1);
+			this.log({
+				content: 'Bundler restarted',
+				consoleColor: 'textGreen',
+				newLinesBeforeCount: null,
+				newLinesAfterCount: 1
+			});
 
 		} catch (error) {
-			this.log('Bundler restart failed.', 'textRed');
-			this.log(error as string);
+			this.log({
+				content: 'Bundler restart failed. Info is bellow:',
+				severity: 'error'
+			});
+			this.log({
+				content: error as string
+			});
 			this.rawConfigurations = rawConfigurations;
 		}
 
@@ -565,10 +598,10 @@ export class Bundler {
 	}
 
 	private logInfoAboutWatchingConfigFiles() {
-		this.log(
-			`Watching config file${this.configFiles.length > 1 ? 's' : ''} "${this.configFiles.join(', ')}" for changes...`,
-			'textYellow'
-		);
+		this.log({
+			content: `Watching config file${this.configFiles.length > 1 ? 's' : ''} "${this.configFiles.join(', ')}" for changes...`,
+			consoleColor: 'textYellow'
+		});
 	}
 
 	private startWatchingConfigFiles() {
@@ -583,7 +616,10 @@ export class Bundler {
 				return;
 			}
 
-			this.log(`File "${file}" changed. Reloading.`, 'textYellow');
+			this.log({
+				content: `File "${file}" changed. Reloading.`,
+				consoleColor: 'textYellow'
+			});
 			// eslint-disable-next-line @typescript-eslint/no-floating-promises
 			this.restart(false);
 		});
@@ -604,12 +640,18 @@ export class Bundler {
 
 		const bundleRunner = async (): Promise<void> => {
 			if (typeof bundleConfig.files === 'undefined') {
-				this.log(`No files defined for "${bundleConfig.outputFile}". Skipping.`, 'textRed');
+				this.log({
+					content: `No files defined for "${bundleConfig.outputFile}". Skipping.`,
+					severity: 'error'
+				});
 				return;
 			}
 
 			const startTime = performance.now();
-			this.log(`Processing "${bundleConfig.outputFile}".`, 'textCyan');
+			this.log({
+				content: `Processing "${bundleConfig.outputFile}".`,
+				consoleColor: 'textCyan'
+			});
 
 			if (!Array.isArray(bundleConfig.files)) {
 				bundleConfig.files = [bundleConfig.files];
@@ -654,7 +696,10 @@ export class Bundler {
 			});
 
 			if (!Object.keys(filesToProcess).length) {
-				this.log(`No files found for "${bundleConfig.outputFile}". Skipping.`, 'textRed');
+				this.log({
+					content: `No files found for "${bundleConfig.outputFile}". Skipping.`,
+					severity: 'error'
+				});
 				return;
 			}
 
@@ -705,7 +750,10 @@ export class Bundler {
 								}
 
 								if (!changedInfoLogged) {
-									this.log(`"${fileName}" changed.`, null, 1);
+									this.log({
+										content: `"${fileName}" changed.`,
+										newLinesAfterCount: 1
+									});
 									changedInfoLogged = true;
 								}
 
@@ -724,7 +772,10 @@ export class Bundler {
 							this.waitOnBundlesProcessed().finally(() => {
 								this.watchedFiles[pathToWatch].processing = false;
 								if (changedInfoLogged) {
-									this.log(`Watching for changes...`, 'textYellow');
+									this.log({
+										content: `Watching for changes...`,
+										consoleColor: 'textYellow'
+									});
 								}
 							});
 						})
@@ -780,17 +831,27 @@ export class Bundler {
 
 			let generatedCss = bundleBuildCache.compilationResult.generateCss();
 
-			if (this.autoprefixerEnabled) {
-				generatedCss = (await postCssPrefixer.process(generatedCss, {from: undefined})).css;
-			} else {
-				postcss.parse(generatedCss);
+			try {
+				if (this.autoprefixerEnabled) {
+					generatedCss = (await postCssPrefixer.process(generatedCss, {from: undefined})).css;
+				} else {
+					postcss.parse(generatedCss);
+				}
+			} catch (error) {
+				this.log({
+					content: `CSS could not be generated.`,
+					severity: 'error',
+					logFileContent: generatedCss,
+					logFile: `${path.parse(bundleConfig.outputFile).name}-error.css`
+				});
+				throw new Error(error);
 			}
 
 			const hookData = await hooks.callAsyncHook(
 				'bundler:beforeCssFileCreated', { content: generatedCss, bundleConfig }
 			);
 
-			let outputFileContent = hookData.content;
+			let outputFileContent: string = hookData.content;
 			const isDev = bundleBuildCache.compiler.dev;
 			const whiteSpace = isDev ? '\n' : '';
 
@@ -800,14 +861,17 @@ export class Bundler {
 					typeof exportLayerName === 'undefined' || !exportLayerName.includes(bundleConfig.cssLayer)
 						? ''
 						: `@layer ${this.cssLayersOrder.order};${whiteSpace.repeat(2)}`;
-				layerContent += `@layer ${bundleConfig.cssLayer} {${whiteSpace + outputFileContent + whiteSpace}}`;
+				layerContent += `@layer ${bundleConfig.cssLayer} {${whiteSpace}${outputFileContent}${whiteSpace}}`;
 				outputFileContent = layerContent;
 			}
 
 			this.writeFile(hookData.bundleConfig.outputFile, outputFileContent, isDev);
 
 			bundleBuildCache.buildTime = ((performance.now() - startTime)/1000).toFixed(2);
-			this.log(`Created "${bundleConfig.outputFile}" (${bundleBuildCache.buildTime} s).`, 'textGreen');
+			this.log({
+				content: `Created "${bundleConfig.outputFile}" (${bundleBuildCache.buildTime} s).`,
+				consoleColor: 'textGreen'
+			});
 
 			await hooks.callAsyncHook('bundler:bundleProcessed', { bundleConfig, bundleBuildCache });
 
@@ -851,7 +915,10 @@ export class Bundler {
 				await bundleRunner();
 			} catch (error) {
 				delete this.bundlesBuildCache[bundleConfig.outputFile];
-				console.error(error);
+				this.log({
+					content: error,
+					severity: 'error'
+				});
 			}
 		};
 
@@ -974,7 +1041,9 @@ export class Bundler {
 				return;
 			}
 		} catch (e) {
-			this.log(`File "${filePath}" not found. It will be created.`);
+			this.log({
+				content: `File "${filePath}" not found. It will be created.`
+			});
 		}
 
 		this.createdFilesContentCache[filePath] = newFileContent;
@@ -985,7 +1054,10 @@ export class Bundler {
 		const exists = fs.existsSync(filePath);
 
 		if (!exists) {
-			this.log(`File "${filePath}" not found. Skipping.`, 'textRed');
+			this.log({
+				content: `File "${filePath}" not found. Skipping.`,
+				severity: 'error'
+			});
 			this.watchedFiles[filePath]?.watcher.close();
 		}
 
@@ -1004,17 +1076,62 @@ export class Bundler {
 		return clearedFilePaths;
 	}
 
-	private log(
-		content: string,
-		colorName: 'reset'|'textWhite'|'textCyan'|'textRed'|'textGreen'|'textYellow' = null,
-		newLinesBeforeCount: number = null,
-		newLinesAfterCount: number = null
-	): void {
+	private log({
+		content,
+		consoleColor,
+		newLinesBeforeCount,
+		newLinesAfterCount,
+		severity,
+		logFileContent,
+		logFile,
+		logWrittingMode
+	}: {
+		content: string|Error,
+		consoleColor?: ConsoleColorsType,
+		newLinesBeforeCount?: number,
+		newLinesAfterCount?: number,
+		logFileContent?: string,
+		logFile?: string,
+		severity?: 'log' | 'warn' | 'error',
+		logWrittingMode?: string,
+	}): void {
+		severity = severity ?? 'log';
+
+		const logTime = new Date().toLocaleDateString('en-US', {
+			hour: '2-digit',
+			minute: '2-digit',
+			second: '2-digit'
+		}).replace(/^\S+\s+/, '');
+
+		if (content instanceof Error) {
+			content = JSON.stringify(content.stack);
+		}
+
+		if (this.logsDir && ['warn', 'error'].includes(severity)) {
+			logFileContent = logFileContent ?? content;
+
+			if (!this.logsDirInitialized && !fs.existsSync(this.logsDir)) {
+				fs.mkdirSync(this.logsDir);
+				this.logsDirInitialized = true;
+			}
+
+			logWrittingMode = logWrittingMode ?? 'w';
+			const defaultFileName = `stylify-bundler-${severity}.txt`;
+			logFile = logFile ?? defaultFileName;
+
+			if (logFile === defaultFileName) {
+				logWrittingMode = 'a';
+				logFileContent = `${logTime} - ${logFileContent}\n`;
+			}
+
+			fs.writeFileSync(`${this.logsDir}/${logFile}`, logFileContent, {flag: logWrittingMode});
+		}
+
 		if (!this.verbose) {
 			return;
 		}
 
-		const colors = {
+		const colors: Record<ConsoleColorsType, string> = {
 			reset: '\x1b[0m',
 			textWhite: '\x1b[37m',
 			textCyan: '\x1b[36m',
@@ -1024,7 +1141,7 @@ export class Bundler {
 			textYellow: '\x1b[33m'
 		};
 
-		const logEmptyLines = (count) => {
+		const logEmptyLines = (count: number) => {
 			while (count --) {
 				// eslint-disable-next-line no-console
 				console.log('\n');
@@ -1035,16 +1152,20 @@ export class Bundler {
 			logEmptyLines(newLinesBeforeCount);
 		}
 
-		const logTime = new Date().toLocaleDateString('en-US', {
-			hour: '2-digit',
-			minute: '2-digit',
-			second: '2-digit'
-		}).replace(/^\S+\s+/, '');
+		consoleColor = consoleColor ?? null;
+
+		if (consoleColor === null) {
+			if (severity === 'warn') {
+				consoleColor = 'textYellow';
+			} else if (severity === 'error') {
+				consoleColor = 'textRed';
+			}
+		}
 
 		// eslint-disable-next-line no-console
-		console.log(
+		console[severity](
 			`${colors.textGrey}${logTime}${colors.reset}`,
-			`${colorName ? colors[colorName] : colors.reset}[stylify] ${content}`,
+			`${consoleColor ? colors[consoleColor] : colors.reset}[stylify] ${content}`,
 			colors.reset
 		);
 
