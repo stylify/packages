@@ -63,7 +63,10 @@ test('Vite - with default transform', async (): Promise<void> => {
 				bundles: [{
 					outputFile: path.join(buildTmpDir, 'index.css'),
 					files: [path.join(buildTmpDir, 'index.html')]
-				}]
+				}],
+				bundler: {
+					showBundlesStats: false
+				}
 			})
 		]
 	});

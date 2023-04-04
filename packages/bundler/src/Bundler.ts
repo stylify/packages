@@ -104,6 +104,7 @@ export interface BundlerConfigInterface {
 	compiler?: CompilerConfigInterface,
 	filesBaseDir?: string,
 	verbose?: boolean,
+	showBundlesStats?: boolean,
 	watchFiles?: boolean,
 	sync?: boolean,
 	cssVarsDirPath?: string,
@@ -111,7 +112,7 @@ export interface BundlerConfigInterface {
 	lessVarsDirPath?: string,
 	stylusVarsDirPath?: string,
 	bundles?: BundleConfigInterface[],
-	cssLayersOrder?: CSSLayersOrderInterface
+	cssLayersOrder?: CSSLayersOrderInterface,
 }
 
 export interface WatchedFileInterface {
@@ -168,6 +169,8 @@ export class Bundler {
 
 	private verbose = false;
 
+	private showBundlesStats = false;
+
 	private sync = true;
 
 	private watchFiles = false;
@@ -209,6 +212,7 @@ export class Bundler {
 		this.verbose = config.verbose ?? this.verbose;
 		this.sync = config.sync ?? this.sync;
 		this.watchFiles = config.watchFiles ?? this.watchFiles;
+		this.showBundlesStats = config.showBundlesStats ?? !this.watchFiles;
 		this.filesBaseDir = config.filesBaseDir ?? this.filesBaseDir;
 		this.autoprefixerEnabled = config.autoprefixerEnabled ?? this.autoprefixerEnabled;
 		this.cssLayersOrder = config.cssLayersOrder ?? this.cssLayersOrder;
@@ -436,7 +440,7 @@ export class Bundler {
 		if (this.watchFiles) {
 			this.log(`Waching for changes...`, 'textYellow');
 
-		} else if (!this.watchFiles) {
+		} else if (this.showBundlesStats) {
 			let buildsInfo = [];
 
 			for (const [bundleOutputFile, bundleBuildCache] of Object.entries(this.bundlesBuildCache)) {

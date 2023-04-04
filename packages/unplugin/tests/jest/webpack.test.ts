@@ -45,6 +45,7 @@ test('Webpack', async (): Promise<void> => {
 						}
 					],
 					bundler: {
+						showBundlesStats: false,
 						compiler: {
 							variables: {
 								blue: 'steelblue'

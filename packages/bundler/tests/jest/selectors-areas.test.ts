@@ -16,7 +16,7 @@ if (!fs.existsSync(buildTmpDir)) {
 
 fse.copySync(path.join(bundleTestDir, 'input'), buildTmpDir);
 
-new Bundler({ dev: true }).bundle([
+new Bundler({ dev: true, showBundlesStats: false }).bundle([
 	{
 		outputFile: path.join(buildTmpDir, 'index.css'),
 		files: [

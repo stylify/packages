@@ -38,6 +38,7 @@ async function build() {
 					}
 				],
 				bundler: {
+					showBundlesStats: false,
 					compiler: {
 						variables: {
 							blue: 'steelblue'

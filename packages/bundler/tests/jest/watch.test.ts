@@ -20,6 +20,7 @@ test('Watch test - dynamic change', async (): Promise<void> => {
 
 	let bundler: Bundler|null =  new Bundler({
 		dev: true,
+		showBundlesStats: false,
 		watchFiles: true,
 		configFile: `${buildTmpDir}/stylify.config.js`
 	});

@@ -16,7 +16,7 @@ if (!fs.existsSync(buildTmpDir)) {
 
 fse.copySync(path.join(bundleTestDir, 'input'), buildTmpDir);
 
-const bundler = new Bundler({ dev: true });
+const bundler = new Bundler({ dev: true, showBundlesStats: false });
 
 bundler.bundle([
    	{

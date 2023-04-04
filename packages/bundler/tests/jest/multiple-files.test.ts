@@ -12,6 +12,7 @@ const buildTmpDir = path.join(testUtils.getTmpDir(), testUtils.getTestName() + '
 
 const bundler = new Bundler({
 	dev: true,
+	showBundlesStats: false,
 	filesBaseDir: bundleTestDir,
 	compiler: {
 		mangleSelectors: true,
