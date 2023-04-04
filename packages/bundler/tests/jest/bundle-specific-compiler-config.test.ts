@@ -18,6 +18,7 @@ fse.copySync(path.join(bundleTestDir, 'input'), buildTmpDir);
 
 new Bundler({
 	dev: true,
+	showBundlesStats: false,
 	compiler: {
 		variables: {
 			red: 'darkred',

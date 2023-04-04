@@ -66,7 +66,10 @@ test('Vite', async (): Promise<void> => {
 						outputFile: path.join(buildTmpDir, 'index.css'),
 						files: [path.join(buildTmpDir, 'index.html')]
 					}
-				]
+				],
+				bundler: {
+					showBundlesStats: false
+				}
 			})
 		]
 	});

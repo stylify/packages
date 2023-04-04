@@ -11,7 +11,10 @@ const stylifyPlugin = stylifyVite({
 			files: ['./src/**'],
 			rewriteSelectorsInFiles: false
 		}
-	]
+	],
+	bundler: {
+		showBundlesStats: false
+	}
 });
 
 export default defineConfig({

@@ -19,6 +19,7 @@ fse.copySync(path.join(bundleTestDir, 'input'), buildTmpDir);
 test('Single file', async (): Promise<void> => {
 	const bundler = new Bundler({
 		dev: true,
+		showBundlesStats: false,
 		cssLayersOrder: {
 			order: ['layout', 'page'].join(','),
 			exportLayer: ['layout'],
@@ -50,7 +51,7 @@ test('Single file', async (): Promise<void> => {
 });
 
 test('Without export', async (): Promise<void> => {
-	const bundler = new Bundler({ dev: true });
+	const bundler = new Bundler({ dev: true, showBundlesStats: false });
 	bundler.bundle([
 		{
 			outputFile: path.join(buildTmpDir, 'without-export.css'),

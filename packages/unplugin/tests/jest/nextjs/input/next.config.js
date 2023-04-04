@@ -8,7 +8,10 @@ const stylifyPlugin = (dev) =>
 				outputFile: './styles/global.css',
 				files: ['./pages/**/*.tsx', './components/*.tsx']
 			}
-		]
+		],
+		bundler: {
+			showBundlesStats: false
+		}
 	});
 
 /** @type {import('next').NextConfig} */
