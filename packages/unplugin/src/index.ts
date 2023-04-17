@@ -35,7 +35,7 @@ const defaultAllowedFileTypes = [
 	// C#, .NET and similar
 	'cs', 'asp', 'aspx',
 	// Other
-	'json', 'yaml', 'neon', 'md', 'mdx', 'svx', 'txt'
+	'json', 'yaml', 'neon', 'md', 'mdx', 'mdoc', 'svx', 'txt'
 ];
 
 const defaultIgnoredDirectories = [
