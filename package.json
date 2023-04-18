@@ -6,7 +6,7 @@
 		"repo:init": "pnpm i -r",
 		"repo:version": "pnpm -r exec pnpm version",
 		"repo:patch": "pnpm repo:version patch",
-		"repo:publish": "pnpm login && pnpm build && pnpm build:generate-stats",
+		"repo:publish": "pnpm build && pnpm build:generate-stats && pnpm login && pnpm -r publish",
 		"watch": "cross-env watch=true pnpm build",
 		"build": "ts-node scripts/build.ts",
 		"build:notypes": "cross-env typesDisabled=true ts-node scripts/build.ts",
