@@ -4,7 +4,7 @@
 	"license": "MIT",
 	"scripts": {
 		"repo:init": "pnpm i -r",
-		"repo:version": "pnpm exec -r pnpm version",
+		"repo:version": "pnpm -r exec pnpm version",
 		"repo:patch": "pnpm repo:version patch",
 		"repo:publish": "pnpm login && pnpm build && pnpm build:generate-stats",
 		"watch": "cross-env watch=true pnpm build",

@@ -1,26 +1,26 @@
 {
   "astro": {
     "/esm/index.mjs": {
-      "size": 5444
+      "size": 5530
     },
     "/lib/index.cjs": {
-      "size": 6002
+      "size": 6088
     }
   },
   "bundler": {
     "/esm/index.mjs": {
-      "size": 27851
+      "size": 30521
     },
     "/lib/index.cjs": {
-      "size": 29904
+      "size": 32634
     }
   },
   "nuxt": {
     "/esm/module.mjs": {
-      "size": 6934
+      "size": 7014
     },
     "/lib/module.cjs": {
-      "size": 7654
+      "size": 7734
     }
   },
   "nuxt-module": {
@@ -59,10 +59,10 @@
   },
   "unplugin": {
     "/esm/index.mjs": {
-      "size": 7001
+      "size": 7011
     },
     "/lib/index.cjs": {
-      "size": 8953
+      "size": 8963
     }
   }
 }

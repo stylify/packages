@@ -1,6 +1,6 @@
 {
 	"name": "@stylify/bundler",
-	"version": "0.5.31",
+	"version": "0.5.32",
 	"description": "CSS bundler for @stylify/stylify.",
 	"keywords": [
 		"stylify",
