@@ -23,6 +23,7 @@ ignorePatterns:
     - "**/tests-tmp/*"
     - "**/lib/*"
     - "**/dist/*"
+    - "**/playground"
 
 rules:
     # Possible errors
