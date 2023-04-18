@@ -9,12 +9,6 @@ importers:
       '@babel/plugin-proposal-object-rest-spread': ^7.20
       '@babel/preset-env': ^7.20
       '@babel/preset-typescript': ^7.18
-      '@stylify/astro': ^0.5.31
-      '@stylify/bundler': ^0.5.31
-      '@stylify/nuxt': ^0.5.31
-      '@stylify/nuxt-module': ^0.5.31
-      '@stylify/stylify': ^0.5.31
-      '@stylify/unplugin': ^0.5.31
       '@types/jest': ^29.2
       '@types/node': ^18.11
       '@typescript-eslint/eslint-plugin': ^5.48
@@ -37,13 +31,6 @@ importers:
       tslib: ^2.4
       typescript: ^4.9
       v8-compile-cache: ^2.3
-    dependencies:
-      '@stylify/astro': link:packages/astro
-      '@stylify/bundler': link:packages/bundler
-      '@stylify/nuxt': link:packages/nuxt
-      '@stylify/nuxt-module': link:packages/nuxt-module
-      '@stylify/stylify': link:packages/stylify
-      '@stylify/unplugin': link:packages/unplugin
     devDependencies:
       '@babel/core': 7.21.3
       '@babel/plugin-proposal-class-properties': 7.18.6_@babel+core@7.21.3
@@ -2105,7 +2092,7 @@ packages:
       eslint: ^6.0.0 || ^7.0.0 || >=8.0.0
     dependencies:
       eslint: 8.36.0
-      eslint-visitor-keys: 3.3.0
+      eslint-visitor-keys: 3.4.0
     dev: true
 
   /@eslint-community/eslint-utils/4.4.0_eslint@8.38.0:
@@ -2115,7 +2102,7 @@ packages:
       eslint: ^6.0.0 || ^7.0.0 || >=8.0.0
     dependencies:
       eslint: 8.38.0
-      eslint-visitor-keys: 3.3.0
+      eslint-visitor-keys: 3.4.0
     dev: true
 
   /@eslint-community/regexpp/4.4.1:
@@ -2129,7 +2116,7 @@ packages:
     dependencies:
       ajv: 6.12.6
       debug: 4.3.4
-      espree: 9.5.0
+      espree: 9.5.1
       globals: 13.20.0
       ignore: 5.2.4
       import-fresh: 3.3.0
@@ -3608,7 +3595,7 @@ packages:
     engines: {node: ^12.22.0 || ^14.17.0 || >=16.0.0}
     dependencies:
       '@typescript-eslint/types': 5.56.0
-      eslint-visitor-keys: 3.3.0
+      eslint-visitor-keys: 3.4.0
     dev: true
 
   /@unhead/dom/1.1.25:
@@ -6031,7 +6018,7 @@ packages:
     dependencies:
       acorn: 8.8.2
       acorn-jsx: 5.3.2_acorn@8.8.2
-      eslint-visitor-keys: 3.3.0
+      eslint-visitor-keys: 3.4.0
     dev: true
 
   /espree/9.5.1:

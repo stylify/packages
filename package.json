@@ -96,13 +96,5 @@
 	"packageManager": "pnpm@7.30.1",
 	"engines": {
 		"pnpm": "^7.30"
-	},
-	"dependencies": {
-		"@stylify/astro": "^0.5.31",
-		"@stylify/bundler": "^0.5.31",
-		"@stylify/nuxt": "^0.5.31",
-		"@stylify/nuxt-module": "^0.5.31",
-		"@stylify/stylify": "^0.5.31",
-		"@stylify/unplugin": "^0.5.31"
 	}
 }
