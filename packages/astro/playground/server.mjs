@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from 'fs';
 import http from 'http';
 import path from 'path';
-import { handler as ssrHandler } from './dist/server/entry.mjs';
+import { handler as ssrHandler } from '../playground/dist/server/entry.mjs';
 
 http.createServer((req, res) => {
 	ssrHandler(req, res, err => {

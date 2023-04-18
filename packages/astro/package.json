@@ -54,6 +54,6 @@
 		"normalize-path": "^3.0"
 	},
 	"devDependencies": {
-		"astro": "^2.1"
+		"astro": "^2.3"
 	}
 }
