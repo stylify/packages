@@ -30,13 +30,15 @@
 			"require": "./lib/index.cjs",
 			"types": "./types/*"
 		},
+		"./lib/*": "./lib/*",
+		"./esm/*": "./esm/*",
 		"./dist/*": "./dist/*",
 		"./types/*": "./types/*",
 		"./package.json": "./package.json"
 	},
 	"main": "lib/index.cjs",
-	"jsdelivr": "dist/stylify.native.min.js",
-	"unpkg": "dist/stylify.native.min.js",
+	"jsdelivr": "dist/stylify.min.js",
+	"unpkg": "dist/stylify.min.js",
 	"module": "esm/index.mjs",
 	"types": "types",
 	"files": [

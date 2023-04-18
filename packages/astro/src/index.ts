@@ -44,8 +44,8 @@ export const stylify = (options: ConfigInterface = {}): AstroIntegration => {
 						selectorsAreas: [
 							'(?:^|\\s+)class=\\{((?:.|\\n)+)\\}',
 							'(?:^|\\s+)class:list=\\{\\[((?:.|\\n)+)\\]\\}',
-							`addAttribute\\(([\\s\\S]+), (?:"|\\')class:list(?:"|\\')\\)`,
-							`addAttribute\\(([\\s\\S]+), (?:"|')class(?:"|')\\)`
+							`addAttribute\\(([\\s\\S\\n]+), (?:"|\\')class:list(?:"|\\')\\)`,
+							`addAttribute\\(([\\s\\S\\n]+), (?:"|')class(?:"|')\\)`
 						]
 					},
 					bundles: generateDefaultBundle

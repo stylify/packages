@@ -30,6 +30,8 @@
 			"require": "./lib/index.cjs",
 			"types": "./types/*"
 		},
+		"./lib/*": "./lib/*",
+		"./esm/*": "./esm/*",
 		"./types/*": "./types/*",
 		"./package.json": "./package.json"
 	},
