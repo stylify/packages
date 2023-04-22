@@ -3,7 +3,7 @@ import {
 	CompilerConfigInterface,
 	mergeObjects
 } from '@stylify/stylify';
-import { Bundler } from '@stylify/bundler';
+import { Bundler, hooks as bundlerHooks } from '@stylify/bundler';
 import fs from 'fs';
 import path from 'path';
 
@@ -32,6 +32,8 @@ export interface BundleStatsInterface {
 export interface ProcessedBundleInterface {
 	css?: string,
 }
+
+export const hooks = bundlerHooks;
 
 const filesSuffix = (/lib\/?$/).test(__dirname) ? 'cjs' : 'mjs';
 
