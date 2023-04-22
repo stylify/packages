@@ -1,5 +1,10 @@
 import type { AstroIntegration } from 'astro';
-import { UnpluginConfigInterface, stylifyVite, defineConfig as stylifyUnpluginConfig } from '@stylify/unplugin';
+import {
+	UnpluginConfigInterface,
+	stylifyVite,
+	defineConfig as stylifyUnpluginConfig,
+	hooks as unpluginHooks
+} from '@stylify/unplugin';
 import { Configurator } from '@stylify/stylify';
 import { fileURLToPath } from 'url';
 import { join } from 'path';
@@ -9,6 +14,8 @@ import type { BundleConfigInterface } from '@stylify/bundler';
 export interface ConfigInterface extends UnpluginConfigInterface {
 	importDefaultBundle?: false|boolean
 }
+
+export const hooks = unpluginHooks;
 
 export const defineConfig = stylifyUnpluginConfig;
 

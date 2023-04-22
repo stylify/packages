@@ -1,4 +1,4 @@
-import { BundleConfigInterface, BundlerConfigInterface, Bundler } from '@stylify/bundler';
+import { BundleConfigInterface, BundlerConfigInterface, Bundler, hooks as bundlerHooks } from '@stylify/bundler';
 import {
 	Compiler,
 	Configurator,
@@ -16,6 +16,8 @@ export interface UnpluginConfigInterface extends DefaultConfigInterface {
 	bundler?: BundlerConfigInterface;
 	transformIncludeFilter?: (id: string) => boolean;
 }
+
+export const hooks = bundlerHooks;
 
 const defaultAllowedFileTypes = [
 	// Html

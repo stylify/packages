@@ -11,6 +11,7 @@ import {
 	stylifyWebpack,
 	stylifyVite,
 	defineConfig as defineUnpluginConfig,
+	hooks as unpluginHooks,
 	UnpluginConfigInterface
 } from '@stylify/unplugin';
 import {
@@ -42,6 +43,8 @@ export interface BundleStatsInterface {
 }
 
 const stylifyCssFileName = 'stylify.css';
+
+export const hooks = unpluginHooks;
 
 export const defineConfig = (config: NuxtModuleConfigInterface): NuxtModuleConfigInterface => config;
 
