@@ -1,5 +1,5 @@
 {
-	"name": "stylify-nuxt",
+	"private": true,
 	"type": "module",
 	"scripts": {
 		"dev": "nuxt",
@@ -12,7 +12,7 @@
 		"nuxt": "^2.14"
 	},
 	"devDependencies": {
-		"node-sass": "^4.14",
-		"sass-loader": "^10.0"
+		"node-sass": "^8.0",
+		"sass-loader": "^13.2"
 	}
 }
