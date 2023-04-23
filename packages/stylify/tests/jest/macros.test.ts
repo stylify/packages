@@ -34,7 +34,11 @@ test('Custom macros', (): void => {
 					'position': 'relative',
 					'z-index': Number(macroMatch.getCapture(0))
 				});
-			}
+			},
+			'padding-y:(\\S+?)': ({ macroMatch, selectorProperties }) => {
+				selectorProperties.add('padding-top', macroMatch.getCapture(0));
+				selectorProperties.add('padding-bottom', macroMatch.getCapture(0));
+			},
 		}
 	});
 
