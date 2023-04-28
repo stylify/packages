@@ -1,5 +1,4 @@
 {
-	"name": "stylify-webpack",
 	"private": true,
 	"scripts": {
 		"build": "webpack build",

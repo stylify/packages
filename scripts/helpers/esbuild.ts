@@ -1,6 +1,5 @@
 /* eslint-disable no-console */
 /* eslint-disable @typescript-eslint/no-floating-promises */
-import 'v8-compile-cache';
 import path from 'path';
 import { exec } from 'child_process';
 import fse from 'fs-extra';

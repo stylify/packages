@@ -964,7 +964,21 @@ export class Bundler {
 				}
 
 				const fileContent = fs.readFileSync(filePath).toString();
-				const contentOptions = compiler.getOptionsFromContent<ContentOptionsInterface>(fileContent);
+				const contentForContentOptionsCheck = fileContent.replace(
+					new RegExp(compiler.ignoredAreasRegExpString, 'g'),
+					(...args): string => {
+						const matchArguments = args.filter((value) => typeof value === 'string');
+						const fullMatch: string = matchArguments[0];
+						const innerHtml: string = matchArguments[1];
+
+						return typeof innerHtml === 'undefined' || innerHtml.length === 0
+							? fullMatch
+							: fullMatch.replace(innerHtml, '');
+					}
+				);
+				const contentOptions = compiler.getOptionsFromContent<ContentOptionsInterface>(
+					contentForContentOptionsCheck
+				);
 				const hookData = await hooks.callAsyncHook(
 					'bundler:fileToProcessOpened',
 					{
@@ -988,6 +1002,7 @@ export class Bundler {
 
 					filePathsFromContent
 						.join(' ')
+						.replace(/\s/g, ' ')
 						.split(' ')
 						.forEach((fileOptionValue) => {
 							if (fileOptionValue.trim().length === 0) {

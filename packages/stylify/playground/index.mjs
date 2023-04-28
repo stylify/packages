@@ -1,4 +1,4 @@
-import { Compiler } from './packages/stylify/esm/index.mjs';
+import { Compiler } from '../esm/index.mjs';
 
 const compiler = new Compiler({
 	dev: true,

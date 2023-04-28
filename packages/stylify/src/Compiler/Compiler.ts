@@ -124,6 +124,8 @@ export type UndefinedVariableWarningLevelType = 'silent' | 'warning' | 'error'
 
 export class Compiler {
 
+	private readonly macroRegExpStartPart = '(?:^|[^a-zA-Z0-9_-])';
+
 	private readonly macroRegExpEndPart = `(?=['"\`{}\\[\\]<>\\s]|$)`;
 
 	private readonly textPlaceholder = '_TEXT_';
@@ -134,13 +136,11 @@ export class Compiler {
 
 	private readonly macrosRegExpGenerators = [
 		// Match with media query and without pseudo class
-		(macroKey: string): RegExp => new RegExp(`(?:([a-zA-Z0-9\\-:&\\|]+):)${macroKey}${this.macroRegExpEndPart}`, 'g'),
+		(macroKey: string): RegExp => new RegExp(`([a-zA-Z0-9\\-:&\\|]+):${macroKey}${this.macroRegExpEndPart}`, 'g'),
 		// Match without media query and without pseudo class
 		// () - empty pseudo class and media query match
-		(macroKey: string): RegExp => new RegExp(`\\b()${macroKey}${this.macroRegExpEndPart}`, 'g')
+		(macroKey: string): RegExp => new RegExp(`()${macroKey}${this.macroRegExpEndPart}`, 'g')
 	];
-
-	private ignoredAreasRegExpString: string = null;
 
 	private undefinedVariableWarningLevel: UndefinedVariableWarningLevelType = 'error';
 
@@ -176,11 +176,14 @@ export class Compiler {
 
 	private matchCustomSelectors = true;
 
+	private processedHelpers = {};
+
+	/** @internal */
+	public ignoredAreasRegExpString: string = null;
+
 	public replaceVariablesByCssVariables = false;
 
 	public injectVariablesIntoCss = true;
-
-	private processedHelpers = {};
 
 	constructor(config: CompilerConfigInterface = {}) {
 		this.configure(defaultPreset);
@@ -344,19 +347,19 @@ export class Compiler {
 			return content;
 		}
 
-		const placeholderTextPart = this.textPlaceholder;
 		const contentPlaceholders: Record<string, string> = {};
 
 		const placeholderInserter = (matched: string) => {
 			if (!(matched in contentPlaceholders)) {
-				const placeholderKey = `${placeholderTextPart}${Object.keys(contentPlaceholders).length}`;
+				const placeholderKey = `${this.textPlaceholder}${Object.keys(contentPlaceholders).length}`;
 				contentPlaceholders[matched] = placeholderKey;
 			}
 
 			return contentPlaceholders[matched];
 		};
 
-		let originalMatchedAreas: string[] = [];
+		const selectorsListKeys = Object.keys(minifiedSelectorGenerator.processedSelectors)
+			.sort((a: string, b: string): number => b.length - a.length);
 		let rawContent = content;
 
 		content = prepareStringForReplace(content)
@@ -365,77 +368,81 @@ export class Compiler {
 				const fullMatch: string = matchArguments[0];
 				const innerMatch: string = matchArguments[1];
 
-				return typeof innerMatch === 'undefined' || innerMatch.length === 0
+				const replacement = typeof innerMatch === 'undefined' || innerMatch.length === 0
 					? fullMatch
 					: fullMatch.replace(innerMatch, placeholderInserter(innerMatch));
+
+				if (replacement !== fullMatch) {
+					rawContent = rawContent.replace(new RegExp(innerMatch, 'g'), contentPlaceholders[innerMatch]);
+				}
+
+				return replacement;
 			})
 			.replace(
 				new RegExp(this.contentOptionsRegExp.source, 'g'),
 				(matched: string) => placeholderInserter(matched)
 			);
 
-		rawContent = rawContent
-			.replace(new RegExp(this.ignoredAreasRegExpString, 'g'), (...args): string => {
-				const matchArguments = args.filter((value) => typeof value === 'string');
-				const fullMatch: string = matchArguments[0];
-				const innerMatch: string = matchArguments[1];
+		rawContent = rawContent.replace(new RegExp(this.contentOptionsRegExp.source, 'g'), '');
 
-				return typeof innerMatch === 'undefined' || innerMatch.length === 0
-					? fullMatch
-					: contentPlaceholders[innerMatch];
-			})
-			.replace(new RegExp(this.contentOptionsRegExp.source, 'g'), '');
+		let areasToRewrite: {contentToReplace: string, contentToRewrite: string }[] = [];
 
 		if (rewriteOnlyInSelectorsAreas) {
 			for (const rewriteSelectorAreaRegExpString of this.selectorsAreas) {
-				rawContent = rawContent.replace(new RegExp(rewriteSelectorAreaRegExpString, 'g'), (fullMatch) => {
-					originalMatchedAreas.push(fullMatch);
-					return '';
-				});
+				rawContent = rawContent.replace(
+					new RegExp(rewriteSelectorAreaRegExpString, 'g'),
+					(contentToReplace, contentToRewrite) => {
+						areasToRewrite.push({ contentToReplace, contentToRewrite });
+						return '';
+					}
+				);
 			}
 		} else {
-			originalMatchedAreas = [content];
+			areasToRewrite = [{ contentToReplace: content, contentToRewrite: content }];
 		}
 
 		rawContent = '';
 
-		const selectorsListKeys = Object.keys(minifiedSelectorGenerator.processedSelectors)
-			.sort((a: string, b: string): number => b.length - a.length);
+		for (const areaToRewrite of areasToRewrite) {
+			const contentToReplace = areaToRewrite.contentToReplace;
+			const originalContentToRewrite = areaToRewrite.contentToRewrite;
+			let contentToRewrite = prepareStringForReplace(areaToRewrite.contentToRewrite);
 
-		const matchedAreasSeparator = '_MATCHED_AREA_SEPARATOR_';
-		let matchedAreasString = prepareStringForReplace(originalMatchedAreas.join(matchedAreasSeparator));
+			for (const selector of selectorsListKeys) {
+				if (!contentToRewrite.includes(prepareStringForReplace(selector))) {
+					continue;
+				}
 
-		for (const selector of selectorsListKeys) {
-			let selectorToReplace = prepareStringForReplace(selector);
+				const mangledSelector = minifiedSelectorGenerator.getMangledSelector(
+					selector, this.mangledSelectorsPrefix
+				);
+				const selectorPrefix = matchSelectorsWithPrefixes
+					? minifiedSelectorGenerator.getSelectorPrefix(selector)
+					: '';
 
-			if (!content.includes(selectorToReplace)) {
-				continue;
+				const selectorToReplace = escapeCssSelector(
+					prepareStringForReplace(
+						minifiedSelectorGenerator.getStringToMatch(selector, matchSelectorsWithPrefixes)
+					)
+				);
+
+				const replacement = `${selectorPrefix}${mangledSelector}`;
+				const selectorToReplaceRegExp = new RegExp(
+					`${rewriteOnlyInSelectorsAreas ? this.macroRegExpStartPart: ''}(${selectorToReplace})`,
+					'g'
+				);
+
+				contentToRewrite = contentToRewrite.replace(
+					selectorToReplaceRegExp,
+					(fullMatch, selector) => fullMatch.replace(selector, replacement)
+				);
+
+				contentToRewrite = this.dev ? contentToRewrite : contentToRewrite.replace(/\n/g, ' ').replace(/\s{2,}/g, ' ');
 			}
 
-			const mangledSelector = minifiedSelectorGenerator.getMangledSelector(selector, this.mangledSelectorsPrefix);
-			const selectorPrefix = matchSelectorsWithPrefixes
-				? minifiedSelectorGenerator.getSelectorPrefix(selector)
-				: '';
-
-			selectorToReplace = selectorToReplace.replace(/\\/g, '\\\\');
-			selectorToReplace = escapeCssSelector(
-				minifiedSelectorGenerator.getStringToMatch(selectorToReplace, matchSelectorsWithPrefixes)
-			);
-
-			const replacement = `${selectorPrefix}${mangledSelector}`;
-			const selectorToReplaceRegExp = new RegExp(selectorToReplace, 'g');
-
-			matchedAreasString = matchedAreasString.replace(selectorToReplaceRegExp, replacement);
-		}
-
-		const processedMatchedAreas: string[] = matchedAreasString
-			.split(matchedAreasSeparator)
-			.filter((item) => item.trim().length);
-
-		for (const [index, processedArea] of Object.entries(processedMatchedAreas)) {
 			content = content.replace(
-				prepareStringForReplace(originalMatchedAreas[index] as string),
-				this.dev ? processedArea : processedArea.replace(/\n/g, ' ').replace(/\s{2,}/g, ' ')
+				prepareStringForReplace(contentToReplace),
+				contentToReplace.replace(originalContentToRewrite, contentToRewrite)
 			);
 		}
 
@@ -492,8 +499,9 @@ export class Compiler {
 			contentToProcess = contentToProcess.replace(
 				/\[([^{}\s]+)\]{([^{}]+)}/g,
 				(fullMatch: string, cssSelectors: string, stylifySelectors: string) => {
+					this.generateMangledSelector(fullMatch);
 					this.addCustomSelector(
-						this.generateMangledSelector(fullMatch, null),
+						fullMatch,
 						`${MacroMatch.replaceCharactersAliases(cssSelectors)}{${stylifySelectors.replace(/;/g, ' ')}}`,
 						false,
 						'customMatchedInClass'
@@ -506,8 +514,9 @@ export class Compiler {
 			contentToProcess = contentToProcess.replace(
 				/(\S+):{([^{}]+)}/g,
 				(fullMatch: string, screenAndPseudoClasses: string, stylifySelectors: string) => {
+					this.generateMangledSelector(fullMatch);
 					this.addCustomSelector(
-						this.generateMangledSelector(fullMatch, null),
+						fullMatch,
 						stylifySelectors.split(';')
 							.map((stylifySelector) => `${screenAndPseudoClasses}:${stylifySelector}`)
 							.join(' '),
@@ -742,10 +751,11 @@ export class Compiler {
 
 	private processComponents(content: string): void {
 		for (const [componentName, config] of Object.entries(this.components)) {
-			const regExp = new RegExp(`\\b${componentName + this.macroRegExpEndPart}`, 'g');
-			let componentMatch: RegExpExecArray;
+			const regExp = new RegExp(`${this.macroRegExpStartPart}(${componentName}${this.macroRegExpEndPart})`, 'g');
+			let macroFullMatch: RegExpExecArray;
 
-			while ((componentMatch = regExp.exec(content))) {
+			while ((macroFullMatch = regExp.exec(content))) {
+				const componentMatch = new RegExp(`${componentName}${this.macroRegExpEndPart}`).exec(macroFullMatch[1]);
 				const componentSelector = componentMatch[0];
 
 				for (const selectorsOrGenerator of config.selectorsOrGenerators) {
@@ -769,11 +779,15 @@ export class Compiler {
 		if (!content.trim()) {
 			return;
 		}
-
 		for (const regExpGenerator of this.macrosRegExpGenerators) {
 			for (const macroKey in this.macros) {
-				content = content.replace(regExpGenerator(`${this.selectorsPrefix}${macroKey}`), (...args) => {
-					const macroMatches: string[] = args.slice(0, args.length - 2);
+				content = content.replace(new RegExp(`${this.macroRegExpStartPart}(${regExpGenerator(`${this.selectorsPrefix}${macroKey}`).source})`, 'g'), (...args) => {
+					const macroMatches = regExpGenerator(`${this.selectorsPrefix}${macroKey}`).exec(args[1]);
+
+					if (!macroMatches) {
+						return args[0];
+					}
+
 					const macroMatch = new MacroMatch(macroMatches, this.screens);
 					const existingCssRecord = compilationResult.getCssRecord(macroMatch);
 
