@@ -142,8 +142,6 @@ export class Compiler {
 		(macroKey: string): RegExp => new RegExp(`()${macroKey}${this.macroRegExpEndPart}`, 'g')
 	];
 
-	private ignoredAreasRegExpString: string = null;
-
 	private undefinedVariableWarningLevel: UndefinedVariableWarningLevelType = 'error';
 
 	public ignoredAreas: RegExp[] = [];
@@ -178,11 +176,14 @@ export class Compiler {
 
 	private matchCustomSelectors = true;
 
+	private processedHelpers = {};
+
+	/** @internal */
+	public ignoredAreasRegExpString: string = null;
+
 	public replaceVariablesByCssVariables = false;
 
 	public injectVariablesIntoCss = true;
-
-	private processedHelpers = {};
 
 	constructor(config: CompilerConfigInterface = {}) {
 		this.configure(defaultPreset);
