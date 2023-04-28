@@ -408,9 +408,7 @@ export class Compiler {
 			let contentToRewrite = prepareStringForReplace(areaToRewrite.contentToRewrite);
 
 			for (const selector of selectorsListKeys) {
-				let selectorToReplace = prepareStringForReplace(selector);
-
-				if (!contentToRewrite.includes(selectorToReplace)) {
+				if (!contentToRewrite.includes(prepareStringForReplace(selector))) {
 					continue;
 				}
 
@@ -421,9 +419,10 @@ export class Compiler {
 					? minifiedSelectorGenerator.getSelectorPrefix(selector)
 					: '';
 
-				selectorToReplace = selectorToReplace.replace(/\\/g, '\\\\');
-				selectorToReplace = escapeCssSelector(
-					minifiedSelectorGenerator.getStringToMatch(selectorToReplace, matchSelectorsWithPrefixes)
+				const selectorToReplace = escapeCssSelector(
+					prepareStringForReplace(
+						minifiedSelectorGenerator.getStringToMatch(selector, matchSelectorsWithPrefixes)
+					)
 				);
 
 				const replacement = `${selectorPrefix}${mangledSelector}`;
@@ -499,8 +498,9 @@ export class Compiler {
 			contentToProcess = contentToProcess.replace(
 				/\[([^{}\s]+)\]{([^{}]+)}/g,
 				(fullMatch: string, cssSelectors: string, stylifySelectors: string) => {
+					this.generateMangledSelector(fullMatch);
 					this.addCustomSelector(
-						this.generateMangledSelector(fullMatch, null),
+						fullMatch,
 						`${MacroMatch.replaceCharactersAliases(cssSelectors)}{${stylifySelectors.replace(/;/g, ' ')}}`,
 						false,
 						'customMatchedInClass'
@@ -513,8 +513,9 @@ export class Compiler {
 			contentToProcess = contentToProcess.replace(
 				/(\S+):{([^{}]+)}/g,
 				(fullMatch: string, screenAndPseudoClasses: string, stylifySelectors: string) => {
+					this.generateMangledSelector(fullMatch);
 					this.addCustomSelector(
-						this.generateMangledSelector(fullMatch, null),
+						fullMatch,
 						stylifySelectors.split(';')
 							.map((stylifySelector) => `${screenAndPseudoClasses}:${stylifySelector}`)
 							.join(' '),
