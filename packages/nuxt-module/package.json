@@ -1,6 +1,6 @@
 {
 	"name": "@stylify/nuxt-module",
-	"version": "0.5.32",
+	"version": "0.5.33",
 	"description": "Module for Nuxt v2 for easier Stylify integration.",
 	"keywords": [
 		"stylify",

@@ -1,6 +1,6 @@
 {
 	"name": "@stylify/astro",
-	"version": "0.5.32",
+	"version": "0.5.33",
 	"description": "Stylify generates utility-first CSS dynamically based on what you write. Write HTML. Get CSS.",
 	"type": "module",
 	"keywords": [
