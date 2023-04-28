@@ -988,6 +988,7 @@ export class Bundler {
 
 					filePathsFromContent
 						.join(' ')
+						.replace(/\s/g, ' ')
 						.split(' ')
 						.forEach((fileOptionValue) => {
 							if (fileOptionValue.trim().length === 0) {
