@@ -22,40 +22,40 @@ export const defaultPreset = {
 	],
 	selectorsAreas: [
 		// HTML
-		'(?:^|\\s+)class="([^"]+)"',
-		'(?:^|\\s+)class=\'([^\']+)\'',
+		/(?:^|\s+)class="([^"]+)"/,
+		/(?:^|\s+)class='([^']+)'/,
 		// React
-		'(?:^|\\s+)className="([^"]+)"',
-		'(?:^|\\s+)className=\'([^\']+)\'',
-		'(?:^|\\s+)className=\\{((?:.|\\n)+)\\}',
+		/(?:^|\s+)className="([^"]+)"/,
+		/(?:^|\s+)className='([^']+)'/,
+		/(?:^|\s+)className=\{((?:.|\n)+)\}/,
 		// JSX compiled
-		'(?:^|\\s+)className:\\s*`((?:.|\\n)+)`',
-		'(?:^|\\s+)className:\\s*"([^"]+)"',
-		'(?:^|\\s+)className:\\s*\'([^\']+)"',
+		/(?:^|\s+)className:\s*`((?:.|\n)+)`/,
+		/(?:^|\s+)className:\s*"([^"]+)"/,
+		/(?:^|\s+)className:\s*'([^']+)"/,
 		// Vue and alpinejs
-		'(?:^|\\s+)(?:v-bind|x-bind)?:class="([^"]+)"',
-		'(?:^|\\s+)(?:v-bind|x-bind)?:class=\'([^\']+)\'',
+		/(?:^|\s+)(?:v-bind|x-bind)?:class="([^"]+)"/,
+		/(?:^|\s+)(?:v-bind|x-bind)?:class='([^']+)'/,
 		// Lit
-		'(?:^|\\s+)class=\\$\\{((?:.|\n)+)\\}',
+		/(?:^|\s+)class=\$\{((?:.|\n)+)\}/,
 		// Angular
-		'(?:^|\\s+)\\[(?:ngClass|className)\\]="([^"]+)',
-		'(?:^|\\s+)\\[(?:ngClass|className)\\]=\'([^\']+)',
+		/(?:^|\s+)\[(?:ngClass|className)\]="([^"]+)/,
+		/(?:^|\s+)\[(?:ngClass|className)\]='([^']+)/,
 		// Nette
-		'(?:^|\\s+)n:class="([^"]+)"',
-		'(?:^|\\s+)n:class=\'([^\']+)\'',
+		/(?:^|\s+)n:class="([^"]+)"/,
+		/(?:^|\s+)n:class='([^']+)'/,
 		// Twig form widgets
-		'\'class\':\\s*\'([^\']+)\'',
-		'\'class\':\\s*"([^"]+)"',
-		'"class":\\s*"([^"]+)"',
-		'"class":\\s*\'([^\']+)\'',
+		/'class':\s*'([^']+)'/,
+		/'class':\s*"([^"]+)"/,
+		/"class":\s*"([^"]+)"/,
+		/"class":\s*'([^']+)'/,
 		// Escaped default areas
-		'(?:^|\\s+)class=\\\\"([^"]+)\\\\"',
-		`(?:^|\\s+)class=\\\\'([^']+)\\\\'`,
+		/(?:^|\s+)class=\\"([^"]+)\\"/,
+		/(?:^|\s+)class=\\'([^']+)\\'/,
 		// Svelte
-		'(?:^|\\s+)class:(\\S+)=[{"\']',
-		'class=\\{`([^`]+)`\\}',
+		/(?:^|\s+)class:(\S+)=[{"']/,
+		/class=\{`([^`]+)`\}/,
 		// Objects
-		'(?:^|\\s+)"class":\\s*`([^`]+)`'
+		/(?:^|\s+)"class":\s*`([^`]+)`/
 	],
 	screens: {
 		tosm: maxWidthScreen('639px'),

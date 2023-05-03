@@ -49,10 +49,10 @@ export const stylify = (options: ConfigInterface = {}): AstroIntegration => {
 					compiler: {
 						mangleSelectors: options.compiler?.mangleSelectors ?? !isDev,
 						selectorsAreas: [
-							'(?:^|\\s+)class=\\{((?:.|\\n)+)\\}',
-							'(?:^|\\s+)class:list=\\{\\[((?:.|\\n)+)\\]\\}',
-							`addAttribute\\(([\\s\\S\\n]+), (?:"|\\')class:list(?:"|\\')\\)`,
-							`addAttribute\\(([\\s\\S\\n]+), (?:"|')class(?:"|')\\)`
+							/(?:^|\s+)class=\{((?:.|\n)+)\}/,
+							/(?:^|\s+)class:list=\{\[((?:.|\n)+)\]\}/,
+							/addAttribute\(([\s\S\n]+), (?:"|')class:list(?:"|')\)/,
+							/addAttribute\(([\s\S\n]+), (?:"|')class(?:"|')\)/
 						]
 					},
 					bundles: generateDefaultBundle
