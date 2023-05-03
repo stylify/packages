@@ -64,7 +64,7 @@ export const stylify = (options: ConfigInterface = {}): AstroIntegration => {
 						: []
 				};
 
-				const configs = Configurator.getDefaultExistingConfigFiles(fileURLToPath(config.root));
+				const configs = Configurator.getExistingConfigFiles(fileURLToPath(config.root));
 				const configsValues = Object.values(configs);
 
 				if (configsValues.length > 0) {
