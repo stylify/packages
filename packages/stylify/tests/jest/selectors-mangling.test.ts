@@ -132,8 +132,8 @@ test('Mangling similar areas right behind each other', (): void => {
 		mangleSelectors: true,
 		dev: true,
 		selectorsAreas: [
-			`addAttribute\\(([\\s\\S]+), (?:"|\\')class:list(?:"|\\')\\)`,
-			`addAttribute\\(([\\s\\S]+), (?:"|')class(?:"|')\\)`
+			/addAttribute\(([\s\S]+), (?:"|\\')class:list(?:"|')\)/,
+			/addAttribute\(([\s\S]+), (?:"|')class(?:"|')\)/
 		]
 	});
 
@@ -151,7 +151,7 @@ test('Escaped match area', (): void => {
 		mangleSelectors: true,
 		dev: true,
 		selectorsAreas: [
-			'class=\\\\"([^"]+)\\\\"'
+			/class=\\"([^"]+)\\"/
 		]
 	});
 

@@ -94,7 +94,7 @@ export interface CompilerConfigInterface {
 	pregenerate?: PregenerateType,
 	components?: ComponentType,
 	ignoredAreas?: RegExp[],
-	selectorsAreas?: string[],
+	selectorsAreas?: RegExp[],
 	cssVariablesEnabled?: boolean,
 	injectVariablesIntoCss?: boolean
 	matchCustomSelectors?: boolean
@@ -170,7 +170,7 @@ export class Compiler {
 
 	public pregenerate = '';
 
-	public selectorsAreas = [];
+	public selectorsAreas: RegExp[] = [];
 
 	public customSelectors: Record<string, CustomSelectorsInterface> = {};
 
@@ -382,7 +382,7 @@ export class Compiler {
 		if (rewriteOnlyInSelectorsAreas) {
 			for (const rewriteSelectorAreaRegExpString of this.selectorsAreas) {
 				rawContent = rawContent.replace(
-					new RegExp(rewriteSelectorAreaRegExpString, 'g'),
+					new RegExp(rewriteSelectorAreaRegExpString.source, 'g'),
 					(contentToReplace, contentToRewrite) => {
 						areasToRewrite.push({ contentToReplace, contentToRewrite });
 						return '';
@@ -473,7 +473,7 @@ export class Compiler {
 
 		if (matchOnlyInAreas) {
 			for (const selectorAreaRegExpString of this.selectorsAreas) {
-				const regExp = new RegExp(selectorAreaRegExpString, 'g');
+				const regExp = new RegExp(selectorAreaRegExpString.source, 'g');
 				let selectorAreasMatches: RegExpExecArray;
 				while ((selectorAreasMatches = regExp.exec(content))) {
 					contentToProcess += ' ' + selectorAreasMatches[1];

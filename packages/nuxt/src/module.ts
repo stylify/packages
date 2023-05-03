@@ -165,7 +165,7 @@ export default defineNuxtModule<NuxtModuleConfigInterface>({
 					id: 'nuxtRollup',
 					dev: nuxtIsInDevMode,
 					compiler: {
-						selectorsAreas: ['"className":\\[([^\\]]+)\\]']
+						selectorsAreas: [/"className":\[([^\]]+)\]/]
 					}
 				}
 			);

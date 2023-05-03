@@ -16,7 +16,7 @@ const bundler = new Bundler({
 	filesBaseDir: bundleTestDir,
 	compiler: {
 		mangleSelectors: true,
-		selectorsAreas: ['(?:^|\\s+)n:class="([^"]+)"', '(?:^|\\s+)v-bind:class="([^"]+)"']
+		selectorsAreas: [/(?:^|\s+)n:class="([^"]+)"/, /(?:^|\s+)v-bind:class="([^"]+)"/]
 	}
 });
 
