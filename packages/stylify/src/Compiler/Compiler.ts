@@ -176,6 +176,8 @@ export class Compiler {
 
 	private matchCustomSelectors = true;
 
+	private processedHelpers = {};
+
 	public cssVariablesEnabled = true;
 
 	public injectVariablesIntoCss = true;
