@@ -1,21 +1,20 @@
 import { ScreensType } from './Compiler';
+import { RegExpMatch } from './RegExpMatch';
 
 export type CharacterAliasTypeOptions = 'quote' | 'space';
 
-export class MacroMatch {
+export class MacroMatch extends RegExpMatch {
 
 	public static readonly selectorSpaceAlias = '_';
 
 	public static readonly selectorQuoteAlias = '^';
 
-	private readonly logicalOperandsReplacementMap = {
+	private static readonly logicalOperandsReplacementMap = {
 		'&&': ' and ',
 		'||': ', '
 	};
 
-	private readonly logicalOperandsList = Object.keys(this.logicalOperandsReplacementMap);
-
-	public fullMatch: string = null;
+	private static readonly logicalOperandsList = Object.keys(MacroMatch.logicalOperandsReplacementMap);
 
 	public selector: string = null;
 
@@ -23,14 +22,18 @@ export class MacroMatch {
 
 	public pseudoClasses: string = null;
 
-	public captures: string[] = [];
-
+	/**
+	 * Match
+	 * [0] => Full match with spaces
+	 * [1] => Full match trimmed
+	 * [2] => Pseudo classes and screens
+	 * [3] => Property
+	 * [4] => Value
+	 */
 	constructor(match: string[], screens: ScreensType) {
-		this.fullMatch = match[0].trim();
-		const screenAndPseudoClassesMatch = match[1]?.trim() ?? null;
+		super(match[1], match.slice(3));
+		const screenAndPseudoClassesMatch = match[2]?.trim() ?? null;
 		this.selector = this.fullMatch;
-		match.splice(0, 2);
-		this.captures = match.filter(matchToFilter => typeof matchToFilter !== 'undefined');
 
 		if (!screenAndPseudoClassesMatch) {
 			return;
@@ -50,7 +53,7 @@ export class MacroMatch {
 			const nextToken = screensAndPseudoClassesTokens[i + 1] ?? '';
 
 			const nextSequence = token + nextToken;
-			const nextSequenceIsLogicalSeparator = this.logicalOperandsList.includes(nextSequence);
+			const nextSequenceIsLogicalSeparator = MacroMatch.logicalOperandsList.includes(nextSequence);
 			const nextSequenceIsColonSeparator = token === '\\' && nextToken !== ':';
 			const isLastToken = i === tokensLength;
 
@@ -89,7 +92,7 @@ export class MacroMatch {
 
 			if (nextSequenceIsLogicalSeparator) {
 				pseudoClassesPart = pseudoClassesPart.substring(2);
-				screensAndPseudoClassesParts.push(this.logicalOperandsReplacementMap[nextSequence]);
+				screensAndPseudoClassesParts.push(MacroMatch.logicalOperandsReplacementMap[nextSequence]);
 				i ++;
 				tokenQueue = '';
 				continue;
@@ -114,22 +117,20 @@ export class MacroMatch {
 		};
 
 		for (const [characterToReplace, replacement] of alias ? aliases[alias] : Object.values(aliases)) {
-			content = content.replace(new RegExp(`(\\\\)?\\${characterToReplace}`, 'g'), (fullMatch, escapeCharacter) => {
-				return escapeCharacter ? fullMatch.replace(/\\/, '') : replacement;
-			});
+			content = content.replace(
+				new RegExp(`(\\\\)?\\${characterToReplace}`, 'g'),
+				(fullMatch, escapeCharacter) => {
+					return escapeCharacter ? fullMatch.replace(/\\/, '') : replacement;
+				}
+			);
 		}
 
 		return content;
 	}
 
-	public hasCapture(index: number|string): boolean {
-		return typeof this.captures[index] !== 'undefined';
-	}
-
 	public getCapture(index: number|string, defaultValue = ''): string {
-		return this.hasCapture(index)
-			? MacroMatch.replaceCharactersAliases(this.captures[index] as string)
-			: defaultValue;
+		const capture = super.getCapture(index);
+		return capture === undefined ? defaultValue : MacroMatch.replaceCharactersAliases(capture);
 	}
 
 }

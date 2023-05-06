@@ -34,8 +34,8 @@ test('Mangle single letter macros', (): void => {
 		dev: true,
 		mangleSelectors: true,
 		macros: {
-			'm:(\\S+?)': ({macroMatch, selectorProperties}) => {
-				selectorProperties.add('margin', macroMatch.getCapture(0));
+			'm:(\\S+?)': ({match, selectorProperties}) => {
+				selectorProperties.add('margin', match.getCapture(0));
 			}
 		}
 	});

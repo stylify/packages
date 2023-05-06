@@ -46,8 +46,8 @@ async function build() {
 						},
 						cssVariablesEnabled: false,
 						macros: {
-							'm:(\\S+?)': ({macroMatch, selectorProperties}) => {
-								selectorProperties.add('margin', macroMatch.getCapture(0));
+							'm:(\\S+?)': ({match, selectorProperties}) => {
+								selectorProperties.add('margin', match.getCapture(0));
 							}
 						}
 					}

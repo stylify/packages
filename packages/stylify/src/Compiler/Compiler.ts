@@ -1,6 +1,7 @@
 import {
 	CompilationResult,
 	MacroMatch,
+	RegExpMatch,
 	SelectorProperties,
 	minifiedSelectorGenerator,
 	screensSorter,
@@ -37,7 +38,7 @@ export interface MacroCallbackDataInterface {
 	dev: boolean,
 	helpers: HelpersType,
 	variables: VariablesType,
-	macroMatch: MacroMatch,
+	match: MacroMatch,
 	selectorProperties: SelectorProperties
 }
 
@@ -111,7 +112,7 @@ export interface ComponentGeneratorFunctionDataInterface {
 	dev: boolean,
 	helpers: HelpersType,
 	variables: VariablesType,
-	matches: RegExpExecArray
+	match: RegExpMatch
 }
 
 export type ComponentGeneratorFunctionType = (data: ComponentGeneratorFunctionDataInterface) => string;
@@ -755,7 +756,7 @@ export class Compiler {
 				for (const selectorsOrGenerator of config.selectorsOrGenerators) {
 					const componentSelectors = typeof selectorsOrGenerator === 'function'
 						? selectorsOrGenerator({
-							matches: componentMatch,
+							match: new RegExpMatch(componentMatch[0], componentMatch.slice(1)),
 							dev: this.dev,
 							variables: this.variables,
 							helpers: this.helpers
@@ -773,16 +774,11 @@ export class Compiler {
 		if (!content.trim()) {
 			return;
 		}
+
 		for (const regExpGenerator of this.macrosRegExpGenerators) {
 			for (const macroKey in this.macros) {
 				content = content.replace(new RegExp(`${this.macroRegExpStartPart}(${regExpGenerator(`${this.selectorsPrefix}${macroKey}`).source})`, 'g'), (...args) => {
-					const macroMatches = regExpGenerator(`${this.selectorsPrefix}${macroKey}`).exec(args[1]);
-
-					if (!macroMatches) {
-						return args[0];
-					}
-
-					const macroMatch = new MacroMatch(macroMatches, this.screens);
+					const macroMatch = new MacroMatch(args.slice(0, args.length - 2) as string[], this.screens);
 					const existingCssRecord = compilationResult.getCssRecord(macroMatch);
 
 					if (existingCssRecord) {
@@ -797,7 +793,7 @@ export class Compiler {
 					const selectorProperties = new SelectorProperties();
 
 					this.macros[macroKey]({
-						macroMatch,
+						match: macroMatch,
 						selectorProperties,
 						dev: this.dev,
 						variables: this.variables,
@@ -813,7 +809,7 @@ export class Compiler {
 					}
 
 					hooks.callHook('compiler:newMacroMatch', {
-						macroMatch,
+						match: macroMatch,
 						utilityShouldBeGenerated: utilitiesShouldBeGenerated,
 						selectorProperties,
 						dev: this.dev,

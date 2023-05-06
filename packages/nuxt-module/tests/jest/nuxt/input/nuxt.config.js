@@ -12,10 +12,10 @@ export default {
 				red: 'darkred'
 			},
 			macros: {
-				'clr:(\\S+?)': function ({macroMatch, selectorProperties}) {
+				'clr:(\\S+?)': function ({match, selectorProperties}) {
 					// color:blue => will create => color: blue
 					// You can also use addMultiple({})
-					selectorProperties.add('color', macroMatch.getCapture(0));
+					selectorProperties.add('color', match.getCapture(0));
 				}
 			}
 		}
