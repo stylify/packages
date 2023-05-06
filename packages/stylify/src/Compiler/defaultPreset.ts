@@ -1,10 +1,11 @@
-import type { CompilerConfigInterface } from '.';
+import type { CompilerConfigInterface, ScreenCallbackDataInterface } from '.';
 import { lightenDarkenColor, parseColor } from '../Utilities';
 
 const rangeScreen = (screen: string): string => {
 	const ranges = screen.replace('rng', '').split('-');
 	return `${minWidthScreen(ranges[0])} and ${maxWidthScreen(ranges[1])}`;
 };
+
 const minWidthScreen = (screen: string): string => `(min-width: ${screen.replace('minw', '')})`;
 const maxWidthScreen = (screen: string): string => `(max-width: ${screen.replace('maxw', '')})`;
 const minHeightScreen = (screen: string): string => `(min-height: ${screen.replace('minh', '')})`;
@@ -70,11 +71,11 @@ export const defaultPreset = {
 		'2xl': minWidthScreen('1536px'),
 		to3xl: maxWidthScreen('1919px'),
 		'3xl': minWidthScreen('1920px'),
-		'minw\\w+': minWidthScreen,
-		'maxw\\w+': maxWidthScreen,
-		'minh\\w+': minHeightScreen,
-		'maxh\\w+': maxHeightScreen,
-		'rng[\\d\\w]+-[\\d\\w]+': rangeScreen,
+		'minw\\w+': ({ match }) => minWidthScreen(match.getCapture(0)),
+		'maxw\\w+': ({ match }) => maxWidthScreen(match.getCapture(0)),
+		'minh\\w+': ({ match }) => minHeightScreen(match.getCapture(0)),
+		'maxh\\w+': ({ match }) => maxHeightScreen(match.getCapture(0)),
+		'rng[\\d\\w]+-[\\d\\w]+': ({ match }) => rangeScreen(match.getCapture(0)),
 		screen: 'screen',
 		print: 'print',
 		onlyScreen: 'only screen',

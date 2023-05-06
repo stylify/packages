@@ -44,7 +44,14 @@ export interface MacroCallbackDataInterface {
 
 export type MacroCallbackType = (data: MacroCallbackDataInterface) => void;
 
-export type ScreenCallbackType = (screen: string) => string;
+export interface ScreenCallbackDataInterface {
+	match: RegExpMatch,
+	dev: boolean,
+	variables: VariablesType,
+	helpers: HelpersType,
+}
+
+export type ScreenCallbackType = (data: ScreenCallbackDataInterface) => string;
 
 export interface CustomSelectorInterface {
 	selectors: string[]
@@ -621,7 +628,15 @@ export class Compiler {
 					}
 					const matchedScreen = screenMatches[0].trim();
 					screensToSort.set(
-						`@media ${typeof screenData === 'function' ? screenData(matchedScreen) : screenData}`,
+						`@media ${typeof screenData === 'function'
+							? screenData({
+								match: new RegExpMatch(matchedScreen, [matchedScreen]),
+								dev: this.dev,
+								variables: this.variables,
+								helpers: this.helpers
+							})
+							: screenData
+						}`,
 						this.variables[matchedScreen]
 					);
 					screensString = screensString.replace(new RegExp(`(?:\\s|^)${matchedScreen}`), '');
@@ -778,7 +793,13 @@ export class Compiler {
 		for (const regExpGenerator of this.macrosRegExpGenerators) {
 			for (const macroKey in this.macros) {
 				content = content.replace(new RegExp(`${this.macroRegExpStartPart}(${regExpGenerator(`${this.selectorsPrefix}${macroKey}`).source})`, 'g'), (...args) => {
-					const macroMatch = new MacroMatch(args.slice(0, args.length - 2) as string[], this.screens);
+					const macroMatch = new MacroMatch(
+						args.slice(0, args.length - 2) as string[],
+						this.screens,
+						this.dev,
+						this.variables,
+						this.helpers
+					);
 					const existingCssRecord = compilationResult.getCssRecord(macroMatch);
 
 					if (existingCssRecord) {

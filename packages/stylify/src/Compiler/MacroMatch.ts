@@ -1,4 +1,4 @@
-import { ScreensType } from './Compiler';
+import { HelpersType, ScreensType, VariablesType } from './Compiler';
 import { RegExpMatch } from './RegExpMatch';
 
 export type CharacterAliasTypeOptions = 'quote' | 'space';
@@ -30,7 +30,7 @@ export class MacroMatch extends RegExpMatch {
 	 * [3] => Property
 	 * [4] => Value
 	 */
-	constructor(match: string[], screens: ScreensType) {
+	constructor(match: string[], screens: ScreensType, dev: boolean, variables: VariablesType, helpers: HelpersType) {
 		super(match[1], match.slice(3));
 		const screenAndPseudoClassesMatch = match[2]?.trim() ?? null;
 		this.selector = this.fullMatch;
@@ -77,7 +77,12 @@ export class MacroMatch extends RegExpMatch {
 				let screenData = screens[key];
 
 				if (typeof screenData === 'function') {
-					screenData = screenData(screenMatches[0]);
+					screenData = screenData({
+						match: new RegExpMatch(screenMatches[0], screenMatches),
+						dev,
+						variables,
+						helpers
+					});
 				}
 
 				if (screenData) {

@@ -2,7 +2,7 @@
 <!--
 stylify-screens
 	'testScreen': '(min-width: 123px)',
-	'dynamic\\w+': (screen) => `(max-width: ${screen.replace('dynamic', '')})`
+	'dynamic\\w+': ({ match }) => `(max-width: ${match.getCapture(0).replace('dynamic', '')})`
 /stylify-screens
 
 stylify-pregenerate font-size:456px line-height:456px color:yellow /stylify-pregenerate

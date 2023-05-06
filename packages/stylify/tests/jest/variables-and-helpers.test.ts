@@ -15,7 +15,7 @@ const getCompilerConfig = (): CompilerConfigInterface => ({
 		md: '(min-width: 640px)',
 		lg: () => '(min-width: 1024px)',
 		dark: '(prefers-color-scheme: dark)',
-		'minw\\w+': (screen: string): string => `(min-width: ${screen.replace('minw', '')})`,
+		'minw\\w+': ({ match }): string => `(min-width: ${match.getCapture(0).replace('minw', '')})`,
 	},
 	helpers: {
 		textPropertyType(value: string): string {
