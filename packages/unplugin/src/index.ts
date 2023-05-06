@@ -101,7 +101,7 @@ export const unplugin = createUnplugin((config: UnpluginConfigInterface|Unplugin
 			},
 			pluginCustomConfig,
 			{
-				configFile: Object.values(Configurator.getDefaultExistingConfigFiles(process.cwd())) as string[]
+				configFile: Object.values(Configurator.getExistingConfigFiles(process.cwd())) as string[]
 			}
 		);
 
