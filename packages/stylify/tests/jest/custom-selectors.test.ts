@@ -32,7 +32,7 @@ test('Random order', (): void => {
 	const compiler = new Compiler({
 		dev: true,
 		components: {
-			'btn:(\\S+)': ({match}) => {
+			'btn:(\\S+)': (match) => {
 				const types = {
 					'orange': `
 						color:#fff
@@ -41,7 +41,12 @@ test('Random order', (): void => {
 					`
 				};
 
-				const typeUtilities = types[match.getCapture(0)] ?? undefined;
+				let typeUtilities = undefined;
+				const capture = match.getCapture(0);
+
+				if (capture !== undefined) {
+					typeUtilities = types[capture];
+				}
 
 				if (typeof typeUtilities === 'undefined') {
 					throw new Error(`Button type "${match.getCapture(0)}" not found.`);

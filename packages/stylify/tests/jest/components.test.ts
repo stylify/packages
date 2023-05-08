@@ -174,7 +174,7 @@ test('Dynamic components', (): void => {
 		},
 		cssVariablesEnabled: false,
 		components: {
-			'title(?:--(\\S+))?': ({ match }) => {
+			'title(?:--(\\S+))?': (match) => {
 				const color = match.getCapture(0, '#000');
 				return `font-size:24px${color ? ` color:${color}` : ''}`;
 			},
@@ -196,7 +196,7 @@ test('Mangle Dynamic components', (): void => {
 		},
 		cssVariablesEnabled: false,
 		components: {
-			'title(?:--(\\S+))?': ({ match }) => {
+			'title(?:--(\\S+))?': (match) => {
 				const color = match.getCapture(0, '#000');
 				return `font-size:24px${color ? ` color:${color}` : ''}`;
 			},

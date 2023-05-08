@@ -35,26 +35,25 @@ export interface CompilerHooksListInterface {
 }
 
 export interface MacroCallbackDataInterface {
-	dev: boolean,
-	helpers: HelpersType,
-	variables: VariablesType,
 	match: MacroMatch,
 	selectorProperties: SelectorProperties
 }
 
-export type MacroCallbackType = (data: MacroCallbackDataInterface) => void;
+export type MacroCallbackType = (this: Compiler, data: MacroCallbackDataInterface) => void;
 
-export type ScreenCallbackType = (screen: string) => string;
+export type ScreenCallbackType = (this: Compiler, screen: RegExpMatch) => string;
 
 export interface CustomSelectorInterface {
 	selectors: string[]
 }
 
+export type HelperCallbackType = (this: Compiler, ...args: any[]) => any;
+
 export type ComponentsType = Record<string, ComponentsInterface>;
 
 export type MacrosType = Record<string, MacroCallbackType>;
 
-export type HelpersType = Record<string, CallableFunction>;
+export type HelpersType = Record<string, HelperCallbackType>;
 
 export type ScreensType = Record<string, string|ScreenCallbackType>;
 
@@ -62,7 +61,7 @@ type VariablesTypeValue = string;
 
 export type VariablesType = Record<string, VariablesTypeValue|Record<string, string>>;
 
-export type ExternalVariableCallbackType = (variable: string) => boolean|void;
+export type ExternalVariableCallbackType = (this: Compiler, variable: string) => boolean|void;
 
 export type ExternalVariablesType = (string|RegExp|ExternalVariableCallbackType)[];
 
@@ -108,14 +107,7 @@ export interface CustomSelectorsInterface {
 	type: CustomSelectorTypeType
 }
 
-export interface ComponentGeneratorFunctionDataInterface {
-	dev: boolean,
-	helpers: HelpersType,
-	variables: VariablesType,
-	match: RegExpMatch
-}
-
-export type ComponentGeneratorFunctionType = (data: ComponentGeneratorFunctionDataInterface) => string;
+export type ComponentGeneratorFunctionType = (this: Compiler, match: RegExpMatch) => string;
 
 export interface ComponentsInterface {
 	selectorsOrGenerators: (string|ComponentGeneratorFunctionType)[]
@@ -620,8 +612,12 @@ export class Compiler {
 						continue;
 					}
 					const matchedScreen = screenMatches[0].trim();
+					const mediaData: string = typeof screenData === 'function'
+						? screenData.call(this, new RegExpMatch(matchedScreen, screenMatches.slice(1)))
+						: screenData;
+
 					screensToSort.set(
-						`@media ${typeof screenData === 'function' ? screenData(matchedScreen) : screenData}`,
+						`@media ${mediaData}`,
 						this.variables[matchedScreen]
 					);
 					screensString = screensString.replace(new RegExp(`(?:\\s|^)${matchedScreen}`), '');
@@ -755,12 +751,9 @@ export class Compiler {
 
 				for (const selectorsOrGenerator of config.selectorsOrGenerators) {
 					const componentSelectors = typeof selectorsOrGenerator === 'function'
-						? selectorsOrGenerator({
-							match: new RegExpMatch(componentMatch[0], componentMatch.slice(1)),
-							dev: this.dev,
-							variables: this.variables,
-							helpers: this.helpers
-						})
+						? selectorsOrGenerator.call(
+							this, new RegExpMatch(componentMatch[0], componentMatch.slice(1))
+						)
 						: selectorsOrGenerator;
 
 					this.generateMangledSelector(componentSelector);
@@ -778,7 +771,7 @@ export class Compiler {
 		for (const regExpGenerator of this.macrosRegExpGenerators) {
 			for (const macroKey in this.macros) {
 				content = content.replace(new RegExp(`${this.macroRegExpStartPart}(${regExpGenerator(`${this.selectorsPrefix}${macroKey}`).source})`, 'g'), (...args) => {
-					const macroMatch = new MacroMatch(args.slice(0, args.length - 2) as string[], this.screens);
+					const macroMatch = new MacroMatch(this, args.slice(0, args.length - 2) as string[]);
 					const existingCssRecord = compilationResult.getCssRecord(macroMatch);
 
 					if (existingCssRecord) {
@@ -792,12 +785,9 @@ export class Compiler {
 
 					const selectorProperties = new SelectorProperties();
 
-					this.macros[macroKey]({
+					this.macros[macroKey].call(this, {
 						match: macroMatch,
-						selectorProperties,
-						dev: this.dev,
-						variables: this.variables,
-						helpers: this.helpers
+						selectorProperties
 					});
 
 					for (const [property, propertyValue] of Object.entries(selectorProperties.properties)) {
@@ -890,7 +880,7 @@ export class Compiler {
 						return isNaN(Number(helperArgument)) ? helperArgument : parseFloat(helperArgument);
 					});
 
-				matchedHelperResult = this.helpers[helperName](...helperArgumentsArray) as string;
+				matchedHelperResult = this.helpers[helperName].call(this, ...helperArgumentsArray);
 
 				if (cssVariableEnabled) {
 					this.addVariables({[helperResultVariableName]: matchedHelperResult});
@@ -937,7 +927,7 @@ export class Compiler {
 			if (!defined) {
 				for (const externalVariableChecker of this.externalVariables) {
 					if (typeof externalVariableChecker === 'function') {
-						const exists = externalVariableChecker(variable);
+						const exists = externalVariableChecker.call(this, variable);
 						defined = typeof exists === 'boolean' ? exists : false;
 
 					} else if (externalVariableChecker instanceof RegExp) {
