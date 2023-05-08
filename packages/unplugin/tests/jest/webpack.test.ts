@@ -52,8 +52,8 @@ test('Webpack', async (): Promise<void> => {
 							},
 							cssVariablesEnabled: false,
 							macros: {
-								'm:(\\S+?)': ({match, selectorProperties}) => {
-									selectorProperties.add('margin', match.getCapture(0));
+								'm:(\\S+?)': (match) => {
+									return {'margin': match.getCapture(0)};
 								}
 							}
 						}

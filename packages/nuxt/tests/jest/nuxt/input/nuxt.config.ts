@@ -11,8 +11,8 @@ export default defineNuxtConfig({
 				green: 'darkgreen'
 			},
 			macros: {
-				'clr:(\\S+?)': function ({match, selectorProperties}) {
-					selectorProperties.add('color', match.getCapture(0));
+				'clr:(\\S+?)'(match) {
+					return {['color']: match.getCapture(0)};
 				}
 			}
 		}
