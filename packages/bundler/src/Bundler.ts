@@ -107,10 +107,10 @@ export interface BundlerConfigInterface {
 	showBundlesStats?: boolean,
 	watchFiles?: boolean,
 	sync?: boolean,
-	cssVarsDirPath?: string,
-	sassVarsDirPath?: string,
-	lessVarsDirPath?: string,
-	stylusVarsDirPath?: string,
+	cssVarsExportPath?: string,
+	sassVarsExportPath?: string,
+	lessVarsExportPath?: string,
+	stylusVarsExportPath?: string,
 	bundles?: BundleConfigInterface[],
 	cssLayersOrder?: CSSLayersOrderInterface,
 	logsDir?: string
@@ -178,13 +178,13 @@ export class Bundler {
 
 	private watchFiles = false;
 
-	private cssVarsDirPath: string = null;
+	private cssVarsExportPath: string = null;
 
-	private sassVarsDirPath: string = null;
+	private sassVarsExportPath: string = null;
 
-	private lessVarsDirPath: string = null;
+	private lessVarsExportPath: string = null;
 
-	private stylusVarsDirPath: string = null;
+	private stylusVarsExportPath: string = null;
 
 	private bundles: Record<string, BundleConfigInterface> = {};
 
@@ -225,10 +225,10 @@ export class Bundler {
 		this.autoprefixerEnabled = config.autoprefixerEnabled ?? this.autoprefixerEnabled;
 		this.cssLayersOrder = config.cssLayersOrder ?? this.cssLayersOrder;
 
-		this.cssVarsDirPath = config.cssVarsDirPath ?? this.cssVarsDirPath;
-		this.sassVarsDirPath = config.sassVarsDirPath ?? this.sassVarsDirPath;
-		this.lessVarsDirPath = config.lessVarsDirPath ?? this.lessVarsDirPath;
-		this.stylusVarsDirPath = config.stylusVarsDirPath ?? this.stylusVarsDirPath;
+		this.cssVarsExportPath = config.cssVarsExportPath ?? this.cssVarsExportPath;
+		this.sassVarsExportPath = config.sassVarsExportPath ?? this.sassVarsExportPath;
+		this.lessVarsExportPath = config.lessVarsExportPath ?? this.lessVarsExportPath;
+		this.stylusVarsExportPath = config.stylusVarsExportPath ?? this.stylusVarsExportPath;
 
 		if ('bundles' in config) {
 			this.addBundles(config.bundles);
@@ -321,9 +321,9 @@ export class Bundler {
 		}
 
 		if (this.compilerConfig.variables) {
-			if (this.cssVarsDirPath) {
+			if (this.cssVarsExportPath) {
 				this.dumpVariablesIntoFile({
-					filePath: this.cssVarsDirPath,
+					filePath: this.cssVarsExportPath,
 					fileType: 'css',
 					variablePrefix: '--',
 					variableValueSeparator: ': ',
@@ -333,9 +333,9 @@ export class Bundler {
 				});
 			}
 
-			if (this.sassVarsDirPath) {
+			if (this.sassVarsExportPath) {
 				this.dumpVariablesIntoFile({
-					filePath: this.sassVarsDirPath,
+					filePath: this.sassVarsExportPath,
 					fileType: 'scss',
 					variablePrefix: '$',
 					variableValueSeparator: ': ',
@@ -343,18 +343,18 @@ export class Bundler {
 				});
 			}
 
-			if (this.lessVarsDirPath) {
+			if (this.lessVarsExportPath) {
 				this.dumpVariablesIntoFile({
-					filePath: this.lessVarsDirPath,
+					filePath: this.lessVarsExportPath,
 					fileType: 'less',
 					variablePrefix: '@',
 					variableValueSeparator: ': '
 				});
 			}
 
-			if (this.stylusVarsDirPath) {
+			if (this.stylusVarsExportPath) {
 				this.dumpVariablesIntoFile({
-					filePath: this.stylusVarsDirPath,
+					filePath: this.stylusVarsExportPath,
 					fileType: 'styl',
 					variablePrefix: '',
 					variableValueSeparator: ' = '
@@ -374,23 +374,26 @@ export class Bundler {
 	}
 
 	private dumpVariablesIntoFile(options: DumpVariablesIntoFileOptionsInterface): void {
-		let fileVariablesContent = options.fileContentPrefix || '';
-		const variablePrefix = options.variablePrefix || '';
-		const variableValueSeparator = options.variableValueSeparator || '';
-		const afterValue = options.afterValue || '';
+		let fileVariablesContent = options.fileContentPrefix ?? '';
+		const variablePrefix = options.variablePrefix ?? '';
+		const variableValueSeparator = options.variableValueSeparator ?? '';
+		const afterValue = options.afterValue ?? '';
 
 		for (const [variable, variableValue] of Object.entries(this.compilerConfig.variables)) {
 			fileVariablesContent += `${variablePrefix}${variable}${variableValueSeparator}${variableValue as string}${afterValue}\n`;
 		}
 
 		fileVariablesContent = fileVariablesContent.trim();
+		const parsedOutputPath = path.parse(path.join(this.filesBaseDir ? this.filesBaseDir : '', options.filePath));
+		const outputDir = parsedOutputPath.dir;
+		const outputFile = parsedOutputPath.ext.length ? parsedOutputPath.base : `stylify-variables.${options.fileType}`;
 
-		if (!fs.existsSync(options.filePath)) {
-			fs.mkdirSync(options.filePath, { recursive: true });
+		if (!fs.existsSync(outputDir)) {
+			fs.mkdirSync(outputDir, { recursive: true });
 		}
 
 		fileVariablesContent += options.fileContentSuffix || '';
-		const variablesFilePath = path.join(options.filePath, `stylify-variables.${options.fileType}`);
+		const variablesFilePath = path.join(outputDir, outputFile);
 		this.writeFile(variablesFilePath, fileVariablesContent);
 
 		this.log({
