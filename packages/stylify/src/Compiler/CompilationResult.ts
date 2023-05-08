@@ -1,10 +1,10 @@
 import {
 	CssRecord,
 	MacroMatch,
-	SelectorProperties,
 	screensSorter,
 	CssRecordConfigInterface,
-	minifiedSelectorGenerator
+	minifiedSelectorGenerator,
+	MacroCallbackReturnType
 } from '.';
 
 import { hooks } from '../Hooks';
@@ -172,7 +172,7 @@ export class CompilationResult {
 
 	public addCssRecord(
 		macroMatch: MacroMatch,
-		selectorProperties: SelectorProperties,
+		selectorProperties: MacroCallbackReturnType,
 		utilityShouldBeGenerated = true
 	): void {
 		if (macroMatch.fullMatch in this.selectorsList) {
@@ -196,7 +196,7 @@ export class CompilationResult {
 
 		hooks.callHook('compilationResult:configureCssRecord', {compilationResult: this, cssRecord: newCssRecord});
 
-		newCssRecord.addProperties(selectorProperties.properties);
+		newCssRecord.addProperties(selectorProperties);
 
 		this.selectorsList[selector] = newCssRecord;
 		this.changed = true;

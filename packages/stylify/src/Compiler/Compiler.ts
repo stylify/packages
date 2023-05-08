@@ -2,7 +2,6 @@ import {
 	CompilationResult,
 	MacroMatch,
 	RegExpMatch,
-	SelectorProperties,
 	minifiedSelectorGenerator,
 	screensSorter,
 	ScreensToSortMapType,
@@ -26,7 +25,14 @@ export interface CompilerHooksListInterface {
 	'compiler:beforeMacrosProcessed': CompilationResult,
 	'compiler:afterMacrosProcessed': CompilationResult,
 	'compiler:compilationResultConfigured': CompilationResult,
-	'compiler:newMacroMatch': MacroCallbackDataInterface,
+	'compiler:newMacroMatch': {
+		match: MacroMatch,
+		utilityShouldBeGenerated: boolean,
+		selectorProperties: MacroCallbackReturnType
+		dev: boolean
+		variables: VariablesType,
+		helpers: HelpersType
+	},
 	[key: `compiler:processContentOption:${string}`]: {
 		contentOptions: Record<string, any>,
 		key: string,
@@ -34,12 +40,9 @@ export interface CompilerHooksListInterface {
 	}
 }
 
-export interface MacroCallbackDataInterface {
-	match: MacroMatch,
-	selectorProperties: SelectorProperties
-}
+export type MacroCallbackReturnType = Record<string, string>;
 
-export type MacroCallbackType = (this: Compiler, data: MacroCallbackDataInterface) => void;
+export type MacroCallbackType = (this: Compiler, match: MacroMatch) => MacroCallbackReturnType;
 
 export type ScreenCallbackType = (this: Compiler, screen: RegExpMatch) => string;
 
@@ -783,19 +786,14 @@ export class Compiler {
 						return '';
 					}
 
-					const selectorProperties = new SelectorProperties();
+					const selectorProperties: MacroCallbackReturnType = this.macros[macroKey].call(this, macroMatch);
 
-					this.macros[macroKey].call(this, {
-						match: macroMatch,
-						selectorProperties
-					});
-
-					for (const [property, propertyValue] of Object.entries(selectorProperties.properties)) {
-						selectorProperties.properties[property] = this.processHelpers({ content: propertyValue });
+					for (const [property, propertyValue] of Object.entries(selectorProperties)) {
+						selectorProperties[property] = this.processHelpers({ content: propertyValue });
 					}
 
-					for (const [property, value] of Object.entries(selectorProperties.properties)) {
-						selectorProperties.properties[property] = this.replaceVariableString(value, `${property}:${value}`);
+					for (const [property, value] of Object.entries(selectorProperties)) {
+						selectorProperties[property] = this.replaceVariableString(value, `${property}:${value}`);
 					}
 
 					hooks.callHook('compiler:newMacroMatch', {
