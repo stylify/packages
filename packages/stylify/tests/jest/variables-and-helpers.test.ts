@@ -15,7 +15,7 @@ const getCompilerConfig = (): CompilerConfigInterface => ({
 		md: '(min-width: 640px)',
 		lg: () => '(min-width: 1024px)',
 		dark: '(prefers-color-scheme: dark)',
-		'minw\\w+': (screen: string): string => `(min-width: ${screen.replace('minw', '')})`,
+		'minw\\w+': (match): string => `(min-width: ${match.fullMatch.replace('minw', '')})`,
 	},
 	helpers: {
 		textPropertyType(value: string): string {
@@ -41,15 +41,15 @@ const getCompilerConfig = (): CompilerConfigInterface => ({
 		}
 	},
 	macros: {
-		'text:(\\S+)': function ({ match, selectorProperties, helpers}): void {
-			const property = helpers.textPropertyType(match.getCapture(0));
+		'text:(\\S+)'({ match, selectorProperties }): void {
+			const property = this.helpers.textPropertyType.call(this, match.getCapture(0));
 			selectorProperties.add(property, match.getCapture(0));
 		},
-		'(fs|bgc|zi|clr):(\\S+)': function ({match, selectorProperties, helpers}): void {
-			const property = helpers.shortcut(match.getCapture(0));
+		'(fs|bgc|zi|clr):(\\S+)'({match, selectorProperties }): void {
+			const property = this.helpers.shortcut.call(this, match.getCapture(0));
 			selectorProperties.add(property, match.getCapture(1));
 		},
-		'fix:(\\S+)': function ({match, selectorProperties}): void {
+		'fix:(\\S+)'({match, selectorProperties}): void {
 			selectorProperties.addMultiple({
 				position: 'fixed',
 				top: match.getCapture(0),
