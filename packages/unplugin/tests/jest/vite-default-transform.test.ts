@@ -60,6 +60,9 @@ test('Vite - with default transform', async (): Promise<void> => {
 		logLevel: 'error',
 		plugins: [
 			stylifyVite({
+				compiler: {
+					mangleSelectors: true,
+				},
 				bundles: [{
 					outputFile: path.join(buildTmpDir, 'index.css'),
 					files: [path.join(buildTmpDir, 'index.html')]

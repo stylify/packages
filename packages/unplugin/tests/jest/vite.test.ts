@@ -60,7 +60,9 @@ test('Vite', async (): Promise<void> => {
 		logLevel: 'error',
 		plugins: [
 			stylifyVite({
-				transformIncludeFilter: (id) => id.endsWith('html'),
+				compiler: {
+					mangleSelectors: true
+				},
 				bundles: [
 					{
 						outputFile: path.join(buildTmpDir, 'index.css'),

@@ -37,7 +37,6 @@ test('Webpack', async (): Promise<void> => {
 			mode: 'production',
 			plugins: [
 				stylifyWebpack({
-					transformIncludeFilter: (id) => id.endsWith('html'),
 					bundles: [
 						{
 							outputFile: path.join(buildTmpDir, 'index.css'),
@@ -47,6 +46,7 @@ test('Webpack', async (): Promise<void> => {
 					bundler: {
 						showBundlesStats: false,
 						compiler: {
+							mangleSelectors: true,
 							variables: {
 								blue: 'steelblue'
 							},

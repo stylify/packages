@@ -9,7 +9,6 @@ import { Configurator } from '@stylify/stylify';
 import { fileURLToPath } from 'url';
 import { join } from 'path';
 import { default as normalize } from 'normalize-path';
-import type { BundleConfigInterface } from '@stylify/bundler';
 
 export interface ConfigInterface extends UnpluginConfigInterface {
 	importDefaultBundle?: false|boolean
@@ -33,32 +32,14 @@ export const stylify = (options: ConfigInterface = {}): AstroIntegration => {
 					|| null);
 
 				const generateDefaultBundle = typeof options.bundles === 'undefined';
-
-				const configureBundles = <T = BundleConfigInterface>(bundlesConfigs: T[]): T[] => {
-					return bundlesConfigs.map((bundleConfig: T) => {
-						bundleConfig.rewriteSelectorsInFiles = false;
-						return bundleConfig;
-					});
-				};
-
 				const defaultConfig: UnpluginConfigInterface = {
 					dev: options.dev ?? isDev,
 					bundler: {
 						autoprefixerEnabled: false
 					},
-					compiler: {
-						mangleSelectors: options.compiler?.mangleSelectors ?? !isDev,
-						selectorsAreas: [
-							/(?:^|\s+)class=\{((?:.|\n)+)\}/,
-							/(?:^|\s+)class:list=\{\[((?:.|\n)+)\]\}/,
-							/addAttribute\(([\s\S\n]+), (?:"|')class:list(?:"|')\)/,
-							/addAttribute\(([\s\S\n]+), (?:"|')class(?:"|')\)/
-						]
-					},
 					bundles: generateDefaultBundle
 						? [{
 							outputFile: singleBundleOutputFilePath,
-							rewriteSelectorsInFiles: false,
 							files: [`${srcDir}/**/*.{astro,html,js,json,jsx,mjs,md,mdx,svelte,ts,tsx,vue,yaml}`]
 						}]
 						: []
@@ -69,14 +50,6 @@ export const stylify = (options: ConfigInterface = {}): AstroIntegration => {
 
 				if (configsValues.length > 0) {
 					defaultConfig.configFile = configsValues;
-				}
-
-				if (!generateDefaultBundle) {
-					options.bundles = configureBundles(options.bundles);
-				}
-
-				if (typeof options.bundler?.bundles !== 'undefined') {
-					options.bundler.bundles = configureBundles(options.bundler.bundles);
 				}
 
 				updateConfig({
