@@ -23,7 +23,7 @@
 		"bundler:build": "cross-env packages=bundler pnpm build",
 		"bundler:build:notypes": "cross-env packages=bundler pnpm build:notypes",
 		"bundler:watch": "cross-env packages=bundler watch=true pnpm watch",
-		"bundler:plg:start": "ts-node packages/bundler/playground/bundles.ts",
+		"bundler:plg:start": "ts-node packages/bundler/playground/bundles.mjs",
 		"bundler:test": "pnpm jest:test packages/bundler/tests/jest",
 		"stylify:build": "cross-env packages=stylify pnpm build",
 		"stylify:build:notypes": "cross-env packages=stylify pnpm build:notypes",
