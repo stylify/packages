@@ -94,7 +94,10 @@ export const unplugin = createUnplugin((config: UnpluginConfigInterface|Unplugin
 			if (bundlerConfig.watchFiles) {
 				bundlerConfig.compiler.mangleSelectors = false;
 				bundlerConfig.bundles = bundlerConfig.bundles.map((bundle) => {
-					bundle.compiler.mangleSelectors = false;
+					if ('compiler' in bundle) {
+						bundle.compiler.mangleSelectors = false;
+					}
+
 					return bundle;
 				});
 			}
