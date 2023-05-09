@@ -1158,7 +1158,7 @@ export class Bundler {
 			fs.writeFileSync(`${this.logsDir}/${logFile}`, logFileContent, {flag: logWrittingMode});
 		}
 
-		if (!this.verbose) {
+		if (!this.verbose && severity === 'log') {
 			return;
 		}
 
