@@ -124,8 +124,6 @@ export class Compiler {
 
 	private readonly macroRegExpEndPart = `(?=['"\`{}\\[\\]<>\\s]|$)`;
 
-	private readonly textPlaceholder = '_TEXT_';
-
 	private readonly variableRegExp = /\$([\w-_]+)/g;
 
 	private readonly contentOptionsRegExp = /stylify-([a-zA-Z-_0-9]+)\s([\s\S]+?)\s\/stylify-[a-zA-Z-_0-9]+/;
@@ -139,6 +137,8 @@ export class Compiler {
 	];
 
 	private undefinedVariableWarningLevel: UndefinedVariableWarningLevelType = 'error';
+
+	private rewrittenAreasCache: Record<string, string> = {};
 
 	public ignoredAreas: RegExp[] = [];
 
@@ -337,11 +337,17 @@ export class Compiler {
 			return content;
 		}
 
+		const originalContent = content;
+
+		if (originalContent in this.rewrittenAreasCache) {
+			return this.rewrittenAreasCache[originalContent];
+		}
+
 		const contentPlaceholders: Record<string, string> = {};
 
 		const placeholderInserter = (matched: string) => {
 			if (!(matched in contentPlaceholders)) {
-				const placeholderKey = `${this.textPlaceholder}${Object.keys(contentPlaceholders).length}`;
+				const placeholderKey = `_TEXT_${Object.keys(contentPlaceholders).length}_`;
 				contentPlaceholders[matched] = placeholderKey;
 			}
 
@@ -363,7 +369,7 @@ export class Compiler {
 					: fullMatch.replace(innerMatch, placeholderInserter(innerMatch));
 
 				if (replacement !== fullMatch) {
-					rawContent = rawContent.replace(new RegExp(innerMatch, 'g'), contentPlaceholders[innerMatch]);
+					rawContent = rawContent.replaceAll(fullMatch, replacement);
 				}
 
 				return replacement;
@@ -441,6 +447,8 @@ export class Compiler {
 		}
 
 		content = getStringOriginalStateAfterReplace(content);
+
+		this.rewrittenAreasCache[originalContent] = content;
 
 		return content;
 	}

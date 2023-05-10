@@ -5,7 +5,9 @@ import stylify from '@stylify/astro';
 // https://astro.build/config
 export default defineConfig({
 	integrations: [stylify({
-		transformIncludeFilter: () => true
+		compiler: {
+			mangleSelectors: true
+		}
 	})],
 	server: {
 		host: '0.0.0.0',

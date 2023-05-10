@@ -27,8 +27,10 @@ async function build() {
 		input: path.join(buildTmpDir, 'index.js'),
 		plugins: [
 			stylifyRollup({
-				transformIncludeFilter: (id) => id.endsWith('html'),
 				dev: false,
+				compiler: {
+					mangleSelectors: true,
+				},
 				bundles: [
 					{
 						outputFile: path.join(buildTmpDir, 'index.css'),

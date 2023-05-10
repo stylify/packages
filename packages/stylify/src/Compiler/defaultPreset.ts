@@ -51,9 +51,11 @@ export const defaultPreset = {
 		// Escaped default areas
 		/(?:^|\s+)class=\\"([^"]+)\\"/,
 		/(?:^|\s+)class=\\'([^']+)\\'/,
+		// Astro
+		/(?:^|\s+)class=\{((?:.|\n)+)\}/,
+		/(?:^|\s+)class:list=\{\s*\[((?:.|\n)+)\]\s*\}/,
 		// Svelte
 		/(?:^|\s+)class:(\S+)=[{"']/,
-		/class=\{`([^`]+)`\}/,
 		// Objects
 		/(?:^|\s+)"class":\s*`([^`]+)`/
 	],

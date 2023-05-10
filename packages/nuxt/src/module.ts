@@ -7,7 +7,6 @@ import {
 } from '@stylify/stylify';
 import { default as normalize } from 'normalize-path';
 import {
-	stylifyRollup,
 	stylifyWebpack,
 	stylifyVite,
 	defineConfig as defineUnpluginConfig,
@@ -26,10 +25,10 @@ export interface NuxtModuleConfigInterface {
 	dev?: boolean,
 	configPath?: string,
 	compiler?: CompilerConfigInterface,
-	cssVarsDirPath?: string,
-	sassVarsDirPath?: string,
-	lessVarsDirPath?: string,
-	stylusVarsDirPath?: string,
+	cssVarsExportPath?: string,
+	sassVarsExportPath?: string,
+	lessVarsExportPath?: string,
+	stylusVarsExportPath?: string,
 	filesMasks?: string[]
 }
 
@@ -60,10 +59,10 @@ export default defineNuxtModule<NuxtModuleConfigInterface>({
 			dev: false,
 			configPath: null,
 			compiler: {},
-			cssVarsDirPath: null,
-			sassVarsDirPath: null,
-			lessVarsDirPath: null,
-			stylusVarsDirPath: null,
+			cssVarsExportPath: null,
+			sassVarsExportPath: null,
+			lessVarsExportPath: null,
+			stylusVarsExportPath: null,
 			filesMasks: [
 				`${rootDir}/components/**/*.{vue,js,ts}`,
 				`${rootDir}/layouts/**/*.vue`,
@@ -106,7 +105,6 @@ export default defineNuxtModule<NuxtModuleConfigInterface>({
 		}
 
 		moduleConfig.compiler.dev = moduleConfig.dev;
-		moduleConfig.compiler.mangleSelectors = !moduleConfig.dev;
 
 		const assetsDir = resolveAlias(nuxt.options.dir.assets);
 		const assetsStylifyCssPath = normalize(path.join(assetsDir, stylifyCssFileName)) as string;
@@ -126,21 +124,20 @@ export default defineNuxtModule<NuxtModuleConfigInterface>({
 			bundles: [{
 				id: 'stylify-default',
 				files: moduleConfig.filesMasks,
-				rewriteSelectorsInFiles: false,
 				outputFile: path.join(assetsDir, stylifyCssFileName)
 			}],
 			bundler: {
-				cssVarsDirPath: moduleConfig.cssVarsDirPath
-					? path.join(nuxt.options.rootDir, moduleConfig.cssVarsDirPath)
+				cssVarsExportPath: moduleConfig.cssVarsExportPath
+					? path.join(nuxt.options.rootDir, moduleConfig.cssVarsExportPath)
 					: null,
-				sassVarsDirPath: moduleConfig.sassVarsDirPath
-					? path.join(nuxt.options.rootDir, moduleConfig.sassVarsDirPath)
+				sassVarsExportPath: moduleConfig.sassVarsExportPath
+					? path.join(nuxt.options.rootDir, moduleConfig.sassVarsExportPath)
 					: null,
-				lessVarsDirPath: moduleConfig.lessVarsDirPath
-					? path.join(nuxt.options.rootDir, moduleConfig.lessVarsDirPath)
+				lessVarsExportPath: moduleConfig.lessVarsExportPath
+					? path.join(nuxt.options.rootDir, moduleConfig.lessVarsExportPath)
 					: null,
-				stylusVarsDirPath: moduleConfig.stylusVarsDirPath
-					? path.join(nuxt.options.rootDir, moduleConfig.stylusVarsDirPath)
+				stylusVarsExportPath: moduleConfig.stylusVarsExportPath
+					? path.join(nuxt.options.rootDir, moduleConfig.stylusVarsExportPath)
 					: null,
 				compiler: moduleConfig.compiler
 			}
@@ -151,33 +148,7 @@ export default defineNuxtModule<NuxtModuleConfigInterface>({
 			console.info(`Stylify is running with config${configFiles.length > 1 ? 's' : ''} "${configFiles.join(', ')}".`);
 		});
 
-		/**
-		 * This is here, because the Nitro hook content:file:parseBefore
-		 * doesn't work when added in nitro:init hook to Nitro instance and can be called only,
-		 * within the Nitro plugin that cannot be a function for some reason. Therefore the Rollup plugin
-		 * is added into the Nitro build process and mangles classes in compiled markdown files
-		 * that have json format ¯\_(ツ)_/¯
-		 */
-		nuxt.hook('nitro:config', (nitroConfig) => {
-			const pluginConfig = mergeObjects(
-				getPluginConfig(),
-				{
-					id: 'nuxtRollup',
-					dev: nuxtIsInDevMode,
-					compiler: {
-						selectorsAreas: [/"className":\[([^\]]+)\]/]
-					}
-				}
-			);
-
-			nitroConfig.rollupConfig.plugins.unshift(stylifyRollup(pluginConfig));
-		});
-
 		addWebpackPlugin(stylifyWebpack(getPluginConfig()));
-		addVitePlugin(
-			// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-			// @ts-ignore
-			stylifyVite(getPluginConfig())
-		);
+		addVitePlugin(stylifyVite(getPluginConfig()));
 	}
 });

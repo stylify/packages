@@ -54,7 +54,7 @@
 	"dependencies": {
 		"@stylify/bundler": "workspace:^",
 		"@stylify/stylify": "workspace:^",
-		"unplugin": "^1.3"
+		"unplugin": "^1.3.0"
 	},
 	"devDependencies": {
 		"@rollup/plugin-node-resolve": "^15.0",

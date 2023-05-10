@@ -27,9 +27,6 @@ async function build() {
 		outfile: path.join(buildTmpDir, 'output.js'),
 		plugins: [
 			stylifyEsbuild({
-				transformIncludeFilter(id) {
-					return id.endsWith('js');
-				},
 				dev: false,
 				bundles: [
 					{

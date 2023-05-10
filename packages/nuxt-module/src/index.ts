@@ -16,10 +16,10 @@ export interface StylifyNuxtModuleConfigInterface {
 	dev?: boolean,
 	configPath?: string,
 	compiler?: CompilerConfigInterface,
-	cssVarsDirPath?: string,
-	sassVarsDirPath?: string,
-	lessVarsDirPath?: string,
-	stylusVarsDirPath?: string,
+	cssVarsExportPath?: string,
+	sassVarsExportPath?: string,
+	lessVarsExportPath?: string,
+	stylusVarsExportPath?: string,
 	filesMasks?: string[],
 	loaders?: LoadersInterface[],
 }
@@ -41,10 +41,10 @@ let moduleConfig: StylifyNuxtModuleConfigInterface = {
 	dev: false,
 	configPath: null,
 	compiler: {},
-	cssVarsDirPath: null,
-	sassVarsDirPath: null,
-	lessVarsDirPath: null,
-	stylusVarsDirPath: null,
+	cssVarsExportPath: null,
+	sassVarsExportPath: null,
+	lessVarsExportPath: null,
+	stylusVarsExportPath: null,
 	filesMasks: [],
 	loaders: []
 };
@@ -132,10 +132,10 @@ export default function Stylify(): void {
 	const createBundlerInstance = (): Bundler => {
 		return new Bundler({
 			compiler: moduleConfig.compiler,
-			cssVarsDirPath: moduleConfig.cssVarsDirPath,
-			sassVarsDirPath: moduleConfig.sassVarsDirPath,
-			lessVarsDirPath: moduleConfig.lessVarsDirPath,
-			stylusVarsDirPath: moduleConfig.stylusVarsDirPath
+			cssVarsExportPath: moduleConfig.cssVarsExportPath,
+			sassVarsExportPath: moduleConfig.sassVarsExportPath,
+			lessVarsExportPath: moduleConfig.lessVarsExportPath,
+			stylusVarsExportPath: moduleConfig.stylusVarsExportPath
 		});
 	};
 
@@ -194,7 +194,6 @@ export default function Stylify(): void {
 			{
 				id: bundleId,
 				files: moduleConfig.filesMasks,
-				rewriteSelectorsInFiles: false,
 				outputFile: path.join(assetsDir, stylifyCssFileName)
 			}
 		]);

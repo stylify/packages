@@ -205,6 +205,8 @@ export class Bundler {
 
 	public bundlesBuildCache: BundlesBuildCacheType = {};
 
+	private bundlesInitialized = false;
+
 	public constructor(config: BundlerConfigInterface) {
 		this.configurationLoadingPromise = this.configure(config);
 		this.configurationLoadingPromise.finally(() => {
@@ -229,10 +231,6 @@ export class Bundler {
 		this.sassVarsExportPath = config.sassVarsExportPath ?? this.sassVarsExportPath;
 		this.lessVarsExportPath = config.lessVarsExportPath ?? this.lessVarsExportPath;
 		this.stylusVarsExportPath = config.stylusVarsExportPath ?? this.stylusVarsExportPath;
-
-		if ('bundles' in config) {
-			this.addBundles(config.bundles);
-		}
 	}
 
 	private async loadConfigFile(configFile: string): Promise<void> {
@@ -415,6 +413,10 @@ export class Bundler {
 
 	private addBundles(bundles: BundleConfigInterface[]) {
 		for (const bundle of bundles) {
+			if (bundle.outputFile in this.bundles) {
+				continue;
+			}
+
 			const mangleSelectors = bundle?.compiler?.mangleSelectors ?? this.compilerConfig.mangleSelectors;
 			bundle.outputFile = normalize(bundle.outputFile);
 			const bundleToProcess = {
@@ -425,6 +427,7 @@ export class Bundler {
 					filesBaseDir: bundle.filesBaseDir ?? this.filesBaseDir
 				}
 			};
+
 			this.bundles[bundle.outputFile] = bundleToProcess;
 		}
 	}
@@ -438,6 +441,16 @@ export class Bundler {
 
 		if (this.configurationLoadingPromise instanceof Promise) {
 			await this.configurationLoadingPromise;
+		}
+
+		if (!this.bundlesInitialized) {
+			for (const rawConfig of this.rawConfigurations) {
+				if ('bundles' in rawConfig.config) {
+					this.addBundles(rawConfig.config.bundles);
+				}
+			}
+
+			this.bundlesInitialized = true;
 		}
 
 		if (bundles) {
@@ -547,9 +560,9 @@ export class Bundler {
 
 	public async restart(stopConfigFileWatchers = true) {
 		const rawConfigurations = this.rawConfigurations;
-		this.rawConfigurations = [];
 
 		try {
+			this.rawConfigurations = [];
 			this.isReloadingConfiguration = true;
 			this.stop({ stopConfigFileWatchers });
 			this.compilerConfig = {};
@@ -1145,7 +1158,7 @@ export class Bundler {
 			fs.writeFileSync(`${this.logsDir}/${logFile}`, logFileContent, {flag: logWrittingMode});
 		}
 
-		if (!this.verbose) {
+		if (!this.verbose && severity === 'log') {
 			return;
 		}
 
