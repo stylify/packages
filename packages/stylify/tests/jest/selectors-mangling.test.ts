@@ -56,6 +56,25 @@ test('Duplicate selectors', (): void => {
 	testUtils.testHtmlFileToBe(compiler.rewriteSelectors(inputContent), fileName);
 });
 
+/**
+ * Because shit happens.
+ * Sometime area can be matched before another area.
+ * This is caused by incorrect reg exp and it causes, that after replacement, the next replacement is not replaced
+ * because the original area is not matched within original content.
+ * Therefore there must be a recursive replacement of nested areas
+ * to fix this issue.
+ */
+test('Nested areas', (): void => {
+	const fileName = 'nested-selector-areas';
+	const inputContent = testUtils.getHtmlInputFile(fileName);
+
+	const compiler = new Compiler({ mangleSelectors: true });
+	let compilationResult = compiler.compile(inputContent);
+
+	testUtils.testCssFileToBe(compilationResult.generateCss(), fileName);
+	testUtils.testHtmlFileToBe(compiler.rewriteSelectors(inputContent), fileName);
+});
+
 test('Component selector similar to custom selector', (): void => {
 	const fileName = 'components-and-custom-selectors-collision';
 	const inputContent = testUtils.getHtmlInputFile(fileName);
