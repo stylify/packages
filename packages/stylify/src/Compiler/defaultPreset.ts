@@ -52,6 +52,7 @@ export const defaultPreset = {
 		/(?:^|\s+)class=\\"([^"]+)\\"/,
 		/(?:^|\s+)class=\\'([^']+)\\'/,
 		// Astro
+		/(?:^|\s+)class=\{`([^`]+)`\}/,
 		/(?:^|\s+)class=\{((?:.|\n)+)\}/,
 		/(?:^|\s+)class:list=\{\s*\[((?:.|\n)+)\]\s*\}/,
 		// Svelte
