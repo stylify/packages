@@ -34,8 +34,8 @@ test('Mangle single letter macros', (): void => {
 		dev: true,
 		mangleSelectors: true,
 		macros: {
-			'm:(\\S+?)': ({macroMatch, selectorProperties}) => {
-				selectorProperties.add('margin', macroMatch.getCapture(0));
+			'm:(\\S+?)': (match) => {
+				return {['margin']: match.getCapture(0)};
 			}
 		}
 	});
@@ -47,6 +47,25 @@ test('Mangle single letter macros', (): void => {
 
 test('Duplicate selectors', (): void => {
 	const fileName = 'mangle-duplicate-selectors';
+	const inputContent = testUtils.getHtmlInputFile(fileName);
+
+	const compiler = new Compiler({ mangleSelectors: true });
+	let compilationResult = compiler.compile(inputContent);
+
+	testUtils.testCssFileToBe(compilationResult.generateCss(), fileName);
+	testUtils.testHtmlFileToBe(compiler.rewriteSelectors(inputContent), fileName);
+});
+
+/**
+ * Because shit happens.
+ * Sometime area can be matched before another area.
+ * This is caused by incorrect reg exp and it causes, that after replacement, the next replacement is not replaced
+ * because the original area is not matched within original content.
+ * Therefore there must be a recursive replacement of nested areas
+ * to fix this issue.
+ */
+test('Nested areas', (): void => {
+	const fileName = 'nested-selector-areas';
 	const inputContent = testUtils.getHtmlInputFile(fileName);
 
 	const compiler = new Compiler({ mangleSelectors: true });
@@ -132,8 +151,8 @@ test('Mangling similar areas right behind each other', (): void => {
 		mangleSelectors: true,
 		dev: true,
 		selectorsAreas: [
-			`addAttribute\\(([\\s\\S]+), (?:"|\\')class:list(?:"|\\')\\)`,
-			`addAttribute\\(([\\s\\S]+), (?:"|')class(?:"|')\\)`
+			/addAttribute\(([\s\S]+), (?:"|\\')class:list(?:"|')\)/,
+			/addAttribute\(([\s\S]+), (?:"|')class(?:"|')\)/
 		]
 	});
 
@@ -151,7 +170,7 @@ test('Escaped match area', (): void => {
 		mangleSelectors: true,
 		dev: true,
 		selectorsAreas: [
-			'class=\\\\"([^"]+)\\\\"'
+			/class=\\"([^"]+)\\"/
 		]
 	});
 

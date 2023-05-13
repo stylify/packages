@@ -1,6 +1,5 @@
 import { BundleConfigInterface, BundlerConfigInterface, Bundler, hooks as bundlerHooks } from '@stylify/bundler';
 import {
-	Compiler,
 	Configurator,
 	DefaultConfigInterface,
 	mergeObjects
@@ -14,48 +13,12 @@ export interface UnpluginConfigInterface extends DefaultConfigInterface {
 	bundles?: BundleConfigInterface[];
 	dev?: boolean;
 	bundler?: BundlerConfigInterface;
-	transformIncludeFilter?: (id: string) => boolean;
 }
 
 export const hooks = bundlerHooks;
-
-const defaultAllowedFileTypes = [
-	// Html
-	'html', 'htm', 'xml', 'xhtml', 'xht',
-	// Javascript
-	'vue', 'jsx', 'tsx', 'js', 'cjs', 'mjs', 'ts', 'svelte', 'astro',
-	// PHP
-	'php', 'phtml', 'twig', 'latte', 'tpl', 'pug', 'haml',
-	// Python
-	'py',
-	// Java
-	'java',
-	// Golang
-	'go',
-	// Rust
-	'rs',
-	// C#, .NET and similar
-	'cs', 'asp', 'aspx',
-	// Other
-	'json', 'yaml', 'neon', 'md', 'mdx', 'mdoc', 'svx', 'txt'
-];
-
-const defaultIgnoredDirectories = [
-	'node_modules',
-	'vendor',
-	'tmp',
-	'log',
-	'\\.devcontainer',
-	'\\.github',
-	'\\.git'
-];
-
 export const defineConfig = (config: UnpluginConfigInterface): UnpluginConfigInterface => config;
 
-const defaultAllowedTypesRegExp = new RegExp(`\\.(?:${defaultAllowedFileTypes.join('|')})\\b`);
-const defaultIgnoredDirectoriesRegExp = new RegExp(`(?:^|\\/)(?:${defaultIgnoredDirectories.join('|')})(?:\\/|$)`);
 const bundlers: Record<string, Bundler> = {};
-const transformCompilers: Record<string, Compiler> = {};
 
 export const unplugin = createUnplugin((config: UnpluginConfigInterface|UnpluginConfigInterface[] = {}) => {
 	const pluginName = 'stylify';
@@ -95,13 +58,11 @@ export const unplugin = createUnplugin((config: UnpluginConfigInterface|Unplugin
 				bundles: [],
 				bundler: {
 					compiler: {}
-				},
-				transformIncludeFilter: (id: string) =>
-					defaultAllowedTypesRegExp.test(id) && !defaultIgnoredDirectoriesRegExp.test(id)
+				}
 			},
 			pluginCustomConfig,
 			{
-				configFile: Object.values(Configurator.getDefaultExistingConfigFiles(process.cwd())) as string[]
+				configFile: Object.values(Configurator.getExistingConfigFiles(process.cwd())) as string[]
 			}
 		);
 
@@ -115,13 +76,12 @@ export const unplugin = createUnplugin((config: UnpluginConfigInterface|Unplugin
 		if (typeof pluginConfig.dev === 'undefined' && typeof process.env['NODE_ENV'] !== 'undefined') {
 			pluginConfig.dev = process.env['NODE_ENV'] !== 'test';
 			pluginConfig.bundler.dev = pluginConfig?.bundler?.dev ?? pluginConfig.dev;
-			pluginConfig.bundler.compiler.mangleSelectors = shouldMangleSelectors();
 		}
 
 		let bundler = bundlers[pluginConfig.id] ?? null;
 
 		if (!bundler) {
-			bundler = new Bundler(mergeObjects(
+			const bundlerConfig = mergeObjects(
 				{
 					compiler: pluginConfig.compiler ?? {},
 					bundles: pluginConfig.bundles,
@@ -129,7 +89,20 @@ export const unplugin = createUnplugin((config: UnpluginConfigInterface|Unplugin
 					verbose: pluginConfig.bundler.verbose ?? pluginConfig.dev
 				},
 				pluginConfig.bundler
-			) as BundleConfigInterface);
+			);
+
+			if (bundlerConfig.watchFiles) {
+				bundlerConfig.compiler.mangleSelectors = false;
+				bundlerConfig.bundles = bundlerConfig.bundles.map((bundle) => {
+					if ('compiler' in bundle) {
+						bundle.compiler.mangleSelectors = false;
+					}
+
+					return bundle;
+				});
+			}
+
+			bundler = new Bundler(bundlerConfig);
 			bundlers[pluginConfig.id] = bundler;
 		}
 
@@ -149,42 +122,8 @@ export const unplugin = createUnplugin((config: UnpluginConfigInterface|Unplugin
 		await bundlerRunner.waitOnBundlesProcessed();
 	};
 
-
-	// eslint-disable-next-line @typescript-eslint/no-unsafe-return
-	const shouldMangleSelectors = (): boolean => pluginConfig?.compiler?.mangleSelectors
-		?? pluginConfig?.bundler?.compiler?.mangleSelectors
-		?? (!pluginConfig.dev && !pluginConfig.bundler.watchFiles);
-
 	return {
 		name: pluginName,
-		transformInclude(id) { return pluginConfig.transformIncludeFilter(id); },
-		async transform(code) {
-			if (!shouldMangleSelectors()) {
-				return code;
-			}
-
-			const bundler = getBundler();
-			await bundler.waitOnBundlesProcessed();
-
-			let transformCompiler = transformCompilers[pluginConfig.id] ?? null;
-
-			if (transformCompiler === null) {
-				transformCompiler = new Compiler({
-					mangleSelectors: true,
-					mangledSelectorsPrefix: bundler.compilerConfig.mangledSelectorsPrefix,
-					selectorsPrefix: bundler.compilerConfig.selectorsPrefix,
-					selectorsAreas: bundler.compilerConfig.selectorsAreas,
-					ignoredAreas: bundler.compilerConfig.ignoredAreas
-				});
-
-				transformCompilers[pluginConfig.id] = transformCompiler;
-			}
-
-			return {
-				code: transformCompiler.rewriteSelectors(code),
-				map: null
-			};
-		},
 		esbuild: {
 			async setup() {
 				await waitForConfiguratinToLoad();
@@ -192,19 +131,15 @@ export const unplugin = createUnplugin((config: UnpluginConfigInterface|Unplugin
 			}
 		},
 		rollup: {
-			async options(): Promise<void> {
+			async options() {
 				await waitForConfiguratinToLoad();
-
-				if (typeof pluginConfig.dev === 'boolean') {
-					pluginConfig.bundler.compiler.mangleSelectors = shouldMangleSelectors();
-				}
-
 				pluginConfig.bundler.watchFiles = process.env.ROLLUP_WATCH === 'true';
+
 				await runBundler();
 			}
 		},
 		vite: {
-			async configResolved(config): Promise<void> {
+			async configResolved(config) {
 				await waitForConfiguratinToLoad();
 
 				if (typeof pluginConfig.dev === 'undefined') {
@@ -216,8 +151,6 @@ export const unplugin = createUnplugin((config: UnpluginConfigInterface|Unplugin
 				}
 
 				pluginConfig.bundler.dev = pluginConfig.dev;
-				pluginConfig.bundler.compiler.mangleSelectors = shouldMangleSelectors();
-
 				await runBundler();
 			}
 		},
@@ -237,17 +170,15 @@ export const unplugin = createUnplugin((config: UnpluginConfigInterface|Unplugin
 				}
 
 				pluginConfig.bundler.watchFiles = pluginConfig?.bundler?.watchFiles ?? compiler.options.watch;
-				pluginConfig.bundler.compiler.mangleSelectors = shouldMangleSelectors();
-
 				configModified = true;
 			};
 
-			compiler.hooks.beforeRun.tapPromise(pluginName, async (): Promise<void> => {
+			compiler.hooks.beforeRun.tapPromise(pluginName, async () => {
 				await modifyConfig();
 				await runBundler();
 			});
 
-			compiler.hooks.watchRun.tapPromise(pluginName, async (): Promise<void> => {
+			compiler.hooks.watchRun.tapPromise(pluginName, async () => {
 				await modifyConfig();
 				await runBundler();
 			});

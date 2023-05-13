@@ -1,7 +1,7 @@
 import {
 	CompilationResult,
 	MacroMatch,
-	SelectorProperties,
+	RegExpMatch,
 	minifiedSelectorGenerator,
 	screensSorter,
 	ScreensToSortMapType,
@@ -25,7 +25,14 @@ export interface CompilerHooksListInterface {
 	'compiler:beforeMacrosProcessed': CompilationResult,
 	'compiler:afterMacrosProcessed': CompilationResult,
 	'compiler:compilationResultConfigured': CompilationResult,
-	'compiler:newMacroMatch': MacroCallbackDataInterface,
+	'compiler:newMacroMatch': {
+		match: MacroMatch,
+		utilityShouldBeGenerated: boolean,
+		selectorProperties: MacroCallbackReturnType
+		dev: boolean
+		variables: VariablesType,
+		helpers: HelpersType
+	},
 	[key: `compiler:processContentOption:${string}`]: {
 		contentOptions: Record<string, any>,
 		key: string,
@@ -33,27 +40,23 @@ export interface CompilerHooksListInterface {
 	}
 }
 
-export interface MacroCallbackDataInterface {
-	dev: boolean,
-	helpers: HelpersType,
-	variables: VariablesType,
-	macroMatch: MacroMatch,
-	selectorProperties: SelectorProperties
-}
+export type MacroCallbackReturnType = Record<string, string>;
 
-export type MacroCallbackType = (data: MacroCallbackDataInterface) => void;
+export type MacroCallbackType = (this: Compiler, match: MacroMatch) => MacroCallbackReturnType;
 
-export type ScreenCallbackType = (screen: string) => string;
+export type ScreenCallbackType = (this: Compiler, screen: RegExpMatch) => string;
 
 export interface CustomSelectorInterface {
 	selectors: string[]
 }
 
+export type HelperCallbackType = (this: Compiler, ...args: any[]) => any;
+
 export type ComponentsType = Record<string, ComponentsInterface>;
 
 export type MacrosType = Record<string, MacroCallbackType>;
 
-export type HelpersType = Record<string, CallableFunction>;
+export type HelpersType = Record<string, HelperCallbackType>;
 
 export type ScreensType = Record<string, string|ScreenCallbackType>;
 
@@ -61,7 +64,7 @@ type VariablesTypeValue = string;
 
 export type VariablesType = Record<string, VariablesTypeValue|Record<string, string>>;
 
-export type ExternalVariableCallbackType = (variable: string) => boolean|void;
+export type ExternalVariableCallbackType = (this: Compiler, variable: string) => boolean|void;
 
 export type ExternalVariablesType = (string|RegExp|ExternalVariableCallbackType)[];
 
@@ -94,8 +97,8 @@ export interface CompilerConfigInterface {
 	pregenerate?: PregenerateType,
 	components?: ComponentType,
 	ignoredAreas?: RegExp[],
-	selectorsAreas?: string[],
-	replaceVariablesByCssVariables?: boolean,
+	selectorsAreas?: RegExp[],
+	cssVariablesEnabled?: boolean,
 	injectVariablesIntoCss?: boolean
 	matchCustomSelectors?: boolean
 }
@@ -107,14 +110,7 @@ export interface CustomSelectorsInterface {
 	type: CustomSelectorTypeType
 }
 
-export interface ComponentGeneratorFunctionDataInterface {
-	dev: boolean,
-	helpers: HelpersType,
-	variables: VariablesType,
-	matches: RegExpExecArray
-}
-
-export type ComponentGeneratorFunctionType = (data: ComponentGeneratorFunctionDataInterface) => string;
+export type ComponentGeneratorFunctionType = (this: Compiler, match: RegExpMatch) => string;
 
 export interface ComponentsInterface {
 	selectorsOrGenerators: (string|ComponentGeneratorFunctionType)[]
@@ -122,13 +118,17 @@ export interface ComponentsInterface {
 
 export type UndefinedVariableWarningLevelType = 'silent' | 'warning' | 'error'
 
+interface AreaToRewriteInterface {
+	contentToRewrite: string;
+	contentToReplace: string;
+	replacement?: string;
+}
+
 export class Compiler {
 
 	private readonly macroRegExpStartPart = '(?:^|[^a-zA-Z0-9_-])';
 
 	private readonly macroRegExpEndPart = `(?=['"\`{}\\[\\]<>\\s]|$)`;
-
-	private readonly textPlaceholder = '_TEXT_';
 
 	private readonly variableRegExp = /\$([\w-_]+)/g;
 
@@ -143,6 +143,8 @@ export class Compiler {
 	];
 
 	private undefinedVariableWarningLevel: UndefinedVariableWarningLevelType = 'error';
+
+	private rewrittenAreasCache: Record<string, string> = {};
 
 	public ignoredAreas: RegExp[] = [];
 
@@ -170,7 +172,7 @@ export class Compiler {
 
 	public pregenerate = '';
 
-	public selectorsAreas = [];
+	public selectorsAreas: RegExp[] = [];
 
 	public customSelectors: Record<string, CustomSelectorsInterface> = {};
 
@@ -178,12 +180,12 @@ export class Compiler {
 
 	private processedHelpers = {};
 
-	/** @internal */
-	public ignoredAreasRegExpString: string = null;
-
-	public replaceVariablesByCssVariables = false;
+	public cssVariablesEnabled = true;
 
 	public injectVariablesIntoCss = true;
+
+	/** @internal */
+	public ignoredAreasRegExpString: string = null;
 
 	constructor(config: CompilerConfigInterface = {}) {
 		this.configure(defaultPreset);
@@ -193,7 +195,7 @@ export class Compiler {
 		}
 	}
 
-	public configure(config: CompilerConfigInterface): Compiler {
+	public configure(config: CompilerConfigInterface): void {
 		this.dev = config.dev ?? this.dev;
 		this.matchCustomSelectors = config.matchCustomSelectors ?? this.matchCustomSelectors;
 		this.macros = {...this.macros, ...config.macros ?? {}};
@@ -206,9 +208,8 @@ export class Compiler {
 		this.mangledSelectorsPrefix = config.mangledSelectorsPrefix ?? this.mangledSelectorsPrefix;
 		this.selectorsPrefix = config.selectorsPrefix ?? this.selectorsPrefix;
 		this.undefinedVariableWarningLevel = config.undefinedVariableWarningLevel ?? this.undefinedVariableWarningLevel;
-		this.replaceVariablesByCssVariables =
-			config.replaceVariablesByCssVariables ?? this.replaceVariablesByCssVariables;
 		this.externalVariables = [...this.externalVariables, ...config.externalVariables ?? []];
+		this.cssVariablesEnabled = config.cssVariablesEnabled ?? this.cssVariablesEnabled;
 		this.addVariables(config.variables ?? {});
 
 		if (typeof config.pregenerate !== 'undefined') {
@@ -231,8 +232,6 @@ export class Compiler {
 		for (const [componentSelector, componentStringOrGenerator] of Object.entries(config.components ?? {})) {
 			this.addComponent(componentSelector, componentStringOrGenerator);
 		}
-
-		return this;
 	}
 
 	public addVariables(variables: VariablesType, screen: string = null): void {
@@ -317,13 +316,10 @@ export class Compiler {
 		}
 
 		this.components[selector].selectorsOrGenerators.push(selectorsOrGenerator);
-
-		return this;
 	}
 
-	public addMacro(re: string, callback: MacroCallbackType): Compiler {
+	public addMacro(re: string, callback: MacroCallbackType): void {
 		this.macros[re] = callback;
-		return this;
 	}
 
 	public rewriteSelectors(options: {
@@ -347,11 +343,17 @@ export class Compiler {
 			return content;
 		}
 
+		const originalContent = content;
+
+		if (originalContent in this.rewrittenAreasCache) {
+			return this.rewrittenAreasCache[originalContent];
+		}
+
 		const contentPlaceholders: Record<string, string> = {};
 
 		const placeholderInserter = (matched: string) => {
 			if (!(matched in contentPlaceholders)) {
-				const placeholderKey = `${this.textPlaceholder}${Object.keys(contentPlaceholders).length}`;
+				const placeholderKey = `_TEXT_${Object.keys(contentPlaceholders).length}_`;
 				contentPlaceholders[matched] = placeholderKey;
 			}
 
@@ -373,7 +375,7 @@ export class Compiler {
 					: fullMatch.replace(innerMatch, placeholderInserter(innerMatch));
 
 				if (replacement !== fullMatch) {
-					rawContent = rawContent.replace(new RegExp(innerMatch, 'g'), contentPlaceholders[innerMatch]);
+					rawContent = rawContent.replaceAll(fullMatch, replacement);
 				}
 
 				return replacement;
@@ -385,26 +387,34 @@ export class Compiler {
 
 		rawContent = rawContent.replace(new RegExp(this.contentOptionsRegExp.source, 'g'), '');
 
-		let areasToRewrite: {contentToReplace: string, contentToRewrite: string }[] = [];
+		const areasToRewrite: Record<string, AreaToRewriteInterface> = {};
 
 		if (rewriteOnlyInSelectorsAreas) {
 			for (const rewriteSelectorAreaRegExpString of this.selectorsAreas) {
 				rawContent = rawContent.replace(
-					new RegExp(rewriteSelectorAreaRegExpString, 'g'),
+					new RegExp(rewriteSelectorAreaRegExpString.source, 'g'),
 					(contentToReplace, contentToRewrite) => {
-						areasToRewrite.push({ contentToReplace, contentToRewrite });
-						return '';
+						const areaToRewriteId = Object.keys(areasToRewrite).length;
+						const areaToRewriteKey = `_REWRITABLE_AREA_${areaToRewriteId}_`;
+						areasToRewrite[areaToRewriteKey] = {
+							contentToReplace,
+							contentToRewrite
+						};
+						return areaToRewriteKey;
 					}
 				);
 			}
 		} else {
-			areasToRewrite = [{ contentToReplace: content, contentToRewrite: content }];
+			areasToRewrite['_REWRITABLE_AREA_0_'] = {
+				contentToReplace: content,
+				contentToRewrite: content
+			};
 		}
 
 		rawContent = '';
 
-		for (const areaToRewrite of areasToRewrite) {
-			const contentToReplace = areaToRewrite.contentToReplace;
+		for (const [areaToRewriteKey, areaToRewrite] of Object.entries(areasToRewrite)) {
+			let contentToReplace = areaToRewrite.contentToReplace;
 			const originalContentToRewrite = areaToRewrite.contentToRewrite;
 			let contentToRewrite = prepareStringForReplace(areaToRewrite.contentToRewrite);
 
@@ -434,16 +444,25 @@ export class Compiler {
 
 				contentToRewrite = contentToRewrite.replace(
 					selectorToReplaceRegExp,
-					(fullMatch, selector) => fullMatch.replace(selector, replacement)
+					(fullMatch: string, selector: string) => fullMatch.replace(selector, replacement)
 				);
 
 				contentToRewrite = this.dev ? contentToRewrite : contentToRewrite.replace(/\n/g, ' ').replace(/\s{2,}/g, ' ');
 			}
 
-			content = content.replace(
-				prepareStringForReplace(contentToReplace),
-				contentToReplace.replace(originalContentToRewrite, contentToRewrite)
-			);
+			let replacement = contentToReplace.replace(originalContentToRewrite, contentToRewrite);
+
+			const rewritableAreaRegEx = new RegExp(/_REWRITABLE_AREA_\d+_/, 'g');
+			let rewritableAreaMatch: RegExpExecArray;
+
+			while ((rewritableAreaMatch = rewritableAreaRegEx.exec(replacement))) {
+				const rewritableAreaReplacement = areasToRewrite[rewritableAreaMatch[0]].replacement;
+				replacement = replacement.replace(rewritableAreaMatch[0], rewritableAreaReplacement);
+				contentToReplace = contentToReplace.replace(rewritableAreaMatch[0], rewritableAreaReplacement);
+			}
+
+			areasToRewrite[areaToRewriteKey].replacement = replacement;
+			content = content.replace(prepareStringForReplace(contentToReplace), replacement);
 		}
 
 		for (const [originalContent, contentPlaceholder] of Object.entries(contentPlaceholders)) {
@@ -451,6 +470,8 @@ export class Compiler {
 		}
 
 		content = getStringOriginalStateAfterReplace(content);
+
+		this.rewrittenAreasCache[originalContent] = content;
 
 		return content;
 	}
@@ -481,7 +502,7 @@ export class Compiler {
 
 		if (matchOnlyInAreas) {
 			for (const selectorAreaRegExpString of this.selectorsAreas) {
-				const regExp = new RegExp(selectorAreaRegExpString, 'g');
+				const regExp = new RegExp(selectorAreaRegExpString.source, 'g');
 				let selectorAreasMatches: RegExpExecArray;
 				while ((selectorAreasMatches = regExp.exec(content))) {
 					contentToProcess += ' ' + selectorAreasMatches[1];
@@ -625,8 +646,12 @@ export class Compiler {
 						continue;
 					}
 					const matchedScreen = screenMatches[0].trim();
+					const mediaData: string = typeof screenData === 'function'
+						? screenData.call(this, new RegExpMatch(matchedScreen, screenMatches.slice(1)))
+						: screenData;
+
 					screensToSort.set(
-						`@media ${typeof screenData === 'function' ? screenData(matchedScreen) : screenData}`,
+						`@media ${mediaData}`,
 						this.variables[matchedScreen]
 					);
 					screensString = screensString.replace(new RegExp(`(?:\\s|^)${matchedScreen}`), '');
@@ -760,12 +785,9 @@ export class Compiler {
 
 				for (const selectorsOrGenerator of config.selectorsOrGenerators) {
 					const componentSelectors = typeof selectorsOrGenerator === 'function'
-						? selectorsOrGenerator({
-							matches: componentMatch,
-							dev: this.dev,
-							variables: this.variables,
-							helpers: this.helpers
-						})
+						? selectorsOrGenerator.call(
+							this, new RegExpMatch(componentMatch[0], componentMatch.slice(1))
+						)
 						: selectorsOrGenerator;
 
 					this.generateMangledSelector(componentSelector);
@@ -779,16 +801,11 @@ export class Compiler {
 		if (!content.trim()) {
 			return;
 		}
+
 		for (const regExpGenerator of this.macrosRegExpGenerators) {
 			for (const macroKey in this.macros) {
 				content = content.replace(new RegExp(`${this.macroRegExpStartPart}(${regExpGenerator(`${this.selectorsPrefix}${macroKey}`).source})`, 'g'), (...args) => {
-					const macroMatches = regExpGenerator(`${this.selectorsPrefix}${macroKey}`).exec(args[1]);
-
-					if (!macroMatches) {
-						return args[0];
-					}
-
-					const macroMatch = new MacroMatch(macroMatches, this.screens);
+					const macroMatch = new MacroMatch(this, args.slice(0, args.length - 2) as string[]);
 					const existingCssRecord = compilationResult.getCssRecord(macroMatch);
 
 					if (existingCssRecord) {
@@ -800,26 +817,18 @@ export class Compiler {
 						return '';
 					}
 
-					const selectorProperties = new SelectorProperties();
+					const selectorProperties: MacroCallbackReturnType = this.macros[macroKey].call(this, macroMatch);
 
-					this.macros[macroKey]({
-						macroMatch,
-						selectorProperties,
-						dev: this.dev,
-						variables: this.variables,
-						helpers: this.helpers
-					});
-
-					for (const [property, propertyValue] of Object.entries(selectorProperties.properties)) {
-						selectorProperties.properties[property] = this.processHelpers({ content: propertyValue });
+					for (const [property, propertyValue] of Object.entries(selectorProperties)) {
+						selectorProperties[property] = this.processHelpers({ content: propertyValue });
 					}
 
-					for (const [property, value] of Object.entries(selectorProperties.properties)) {
-						selectorProperties.properties[property] = this.replaceVariableString(value, `${property}:${value}`);
+					for (const [property, value] of Object.entries(selectorProperties)) {
+						selectorProperties[property] = this.replaceVariableString(value, `${property}:${value}`);
 					}
 
 					hooks.callHook('compiler:newMacroMatch', {
-						macroMatch,
+						match: macroMatch,
 						utilityShouldBeGenerated: utilitiesShouldBeGenerated,
 						selectorProperties,
 						dev: this.dev,
@@ -847,7 +856,7 @@ export class Compiler {
 		const helperArgumentPlaceholderStart = '_ARG';
 		const helperArgumentPlaceholderEnd = '_';
 		const helperArgumentRegExp = new RegExp(`${helperArgumentPlaceholderStart}(\\d+)${helperArgumentPlaceholderEnd}`);
-		const cssVariableEnabled = this.replaceVariablesByCssVariables && (replaceByVariable ?? true);
+		const cssVariableEnabled = this.cssVariablesEnabled && (replaceByVariable ?? true);
 
 		return content.replace(/(?:^|\s+)(\S+)\(([^)]+)\)/g, (fullHelperMatch, helperName: string, helperArguments: string) => {
 			if (!(helperName in this.helpers)) {
@@ -900,7 +909,7 @@ export class Compiler {
 						return isNaN(Number(helperArgument)) ? helperArgument : parseFloat(helperArgument);
 					});
 
-				matchedHelperResult = this.helpers[helperName](...helperArgumentsArray) as string;
+				matchedHelperResult = this.helpers[helperName].call(this, ...helperArgumentsArray);
 
 				if (cssVariableEnabled) {
 					this.addVariables({[helperResultVariableName]: matchedHelperResult});
@@ -920,7 +929,7 @@ export class Compiler {
 			(match, substring: string): string => {
 				this.isVariableDefined(substring, contentContext);
 
-				return this.replaceVariablesByCssVariables
+				return this.cssVariablesEnabled
 					? `var(--${substring})`
 					: this.variables[substring] as VariablesTypeValue ?? match;
 			}
@@ -947,7 +956,7 @@ export class Compiler {
 			if (!defined) {
 				for (const externalVariableChecker of this.externalVariables) {
 					if (typeof externalVariableChecker === 'function') {
-						const exists = externalVariableChecker(variable);
+						const exists = externalVariableChecker.call(this, variable);
 						defined = typeof exists === 'boolean' ? exists : false;
 
 					} else if (externalVariableChecker instanceof RegExp) {

@@ -4,12 +4,14 @@ import { stylifyVite } from '../../src';
 
 const stylifyPlugin = stylifyVite({
 	// Because of the tmp dir, that is ignored by default
-	transformIncludeFilter: () => true,
+	compiler: {
+		mangleSelectors: true,
+		cssVariablesEnabled: false
+	},
 	bundles: [
 		{
 			outputFile: './src/stylify.css',
-			files: ['./src/**'],
-			rewriteSelectorsInFiles: false
+			files: ['./src/**']
 		}
 	],
 	bundler: {

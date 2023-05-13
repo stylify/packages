@@ -37,7 +37,6 @@ test('Webpack', async (): Promise<void> => {
 			mode: 'production',
 			plugins: [
 				stylifyWebpack({
-					transformIncludeFilter: (id) => id.endsWith('html'),
 					bundles: [
 						{
 							outputFile: path.join(buildTmpDir, 'index.css'),
@@ -47,12 +46,14 @@ test('Webpack', async (): Promise<void> => {
 					bundler: {
 						showBundlesStats: false,
 						compiler: {
+							mangleSelectors: true,
 							variables: {
 								blue: 'steelblue'
 							},
+							cssVariablesEnabled: false,
 							macros: {
-								'm:(\\S+?)': ({macroMatch, selectorProperties}) => {
-									selectorProperties.add('margin', macroMatch.getCapture(0));
+								'm:(\\S+?)': (match) => {
+									return {'margin': match.getCapture(0)};
 								}
 							}
 						}

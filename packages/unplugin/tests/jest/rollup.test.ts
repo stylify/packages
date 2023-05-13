@@ -27,8 +27,10 @@ async function build() {
 		input: path.join(buildTmpDir, 'index.js'),
 		plugins: [
 			stylifyRollup({
-				transformIncludeFilter: (id) => id.endsWith('html'),
 				dev: false,
+				compiler: {
+					mangleSelectors: true,
+				},
 				bundles: [
 					{
 						outputFile: path.join(buildTmpDir, 'index.css'),
@@ -44,9 +46,10 @@ async function build() {
 						variables: {
 							blue: 'steelblue'
 						},
+						cssVariablesEnabled: false,
 						macros: {
-							'm:(\\S+?)': ({macroMatch, selectorProperties}) => {
-								selectorProperties.add('margin', macroMatch.getCapture(0));
+							'm:(\\S+?)': (match) => {
+								return {'margin': match.getCapture(0)};
 							}
 						}
 					}

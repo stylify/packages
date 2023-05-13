@@ -4,7 +4,7 @@ import fse from 'fs-extra';
 import { Bundler } from '../../src'
 import TestUtils from '../../../../tests/TestUtils';
 
-const testName = 'bundle-specific-compiler-config';
+const testName = 'vars-export';
 const testUtils = new TestUtils('bundler', testName);
 
 const bundleTestDir = testUtils.getTestDir();
@@ -19,44 +19,29 @@ fse.copySync(path.join(bundleTestDir, 'input'), buildTmpDir);
 new Bundler({
 	dev: true,
 	showBundlesStats: false,
+	filesBaseDir: buildTmpDir,
+	sassVarsExportPath: 'css',
+	stylusVarsExportPath: 'css/stylus-vars.styl',
+	cssVarsExportPath: 'css/nested/css.css',
 	compiler: {
 		variables: {
-			red: 'darkred',
-			blue: 'steelblue'
-		},
+			blue: 'steelblue',
+			red: 'darkred'
+		}
 	}
 }).bundle([
 	{
 		outputFile: path.join(buildTmpDir, 'index.css'),
-		compiler: {
-			components: {
-				button: 'background:blue color:white'
-			},
-			macros: {
-				'm:(\\S+?)': (match) => {
-					return {['margin']: match.getCapture(0)};
-				},
-			},
-		},
 		files: [
 			path.join(buildTmpDir, 'index.html'),
-		]
-	},
- 	{
-		outputFile: path.join(buildTmpDir, 'second.css'),
-		compiler: {
-			injectVariablesIntoCss: false
-		},
-		files: [
-			path.join(buildTmpDir, 'second.html'),
 		]
 	}
 ]);
 
-test('Bundler - single file', (): void => {
+test('Vars export', (): void => {
 	const indexCssOutput = testUtils.readFile(path.join(buildTmpDir, 'index.css'));
-	const secondCssOutput = testUtils.readFile(path.join(buildTmpDir, 'second.css'));
 
-	testUtils.testCssFileToBe(indexCssOutput);
-	testUtils.testCssFileToBe(secondCssOutput, 'second');
+	expect(fs.existsSync(path.join(buildTmpDir, 'stylify-variables.scss'))).toBeTruthy();
+	expect(fs.existsSync(path.join(buildTmpDir, 'css', 'stylus-vars.styl'))).toBeTruthy();
+	expect(fs.existsSync(path.join(buildTmpDir, 'css', 'nested', 'css.css'))).toBeTruthy();
 });

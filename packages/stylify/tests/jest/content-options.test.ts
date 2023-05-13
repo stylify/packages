@@ -7,8 +7,7 @@ const inputIndex = testUtils.getHtmlInputFile();
 
 
 const compiler = new Compiler({
-	dev: true,
-	replaceVariablesByCssVariables: true
+	dev: true
 });
 
 let compilationResult = compiler.compile(inputIndex);

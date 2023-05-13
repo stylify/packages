@@ -1,7 +1,7 @@
 import { defineConfig } from '../esm';
 
 export default defineConfig({
-	sassVarsDirPath: './assets',
+	sassVarsExportPath: './assets',
 	compiler: {
 		components: {
 			button: 'color:blue'

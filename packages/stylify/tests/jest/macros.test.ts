@@ -12,8 +12,8 @@ test('Single letter macros', (): void => {
 	const compiler = new Compiler({
 		dev: true,
 		macros: {
-			'm:(\\S+?)': ({macroMatch, selectorProperties}) => {
-				selectorProperties.add('margin', macroMatch.getCapture(0));
+			'm:(\\S+?)': (match) => {
+				return {['margin']: match.getCapture(0)};
 			}
 		}
 	});
@@ -29,15 +29,17 @@ test('Custom macros', (): void => {
 	const compiler = new Compiler({
 		dev: true,
 		macros: {
-			'zi:(\\S+?)': ({macroMatch, selectorProperties}) => {
-				selectorProperties.addMultiple({
+			'zi:(\\S+?)': (match) => {
+				return {
 					'position': 'relative',
-					'z-index': Number(macroMatch.getCapture(0))
-				});
+					'z-index': match.getCapture(0)
+				}
 			},
-			'padding-y:(\\S+?)': ({ macroMatch, selectorProperties }) => {
-				selectorProperties.add('padding-top', macroMatch.getCapture(0));
-				selectorProperties.add('padding-bottom', macroMatch.getCapture(0));
+			'padding-y:(\\S+?)': (match) => {
+				return {
+					'padding-top': match.getCapture(0),
+					'padding-bottom': match.getCapture(0)
+				}
 			},
 		}
 	});

@@ -27,9 +27,6 @@ async function build() {
 		outfile: path.join(buildTmpDir, 'output.js'),
 		plugins: [
 			stylifyEsbuild({
-				transformIncludeFilter(id) {
-					return id.endsWith('js');
-				},
 				dev: false,
 				bundles: [
 					{
@@ -43,9 +40,10 @@ async function build() {
 						variables: {
 							blue: 'steelblue'
 						},
+						cssVariablesEnabled: false,
 						macros: {
-							'm:(\\S+?)': ({macroMatch, selectorProperties}) => {
-								selectorProperties.add('margin', macroMatch.getCapture(0));
+							'm:(\\S+?)': (match) => {
+								return {'margin': match.getCapture(0)};
 							}
 						}
 					}

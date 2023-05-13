@@ -15,7 +15,7 @@ const getCompilerConfig = (): CompilerConfigInterface => ({
 		md: '(min-width: 640px)',
 		lg: () => '(min-width: 1024px)',
 		dark: '(prefers-color-scheme: dark)',
-		'minw\\w+': (screen: string): string => `(min-width: ${screen.replace('minw', '')})`,
+		'minw\\w+': (match): string => `(min-width: ${match.fullMatch.replace('minw', '')})`,
 	},
 	helpers: {
 		textPropertyType(value: string): string {
@@ -41,20 +41,20 @@ const getCompilerConfig = (): CompilerConfigInterface => ({
 		}
 	},
 	macros: {
-		'text:(\\S+)': function ({ macroMatch, selectorProperties, helpers}): void {
-			const property = helpers.textPropertyType(macroMatch.getCapture(0));
-			selectorProperties.add(property, macroMatch.getCapture(0));
+		'text:(\\S+)'(match) {
+			const property = this.helpers.textPropertyType.call(this, match.getCapture(0));
+			return {[property]: match.getCapture(0)};
 		},
-		'(fs|bgc|zi|clr):(\\S+)': function ({macroMatch, selectorProperties, helpers}): void {
-			const property = helpers.shortcut(macroMatch.getCapture(0));
-			selectorProperties.add(property, macroMatch.getCapture(1));
+		'(fs|bgc|zi|clr):(\\S+)'(match) {
+			const property = this.helpers.shortcut.call(this, match.getCapture(0));
+			return {[property]: match.getCapture(1)};
 		},
-		'fix:(\\S+)': function ({macroMatch, selectorProperties}): void {
-			selectorProperties.addMultiple({
+		'fix:(\\S+)'(match) {
+			return {
 				position: 'fixed',
-				top: macroMatch.getCapture(0),
-				left: macroMatch.getCapture(0)
-			});
+				top: match.getCapture(0),
+				left: match.getCapture(0)
+			}
 		}
 	}
 });
@@ -84,9 +84,8 @@ test('Variables and helpers', (): void => {
 	testUtils.testCssFileToBe(compilationResult.generateCss());
 });
 
-test('Variables and helpers - replaceVariablesByCssVariables', (): void => {
+test('Variables and helpers - cssVariablesEnabled', (): void => {
 	const compilerConfig = getCompilerConfig();
-	compilerConfig.replaceVariablesByCssVariables = true;
 	compilerConfig.variables = {
 		lightblack: 'lighten(#000,5)',
 		black: 'lighten($lightblack,5)',
@@ -101,12 +100,11 @@ test('Variables and helpers - replaceVariablesByCssVariables', (): void => {
 test('External Variables', (): void => {
 	const compiler = new Compiler({
 		dev: true,
-		replaceVariablesByCssVariables: true,
 		externalVariables: [
 			'test',
 			/^ext-/,
 			(variable) => variable.startsWith('md-') ? true : undefined
-		]
+		],
 	});
 
 	let compilationResult = compiler.compile(testUtils.getHtmlInputFile('third'));
@@ -116,8 +114,8 @@ test('External Variables', (): void => {
 test('External Variables - helpers exception', (): void => {
 	const compiler = new Compiler({
 		dev: true,
-		replaceVariablesByCssVariables: true,
-		externalVariables: ['test']
+		cssVariablesEnabled: true,
+		externalVariables: ['test'],
 	});
 
 	expect(() => compiler.compile('<div class="color:lighten($test)"></div>'))
@@ -145,7 +143,7 @@ test('Undefined variable - warning only', (): void => {
 test('Scoped variables', (): void => {
 	const compiler = new Compiler({
 		dev: true,
-		replaceVariablesByCssVariables: true,
+		cssVariablesEnabled: true,
 		variables: {
 			background: '#000',
 			dark: {

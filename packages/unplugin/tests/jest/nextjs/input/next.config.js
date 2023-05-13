@@ -3,6 +3,9 @@ const { stylifyWebpack } = require('../../lib/index.cjs');
 const stylifyPlugin = (dev) =>
 	stylifyWebpack({
 		dev: dev,
+		compiler: {
+			mangleSelectors: true,
+		},
 		bundles: [
 			{
 				outputFile: './styles/global.css',
