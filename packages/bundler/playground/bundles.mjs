@@ -11,7 +11,7 @@ const bundler = new Bundler({
 	verbose: watchFiles,
 	watchFiles: watchFiles,
 	compiler: {
-		mangleSelectors: !watchFiles
+		mangleSelectors: true
 	},
 	bundles: [
 		{

@@ -417,13 +417,26 @@ export class Bundler {
 				continue;
 			}
 
+			if (this.watchFiles) {
+				this.compilerConfig.mangleSelectors = false;
+				this.compilerConfig.dev = true;
+
+				if ('compiler' in bundle) {
+					bundle.compiler.dev = true;
+					bundle.compiler.mangleSelectors = false;
+				}
+			}
+
 			const mangleSelectors = bundle?.compiler?.mangleSelectors ?? this.compilerConfig.mangleSelectors;
+
 			bundle.outputFile = normalize(bundle.outputFile);
 			const bundleToProcess = {
 				...bundle.outputFile in this.bundles ? this.bundles[bundle.outputFile] : {},
 				...bundle,
 				...{
-					rewriteSelectorsInFiles: bundle.rewriteSelectorsInFiles ?? mangleSelectors,
+					rewriteSelectorsInFiles: this.watchFiles
+						? false
+						: bundle.rewriteSelectorsInFiles ?? mangleSelectors,
 					filesBaseDir: bundle.filesBaseDir ?? this.filesBaseDir
 				}
 			};
