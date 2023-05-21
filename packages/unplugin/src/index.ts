@@ -91,17 +91,6 @@ export const unplugin = createUnplugin((config: UnpluginConfigInterface|Unplugin
 				pluginConfig.bundler
 			);
 
-			if (bundlerConfig.watchFiles) {
-				bundlerConfig.compiler.mangleSelectors = false;
-				bundlerConfig.bundles = bundlerConfig.bundles.map((bundle) => {
-					if ('compiler' in bundle) {
-						bundle.compiler.mangleSelectors = false;
-					}
-
-					return bundle;
-				});
-			}
-
 			bundler = new Bundler(bundlerConfig);
 			bundlers[pluginConfig.id] = bundler;
 		}
