@@ -7,6 +7,7 @@ import packageJson from '../../package.json';
 import { env, exit } from 'process';
 import esbuild, { BuildOptions, BuildContext, BuildResult, Format, Platform } from 'esbuild';
 import { compareBuildStats } from './output-stats';
+import FastGlob from 'fast-glob';
 
 export type BundleFormatType = Format | 'esm-browser' | 'esm-lib';
 
@@ -167,8 +168,6 @@ const runEsbuild = async (config: BuildConfigConfigurationInterface): Promise<(B
 					)
 				};
 
-				let buildPromise: BuildContext|BuildResult;
-
 				if (mergedConfig.watch) {
 					const contextPromise = esbuild.context(buildConfig);
 
@@ -186,14 +185,14 @@ const runEsbuild = async (config: BuildConfigConfigurationInterface): Promise<(B
 		}
 	}
 
-	const typesDirsString = path.join(packageDir, 'src', '**', '*.ts') + ' ' + path.join(packageDir, 'src', '*.ts');
+	const typesFiles = (await FastGlob(path.join(packageDir, 'src', '**', '*.ts'))).join(' ');
 	const typesOutputDir = path.join(packageDir, 'types');
 
 	if (!mergedConfig.watch && generateTypes) {
 		typescriptTypesBuilds.push(new Promise((resolve) => {
 			const tscCommand = [
-				`pnpm tsc ${typesDirsString}`,
-				'-d --emitDeclarationOnly',
+				`pnpm tsc ${typesFiles}`,
+				'-d --emitDeclarationOnly --esModuleInterop',
 				`--outDir ${typesOutputDir}`
 			];
 

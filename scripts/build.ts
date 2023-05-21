@@ -58,7 +58,15 @@ runBuild(async () => {
 				entryPoints: [path.join('src', 'index')],
 				outfile: 'index',
 				platform: 'node',
-				external: ['@stylify/bundler', '@stylify/stylify', 'unplugin'],
+				external: [
+					'@stylify/bundler',
+					'@stylify/stylify',
+					'esbuild',
+					'unplugin',
+					'vite',
+					'webpack',
+					'rollup'
+				],
 				formats: ['esm', 'cjs']
 			}
 		]

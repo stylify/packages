@@ -5,7 +5,7 @@ import {
 	defineConfig as stylifyUnpluginConfig,
 	hooks as unpluginHooks
 } from '@stylify/unplugin';
-import { Configurator } from '@stylify/stylify';
+import { Configurator, mergeObjects } from '@stylify/stylify';
 import { fileURLToPath } from 'url';
 import { join } from 'path';
 import { default as normalize } from 'normalize-path';
@@ -55,7 +55,7 @@ export const stylify = (options: ConfigInterface = {}): AstroIntegration => {
 				updateConfig({
 					vite: {
 						plugins: [
-							stylifyVite([defaultConfig, options])
+							stylifyVite(mergeObjects(defaultConfig, options))
 						]
 					}
 				});

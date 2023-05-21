@@ -10,9 +10,8 @@
     "astro": "astro"
   },
   "dependencies": {
-    "@example/basics": "link:",
-    "@stylify/astro": "file:../../",
-    "@stylify/stylify": "file:../../../stylify",
+    "@stylify/astro": "workspace:^",
+    "@stylify/stylify": "workspace:^",
     "astro": "^1.2"
   }
 }

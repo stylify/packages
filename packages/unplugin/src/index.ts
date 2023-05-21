@@ -5,7 +5,11 @@ import {
 	mergeObjects
 } from '@stylify/stylify';
 import process from 'process';
-import { createUnplugin } from 'unplugin';
+import type { Plugin as VitePlugin } from 'vite';
+import type { WebpackPluginInstance } from 'webpack';
+import type { Plugin as RollupPlugin } from 'rollup';
+import type { Plugin as EsbuildPlugin } from 'esbuild';
+import { UnpluginFactoryOutput, createUnplugin } from 'unplugin';
 
 export interface UnpluginConfigInterface extends DefaultConfigInterface {
 	id?: string,
@@ -20,7 +24,7 @@ export const defineConfig = (config: UnpluginConfigInterface): UnpluginConfigInt
 
 const bundlers: Record<string, Bundler> = {};
 
-export const unplugin = createUnplugin((config: UnpluginConfigInterface|UnpluginConfigInterface[] = {}) => {
+export const unplugin = createUnplugin((config: UnpluginConfigInterface = {}) => {
 	const pluginName = 'stylify';
 	let pluginConfig: UnpluginConfigInterface = {};
 	let configured = false;
@@ -47,9 +51,8 @@ export const unplugin = createUnplugin((config: UnpluginConfigInterface|Unplugin
 			};
 		});
 
-		const pluginCustomConfig: UnpluginConfigInterface = mergeObjects(...Array.isArray(config) ? config : [config]);
-		if (typeof pluginCustomConfig.configFile !== 'undefined' && !Array.isArray(pluginCustomConfig.configFile)) {
-			pluginCustomConfig.configFile = [pluginCustomConfig.configFile];
+		if (typeof config.configFile !== 'undefined' && !Array.isArray(config.configFile)) {
+			config.configFile = [config.configFile];
 		}
 
 		pluginConfig = mergeObjects(
@@ -60,9 +63,9 @@ export const unplugin = createUnplugin((config: UnpluginConfigInterface|Unplugin
 					compiler: {}
 				}
 			},
-			pluginCustomConfig,
+			config,
 			{
-				configFile: Object.values(Configurator.getExistingConfigFiles(process.cwd())) as string[]
+				configFile: Object.values(Configurator.getExistingConfigFiles(process.cwd()))
 			}
 		);
 
@@ -175,7 +178,9 @@ export const unplugin = createUnplugin((config: UnpluginConfigInterface|Unplugin
 	};
 });
 
-export const stylifyVite = unplugin.vite;
-export const stylifyRollup = unplugin.rollup;
-export const stylifyWebpack = unplugin.webpack;
-export const stylifyEsbuild = unplugin.esbuild;
+export const stylifyVite = unplugin.vite as UnpluginFactoryOutput<UnpluginConfigInterface, VitePlugin>;
+export const stylifyRollup = unplugin.rollup as UnpluginFactoryOutput<UnpluginConfigInterface, RollupPlugin>;
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+export const stylifyWebpack = unplugin.webpack as UnpluginFactoryOutput<UnpluginConfigInterface, WebpackPluginInstance>;
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+export const stylifyEsbuild = unplugin.esbuild as UnpluginFactoryOutput<UnpluginConfigInterface, EsbuildPlugin>;

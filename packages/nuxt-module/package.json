@@ -28,16 +28,23 @@
 	"author": "Vladimír Macháček",
 	"exports": {
 		".": {
-			"import": "./esm/index.mjs",
-			"require": "./lib/index.cjs",
-			"types": "./types/*"
+			"import": {
+				"types": "./types/index.d.ts",
+				"default": "./esm/index.mjs"
+			},
+			"require": {
+				"types": "./types/index.d.ts",
+				"default": "./lib/index.cjs"
+			}
 		},
+		"./lib/*": "./lib/*",
+		"./esm/*": "./esm/*",
 		"./types/*": "./types/*",
 		"./package.json": "./package.json"
 	},
 	"main": "lib/index.cjs",
 	"module": "esm/index.mjs",
-	"types": "types",
+	"types": "types/index.d.ts",
 	"files": [
 		"esm",
 		"lib",

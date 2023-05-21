@@ -13,6 +13,7 @@
 		"framework",
 		"web"
 	],
+	"type": "module",
 	"homepage": "https://stylifycss.com",
 	"bugs": {
 		"url": "https://github.com/stylify/packages/issues"
@@ -26,9 +27,14 @@
 	"author": "Vladimír Macháček",
 	"exports": {
 		".": {
-			"import": "./esm/index.mjs",
-			"require": "./lib/index.cjs",
-			"types": "./types/*"
+			"import": {
+				"default": "./esm/index.mjs",
+				"types": "./types/index.d.ts"
+			},
+			"require": {
+				"default": "./lib/index.cjs",
+				"types": "./types/index.d.ts"
+			}
 		},
 		"./lib/*": "./lib/*",
 		"./esm/*": "./esm/*",
@@ -40,7 +46,7 @@
 	"jsdelivr": "dist/stylify.min.js",
 	"unpkg": "dist/stylify.min.js",
 	"module": "esm/index.mjs",
-	"types": "types",
+	"types": "types/index.d.ts",
 	"files": [
 		"dist",
 		"esm",

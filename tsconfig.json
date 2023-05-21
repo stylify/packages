@@ -1,7 +1,7 @@
 {
 	"compilerOptions": {
-		"target": "esnext",
-		"module": "esnext",
+		"target": "ESNext",
+		"module": "ESNext",
 		"moduleResolution": "node",
 		"allowSyntheticDefaultImports": true,
 		"lib": [
@@ -22,8 +22,10 @@
 		"allowJs": true
 	},
 	"exclude": [
-		"./tests",
+		"node_modules",
+		"tests",
 		"packages/**/tests/**/*.ts",
+		"packages/**/types/*.d.ts",
 		"packages/stylify/tools/native-preset-generator/template.ts"
 	],
 	"ts-node": {

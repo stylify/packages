@@ -21,6 +21,6 @@ module.exports = {
 		`packages/(${packagesDirectoryJoin})/src/**/*.ts`
 	],
 	coveragePathIgnorePatterns: [
-		'packages/stylify/src/(stylify.native.browser|stylify.browser|Runtime|Stylify).ts'
+		'packages/stylify/src/(index.browser|index.browser.iife|Runtime|Stylify).ts'
 	]
 };
