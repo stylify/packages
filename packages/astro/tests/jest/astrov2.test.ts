@@ -17,7 +17,7 @@ if (!fs.existsSync(buildTmpDir)) {
 
 fse.copySync(path.join(bundleTestDir, 'input'), buildTmpDir);
 
-execSync(`cd ${buildTmpDir} && pnpm install . && pnpm build .`, {stdio: 'inherit'});
+execSync(`pnpm install . && pnpm build .`, {stdio: 'inherit', cwd: buildTmpDir});
 
 const indexHtmlPart1 = `
 	<body class="e f">

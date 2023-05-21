@@ -20,16 +20,23 @@
 	"type": "module",
 	"exports": {
 		".": {
-			"import": "./esm/module.mjs",
-			"require": "./lib/module.cjs",
-			"types": "./types/*"
+			"import": {
+				"types": "./types/module.d.ts",
+				"default": "./esm/module.mjs"
+			},
+			"require": {
+				"types": "./types/module.d.ts",
+				"default": "./lib/module.cjs"
+			}
 		},
+		"./lib/*": "./lib/*",
+		"./esm/*": "./esm/*",
 		"./types/*": "./types/*",
 		"./package.json": "./package.json"
 	},
 	"main": "lib/module.cjs",
 	"module": "esm/module.mjs",
-	"types": "types",
+	"types": "types/module.d.ts",
 	"files": [
 		"esm",
 		"lib",
@@ -44,7 +51,7 @@
 		"start": "nuxi start playground"
 	},
 	"dependencies": {
-		"@nuxt/kit": "npm:@nuxt/kit-edge@latest",
+		"@nuxt/kit": "^3.5",
 		"normalize-path": "^3.0",
 		"@stylify/bundler": "workspace:^",
 		"@stylify/stylify": "workspace:^",
@@ -52,10 +59,11 @@
 	},
 	"devDependencies": {
 		"@nuxt/content": "^2.0",
+		"@nuxt/schema": "^3.5",
 		"@nuxt/module-builder": "latest",
 		"@nuxtjs/eslint-config-typescript": "latest",
 		"eslint": "latest",
 		"fast-glob": "^3.2",
-		"nuxt": "^3.3"
+		"nuxt": "^3.5"
 	}
 }

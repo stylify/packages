@@ -13,6 +13,7 @@ import {
 	hooks as unpluginHooks,
 	UnpluginConfigInterface
 } from '@stylify/unplugin';
+import type { NuxtModule } from '@nuxt/schema';
 import {
 	defineNuxtModule,
 	resolveAlias,
@@ -47,6 +48,7 @@ export const hooks = unpluginHooks;
 
 export const defineConfig = (config: NuxtModuleConfigInterface): NuxtModuleConfigInterface => config;
 
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
 export default defineNuxtModule<NuxtModuleConfigInterface>({
 	meta: {
 		name,
@@ -151,4 +153,4 @@ export default defineNuxtModule<NuxtModuleConfigInterface>({
 		addWebpackPlugin(stylifyWebpack(getPluginConfig()));
 		addVitePlugin(stylifyVite(getPluginConfig()));
 	}
-});
+}) as NuxtModule<NuxtModuleConfigInterface>;
