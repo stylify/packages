@@ -13,10 +13,6 @@ module.exports = {
 	transform: {
 		'^.+\\.(js|ts|mjs)?$': 'ts-jest'
 	},
-	moduleNameMapper: {
-		'\\.(svg|ttf|woff|woff2)$': './tests/jest/__mocks/fileMock.js',
-		'\\.(css|less|scss|sass)$': 'identity-obj-proxy'
-	},
 	collectCoverageFrom: [
 		`packages/(${packagesDirectoryJoin})/src/**/*.ts`
 	],

@@ -156,10 +156,6 @@ const runEsbuild = async (config: BuildConfigConfigurationInterface): Promise<(B
 						: bundleConfig.platform ?? 'browser',
 					external: bundleConfig.external ?? [],
 					logLevel: isWatchMode ? 'info' : 'error',
-					loader: {
-						'.woff': 'base64',
-						'.svg': 'dataurl'
-					},
 					outfile: path.join(
 						packageDir,
 						outputDirs[format],
