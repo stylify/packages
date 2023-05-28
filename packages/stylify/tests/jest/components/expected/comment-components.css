@@ -1,13 +1,5 @@
-.badge,
-.badge__number{
-	display: inline-flex
-}
 .badge{
 	align-items: center
-}
-.badge--primary,
-.badge--secondary{
-	color: #fff
 }
 .badge--primary{
 	background: red
@@ -17,4 +9,12 @@
 }
 .badge__number{
 	border-radius: 50%
+}
+.badge--primary,
+.badge--secondary{
+	color: #fff
+}
+.badge,
+.badge__number{
+	display: inline-flex
 }

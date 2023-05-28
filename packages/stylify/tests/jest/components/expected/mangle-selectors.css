@@ -1,8 +1,8 @@
 .a{
-	padding: 8px
-}
-.a{
 	background-color: #000
+}
+.c{
+	color: green
 }
 .a{
 	display: inline-block
@@ -12,13 +12,13 @@
 	font-size: 24px
 }
 .b{
-	max-width: 800px
-}
-.b{
 	margin: 0 auto
 }
-.c{
-	color: green
+.b{
+	max-width: 800px
+}
+.a{
+	padding: 8px
 }
 
 @media (min-width: 768px) {

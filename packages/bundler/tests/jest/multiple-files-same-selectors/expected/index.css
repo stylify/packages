@@ -1,11 +1,8 @@
 .c{
 	border: 1px solid transparent
 }
-.d{
-	margin-left: 24px
-}
-.e{
-	font-family: arial
+.j{
+	color: blue
 }
 .f{
 	display: block
@@ -13,14 +10,17 @@
 .g{
 	display: flex
 }
+.e{
+	font-family: arial
+}
 .h{
 	justify-content: center
 }
+.d{
+	margin-left: 24px
+}
 .i{
 	margin-top: 12px
-}
-.j{
-	color: blue
 }
 
 @media (min-width: 768px) {

@@ -1,43 +1,3 @@
-.hover\:text-decoration\:none:hover{
-	text-decoration: none
-}
-.text-decoration\:none{
-	text-decoration: none
-}
-.display\:flex{
-	display: flex
-}
-header .\[header_\&\]\{font-weight\:bold\},
-.button span{
-	font-weight: bold
-}
-.\[\&\+input\[type\=\^text\^\]\]\{margin-left\:24px\;color\:orange\}+input[type='text']{
-	margin-left: 24px
-}
-.\[\&\+input\[type\=\^text\^\]\]\{margin-left\:24px\;color\:orange\}+input[type='text'],
-.\[\.orange\]\{color\:orange\} .orange,
-header .button{
-	color: orange
-}
-.\[\.orange\.large\]\{font-size\:48px\} .orange.large{
-	font-size: 48px
-}
-.\[\&\>div\]\{color\:blue\}>div,
-.\[\&_span\]\{color\:blue\} span{
-	color: blue
-}
-header .\[header_\&\>span\]\{color\:purple\}>span{
-	color: purple
-}
-.\[\&\:hover_span\]\{text-decoration\:underline\}:hover span{
-	text-decoration: underline
-}
-.\[div\]\{width\:24px\;height\:24px\;background\:blue\} div{
-	width: 24px
-}
-.\[div\]\{width\:24px\;height\:24px\;background\:blue\} div{
-	height: 24px
-}
 .\[div\]\{width\:24px\;height\:24px\;background\:blue\} div{
 	background: blue
 }
@@ -46,33 +6,57 @@ header .\[header_\&\>span\]\{color\:purple\}>span{
 .\[div\:last-of-type\,div\:nth-child\(2\)\:hover\,div\:first-of-type\]\{background\:black\} div:first-of-type{
 	background: black
 }
-.button--big{
-	font-size: 24px
-}
-.button--big span{
-	border-left: 4px solid red
-}
 .button{
 	background: #000
-}
-.button{
-	color: #fff
-}
-.button{
-	border: none
-}
-.button{
-	transition: background 0.3s
 }
 .button:hover{
 	background: #888
 }
-.button > span,
-.button >  i{
-	vertical-align: middle
+.button{
+	border: none
+}
+.button--big span{
+	border-left: 4px solid red
+}
+.button.button--big span{
+	border-left: 8px solid red
+}
+.\[\&\+input\[type\=\^text\^\]\]\{margin-left\:24px\;color\:orange\}+input[type='text'],
+.\[\.orange\]\{color\:orange\} .orange,
+header .button{
+	color: orange
+}
+.\[\&\>div\]\{color\:blue\}>div,
+.\[\&_span\]\{color\:blue\} span{
+	color: blue
+}
+header .\[header_\&\>span\]\{color\:purple\}>span{
+	color: purple
+}
+.button{
+	color: #fff
 }
 .button .not-minified{
 	color: darkred
+}
+.display\:flex{
+	display: flex
+}
+.\[\.orange\.large\]\{font-size\:48px\} .orange.large{
+	font-size: 48px
+}
+.button--big{
+	font-size: 24px
+}
+header .\[header_\&\]\{font-weight\:bold\},
+.button span{
+	font-weight: bold
+}
+.\[div\]\{width\:24px\;height\:24px\;background\:blue\} div{
+	height: 24px
+}
+.\[\&\+input\[type\=\^text\^\]\]\{margin-left\:24px\;color\:orange\}+input[type='text']{
+	margin-left: 24px
 }
 header .button{
 	padding: 12px
@@ -80,8 +64,24 @@ header .button{
 .button.button--big{
 	padding: 24px
 }
-.button.button--big span{
-	border-left: 8px solid red
+.hover\:text-decoration\:none:hover{
+	text-decoration: none
+}
+.text-decoration\:none{
+	text-decoration: none
+}
+.\[\&\:hover_span\]\{text-decoration\:underline\}:hover span{
+	text-decoration: underline
+}
+.button{
+	transition: background 0.3s
+}
+.button > span,
+.button >  i{
+	vertical-align: middle
+}
+.\[div\]\{width\:24px\;height\:24px\;background\:blue\} div{
+	width: 24px
 }
 
 @media (min-width: 768px) {

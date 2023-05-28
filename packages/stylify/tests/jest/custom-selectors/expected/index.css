@@ -1,24 +1,24 @@
+*{
+	box-sizing: border-box
+}
 a:hover{
 	color: red
 }
 .hover\:\{color\:blue\;font-size\:24px\}:hover{
 	color: blue
 }
-.hover\:\{color\:blue\;font-size\:24px\}:hover{
-	font-size: 24px
-}
-*{
-	box-sizing: border-box
-}
-body,
-article h1{
-	font-size: 16px
-}
 ::selection{
 	color: #fff
 }
 h2:hover{
 	color: green
+}
+.hover\:\{color\:blue\;font-size\:24px\}:hover{
+	font-size: 24px
+}
+body,
+article h1{
+	font-size: 16px
 }
 
 @media (min-width: 400px), (orientation: landscape) {

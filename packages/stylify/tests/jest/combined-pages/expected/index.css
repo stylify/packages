@@ -1,8 +1,8 @@
-.c{
-	font-size: 123px
+.n{
+	background: steelblue
 }
-.d{
-	line-height: 123px
+.r{
+	background: black
 }
 .e{
 	color: #fff
@@ -10,44 +10,44 @@
 .f{
 	color: #888
 }
-.g{
-	font-size: 456px
-}
-.h{
-	line-height: 456px
-}
 .i{
 	color: yellow
+}
+.s{
+	color: darkred
 }
 .j{
 	font-family: arial
 }
+.c{
+	font-size: 123px
+}
+.g{
+	font-size: 456px
+}
 .k{
 	font-size: 12px
-}
-.l{
-	text-align: center
 }
 .m{
 	font-size: 48px
 }
-.n{
-	background: steelblue
+.q{
+	font-size: 14px
 }
-.o{
-	max-width: 320px
+.d{
+	line-height: 123px
+}
+.h{
+	line-height: 456px
 }
 .p{
 	margin: 0 auto
 }
-.q{
-	font-size: 14px
+.o{
+	max-width: 320px
 }
-.r{
-	background: black
-}
-.s{
-	color: darkred
+.l{
+	text-align: center
 }
 
 @media (min-width: 123px) {

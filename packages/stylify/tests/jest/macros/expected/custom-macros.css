@@ -1,11 +1,11 @@
-.y\:12px{
-	y: 12px
+.padding-y\:24px{
+	padding-top: 24px;
+	padding-bottom: 24px
 }
 .zi\:2{
 	position: relative;
 	z-index: 2
 }
-.padding-y\:24px{
-	padding-top: 24px;
-	padding-bottom: 24px
+.y\:12px{
+	y: 12px
 }

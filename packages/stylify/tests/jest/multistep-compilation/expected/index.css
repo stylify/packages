@@ -1,7 +1,7 @@
-.a{
-	font-size: 32px
-}
 .a,
 .c{
 	display: flex
+}
+.a{
+	font-size: 32px
 }

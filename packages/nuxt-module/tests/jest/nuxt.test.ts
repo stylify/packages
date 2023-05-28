@@ -26,7 +26,7 @@ const smallerSubtitleComponentPart = 'staticClass: "h g"'.trim();
 const subtitleComponentPart = 'staticClass: "h"'.trim();
 
 const serverFilePart = `
-___CSS_LOADER_EXPORT___.push([module.i, ":root{--red:darkred;--blue:#00008b;--green:#006400;--yellow:#ff0}.a{text-align:center}.b{font-size:24px}.c{color:darkred;color:var(--red)}.d{max-width:640px}.e{margin:0 auto}.f{color:#006400;color:var(--green)}.g{font-size:12px}.h{color:#00008b;color:var(--blue)}", ""]);
+___CSS_LOADER_EXPORT___.push([module.i, ":root{--red:darkred;--blue:#00008b;--green:#006400;--yellow:#ff0}.c{color:darkred;color:var(--red)}.f{color:#006400;color:var(--green)}.h{color:#00008b;color:var(--blue)}.b{font-size:24px}.g{font-size:12px}.e{margin:0 auto}.d{max-width:640px}.a{text-align:center}", ""]);
 `.trim();
 
 const serverFilePart2 = 'staticClass: "d e"';

@@ -1,17 +1,14 @@
-.e{
-	content: 'second'
-}
 .f{
 	color: yellow
 }
+.o{
+	color: purple
+}
+.e{
+	content: 'second'
+}
 .g{
 	content: 'Nette'
-}
-.h{
-	font-size: 24px
-}
-.i{
-	font-size: 25px
 }
 .j{
 	content: 'Symfony'
@@ -22,17 +19,20 @@
 .l{
 	content: 'vue-script'
 }
-.m{
-	font-size: 26px
-}
 .n{
 	content: 'Excluded'
 }
-.o{
-	color: purple
-}
 .p{
 	content: 'vuejs component'
+}
+.h{
+	font-size: 24px
+}
+.i{
+	font-size: 25px
+}
+.m{
+	font-size: 26px
 }
 .q{
 	font-size: 48px

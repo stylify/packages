@@ -36,32 +36,32 @@ html[theme="dark"] {
 	--bg: black;
 	--color: white;
 }
-.color\:lighten\(\#000\,10\){
-	color: var(--lighten-000-10)
+.bgc\:\$bg{
+	background-color: var(--bg)
 }
 .border\:2px_solid_lighten\(\#000\,20\){
 	border: 2px solid var(--lighten-000-20)
 }
-.content\:myContent\(\^Super\^\,\^Content\^\){
-	content: var(--myContent-Super---Content)
-}
 .box-shadow\:0_0_0_\$blue\,0_0_0_\$blue{
 	box-shadow: 0 0 0 var(--blue),0 0 0 var(--blue)
 }
-.text\:bold{
-	font-weight: bold
+.color\:lighten\(\#000\,10\){
+	color: var(--lighten-000-10)
 }
-.text\:italic{
-	font-style: italic
+.clr\:\$color{
+	color: var(--color)
+}
+.content\:myContent\(\^Super\^\,\^Content\^\){
+	content: var(--myContent-Super---Content)
 }
 .fs\:\$fontSize{
 	font-size: var(--fontSize)
 }
-.bgc\:\$bg{
-	background-color: var(--bg)
+.text\:italic{
+	font-style: italic
 }
-.clr\:\$color{
-	color: var(--color)
+.text\:bold{
+	font-weight: bold
 }
 .fix\:2px{
 	position: fixed;
