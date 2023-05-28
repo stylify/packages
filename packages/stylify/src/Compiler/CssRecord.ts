@@ -28,6 +28,8 @@ export class CssRecord {
 
 	private changed = false;
 
+	private sortedPropertiesKeys: string[] = [];
+
 	public utilityShouldBeGenerated = true;
 
 	public cache: string = null;
@@ -73,7 +75,6 @@ export class CssRecord {
 
 	public addProperties(properties: Record<string, string|number>): void {
 		for (const property in properties) {
-			this.changed = true;
 			this.addProperty(property, properties[property]);
 		}
 	}
@@ -87,7 +88,19 @@ export class CssRecord {
 		const hookResult = hooks.callHook('cssRecord:addProperty', addPropertyHookData);
 
 		this.changed = true;
+		this.sortedPropertiesKeys = [];
 		this.properties = {...this.properties, ...hookResult};
+	}
+
+	public getSortedPropertiesKeys(): string[] {
+		if (this.sortedPropertiesKeys.length === 0) {
+			this.sortedPropertiesKeys = Object.keys(this.properties)
+				.map((item) => item.replace(/-(?:o|webkit|moz|ms)-/, ''))
+				.filter((value: string, index: number, array: string[]) => array.indexOf(value) === index)
+				.sort();
+		}
+
+		return this.sortedPropertiesKeys;
 	}
 
 	public addPseudoClasses(pseudoClasses: string[] | string): void {

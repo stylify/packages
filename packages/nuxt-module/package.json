@@ -56,9 +56,9 @@
 	"dependencies": {
 		"@stylify/bundler": "workspace:^",
 		"@stylify/stylify": "workspace:^",
-		"loader-utils": "^2.0"
+		"loader-utils": "^2.0.4"
 	},
 	"devDependencies": {
-		"@rollup/plugin-commonjs": "^21.0"
+		"@rollup/plugin-commonjs": "^21.1.0"
 	}
 }

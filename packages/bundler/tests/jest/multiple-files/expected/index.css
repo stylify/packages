@@ -1,12 +1,12 @@
-.display\:grid{
-	display: grid
-}
-.transition\:all_\.5s{
-	transition: all .5s
-}
 .color\:red{
 	color: red
 }
+.display\:grid{
+	display: grid
+}
 .font-weight\:bold{
 	font-weight: bold
+}
+.transition\:all_\.5s{
+	transition: all .5s
 }

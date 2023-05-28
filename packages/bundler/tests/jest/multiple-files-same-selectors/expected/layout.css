@@ -1,25 +1,25 @@
 .k{
 	border: 2px solid transparent
 }
-.l{
-	float: left
-}
 .j{
 	color: blue
 }
-.m{
-	visibility: hidden
-}
 .g{
 	display: flex
+}
+.l{
+	float: left
+}
+.h{
+	justify-content: center
 }
 .n{
 	-webkit-user-select: none;
 	   -moz-user-select: none;
 	        user-select: none
 }
-.h{
-	justify-content: center
+.m{
+	visibility: hidden
 }
 
 @media (min-width: 768px) {

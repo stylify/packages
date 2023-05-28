@@ -2,15 +2,15 @@
 	--red: darkred;
 	--blue: steelblue;
 }
-.color\:\$red{
-	color: var(--red)
-}
-.m\:20px{
-	margin: 20px
-}
 .button{
 	background: blue
 }
+.color\:\$red{
+	color: var(--red)
+}
 .button{
 	color: white
+}
+.m\:20px{
+	margin: 20px
 }

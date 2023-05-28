@@ -1,17 +1,6 @@
 .button,
-.title{
-	font-size: 24px
-}
-.button,
-.title{
-	padding: 24px
-}
-.button,
 .wrapper{
 	background: blue
-}
-.button{
-	margin: 11px
 }
 .title{
 	color: red
@@ -20,10 +9,21 @@
 .header.button.wrapper{
 	display: flex
 }
+.button,
+.title{
+	font-size: 24px
+}
 .header.button.title,
 .header.button.wrapper{
 	justify-content: space-between
 }
+.button{
+	margin: 11px
+}
 .wrapper{
 	outline: none
+}
+.button,
+.title{
+	padding: 24px
 }

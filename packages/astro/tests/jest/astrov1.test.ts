@@ -33,7 +33,7 @@ const secondHtmlPart = `
 	</body></html>
 `.trim();
 
-const cssFilePart = ':root{--blue: darkblue}.a{color:orange}.b{font-size:24px}.c{text-align:center}.d{color:#00008b}.e{font-size:48px}.f{margin-top:24px}.g{color:purple}.j{font-weight:700}.k{font-size:12px}.l{color:lightpurple}@media (min-width: 1024px){.h{color:darkpurple}.i{font-size:24px}}';
+const cssFilePart = ':root{--blue: darkblue}.a{color:orange}.d{color:#00008b}.g{color:purple}.l{color:lightpurple}.b{font-size:24px}.e{font-size:48px}.k{font-size:12px}.j{font-weight:700}.f{margin-top:24px}.c{text-align:center}@media (min-width: 1024px){.h{color:darkpurple}.i{font-size:24px}}';
 
 test('Astro v1', async (): Promise<void> => {
  	const [indexHtmlFileEntry] = FastGlob.sync(path.join(buildTmpDir, 'dist', 'index.html'));

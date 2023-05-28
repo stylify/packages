@@ -343,80 +343,55 @@ export class Compiler {
 			return content;
 		}
 
-		const originalContent = content;
-
-		if (originalContent in this.rewrittenAreasCache) {
-			return this.rewrittenAreasCache[originalContent];
+		if (content in this.rewrittenAreasCache) {
+			return this.rewrittenAreasCache[content];
 		}
 
-		const contentPlaceholders: Record<string, string> = {};
-
-		const placeholderInserter = (matched: string) => {
-			if (!(matched in contentPlaceholders)) {
-				const placeholderKey = `_TEXT_${Object.keys(contentPlaceholders).length}_`;
-				contentPlaceholders[matched] = placeholderKey;
-			}
-
-			return contentPlaceholders[matched];
-		};
+		const originalContent = content;
 
 		const selectorsListKeys = Object.keys(minifiedSelectorGenerator.processedSelectors)
 			.sort((a: string, b: string): number => b.length - a.length);
-		let rawContent = content;
 
-		content = prepareStringForReplace(content)
-			.replace(new RegExp(this.ignoredAreasRegExpString, 'g'), (...args): string => {
-				const matchArguments = args.filter((value) => typeof value === 'string');
-				const fullMatch: string = matchArguments[0];
-				const innerMatch: string = matchArguments[1];
+		const rewriteContent = (contentToProcess: string, contentToReplace: string, contentToRewrite: string) => {
+			const contentPlaceholders: Record<string, string> = {};
 
-				const replacement = typeof innerMatch === 'undefined' || innerMatch.length === 0
-					? fullMatch
-					: fullMatch.replace(innerMatch, placeholderInserter(innerMatch));
-
-				if (replacement !== fullMatch) {
-					rawContent = rawContent.replaceAll(fullMatch, replacement);
+			const placeholderInserter = (matched: string) => {
+				if (!(matched in contentPlaceholders)) {
+					const placeholderKey = `_TEXT_${Object.keys(contentPlaceholders).length}_`;
+					contentPlaceholders[matched] = placeholderKey;
 				}
 
-				return replacement;
-			})
-			.replace(
-				new RegExp(this.contentOptionsRegExp.source, 'g'),
-				(matched: string) => placeholderInserter(matched)
-			);
-
-		rawContent = rawContent.replace(new RegExp(this.contentOptionsRegExp.source, 'g'), '');
-
-		const areasToRewrite: Record<string, AreaToRewriteInterface> = {};
-
-		if (rewriteOnlyInSelectorsAreas) {
-			for (const rewriteSelectorAreaRegExpString of this.selectorsAreas) {
-				rawContent = rawContent.replace(
-					new RegExp(rewriteSelectorAreaRegExpString.source, 'g'),
-					(contentToReplace, contentToRewrite) => {
-						const areaToRewriteId = Object.keys(areasToRewrite).length;
-						const areaToRewriteKey = `_REWRITABLE_AREA_${areaToRewriteId}_`;
-						areasToRewrite[areaToRewriteKey] = {
-							contentToReplace,
-							contentToRewrite
-						};
-						return areaToRewriteKey;
-					}
-				);
-			}
-		} else {
-			areasToRewrite['_REWRITABLE_AREA_0_'] = {
-				contentToReplace: content,
-				contentToRewrite: content
+				return contentPlaceholders[matched];
 			};
-		}
 
-		rawContent = '';
+			contentToProcess = prepareStringForReplace(contentToProcess)
+				.replace(new RegExp(this.ignoredAreasRegExpString, 'g'), (...args): string => {
+					const matchArguments = args.filter((value) => typeof value === 'string');
+					const fullMatch: string = matchArguments[0];
+					const innerMatch: string = matchArguments[1];
 
-		for (const [areaToRewriteKey, areaToRewrite] of Object.entries(areasToRewrite)) {
-			let contentToReplace = areaToRewrite.contentToReplace;
-			const originalContentToRewrite = areaToRewrite.contentToRewrite;
-			let contentToRewrite = prepareStringForReplace(areaToRewrite.contentToRewrite);
+					const replacement = typeof innerMatch === 'undefined' || innerMatch.length === 0
+						? fullMatch
+						: fullMatch.replace(innerMatch, placeholderInserter(innerMatch));
+
+
+					if (replacement !== fullMatch) {
+						contentToReplace = contentToReplace.replaceAll(fullMatch, replacement);
+						contentToRewrite = contentToRewrite.replaceAll(fullMatch, replacement);
+					}
+
+					return replacement;
+				})
+				.replace(
+					new RegExp(this.contentOptionsRegExp.source, 'g'),
+					(matched: string) => placeholderInserter(matched)
+				);
+
+			contentToReplace = contentToReplace.replace(new RegExp(this.contentOptionsRegExp.source, 'g'), '');
+			contentToRewrite = contentToRewrite.replace(new RegExp(this.contentOptionsRegExp.source, 'g'), '');
+
+			const originalContentToRewrite = contentToRewrite;
+			contentToRewrite = prepareStringForReplace(contentToRewrite);
 
 			for (const selector of selectorsListKeys) {
 				if (!contentToRewrite.includes(prepareStringForReplace(selector))) {
@@ -436,40 +411,53 @@ export class Compiler {
 					)
 				);
 
+				const whiteSpacesRegExpPart = this.dev ? '' : '\\s*';
 				const replacement = `${selectorPrefix}${mangledSelector}`;
 				const selectorToReplaceRegExp = new RegExp(
-					`${rewriteOnlyInSelectorsAreas ? this.macroRegExpStartPart: ''}(${selectorToReplace})`,
+					`${rewriteOnlyInSelectorsAreas ? this.macroRegExpStartPart: ''}(${whiteSpacesRegExpPart})(${selectorToReplace})(${whiteSpacesRegExpPart})`,
 					'g'
 				);
+				let matched: RegExpExecArray;
 
-				contentToRewrite = contentToRewrite.replace(
-					selectorToReplaceRegExp,
-					(fullMatch: string, selector: string) => fullMatch.replace(selector, replacement)
-				);
-
-				contentToRewrite = this.dev ? contentToRewrite : contentToRewrite.replace(/\n/g, ' ').replace(/\s{2,}/g, ' ');
+				while (( matched = selectorToReplaceRegExp.exec(contentToRewrite))) {
+					selectorToReplaceRegExp.lastIndex = 0;
+					const [fullMatch, beforeSelector, selector, afterSelector] = matched;
+					const whiteSpaceBefore = (/^(?:\s|\n)+/).test(beforeSelector) ? ' ' : '';
+					const whiteSpaceAfter = (/^(?:\s|\n)+/).test(afterSelector)? ' ' : '';
+					const processedFullMatch = fullMatch.replace(
+						`${beforeSelector}${selector}${afterSelector}`,
+						`${whiteSpaceBefore}${replacement}${whiteSpaceAfter}`
+					);
+					contentToRewrite = contentToRewrite.replace(fullMatch, processedFullMatch);
+				}
 			}
 
-			let replacement = contentToReplace.replace(originalContentToRewrite, contentToRewrite);
+			contentToProcess = contentToProcess.replace(
+				prepareStringForReplace(contentToReplace),
+				contentToReplace.replace(originalContentToRewrite, contentToRewrite)
+			);
 
-			const rewritableAreaRegEx = new RegExp(/_REWRITABLE_AREA_\d+_/, 'g');
-			let rewritableAreaMatch: RegExpExecArray;
-
-			while ((rewritableAreaMatch = rewritableAreaRegEx.exec(replacement))) {
-				const rewritableAreaReplacement = areasToRewrite[rewritableAreaMatch[0]].replacement;
-				replacement = replacement.replace(rewritableAreaMatch[0], rewritableAreaReplacement);
-				contentToReplace = contentToReplace.replace(rewritableAreaMatch[0], rewritableAreaReplacement);
+			for (const [originalContent, contentPlaceholder] of Object.entries(contentPlaceholders)) {
+				contentToProcess = contentToProcess.replace(new RegExp(contentPlaceholder, 'g'), originalContent);
 			}
 
-			areasToRewrite[areaToRewriteKey].replacement = replacement;
-			content = content.replace(prepareStringForReplace(contentToReplace), replacement);
-		}
+			contentToProcess = getStringOriginalStateAfterReplace(contentToProcess);
 
-		for (const [originalContent, contentPlaceholder] of Object.entries(contentPlaceholders)) {
-			content = content.replace(new RegExp(contentPlaceholder, 'g'), originalContent);
-		}
+			return contentToProcess;
+		};
 
-		content = getStringOriginalStateAfterReplace(content);
+		if (rewriteOnlyInSelectorsAreas) {
+			for (const rewriteSelectorAreaRegExpString of this.selectorsAreas) {
+				const matches = [...content.matchAll(new RegExp(rewriteSelectorAreaRegExpString.source, 'g'))];
+
+				for (const match of matches) {
+					content = rewriteContent(content, match[0], match[1]);
+				}
+			}
+
+		} else {
+			content = rewriteContent(content, content, content);
+		}
 
 		this.rewrittenAreasCache[originalContent] = content;
 

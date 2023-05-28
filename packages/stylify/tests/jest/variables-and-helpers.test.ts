@@ -84,7 +84,7 @@ test('Variables and helpers', (): void => {
 	testUtils.testCssFileToBe(compilationResult.generateCss());
 });
 
-test('Variables and helpers - cssVariablesEnabled', (): void => {
+test('Variables and helpers', (): void => {
 	const compilerConfig = getCompilerConfig();
 	compilerConfig.variables = {
 		lightblack: 'lighten(#000,5)',
@@ -93,8 +93,8 @@ test('Variables and helpers - cssVariablesEnabled', (): void => {
 	};
 	const compiler = new Compiler(compilerConfig);
 
-	let compilationResult = compiler.compile(testUtils.getHtmlInputFile('second'));
-	testUtils.testCssFileToBe(compilationResult.generateCss(), 'second');
+	let compilationResult = compiler.compile(testUtils.getHtmlInputFile('simple-vars'));
+	testUtils.testCssFileToBe(compilationResult.generateCss(), 'simple-vars');
 });
 
 test('External Variables', (): void => {
@@ -107,8 +107,8 @@ test('External Variables', (): void => {
 		],
 	});
 
-	let compilationResult = compiler.compile(testUtils.getHtmlInputFile('third'));
-	testUtils.testCssFileToBe(compilationResult.generateCss(), 'third');
+	let compilationResult = compiler.compile(testUtils.getHtmlInputFile('external-variables'));
+	testUtils.testCssFileToBe(compilationResult.generateCss(), 'external-variables');
 });
 
 test('External Variables - helpers exception', (): void => {

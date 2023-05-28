@@ -53,7 +53,7 @@ const secondHtmlPart3 = `
 </strong>
 `
 
-const cssFilePart = ':root{--blue: darkblue}.a{color:orange}.b{font-size:24px}.c{color:test}.d{font-size:123px}.e{text-align:center}.f{color:#00008b}.g{font-size:48px}.h{margin-top:24px}.i{color:purple}.l{font-weight:700}.m{font-size:12px}.n{color:lightpurple}@media (min-width: 1024px){.j{color:darkpurple}.k{font-size:24px}}';
+const cssFilePart = ':root{--blue: darkblue}.a{color:orange}.c{color:test}.f{color:#00008b}.i{color:purple}.n{color:lightpurple}.b{font-size:24px}.d{font-size:123px}.g{font-size:48px}.m{font-size:12px}.l{font-weight:700}.h{margin-top:24px}.e{text-align:center}@media (min-width: 1024px){.j{color:darkpurple}.k{font-size:24px}}';
 
 test('Astro v2', async (): Promise<void> => {
  	const [indexHtmlFileEntry] = FastGlob.sync(path.join(buildTmpDir, 'dist', 'index.html'));

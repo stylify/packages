@@ -1,8 +1,8 @@
-.color\:\$md-sys-color-primary{
-	color: var(--md-sys-color-primary)
-}
 .background-color\:\$test{
 	background-color: var(--test)
+}
+.color\:\$md-sys-color-primary{
+	color: var(--md-sys-color-primary)
 }
 .font-size\:\$ext-font28{
 	font-size: var(--ext-font28)

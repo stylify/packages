@@ -1,15 +1,43 @@
-.border-top\:1px_solid_\#444{
-	border-top: 1px solid #444
+.profiler-extension,
+.profiler-extension_button{
+	align-items: center
+}
+.profiler-extension:hover{
+	background: #333
+}
+.profiler-extension_dropdown{
+	background: #000
 }
 .profiler-extension_button--active,
 .background-color\:\#333{
 	background-color: #333
 }
+.profiler-extension{
+	border-left: 1px solid #555
+}
+.border-top\:1px_solid_\#444{
+	border-top: 1px solid #444
+}
 .bottom\:0{
 	bottom: 0
 }
+.profiler-extension_dropdown{
+	bottom: 100%
+}
+.profiler-extension,
+.profiler-extension_button,
+.profiler-extension_dropdown,
+.profiler-extension_link{
+	box-sizing: border-box
+}
 .color\:\#fff{
 	color: #fff
+}
+.profiler-extension_link{
+	color: #00b2e5
+}
+.profiler-extension_button-icon{
+	color: #aaa
 }
 .content-visibility\:hidden{
 	content-visibility: hidden
@@ -17,11 +45,23 @@
 .content-visibility\:visible{
 	content-visibility: visible
 }
+.profiler-extension_button,
+.profiler-extension_link{
+	cursor: pointer
+}
 .display\:block{
 	display: block
 }
 .display\:none{
 	display: none
+}
+.profiler-extension,
+.profiler-extension_button{
+	display: flex
+}
+.profiler-extension_link,
+.profiler-extension_button-icon{
+	display: inline-block
 }
 .font-family\:arial{
 	font-family: arial
@@ -30,20 +70,60 @@
 .font-size\:12px{
 	font-size: 12px
 }
+.profiler-extension_button-icon{
+	font-weight: bold
+}
+.profiler-extension_button{
+	height: 20px
+}
+.profiler-extension_button-icon{
+	height: 12px
+}
+.profiler-extension_button{
+	justify-content: center
+}
+.profiler-extension_dropdown{
+	left: 0
+}
 .line-height\:20px{
 	line-height: 20px
 }
-.margin-left\:8px{
-	margin-left: 8px
+.profiler-extension_button-label{
+	line-height: 1
 }
 .margin\:0_8px{
 	margin: 0 8px
 }
+.margin-left\:8px{
+	margin-left: 8px
+}
+.profiler-extension_link,
+.profiler-extension_button-icon{
+	margin-right: 8px
+}
+.profiler-extension_dropdown{
+	max-height: 50vh
+}
 .max-width\:800px{
 	max-width: 800px
 }
+.profiler-extension{
+	min-height: 100%
+}
+.profiler-extension_dropdown{
+	min-width: 100%
+}
+.profiler-extension_dropdown{
+	overflow: auto
+}
 .overflow-x\:auto{
 	overflow-x: auto
+}
+.profiler-extension_button{
+	padding: 0 8px
+}
+.profiler-extension_dropdown{
+	padding: 8px
 }
 .padding-top\:8px{
 	padding-top: 8px
@@ -51,8 +131,22 @@
 .position\:fixed{
 	position: fixed
 }
+.profiler-extension{
+	position: relative
+}
+.profiler-extension_dropdown{
+	position: absolute
+}
 .text-align\:left{
 	text-align: left
+}
+.profiler-extension_link{
+	text-decoration: none
+}
+.profiler-extension_button{
+	-webkit-user-select: none;
+	   -moz-user-select: none;
+	        user-select: none
 }
 .visibility\:hidden{
 	visibility: hidden
@@ -60,109 +154,15 @@
 .visibility\:visible{
 	visibility: visible
 }
-.width\:auto{
-	width: auto
-}
-.word-spacing\:24px{
-	word-spacing: 24px
-}
-.profiler-extension:hover{
-	background: #333
-}
-.profiler-extension,
-.profiler-extension_button,
-.profiler-extension_dropdown,
-.profiler-extension_link{
-	box-sizing: border-box
-}
-.profiler-extension{
-	border-left: 1px solid #555
-}
-.profiler-extension,
-.profiler-extension_button{
-	align-items: center
-}
-.profiler-extension,
-.profiler-extension_button{
-	display: flex
-}
-.profiler-extension{
-	min-height: 100%
-}
-.profiler-extension{
-	position: relative
-}
-.profiler-extension_button{
-	height: 20px
-}
-.profiler-extension_button{
-	padding: 0 8px
-}
-.profiler-extension_button{
-	justify-content: center
-}
-.profiler-extension_button,
-.profiler-extension_link{
-	cursor: pointer
-}
-.profiler-extension_button{
-	-webkit-user-select: none;
-	   -moz-user-select: none;
-	        user-select: none
-}
-.profiler-extension_dropdown{
-	position: absolute
-}
-.profiler-extension_dropdown{
-	bottom: 100%
-}
-.profiler-extension_dropdown{
-	left: 0
-}
-.profiler-extension_dropdown{
-	max-height: 50vh
-}
-.profiler-extension_dropdown{
-	overflow: auto
-}
-.profiler-extension_dropdown{
-	min-width: 100%
-}
-.profiler-extension_dropdown{
-	background: #000
-}
-.profiler-extension_dropdown{
-	padding: 8px
-}
-.profiler-extension_link{
-	text-decoration: none
-}
-.profiler-extension_link{
-	color: #00b2e5
-}
-.profiler-extension_link,
-.profiler-extension_button-icon{
-	margin-right: 8px
-}
 .profiler-extension_link{
 	white-space: nowrap
 }
-.profiler-extension_link,
-.profiler-extension_button-icon{
-	display: inline-block
+.width\:auto{
+	width: auto
 }
 .profiler-extension_button-icon{
 	width: 12px
 }
-.profiler-extension_button-icon{
-	height: 12px
-}
-.profiler-extension_button-icon{
-	font-weight: bold
-}
-.profiler-extension_button-icon{
-	color: #aaa
-}
-.profiler-extension_button-label{
-	line-height: 1
+.word-spacing\:24px{
+	word-spacing: 24px
 }

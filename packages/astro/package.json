@@ -57,9 +57,9 @@
 	"dependencies": {
 		"@stylify/stylify": "workspace:^",
 		"@stylify/unplugin": "workspace:^",
-		"normalize-path": "^3.0"
+		"normalize-path": "^3.0.0"
 	},
 	"devDependencies": {
-		"astro": "^2.3"
+		"astro": "^2.5.5"
 	}
 }

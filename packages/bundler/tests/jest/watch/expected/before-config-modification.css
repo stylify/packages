@@ -1,10 +1,10 @@
 :root {
 	--fontSize: 24px;
 }
-.font-size\:\$fontSize{
-	font-size: var(--fontSize)
-}
 .container,
 .color\:blue{
 	color: blue
+}
+.font-size\:\$fontSize{
+	font-size: var(--fontSize)
 }

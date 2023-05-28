@@ -51,19 +51,19 @@
 		"start": "nuxi start playground"
 	},
 	"dependencies": {
-		"@nuxt/kit": "^3.5",
-		"normalize-path": "^3.0",
+		"@nuxt/kit": "^3.5.1",
 		"@stylify/bundler": "workspace:^",
 		"@stylify/stylify": "workspace:^",
-		"@stylify/unplugin": "workspace:^"
+		"@stylify/unplugin": "workspace:^",
+		"normalize-path": "^3.0.0"
 	},
 	"devDependencies": {
-		"@nuxt/content": "^2.0",
-		"@nuxt/schema": "^3.5",
+		"@nuxt/content": "^2.6.0",
 		"@nuxt/module-builder": "latest",
+		"@nuxt/schema": "^3.5.1",
 		"@nuxtjs/eslint-config-typescript": "latest",
 		"eslint": "latest",
-		"fast-glob": "^3.2",
-		"nuxt": "^3.5"
+		"fast-glob": "^3.2.12",
+		"nuxt": "^3.5.1"
 	}
 }
