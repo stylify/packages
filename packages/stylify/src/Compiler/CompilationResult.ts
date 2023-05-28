@@ -129,7 +129,39 @@ export class CompilationResult {
 		const newLine = this.dev ? '\n' : '';
 		const cssTree: Record<string, string> = {};
 
-		for (const selector in this.selectorsList) {
+		const sortedSelectors = Object.keys(this.selectorsList).sort((a, b) => {
+			const cssRecordA = this.selectorsList[a];
+			const cssRecordB = this.selectorsList[b];
+
+			let propertiesComparisonArray: string[] = [];
+			let propertyAForComparison = null;
+
+			const cssRecordAProps = cssRecordA.getSortedPropertiesKeys();
+			const cssRecordBProps = cssRecordB.getSortedPropertiesKeys();
+
+			for (let i = 0; i < cssRecordAProps.length; i++) {
+				const propertyOfA = cssRecordAProps[i];
+				const propertyOfB = cssRecordBProps[i];
+
+				if (propertyOfB === undefined || propertyOfA === propertyOfB) {
+					continue;
+				}
+
+				propertyAForComparison = propertyOfA;
+				propertiesComparisonArray = [propertyOfA, propertyOfB];
+				break;
+			}
+
+			if (propertiesComparisonArray.length === 0) {
+				return 0;
+			}
+
+			const firstItem = propertiesComparisonArray.sort()[0];
+
+			return firstItem === propertyAForComparison ? -1 : 1;
+		});
+
+		for (const selector of sortedSelectors) {
 			const cssRecord = this.selectorsList[selector];
 			const screen = this.getScreenById(cssRecord.screenId);
 
