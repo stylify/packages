@@ -1,18 +1,18 @@
 {
   "astro": {
     "/esm/index.mjs": {
-      "size": 4637
+      "size": 4663
     },
     "/lib/index.cjs": {
-      "size": 5195
+      "size": 5227
     }
   },
   "bundler": {
     "/esm/index.mjs": {
-      "size": 31727
+      "size": 32018
     },
     "/lib/index.cjs": {
-      "size": 33870
+      "size": 34161
     }
   },
   "nuxt": {
@@ -34,35 +34,35 @@
       "size": 7099
     },
     "/lib/webpack-loader.cjs": {
-      "size": 1823
+      "size": 1733
     }
   },
   "stylify": {
     "/esm/index.js": {
-      "size": 77905
+      "size": 79035
     },
     "/esm/index.min.js": {
-      "size": 38520
+      "size": 38935
     },
     "/esm/index.mjs": {
-      "size": 75659
+      "size": 76789
     },
     "/lib/index.cjs": {
-      "size": 77703
+      "size": 78833
     },
     "/dist/stylify.js": {
-      "size": 80389
+      "size": 81559
     },
     "/dist/stylify.min.js": {
-      "size": 37863
+      "size": 38278
     }
   },
   "unplugin": {
     "/esm/index.mjs": {
-      "size": 4934
+      "size": 4469
     },
     "/lib/index.cjs": {
-      "size": 6890
+      "size": 6405
     }
   }
 }

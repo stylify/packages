@@ -1,6 +1,6 @@
 {
 	"name": "@stylify/stylify",
-	"version": "0.6.0",
+	"version": "0.6.1",
 	"description": "Stylify generates utility-first CSS dynamically based on what you write. Write HTML. Get CSS.",
 	"keywords": [
 		"stylify",
@@ -13,7 +13,6 @@
 		"framework",
 		"web"
 	],
-	"type": "module",
 	"homepage": "https://stylifycss.com",
 	"bugs": {
 		"url": "https://github.com/stylify/packages/issues"
