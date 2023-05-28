@@ -53,11 +53,11 @@
 	],
 	"dependencies": {
 		"@stylify/stylify": "workspace:^",
-		"autoprefixer": "^10.4",
-		"chokidar": "^3.5",
-		"fast-glob": "^3.2",
-		"micromatch": "^4.0",
-		"normalize-path": "^3.0",
-		"postcss": "^8.4"
+		"autoprefixer": "^10.4.14",
+		"chokidar": "^3.5.3",
+		"fast-glob": "^3.2.12",
+		"micromatch": "^4.0.5",
+		"normalize-path": "^3.0.0",
+		"postcss": "^8.4.23"
 	}
 }

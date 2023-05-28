@@ -9,9 +9,9 @@
 		"astro": "astro"
 	},
 	"dependencies": {
-		"astro": "^2.3",
-		"@astrojs/node": "^5.1",
+		"@astrojs/node": "^5.1.4",
 		"@stylify/astro": "workspace:^",
-		"vite-plugin-commonjs": "^0.6"
+		"astro": "^2.5.5",
+		"vite-plugin-commonjs": "^0.6.2"
 	}
 }
