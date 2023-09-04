@@ -55,9 +55,9 @@
 		"@stylify/stylify": "workspace:^",
 		"autoprefixer": "^10.4.14",
 		"chokidar": "^3.5.3",
-		"fast-glob": "^3.2.12",
+		"fast-glob": "^3.3.1",
 		"micromatch": "^4.0.5",
 		"normalize-path": "^3.0.0",
-		"postcss": "^8.4.23"
+		"postcss": "^8.4.29"
 	}
 }

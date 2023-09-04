@@ -118,12 +118,6 @@ export interface ComponentsInterface {
 
 export type UndefinedVariableWarningLevelType = 'silent' | 'warning' | 'error'
 
-interface AreaToRewriteInterface {
-	contentToRewrite: string;
-	contentToReplace: string;
-	replacement?: string;
-}
-
 export class Compiler {
 
 	private readonly macroRegExpStartPart = '(?:^|[^a-zA-Z0-9_-])';

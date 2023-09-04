@@ -12,6 +12,6 @@
   "dependencies": {
     "@stylify/astro": "workspace:^",
     "@stylify/stylify": "workspace:^",
-    "astro": "^2.0"
+    "astro": "^3.0.0"
   }
 }

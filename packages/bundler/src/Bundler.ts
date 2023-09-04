@@ -209,6 +209,7 @@ export class Bundler {
 
 	public constructor(config: BundlerConfigInterface) {
 		this.configurationLoadingPromise = this.configure(config);
+		// eslint-disable-next-line @typescript-eslint/no-floating-promises
 		this.configurationLoadingPromise.finally(() => {
 			hooks.callHook('bundler:initialized', {bundler: this});
 		});
@@ -798,6 +799,7 @@ export class Bundler {
 								});
 							}
 
+							// eslint-disable-next-line @typescript-eslint/no-floating-promises
 							this.waitOnBundlesProcessed().finally(() => {
 								this.watchedFiles[pathToWatch].processing = false;
 								if (changedInfoLogged) {

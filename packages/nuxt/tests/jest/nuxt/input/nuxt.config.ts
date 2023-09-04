@@ -20,5 +20,10 @@ export default defineNuxtConfig({
 	modules: [
 		'@nuxt/content',
 		'@stylify/nuxt',
-	]
+	],
+	// Tmp fix for micromark
+	alias: {
+		"micromark/lib/preprocess.js": "micromark",
+		"micromark/lib/postprocess.js": "micromark",
+	},
 });
