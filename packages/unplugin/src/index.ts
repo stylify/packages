@@ -178,8 +178,8 @@ export const unplugin = createUnplugin((config: UnpluginConfigInterface = {}) =>
 	};
 });
 
-export const stylifyVite = unplugin.vite as UnpluginFactoryOutput<UnpluginConfigInterface, VitePlugin>;
-export const stylifyRollup = unplugin.rollup as UnpluginFactoryOutput<UnpluginConfigInterface, RollupPlugin>;
+export const stylifyVite = unplugin.vite as unknown as UnpluginFactoryOutput<UnpluginConfigInterface, VitePlugin>;
+export const stylifyRollup = unplugin.rollup as unknown as UnpluginFactoryOutput<UnpluginConfigInterface, RollupPlugin>;
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
 export const stylifyWebpack = unplugin.webpack as UnpluginFactoryOutput<UnpluginConfigInterface, WebpackPluginInstance>;
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion

@@ -16,7 +16,7 @@
 		"astro:build:notypes": "cross-env packages=astro pnpm build:notypes",
 		"astro:watch": "cross-env packages=astro watch=true pnpm watch",
 		"astro:plg": "cd packages/astro/playground && pnpm",
-		"astro:test": "pnpm jest:test packages/astro/tests/jest",
+		"astro:test": "pnpm jest:test packages/astro/tests/jest/astrov2",
 		"autoprefixer:build": "cross-env packages=autoprefixer pnpm build",
 		"autoprefixer:build:notypes": "cross-env packages=autoprefixer pnpm build:notypes",
 		"autoprefixer:watch": "cross-env packages=autoprefixer watch=true pnpm watch",
@@ -98,8 +98,5 @@
 	"packageManager": "pnpm@8.3.1",
 	"engines": {
 		"pnpm": "^8.3"
-	},
-	"dependencies": {
-		"@example/basics": "link:/usr/share/nginx/html/packages/astro/tests-tmp/astrov1-build"
 	}
 }
