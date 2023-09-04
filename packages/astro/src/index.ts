@@ -11,7 +11,7 @@ import { join } from 'path';
 import { default as normalize } from 'normalize-path';
 
 export interface ConfigInterface extends UnpluginConfigInterface {
-	importDefaultBundle?: false|boolean
+	importDefaultBundle?: boolean
 }
 
 export const hooks = unpluginHooks;
