@@ -17,18 +17,9 @@ comment:
   require_changes: no
 
 flags:
-  autoprefixer:
-    paths:
-      - packages/autoprefixer/
   bundler:
     paths:
       - packages/bundler/
-  nuxt:
-    paths:
-      - packages/nuxt/
-  nuxt-module:
-    paths:
-      - packages/nuxt-module/
   stylify:
     paths:
       - packages/stylify/

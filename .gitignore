@@ -1,16 +1,13 @@
 # Root
 /node_modules/
-*.lerna_backup
 *.tgz
 /coverage
 /scripts/build.js
-lerna-debug.log
 .idea
 /.idea
 .pnpm-store
 
 #Packages
-/packages/**/*.lerna_backup
 /packages/**/node_modules
 /packages/**/dist
 /packages/**/esm
@@ -18,11 +15,3 @@ lerna-debug.log
 /packages/**/tmp
 /packages/**/tests-tmp
 /packages/**/types
-
-# @stylify/nuxt
-/packages/nuxt/.nuxt
-/packages/nuxt/.output
-/packages/nuxt/playground/assets
-/packages/nuxt/playground/.nuxt
-/packages/nuxt/playground/.output
-/packages/nuxt/playground/workspaces

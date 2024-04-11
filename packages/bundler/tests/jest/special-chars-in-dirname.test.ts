@@ -19,7 +19,7 @@ fse.copySync(path.join(bundleTestDir, 'input'), buildTmpDir);
 new Bundler({ dev: true, showBundlesStats: false }).bundle([
 	{
 		outputFile: path.join(buildTmpDir, 'index.css'),
-		files: [path.join(buildTmpDir, '\\\\(themes\\\\)/**/*.{html,svelte}')]
+		files: [path.join(buildTmpDir, '\\(themes\\)/**/*.{html,svelte}')]
 	}
 ]);
 
