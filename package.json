@@ -7,7 +7,7 @@
 		"repo:version": "pnpm -r exec pnpm version",
 		"repo:patch": "pnpm repo:version patch",
 		"repo:minor": "pnpm repo:version minor",
-		"repo:publish": "pnpm build && pnpm build:generate-stats && pnpm login && pnpm -r publish",
+		"repo:publish": "pnpm build && pnpm build:generate-stats && pnpm login --auth-type legacy && pnpm -r publish",
 		"watch": "cross-env watch=true pnpm build",
 		"build": "ts-node scripts/build.ts",
 		"build:notypes": "cross-env typesDisabled=true ts-node scripts/build.ts",
