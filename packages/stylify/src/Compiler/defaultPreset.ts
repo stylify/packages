@@ -61,6 +61,8 @@ export const defaultPreset = {
 		/(?:^|\s+)"class":\s*`([^`]+)`/
 	],
 	screens: {
+		toxs: maxWidthScreen('375px'),
+		xs: minWidthScreen('375px'),
 		tosm: maxWidthScreen('639px'),
 		sm: minWidthScreen('640px'),
 		tomd: maxWidthScreen('767px'),
