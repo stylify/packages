@@ -38,7 +38,6 @@
 				"xabikos.JavaScriptSnippets",
 				"Zignd.html-css-class-completion",
 				"dbaeumer.vscode-eslint",
-				"astro-build.astro-vscode",
 				"ritwickdey.LiveServer",
 				"Orta.vscode-jest"
 			]

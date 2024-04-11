@@ -3,7 +3,7 @@
 /* eslint-disable @typescript-eslint/no-floating-promises */
 
 import path from 'path';
-import { runBuild, bundle, bundleSync } from './helpers';
+import { runBuild, bundleSync } from './helpers';
 
 runBuild(async () => {
 
@@ -46,74 +46,6 @@ runBuild(async () => {
 					'postcss',
 					'autoprefixer'
 				],
-				formats: ['esm', 'cjs']
-			}
-		]
-	});
-
-	await bundle({
-		package: 'unplugin',
-		bundles: [
-			{
-				entryPoints: [path.join('src', 'index')],
-				outfile: 'index',
-				platform: 'node',
-				external: [
-					'@stylify/bundler',
-					'@stylify/stylify',
-					'esbuild',
-					'unplugin',
-					'vite',
-					'webpack',
-					'rollup'
-				],
-				formats: ['esm', 'cjs']
-			}
-		]
-	});
-
-	bundle({
-		package: 'nuxt',
-		bundles: [
-			{
-				entryPoints: [path.join('src', 'module')],
-				outfile: 'module',
-				platform: 'node',
-				minify: false,
-				external: ['@stylify/bundler', '@stylify/stylify', '@stylify/unplugin', '@nuxt/kit'],
-				formats: ['esm', 'cjs']
-			}
-		]
-	});
-
-	bundle({
-		package: 'nuxt-module',
-		bundles: [
-			{
-				entryPoints: [path.join('src', 'index')],
-				outfile: 'index',
-				platform: 'node',
-				external: ['@stylify/bundler', '@stylify/stylify'],
-				formats: ['esm', 'cjs']
-			},
-			{
-				entryPoints: [path.join('src', 'webpack-loader')],
-				outfile: 'webpack-loader',
-				external: ['@stylify/stylify', 'loader-utils'],
-				formats: ['esm', 'cjs']
-			}
-		]
-	});
-
-	bundle({
-		package: 'astro',
-		bundles: [
-			{
-				entryPoints: [path.join('src', 'index')],
-				outfile: 'index',
-				platform: 'node',
-				minify: false,
-				external: ['@stylify/stylify', '@stylify/unplugin'],
 				formats: ['esm', 'cjs']
 			}
 		]

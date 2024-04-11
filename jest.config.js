@@ -1,5 +1,5 @@
 const packagesToTest = [
-	'astro', 'bundler', 'nuxt', 'nuxt-module', 'stylify', 'unplugin'
+	'bundler', 'stylify'
 ];
 
 const packagesDirectoryJoin = packagesToTest.join('|');
