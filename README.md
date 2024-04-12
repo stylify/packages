@@ -104,7 +104,7 @@ Start using Stylify with your favorite tool in a minute.
 | Environment | Version                                                                                                                                                          | Note                                                                                                          |
 |-------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------|
 | Browser     | [ES5-compliant browsers](https://caniuse.com/?search=ES5), [Intersection Observer support](https://caniuse.com/?search=intersection%20observer) is required.     | Stylify doesn't need to be included in the browser. All CSS can be pregenerated on server or during a build.  |
-| Node        | >= 14                                                                                                                                                            | In case Stylify will be used during an application build or in an SSR application.                            |
+| Node        | >= 18                                                                                                                                                            | In case Stylify will be used during an application build or in an SSR application.                            |
 
 ## 💡 Examples, Changelog, Issues
 - Live examples and tutorials: [documentation](https://stylifycss.com/docs/get-started)
