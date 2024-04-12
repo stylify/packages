@@ -1,4 +1,4 @@
-import { defineConfig } from '../esm/index.mjs';
+import { defineConfig } from './esm/index.mjs';
 
 export default defineConfig({
 	compiler: {

@@ -108,6 +108,8 @@ importers:
         specifier: ^8.4.29
         version: 8.4.38
 
+  packages/bundler/playground: {}
+
   packages/stylify: {}
 
 packages:
